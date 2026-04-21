@@ -1,0 +1,1984 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Override theme-forced text-transform where literal string fidelity matters
+   (e.g. case-converter result cards that must show the actual converted
+   string). Applied at top of file so themed rules can't reach it; kept
+   !important because the theme rules win on specificity otherwise. */
+.kami-scope button.case-preserve,
+.kami-scope button.case-preserve * {
+  text-transform: none !important;
+  letter-spacing: normal !important;
+}
+
+@layer base {
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-foreground: #ffffff;
+    --bg-warm: #f6f6f4;
+    --bg-white: #ffffff;
+    --bg-muted: #f3f4f6;
+    --bg-subtle: #eceef1;
+    --text-primary: #111111;
+    --text-body: #333333;
+    --text-muted: #767676;
+    --border: #d7d7db;
+    --success: #16a34a;
+    --destructive: #ef4444;
+
+    /* ============================================================
+       Kami design tokens — theme-aware via html[data-theme] below.
+       Every page/component reads from these instead of hardcoding.
+       ============================================================ */
+
+    /* surface & text */
+    --kami-bg: #f6f6f4;
+    --kami-surface: rgba(255,255,255,0.80);
+    --kami-surface-solid: #ffffff;
+    --kami-border: rgba(229,229,234,0.6);
+    --kami-border-strong: #e5e7eb;
+    --kami-text: #1d1d1f;
+    --kami-text-muted: #4b5563;
+    --kami-text-dim: #6b7280;
+
+    /* primary CTA (solid link-button) */
+    --kami-cta-bg: #111827;
+    --kami-cta-bg-hover: #1f2937;
+    --kami-cta-text: #ffffff;
+    --kami-cta-radius: 0.5rem;
+    --kami-cta-shadow: none;
+
+    /* secondary CTA (bordered link-button) */
+    --kami-cta2-bg: #ffffff;
+    --kami-cta2-bg-hover: #f9fafb;
+    --kami-cta2-text: #374151;
+    --kami-cta2-border: #e5e7eb;
+
+    /* tile hover overlay (the card flip) */
+    --kami-overlay-bg: #000000;
+    --kami-overlay-text: #fafafa;
+    --kami-overlay-text-dim: #d1d5db;
+
+    /* breadcrumb */
+    --kami-breadcrumb: #bbbbbb;
+    --kami-breadcrumb-hover: #1d1d1f;
+
+    /* footer */
+    --kami-footer: #bbbbbb;
+    --kami-footer-link: #6b7280;
+    --kami-footer-link-hover: #1d1d1f;
+
+    /* ---- design-language tokens (new) ---- */
+    /* Typography per theme */
+    --kami-font-display: var(--font-sans), "DM Sans", system-ui, sans-serif;
+    --kami-font-body: var(--font-sans), "DM Sans", system-ui, sans-serif;
+    --kami-font-mono: var(--font-mono), ui-monospace, monospace;
+    --kami-heading-case: none;
+    --kami-heading-tracking: -0.01em;
+    --kami-heading-weight: 600;
+    --kami-body-tracking: 0;
+    --kami-body-leading: 1.6;
+
+    /* Card construction */
+    --kami-card-radius: 16px;
+    --kami-card-border: 1px solid var(--kami-border-strong);
+    --kami-card-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    --kami-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.12);
+    --kami-card-hover-transform: translateY(-2px);
+
+    /* Motion */
+    --kami-motion-fast: 150ms;
+    --kami-motion-base: 220ms;
+    --kami-motion-slow: 400ms;
+    --kami-motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+    /* Divider */
+    --kami-divider-style: 1px solid var(--kami-border-strong);
+    --kami-divider-marker: "";
+
+    /* Input */
+    --kami-input-bg: #ffffff;
+    --kami-input-border: 1px solid var(--kami-border-strong);
+    --kami-input-radius: 10px;
+    --kami-input-focus-ring: 0 0 0 2px rgba(37,99,235,0.2);
+    --kami-caret: #2563eb;
+
+    /* Single accent */
+    --kami-accent: #2563eb;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--bg-warm);
+    color: var(--text-primary);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Help Center Article Prose */
+@layer components {
+  .article-content h2 {
+    @apply text-2xl font-semibold mt-10 mb-4 text-[var(--text-primary)] scroll-mt-20;
+  }
+  .article-content h3 {
+    @apply text-xl font-semibold mt-8 mb-3 text-[var(--text-primary)] scroll-mt-20;
+  }
+  .article-content p {
+    @apply text-base leading-relaxed text-[var(--text-body)] mb-4;
+  }
+  .article-content ul, .article-content ol {
+    @apply mb-4 pl-6;
+  }
+  .article-content ul {
+    @apply list-disc;
+  }
+  .article-content ol {
+    @apply list-decimal;
+  }
+  .article-content li {
+    @apply text-base leading-relaxed text-[var(--text-body)] mb-1.5;
+  }
+  .article-content a {
+    @apply text-[var(--primary)] hover:underline;
+  }
+  .article-content strong {
+    @apply font-semibold text-[var(--text-primary)];
+  }
+  .article-content code {
+    @apply rounded bg-[var(--bg-muted)] px-1.5 py-0.5 text-sm font-mono;
+  }
+  .article-content pre {
+    @apply rounded-lg bg-[var(--bg-muted)] p-4 mb-4 overflow-x-auto;
+  }
+  .article-content pre code {
+    @apply bg-transparent p-0;
+  }
+  .article-content table {
+    @apply w-full text-sm mb-4;
+  }
+  .article-content thead {
+    @apply border-b;
+  }
+  .article-content th {
+    @apply px-3 py-2 text-left font-semibold text-[var(--text-primary)];
+  }
+  .article-content td {
+    @apply px-3 py-2 text-[var(--text-body)] border-b;
+  }
+  .article-content hr {
+    @apply my-8 border-t;
+  }
+  .article-content .callout p {
+    @apply mb-0;
+  }
+}
+
+/* ===== Tools Design System ===== */
+
+/* Light theme variables — used by command palette, copy toast */
+.tools-light {
+  --tools-bg: #fafafa;
+  --tools-surface: #ffffff;
+  --tools-surface-alt: #f5f5f5;
+  --tools-surface-hover: #f0f0f0;
+  --tools-border: #e5e5ea;
+  --tools-border-hover: #d4d4d4;
+  --tools-text: #1d1d1f;
+  --tools-text-secondary: #525252;
+  --tools-text-muted: #bbb;
+}
+
+/* Command palette */
+.command-palette {
+  background: var(--tools-surface);
+  border-color: var(--tools-border);
+  color: var(--tools-text);
+}
+.command-palette input { color: var(--tools-text); }
+.command-palette kbd { border-color: var(--tools-border); color: var(--tools-text-muted); }
+.command-palette-selected { background: var(--tools-surface-hover); }
+
+/* Copy toast */
+.copy-toast {
+  background: var(--tools-surface);
+  border-color: var(--tools-border);
+  color: var(--tools-text);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ===== Animations ===== */
+@keyframes cmdPaletteIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Theme Engine ===== */
+
+/* Theme transition */
+html[data-theme] body,
+html[data-theme] body * {
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* ============================================================
+   BRUTALIST — "Concrete Press"
+   School: Total Design + Mevis & Van Deursen + Berlin techno flyer
+   Philosophy: monospace shouting on white paper. Magenta is the
+   only non-black/white color. Zero radius. Offset-solid shadows.
+   Hover = slam. Motion = instant.
+   ============================================================ */
+html[data-theme="brutalist"] {
+  --kami-bg: #ffffff;
+  --kami-surface: #ffffff;
+  --kami-surface-solid: #ffffff;
+  --kami-border: #000000;
+  --kami-border-strong: #000000;
+  --kami-text: #000000;
+  --kami-text-muted: #000000;
+  --kami-text-dim: #666666;
+  --kami-accent: #d946ef;
+
+  --kami-cta-bg: #000000;
+  --kami-cta-bg-hover: #d946ef;
+  --kami-cta-text: #ffffff;
+  --kami-cta-radius: 0;
+  --kami-cta-shadow: 4px 4px 0 #000;
+
+  --kami-cta2-bg: #ffffff;
+  --kami-cta2-bg-hover: #d946ef;
+  --kami-cta2-text: #000000;
+  --kami-cta2-border: #000000;
+
+  --kami-overlay-bg: #000000;
+  --kami-overlay-text: #ffffff;
+  --kami-overlay-text-dim: #cccccc;
+
+  --kami-breadcrumb: #666666;
+  --kami-breadcrumb-hover: #d946ef;
+
+  --kami-footer: #666666;
+  --kami-footer-link: #000000;
+  --kami-footer-link-hover: #d946ef;
+
+  /* design-language */
+  --kami-font-display: var(--font-mono), ui-monospace, monospace;
+  --kami-font-body: var(--font-mono), ui-monospace, monospace;
+  --kami-heading-case: uppercase;
+  --kami-heading-tracking: 0.08em;
+  --kami-heading-weight: 700;
+  --kami-body-tracking: 0;
+  --kami-body-leading: 1.55;
+
+  --kami-card-radius: 0;
+  --kami-card-border: 2px solid #000;
+  --kami-card-shadow: 4px 4px 0 #000;
+  --kami-card-shadow-hover: 6px 6px 0 #d946ef;
+  --kami-card-hover-transform: translate(-2px, -2px);
+
+  --kami-motion-fast: 40ms;
+  --kami-motion-base: 60ms;
+  --kami-motion-slow: 80ms;
+  --kami-motion-ease: steps(1);
+
+  --kami-divider-style: 2px solid #000;
+
+  --kami-input-bg: #ffffff;
+  --kami-input-border: 2px solid #000;
+  --kami-input-radius: 0;
+  --kami-input-focus-ring: 0 4px 0 #d946ef;
+  --kami-caret: #d946ef;
+}
+html[data-theme="brutalist"] body:not(:has(.kami-playground)) {
+  background-color: #fff;
+  color: #000;
+  font-family: var(--kami-font-body);
+}
+html[data-theme="brutalist"] body:has(.kami-playground) {
+  font-family: var(--kami-font-body);
+}
+html[data-theme="brutalist"] .kami-scope canvas { display: none !important; }
+
+/* Headings: ALL CAPS BLOCK */
+html[data-theme="brutalist"] .kami-scope h1,
+html[data-theme="brutalist"] .kami-scope h2,
+html[data-theme="brutalist"] .kami-scope h3 {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-family: var(--kami-font-display);
+}
+/* Text-link anchors — underline magenta on hover */
+html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  color: #000;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  text-decoration-color: #000;
+  transition: color 40ms steps(1), text-decoration-color 40ms steps(1);
+}
+html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  color: #d946ef;
+  text-decoration-color: #d946ef;
+  background: transparent;
+}
+/* Inputs */
+html[data-theme="brutalist"] .kami-scope input[type="text"],
+html[data-theme="brutalist"] .kami-scope input[type="search"],
+html[data-theme="brutalist"] .kami-scope input[type="number"],
+html[data-theme="brutalist"] .kami-scope input[type="email"],
+html[data-theme="brutalist"] .kami-scope textarea,
+html[data-theme="brutalist"] .kami-scope select {
+  background: #fff !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  color: #000 !important;
+  caret-color: #d946ef !important;
+  font-family: var(--kami-font-body) !important;
+}
+html[data-theme="brutalist"] .kami-scope input:focus,
+html[data-theme="brutalist"] .kami-scope textarea:focus,
+html[data-theme="brutalist"] .kami-scope select:focus {
+  outline: none !important;
+  box-shadow: 0 4px 0 #d946ef !important;
+}
+/* Generic buttons inside tool pages */
+html[data-theme="brutalist"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  border-radius: 0 !important;
+  border: 2px solid #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+  font-family: var(--kami-font-body) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 3px 3px 0 #000;
+  transition: none !important;
+}
+html[data-theme="brutalist"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  background: #d946ef !important;
+  color: #000 !important;
+  box-shadow: 5px 5px 0 #000;
+  transform: translate(-2px, -2px);
+}
+
+/* ============================================================
+   EDITORIAL — "Supplement"
+   School: Vignelli Canon + Penguin/Tschichold + NYT Magazine
+   Philosophy: cream paper, serif display, hairline rules, slow
+   dignified hovers. Pressed into the page.
+   ============================================================ */
+html[data-theme="editorial"] {
+  --kami-bg: #f8f3ea;
+  --kami-surface: #fdf9f0;
+  --kami-surface-solid: #fdf9f0;
+  --kami-border: rgba(47,42,38,0.15);
+  --kami-border-strong: rgba(47,42,38,0.2);
+  --kami-text: #2f2a26;
+  --kami-text-muted: #5a4a38;
+  --kami-text-dim: #7a6a58;
+  --kami-accent: #8a2f1b;
+
+  --kami-cta-bg: #2f2a26;
+  --kami-cta-bg-hover: #8a2f1b;
+  --kami-cta-text: #f8f3ea;
+  --kami-cta-radius: 2px;
+  --kami-cta-shadow: none;
+
+  --kami-cta2-bg: transparent;
+  --kami-cta2-bg-hover: rgba(138,47,27,0.06);
+  --kami-cta2-text: #8a2f1b;
+  --kami-cta2-border: rgba(47,42,38,0.25);
+
+  --kami-overlay-bg: #2f2a26;
+  --kami-overlay-text: #f8f3ea;
+  --kami-overlay-text-dim: #d3c3ad;
+
+  --kami-breadcrumb: #9c8b77;
+  --kami-breadcrumb-hover: #8a2f1b;
+
+  --kami-footer: #9c8b77;
+  --kami-footer-link: #8a2f1b;
+  --kami-footer-link-hover: #2f2a26;
+
+  /* design-language */
+  --kami-font-display: var(--font-editorial-display), "Cormorant Garamond", "Georgia", serif;
+  --kami-font-body: var(--font-editorial-body), "Source Serif 4", "Georgia", serif;
+  --kami-heading-case: none;
+  --kami-heading-tracking: -0.015em;
+  --kami-heading-weight: 500;
+  --kami-body-tracking: 0;
+  --kami-body-leading: 1.7;
+
+  --kami-card-radius: 4px;
+  --kami-card-border: 1px solid rgba(47,42,38,0.18);
+  --kami-card-shadow: none;
+  --kami-card-shadow-hover: none;
+  --kami-card-hover-transform: none;
+
+  --kami-motion-fast: 220ms;
+  --kami-motion-base: 400ms;
+  --kami-motion-slow: 600ms;
+  --kami-motion-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  --kami-divider-style: 1px solid rgba(47,42,38,0.2);
+
+  --kami-input-bg: transparent;
+  --kami-input-border: none;
+  --kami-input-radius: 0;
+  --kami-input-focus-ring: 0 1px 0 #8a2f1b;
+  --kami-caret: #8a2f1b;
+}
+html[data-theme="editorial"] body:not(:has(.kami-playground)) {
+  background-color: #f8f3ea;
+  color: #2f2a26;
+  font-family: var(--kami-font-body);
+  font-feature-settings: "liga", "kern";
+}
+html[data-theme="editorial"] body:has(.kami-playground) {
+  font-family: var(--kami-font-body);
+  font-feature-settings: "liga", "kern";
+}
+html[data-theme="editorial"] .kami-scope canvas { display: none !important; }
+
+/* Headings: serif display, italic for h1 */
+html[data-theme="editorial"] .kami-scope h1,
+html[data-theme="editorial"] .kami-scope h2,
+html[data-theme="editorial"] .kami-scope h3 {
+  font-family: var(--kami-font-display) !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.015em;
+  color: #2f2a26;
+}
+html[data-theme="editorial"] .kami-scope h1 {
+  font-style: italic;
+  font-weight: 500;
+}
+/* Small-caps section labels */
+html[data-theme="editorial"] .kami-scope .kami-label,
+html[data-theme="editorial"] .kami-scope p[class*="uppercase"] {
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+  text-transform: none !important;
+}
+/* Anchor links: sienna, underline draws in on hover */
+html[data-theme="editorial"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  color: #8a2f1b;
+  text-decoration: none;
+  background-image: linear-gradient(#8a2f1b, #8a2f1b);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 400ms cubic-bezier(0.25, 0.1, 0.25, 1), color 400ms ease;
+}
+html[data-theme="editorial"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  background-size: 100% 1px;
+  color: #6e2415;
+}
+/* Inputs: handwritten-form underline style */
+html[data-theme="editorial"] .kami-scope input[type="text"],
+html[data-theme="editorial"] .kami-scope input[type="search"],
+html[data-theme="editorial"] .kami-scope input[type="number"],
+html[data-theme="editorial"] .kami-scope input[type="email"],
+html[data-theme="editorial"] .kami-scope textarea {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(47,42,38,0.35) !important;
+  border-radius: 0 !important;
+  color: #2f2a26 !important;
+  caret-color: #8a2f1b !important;
+  font-family: var(--kami-font-body) !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+html[data-theme="editorial"] .kami-scope input:focus,
+html[data-theme="editorial"] .kami-scope textarea:focus {
+  outline: none !important;
+  border-bottom-color: #8a2f1b !important;
+  border-bottom-width: 2px !important;
+}
+/* Buttons: pill with sienna fill on hover (exclude full-width disclosure toggles) */
+html[data-theme="editorial"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full) {
+  background: #2f2a26 !important;
+  color: #f8f3ea !important;
+  border: 1px solid #2f2a26 !important;
+  border-radius: 2px !important;
+  font-family: var(--kami-font-display) !important;
+  font-style: italic;
+  transition: background 400ms ease, color 400ms ease, border-color 400ms ease !important;
+}
+html[data-theme="editorial"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):hover {
+  background: #8a2f1b !important;
+  color: #f8f3ea !important;
+  border-color: #8a2f1b !important;
+}
+/* Editorial disclosure buttons (full-width collapsible section headers) */
+html[data-theme="editorial"] .kami-scope button.w-full {
+  background: transparent !important;
+  color: var(--kami-text) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(47,42,38,0.12) !important;
+  font-family: var(--kami-font-body) !important;
+  font-style: normal;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+
+/* ============================================================
+   TERMINAL — "Phosphor"
+   School: Hackers (1995) + Unix man pages + lazygit/btop
+   Philosophy: deep dark bg, phosphor green, amber hover accents.
+   Brackets on buttons. `> ` prefix on headings. Scanline overlay.
+   Terminals don't animate — motion is instant.
+   ============================================================ */
+html[data-theme="terminal"] {
+  --kami-bg: #0d1117;
+  --kami-surface: rgba(138,247,167,0.03);
+  --kami-surface-solid: #0d1117;
+  --kami-border: rgba(138,247,167,0.3);
+  --kami-border-strong: rgba(138,247,167,0.35);
+  --kami-text: #8af7a7;
+  --kami-text-muted: rgba(138,247,167,0.72);
+  --kami-text-dim: rgba(138,247,167,0.45);
+  --kami-accent: #ffd166;
+
+  --kami-cta-bg: transparent;
+  --kami-cta-bg-hover: #ffd166;
+  --kami-cta-text: #ffd166;
+  --kami-cta-radius: 0;
+  --kami-cta-shadow: none;
+
+  --kami-cta2-bg: transparent;
+  --kami-cta2-bg-hover: rgba(255,209,102,0.1);
+  --kami-cta2-text: #ffd166;
+  --kami-cta2-border: rgba(255,209,102,0.45);
+
+  --kami-overlay-bg: #0d1117;
+  --kami-overlay-text: #ffd166;
+  --kami-overlay-text-dim: rgba(138,247,167,0.72);
+
+  --kami-breadcrumb: rgba(138,247,167,0.55);
+  --kami-breadcrumb-hover: #ffd166;
+
+  --kami-footer: rgba(138,247,167,0.5);
+  --kami-footer-link: #ffd166;
+  --kami-footer-link-hover: #fff5d6;
+
+  /* design-language */
+  --kami-font-display: var(--font-mono), ui-monospace, monospace;
+  --kami-font-body: var(--font-mono), ui-monospace, monospace;
+  --kami-heading-case: uppercase;
+  --kami-heading-tracking: 0.04em;
+  --kami-heading-weight: 500;
+  --kami-body-tracking: 0;
+  --kami-body-leading: 1.5;
+
+  --kami-card-radius: 0;
+  --kami-card-border: 1px solid rgba(138,247,167,0.3);
+  --kami-card-shadow: none;
+  --kami-card-shadow-hover: 0 0 0 1px #ffd166;
+  --kami-card-hover-transform: none;
+
+  --kami-motion-fast: 16ms;
+  --kami-motion-base: 16ms;
+  --kami-motion-slow: 16ms;
+  --kami-motion-ease: linear;
+
+  --kami-divider-style: 1px dashed rgba(138,247,167,0.25);
+
+  --kami-input-bg: #0d1117;
+  --kami-input-border: 1px solid rgba(138,247,167,0.3);
+  --kami-input-radius: 0;
+  --kami-input-focus-ring: 0 0 0 1px #ffd166;
+  --kami-caret: #ffd166;
+}
+html[data-theme="terminal"] body:not(:has(.kami-playground)) {
+  background-color: #0d1117;
+  color: #8af7a7;
+  font-family: var(--kami-font-body);
+}
+html[data-theme="terminal"] body:has(.kami-playground) {
+  font-family: var(--kami-font-body);
+}
+html[data-theme="terminal"] .kami-scope canvas { display: none !important; }
+/* Scanline overlay */
+html[data-theme="terminal"] body:not(:has(.kami-playground))::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+}
+
+/* Headings with `> ` prefix */
+html[data-theme="terminal"] .kami-scope h1,
+html[data-theme="terminal"] .kami-scope h2,
+html[data-theme="terminal"] .kami-scope h3 {
+  color: #8af7a7;
+  font-family: var(--kami-font-display) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(138,247,167,0.25);
+}
+html[data-theme="terminal"] .kami-scope h1::before,
+html[data-theme="terminal"] .kami-scope h2::before {
+  content: "> ";
+  color: #ffd166;
+  opacity: 0.8;
+}
+/* Anchor links: amber with subtle glow on hover */
+html[data-theme="terminal"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  color: #ffd166;
+  text-decoration: none;
+  transition: text-shadow 16ms linear, color 16ms linear;
+}
+html[data-theme="terminal"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  color: #fff5d6;
+  text-shadow: 0 0 8px rgba(255,209,102,0.55);
+}
+html[data-theme="terminal"] .kami-scope p,
+html[data-theme="terminal"] .kami-scope span {
+  color: var(--kami-text);
+}
+/* Inputs: terminal-style */
+html[data-theme="terminal"] .kami-scope input[type="text"],
+html[data-theme="terminal"] .kami-scope input[type="search"],
+html[data-theme="terminal"] .kami-scope input[type="number"],
+html[data-theme="terminal"] .kami-scope input[type="email"],
+html[data-theme="terminal"] .kami-scope textarea,
+html[data-theme="terminal"] .kami-scope select {
+  background: #0d1117 !important;
+  border: 1px solid rgba(138,247,167,0.3) !important;
+  border-radius: 0 !important;
+  color: #8af7a7 !important;
+  caret-color: #ffd166 !important;
+  font-family: var(--kami-font-body) !important;
+}
+html[data-theme="terminal"] .kami-scope input:focus,
+html[data-theme="terminal"] .kami-scope textarea:focus,
+html[data-theme="terminal"] .kami-scope select:focus {
+  outline: none !important;
+  border-color: #ffd166 !important;
+  box-shadow: 0 0 0 1px #ffd166 !important;
+}
+/* Buttons: bracketed terminal style */
+html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  background: transparent !important;
+  color: #ffd166 !important;
+  border: 1px dashed rgba(255,209,102,0.45) !important;
+  border-radius: 0 !important;
+  font-family: var(--kami-font-body) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 16ms linear, color 16ms linear !important;
+}
+html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full)::before {
+  content: "[ ";
+  opacity: 0.6;
+}
+html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full)::after {
+  content: " ]";
+  opacity: 0.6;
+}
+html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  background: #ffd166 !important;
+  color: #0d1117 !important;
+  border-color: #ffd166 !important;
+}
+/* Catch hardcoded page text colors inside scope */
+html[data-theme="terminal"] .kami-scope [style*="color: #1d1d1f"],
+html[data-theme="terminal"] .kami-scope [style*="color:#1d1d1f"] {
+  color: #8af7a7 !important;
+}
+html[data-theme="terminal"] .kami-scope [style*="color: #bbb"],
+html[data-theme="terminal"] .kami-scope [style*="color:#bbb"] {
+  color: rgba(138,247,167,0.6) !important;
+}
+
+/* ============================================================
+   ZEN — "Breath"
+   School: Kenya Hara / Muji / Ryoanji Ma
+   Philosophy: rice paper, deliberate emptiness, wide tracking,
+   moss accent, no borders — soft washes. Meditative 500-600ms
+   hovers, dots instead of lines, ensō section marker.
+   ============================================================ */
+html[data-theme="zen"] {
+  --kami-bg: #f7f9fb;
+  --kami-surface: rgba(148,163,184,0.05);
+  --kami-surface-solid: rgba(148,163,184,0.04);
+  --kami-border: transparent;
+  --kami-border-strong: rgba(148,163,184,0.15);
+  --kami-text: #334155;
+  --kami-text-muted: #475569;
+  --kami-text-dim: #64748b;
+  --kami-accent: #7a8471;
+
+  --kami-cta-bg: transparent;
+  --kami-cta-bg-hover: rgba(122,132,113,0.1);
+  --kami-cta-text: #7a8471;
+  --kami-cta-radius: 999px;
+  --kami-cta-shadow: none;
+
+  --kami-cta2-bg: transparent;
+  --kami-cta2-bg-hover: rgba(148,163,184,0.08);
+  --kami-cta2-text: #64748b;
+  --kami-cta2-border: rgba(122,132,113,0.3);
+
+  --kami-overlay-bg: rgba(51,65,85,0.96);
+  --kami-overlay-text: #f7f9fb;
+  --kami-overlay-text-dim: rgba(247,249,251,0.75);
+
+  --kami-breadcrumb: #94a3b8;
+  --kami-breadcrumb-hover: #7a8471;
+
+  --kami-footer: #94a3b8;
+  --kami-footer-link: #64748b;
+  --kami-footer-link-hover: #7a8471;
+
+  /* design-language */
+  --kami-font-display: var(--font-zen-display), "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --kami-font-body: var(--font-sans), "Inter", system-ui, sans-serif;
+  --kami-heading-case: none;
+  --kami-heading-tracking: 0.04em;
+  --kami-heading-weight: 300;
+  --kami-body-tracking: 0.03em;
+  --kami-body-leading: 1.9;
+
+  --kami-card-radius: 20px;
+  --kami-card-border: none;
+  --kami-card-shadow: none;
+  --kami-card-shadow-hover: none;
+  --kami-card-hover-transform: translateY(-2px);
+
+  --kami-motion-fast: 400ms;
+  --kami-motion-base: 600ms;
+  --kami-motion-slow: 800ms;
+  --kami-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+
+  --kami-divider-style: none;
+
+  --kami-input-bg: transparent;
+  --kami-input-border: none;
+  --kami-input-radius: 0;
+  --kami-input-focus-ring: 0 1px 0 #7a8471;
+  --kami-caret: #7a8471;
+}
+html[data-theme="zen"] body:not(:has(.kami-playground)) {
+  background-color: #f7f9fb;
+  color: #334155;
+  font-family: var(--kami-font-body);
+  letter-spacing: 0.03em;
+  line-height: 1.9;
+}
+html[data-theme="zen"] body:has(.kami-playground) {
+  font-family: var(--kami-font-body);
+}
+html[data-theme="zen"] .kami-scope canvas {
+  opacity: 0.3 !important;
+}
+
+/* Headings: serif display, light weight, wide tracking, lowercase feel */
+html[data-theme="zen"] .kami-scope h1,
+html[data-theme="zen"] .kami-scope h2,
+html[data-theme="zen"] .kami-scope h3 {
+  font-family: var(--kami-font-display) !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.04em;
+  color: #334155;
+}
+html[data-theme="zen"] .kami-scope h1 {
+  font-weight: 300 !important;
+}
+/* Anchor links: underline draws slowly */
+html[data-theme="zen"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  color: #64748b;
+  text-decoration: none;
+  background-image: linear-gradient(#7a8471, #7a8471);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease;
+}
+html[data-theme="zen"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  color: #7a8471;
+  background-size: 100% 1px;
+}
+/* Inputs: underline only, moss on focus */
+html[data-theme="zen"] .kami-scope input[type="text"],
+html[data-theme="zen"] .kami-scope input[type="search"],
+html[data-theme="zen"] .kami-scope input[type="number"],
+html[data-theme="zen"] .kami-scope input[type="email"],
+html[data-theme="zen"] .kami-scope textarea {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(148,163,184,0.3) !important;
+  border-radius: 0 !important;
+  color: #334155 !important;
+  caret-color: #7a8471 !important;
+  font-family: var(--kami-font-body) !important;
+  letter-spacing: 0.03em !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  transition: border-bottom-color 600ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+html[data-theme="zen"] .kami-scope input:focus,
+html[data-theme="zen"] .kami-scope textarea:focus {
+  outline: none !important;
+  border-bottom-color: #7a8471 !important;
+}
+/* Buttons: thin pill, fills slowly with moss wash */
+html[data-theme="zen"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+  background: transparent !important;
+  color: #7a8471 !important;
+  border: 1px solid rgba(122,132,113,0.3) !important;
+  border-radius: 999px !important;
+  font-family: var(--kami-font-body) !important;
+  font-weight: 300 !important;
+  letter-spacing: 0.06em !important;
+  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease, border-color 600ms ease !important;
+}
+html[data-theme="zen"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+  background: rgba(122,132,113,0.1) !important;
+  color: #334155 !important;
+  border-color: #7a8471 !important;
+}
+/* Zen layout — more breathing room */
+html[data-theme="zen"] .kami-scope .grid {
+  gap: 1.5rem !important;
+}
+/* Zen fade-in animation */
+@keyframes zenFadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+html[data-theme="zen"] .kami-scope .grid > * {
+  animation: zenFadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(1) { animation-delay: 0.05s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(2) { animation-delay: 0.10s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(3) { animation-delay: 0.15s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(4) { animation-delay: 0.20s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(5) { animation-delay: 0.25s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(6) { animation-delay: 0.30s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(7) { animation-delay: 0.35s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(8) { animation-delay: 0.40s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(9) { animation-delay: 0.45s; }
+html[data-theme="zen"] .kami-scope .grid > *:nth-child(10) { animation-delay: 0.50s; }
+
+/* ===== Theme Switcher Styles ===== */
+
+.theme-switcher-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
+.theme-switcher-container {
+  position: fixed;
+  top: 0.85rem;
+  left: 1.8rem;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.theme-switcher-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--border, #e5e5ea);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-primary, #1d1d1f);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.theme-switcher-pill:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-color: #ccc;
+}
+
+html[data-theme="terminal"] .theme-switcher-pill {
+  background: #0d1117;
+  border: 1px dashed rgba(255,209,102,0.5);
+  border-radius: 0;
+  color: #ffd166;
+  box-shadow: none;
+}
+html[data-theme="terminal"] .theme-switcher-pill:hover {
+  background: #ffd166;
+  color: #0d1117;
+  border-style: solid;
+}
+html[data-theme="brutalist"] .theme-switcher-pill {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0;
+  color: #000;
+  box-shadow: 2px 2px 0 #000;
+  font-weight: 700;
+}
+html[data-theme="brutalist"] .theme-switcher-pill:hover {
+  background: #d946ef;
+  color: #000;
+  box-shadow: 3px 3px 0 #000;
+  transform: translate(-1px, -1px);
+}
+html[data-theme="editorial"] .theme-switcher-pill {
+  background: transparent;
+  border: 1px solid rgba(47,42,38,0.25);
+  border-radius: 2px;
+  color: #8a2f1b;
+  font-family: var(--font-editorial-display), serif;
+  box-shadow: none;
+}
+html[data-theme="editorial"] .theme-switcher-pill:hover {
+  background: #8a2f1b;
+  color: #f8f3ea;
+  border-color: #8a2f1b;
+}
+html[data-theme="zen"] .theme-switcher-pill {
+  background: transparent;
+  border: 1px solid rgba(122,132,113,0.3);
+  border-radius: 999px;
+  color: #7a8471;
+  box-shadow: none;
+}
+html[data-theme="zen"] .theme-switcher-pill:hover {
+  background: rgba(122,132,113,0.1);
+  color: #334155;
+  border-color: #7a8471;
+}
+
+.theme-switcher-pill-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.theme-switcher-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px;
+  border: 1px solid var(--border, #e5e5ea);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  min-width: 140px;
+}
+html[data-theme="terminal"] .theme-switcher-picker {
+  background: #0d1117;
+  border: 1px dashed rgba(255,209,102,0.5);
+  border-radius: 0;
+  box-shadow: none;
+}
+html[data-theme="brutalist"] .theme-switcher-picker {
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+}
+html[data-theme="editorial"] .theme-switcher-picker {
+  background: #fdf9f0;
+  border: 1px solid rgba(47,42,38,0.2);
+  border-radius: 2px;
+  box-shadow: 0 4px 20px rgba(47,42,38,0.08);
+}
+html[data-theme="zen"] .theme-switcher-picker {
+  background: rgba(247,249,251,0.96);
+  border: 1px solid rgba(148,163,184,0.2);
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+.theme-switcher-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary, #1d1d1f);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+html[data-theme="brutalist"] .theme-switcher-option {
+  border-radius: 0;
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.05em;
+}
+html[data-theme="terminal"] .theme-switcher-option {
+  color: #ffd166;
+  border-radius: 0;
+  font-family: var(--font-mono), monospace;
+  letter-spacing: 0.04em;
+}
+html[data-theme="editorial"] .theme-switcher-option {
+  color: #2f2a26;
+  font-family: var(--font-editorial-display), serif;
+  font-style: italic;
+  font-size: 15px;
+}
+html[data-theme="zen"] .theme-switcher-option {
+  border-radius: 999px;
+  font-weight: 300;
+  color: #64748b;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+.theme-switcher-option:hover {
+  background: rgba(0,0,0,0.05);
+}
+html[data-theme="terminal"] .theme-switcher-option:hover {
+  background: #ffd166;
+  color: #0d1117;
+}
+html[data-theme="brutalist"] .theme-switcher-option:hover {
+  background: #d946ef;
+  color: #000;
+}
+html[data-theme="editorial"] .theme-switcher-option:hover {
+  background: rgba(138,47,27,0.06);
+  color: #8a2f1b;
+}
+html[data-theme="zen"] .theme-switcher-option:hover {
+  background: rgba(122,132,113,0.08);
+  color: #334155;
+}
+.theme-switcher-option.active {
+  background: rgba(0,0,0,0.06);
+  font-weight: 600;
+}
+html[data-theme="terminal"] .theme-switcher-option.active {
+  background: rgba(255,209,102,0.15);
+  color: #ffd166;
+  text-shadow: 0 0 8px rgba(255,209,102,0.5);
+}
+html[data-theme="brutalist"] .theme-switcher-option.active {
+  background: #000;
+  color: #fff;
+}
+html[data-theme="editorial"] .theme-switcher-option.active {
+  background: rgba(138,47,27,0.1);
+  color: #8a2f1b;
+}
+html[data-theme="zen"] .theme-switcher-option.active {
+  background: rgba(122,132,113,0.08);
+  color: #334155;
+  font-weight: 400;
+}
+
+.theme-switcher-option-icon {
+  font-size: 14px;
+  width: 18px;
+  text-align: center;
+  line-height: 1;
+}
+
+/* ============================================================
+   Kami shared component skins — bind design tokens to the
+   classes actually used across the site. These rules run for
+   ALL themes (including classic/default) so every page responds.
+   ============================================================ */
+
+/* --- Primary link-button (`bg-gray-900` CTAs) — themed only --- */
+html[data-theme] a[class*="bg-gray-900"] {
+  background-color: var(--kami-cta-bg) !important;
+  color: var(--kami-cta-text) !important;
+  border-color: var(--kami-cta-bg) !important;
+  border-radius: var(--kami-cta-radius) !important;
+  box-shadow: var(--kami-cta-shadow) !important;
+  text-decoration: none !important;
+}
+html[data-theme] a[class*="bg-gray-900"]:hover {
+  background-color: var(--kami-cta-bg-hover) !important;
+  color: var(--kami-cta-text) !important;
+}
+html[data-theme] a[class*="bg-gray-900"] * {
+  color: var(--kami-cta-text) !important;
+}
+
+/* --- Secondary link-button (`border-gray-200` CTAs) — themed only --- */
+html[data-theme] a[class*="border-gray-200"][class*="rounded"] {
+  background-color: var(--kami-cta2-bg) !important;
+  color: var(--kami-cta2-text) !important;
+  border-color: var(--kami-cta2-border) !important;
+  border-radius: var(--kami-cta-radius) !important;
+  text-decoration: none !important;
+}
+html[data-theme] a[class*="border-gray-200"][class*="rounded"]:hover {
+  background-color: var(--kami-cta2-bg-hover) !important;
+  color: var(--kami-cta2-text) !important;
+}
+
+/* --- AppCard tile (.kami-tile) — uses design-language tokens --- */
+.kami-tile {
+  background-color: var(--kami-surface-solid) !important;
+  border: var(--kami-card-border) !important;
+  border-radius: var(--kami-card-radius) !important;
+  box-shadow: var(--kami-card-shadow) !important;
+  transition:
+    background-color var(--kami-motion-base) var(--kami-motion-ease),
+    border-color var(--kami-motion-base) var(--kami-motion-ease),
+    box-shadow var(--kami-motion-base) var(--kami-motion-ease),
+    transform var(--kami-motion-base) var(--kami-motion-ease) !important;
+}
+.kami-tile:hover {
+  box-shadow: var(--kami-card-shadow-hover) !important;
+  transform: var(--kami-card-hover-transform) !important;
+}
+.kami-tile .kami-tile-overlay {
+  background-color: var(--kami-overlay-bg) !important;
+  color: var(--kami-overlay-text) !important;
+  border-radius: var(--kami-card-radius) !important;
+}
+
+/* --- Kami text helpers bound to tokens --- */
+.kami-text { color: var(--kami-text) !important; }
+.kami-text-muted { color: var(--kami-text-muted) !important; }
+.kami-text-dim { color: var(--kami-text-dim) !important; }
+.kami-surface { background-color: var(--kami-surface-solid) !important; border-color: var(--kami-border-strong) !important; }
+
+/* --- Kami page text overrides (catch inline hardcoded hex still present) --- */
+html[data-theme] [style*="color: #1d1d1f"],
+html[data-theme] [style*="color:#1d1d1f"],
+html[data-theme] [style*="color: #111827"],
+html[data-theme] [style*="color:#111827"] {
+  color: var(--kami-text) !important;
+}
+html[data-theme] [style*="color: #6b7280"],
+html[data-theme] [style*="color:#6b7280"],
+html[data-theme] [style*="color: #6B7280"] {
+  color: var(--kami-text-muted) !important;
+}
+html[data-theme] [style*="color: #bbb"],
+html[data-theme] [style*="color:#bbb"] {
+  color: var(--kami-text-dim) !important;
+}
+
+/* --- Footer + Breadcrumb (rendered via `.kami-footer` / `.kami-breadcrumb` classes) --- */
+.kami-footer {
+  color: var(--kami-footer);
+}
+.kami-footer a {
+  color: var(--kami-footer-link) !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: color 0.2s ease;
+}
+.kami-footer a:hover {
+  color: var(--kami-footer-link-hover) !important;
+  background: transparent !important;
+}
+.kami-breadcrumb {
+  color: var(--kami-breadcrumb);
+}
+.kami-breadcrumb-fixed {
+  position: fixed;
+  top: 1.2rem;
+  left: 5rem;
+  z-index: 100;
+}
+.kami-breadcrumb a {
+  color: var(--kami-breadcrumb) !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: color 0.2s ease;
+}
+.kami-breadcrumb a:hover {
+  color: var(--kami-breadcrumb-hover) !important;
+  background: transparent !important;
+}
+
+/* ===== Mobile Top Bar ===== */
+.kami-mobile-bar {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .kami-mobile-bar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: var(--kami-surface-solid, #fff);
+    border-bottom: var(--kami-card-border, 1px solid #e5e5ea);
+    z-index: 99;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+
+  .theme-switcher-container {
+    top: 8px !important;
+    left: 12px !important;
+  }
+
+  .kami-breadcrumb-fixed {
+    top: 15px !important;
+    left: 48px !important;
+  }
+
+  /* Share button into the bar */
+  .kami-share-btn {
+    top: 8px !important;
+    right: 12px !important;
+  }
+
+  /* Push page content below the fixed bar */
+  .kami-scope,
+  .kami-playground {
+    padding-top: 48px;
+  }
+
+  /* Playground pages: bar matches dark bg */
+  body:has(.kami-playground) .kami-mobile-bar {
+    background: rgba(0,0,0,0.85);
+    border-bottom-color: rgba(255,255,255,0.1);
+  }
+
+  /* Per-theme bar backgrounds */
+  html[data-theme="brutalist"] .kami-mobile-bar {
+    background: #fff;
+    border-bottom: 2px solid #000;
+    border-radius: 0;
+    backdrop-filter: none;
+  }
+  html[data-theme="editorial"] .kami-mobile-bar {
+    background: rgba(248,243,234,0.95);
+    border-bottom-color: rgba(47,42,38,0.15);
+  }
+  html[data-theme="terminal"] .kami-mobile-bar {
+    background: rgba(13,17,23,0.95);
+    border-bottom: 1px dashed rgba(255,209,102,0.3);
+  }
+  html[data-theme="zen"] .kami-mobile-bar {
+    background: rgba(247,249,251,0.95);
+    border-bottom-color: rgba(122,132,113,0.2);
+  }
+}
+
+/* --- Playground pages: align fixed controls with 44px header bar --- */
+body:has(.kami-playground) .theme-switcher-container {
+  top: 9px;
+}
+body:has(.kami-playground) .kami-share-btn {
+  top: 6px !important;
+}
+
+/* --- Playground pages: breadcrumb & footer always light on dark backgrounds --- */
+.kami-playground .kami-breadcrumb,
+.kami-playground .kami-breadcrumb a {
+  color: rgba(255,255,255,0.5) !important;
+}
+.kami-playground .kami-breadcrumb a:hover {
+  color: rgba(255,255,255,0.85) !important;
+}
+.kami-playground .kami-footer {
+  color: rgba(255,255,255,0.4) !important;
+}
+.kami-playground .kami-footer a {
+  color: rgba(255,255,255,0.5) !important;
+}
+.kami-playground .kami-footer a:hover {
+  color: rgba(255,255,255,0.8) !important;
+}
+
+/* --- Terminal: primary CTA should not inherit the green-text anchor rule --- */
+html[data-theme="terminal"] a[class*="bg-gray-900"],
+html[data-theme="terminal"] a[class*="bg-gray-900"] * {
+  color: var(--kami-cta-text) !important;
+  text-shadow: none !important;
+}
+
+/* --- Overlay CTA pill (e.g. textkit "Open tool") --- */
+/* Kill any theme-anchor underline/background hover and use a distinct affordance. */
+.kami-overlay-btn-primary,
+.kami-overlay-btn-primary * {
+  text-decoration: none !important;
+  border-bottom: none !important;
+  text-shadow: none !important;
+}
+.kami-overlay-btn-primary {
+  transition: transform var(--kami-motion-base) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-base) var(--kami-motion-ease),
+              filter var(--kami-motion-base) var(--kami-motion-ease) !important;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  border-radius: var(--kami-cta-radius) !important;
+  font-family: var(--kami-font-display) !important;
+}
+.kami-tile:hover .kami-overlay-btn-primary {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+  filter: brightness(1.04);
+}
+/* Brutalist overlay CTA — flat white-on-black, magenta slam on tile hover */
+html[data-theme="brutalist"] .kami-overlay-btn-primary,
+html[data-theme="brutalist"] a.kami-overlay-btn-primary {
+  background: #fff !important;
+  color: #000 !important;
+  text-decoration: none !important;
+  border: 2px solid #fff !important;
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+html[data-theme="brutalist"] .kami-tile:hover .kami-overlay-btn-primary {
+  box-shadow: 4px 4px 0 #d946ef !important;
+  transform: translate(-2px, -2px);
+}
+/* Terminal overlay CTA — bracketed amber */
+html[data-theme="terminal"] .kami-overlay-btn-primary,
+html[data-theme="terminal"] a.kami-overlay-btn-primary {
+  background: transparent !important;
+  color: #ffd166 !important;
+  border: 1px dashed #ffd166 !important;
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  box-shadow: none;
+}
+html[data-theme="terminal"] .kami-tile:hover .kami-overlay-btn-primary {
+  background: #ffd166 !important;
+  color: #0d1117 !important;
+  box-shadow: none !important;
+  filter: none;
+}
+/* Editorial overlay CTA — cream on ink, italic */
+html[data-theme="editorial"] .kami-overlay-btn-primary,
+html[data-theme="editorial"] a.kami-overlay-btn-primary {
+  background: #f8f3ea !important;
+  color: #2f2a26 !important;
+  border: 1px solid #f8f3ea !important;
+  font-style: italic;
+  border-radius: 2px !important;
+  box-shadow: none;
+}
+html[data-theme="editorial"] .kami-tile:hover .kami-overlay-btn-primary {
+  background: #8a2f1b !important;
+  color: #f8f3ea !important;
+  border-color: #8a2f1b !important;
+  box-shadow: none !important;
+  filter: none;
+}
+/* Zen overlay CTA — thin pill */
+html[data-theme="zen"] .kami-overlay-btn-primary,
+html[data-theme="zen"] a.kami-overlay-btn-primary {
+  background: transparent !important;
+  color: #f7f9fb !important;
+  border: 1px solid rgba(247,249,251,0.4) !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.06em;
+  box-shadow: none;
+}
+html[data-theme="zen"] .kami-tile:hover .kami-overlay-btn-primary {
+  background: rgba(247,249,251,0.12) !important;
+  border-color: rgba(247,249,251,0.8) !important;
+  box-shadow: none !important;
+  filter: none;
+}
+
+/* --- Share button (fixed top-right) — per-theme treatment --- */
+.kami-share-btn {
+  transition:
+    background var(--kami-motion-base) var(--kami-motion-ease),
+    color var(--kami-motion-base) var(--kami-motion-ease),
+    border-color var(--kami-motion-base) var(--kami-motion-ease),
+    box-shadow var(--kami-motion-base) var(--kami-motion-ease),
+    transform var(--kami-motion-base) var(--kami-motion-ease) !important;
+  font-family: var(--kami-font-body) !important;
+}
+.kami-share-btn:hover {
+  background: var(--kami-text) !important;
+  color: var(--kami-surface-solid) !important;
+  border-color: var(--kami-text) !important;
+  transform: translateY(-1px);
+}
+/* Brutalist: sharp, offset-shadow */
+html[data-theme="brutalist"] .kami-share-btn {
+  border-radius: 0 !important;
+  border: 2px solid #000 !important;
+  box-shadow: 2px 2px 0 #000 !important;
+  background: #fff !important;
+  color: #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+html[data-theme="brutalist"] .kami-share-btn:hover {
+  background: #d946ef !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  transform: translate(-1px, -1px);
+}
+/* Editorial: hairline cream pill, sienna on hover */
+html[data-theme="editorial"] .kami-share-btn {
+  background: transparent !important;
+  color: #8a2f1b !important;
+  border: 1px solid rgba(47,42,38,0.25) !important;
+  border-radius: 2px !important;
+  font-style: italic;
+}
+html[data-theme="editorial"] .kami-share-btn:hover {
+  background: #8a2f1b !important;
+  color: #f8f3ea !important;
+  border-color: #8a2f1b !important;
+}
+/* Terminal: bracketed dashed amber */
+html[data-theme="terminal"] .kami-share-btn {
+  background: transparent !important;
+  color: #ffd166 !important;
+  border: 1px dashed rgba(255,209,102,0.5) !important;
+  border-radius: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+html[data-theme="terminal"] .kami-share-btn:hover {
+  background: #ffd166 !important;
+  color: #0d1117 !important;
+  border-style: solid;
+}
+/* Zen: thin moss pill */
+html[data-theme="zen"] .kami-share-btn {
+  background: transparent !important;
+  color: #7a8471 !important;
+  border: 1px solid rgba(122,132,113,0.3) !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.06em;
+}
+html[data-theme="zen"] .kami-share-btn:hover {
+  background: rgba(122,132,113,0.1) !important;
+  color: #334155 !important;
+  border-color: #7a8471 !important;
+}
+
+/* ============================================================
+   Kami button utilities
+   -----------------------------------------------------------
+   Used by comparison-table and other tool components.
+   ============================================================ */
+.kami-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--kami-cta-bg);
+  color: var(--kami-cta-text);
+  border-radius: var(--kami-cta-radius);
+  border: none;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+.kami-btn-primary:hover { opacity: 0.85; }
+
+.kami-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: var(--kami-surface-solid);
+  color: var(--kami-text);
+  border: 1px solid var(--kami-border-strong);
+  border-radius: var(--kami-cta-radius);
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+.kami-btn-secondary:hover { opacity: 0.85; }
+
+/* ============================================================
+   Tool-page panel overrides
+   -----------------------------------------------------------
+   Many tool components use hardcoded Tailwind gray classes
+   (bg-white, border-gray-200, text-gray-900, etc.) instead of
+   theme tokens. When those components render inside .kami-scope,
+   remap the common palette so panels, stat cards, and inputs
+   inherit the active theme without touching each component.
+   ============================================================ */
+
+/* Surface / background */
+html[data-theme] .kami-scope .bg-white {
+  background-color: var(--kami-surface-solid) !important;
+}
+html[data-theme] .kami-scope .bg-gray-50 {
+  background-color: var(--kami-surface-solid) !important;
+}
+html[data-theme] .kami-scope .bg-gray-100 {
+  background-color: color-mix(in srgb, var(--kami-text) 8%, transparent) !important;
+}
+
+/* Borders */
+html[data-theme] .kami-scope .border-gray-100,
+html[data-theme] .kami-scope .border-gray-200,
+html[data-theme] .kami-scope .border-gray-300 {
+  border-color: var(--kami-border-strong) !important;
+}
+
+/* Text */
+html[data-theme] .kami-scope .text-gray-900,
+html[data-theme] .kami-scope .text-gray-800 {
+  color: var(--kami-text) !important;
+}
+html[data-theme] .kami-scope .text-gray-700,
+html[data-theme] .kami-scope .text-gray-600,
+html[data-theme] .kami-scope .text-gray-500 {
+  color: var(--kami-text-muted) !important;
+}
+html[data-theme] .kami-scope .text-gray-400,
+html[data-theme] .kami-scope .text-gray-300 {
+  color: var(--kami-text-dim) !important;
+}
+html[data-theme] .kami-scope .placeholder\:text-gray-400::placeholder,
+html[data-theme] .kami-scope .placeholder\:text-gray-500::placeholder {
+  color: var(--kami-text-dim) !important;
+}
+
+/* Intermediate background */
+html[data-theme] .kami-scope .bg-gray-200 {
+  background-color: color-mix(in srgb, var(--kami-text) 12%, transparent) !important;
+}
+
+/* Hover backgrounds */
+html[data-theme] .kami-scope .hover\:bg-gray-50:hover {
+  background-color: var(--kami-surface-solid) !important;
+}
+html[data-theme] .kami-scope .hover\:bg-gray-100:hover {
+  background-color: color-mix(in srgb, var(--kami-text) 8%, transparent) !important;
+}
+html[data-theme] .kami-scope .hover\:bg-gray-200:hover {
+  background-color: color-mix(in srgb, var(--kami-text) 12%, transparent) !important;
+}
+
+/* Hover borders */
+html[data-theme] .kami-scope .hover\:border-gray-300:hover,
+html[data-theme] .kami-scope .hover\:border-gray-400:hover {
+  border-color: var(--kami-border-strong) !important;
+}
+
+/* Hover text colors */
+html[data-theme] .kami-scope .hover\:text-gray-600:hover,
+html[data-theme] .kami-scope .hover\:text-gray-700:hover {
+  color: var(--kami-text-muted) !important;
+}
+html[data-theme] .kami-scope .hover\:text-gray-900:hover {
+  color: var(--kami-text) !important;
+}
+
+/* Focus rings */
+html[data-theme] .kami-scope .ring-gray-200,
+html[data-theme] .kami-scope .focus\:ring-gray-200:focus {
+  --tw-ring-color: var(--kami-border-strong) !important;
+}
+
+/* Focus border */
+html[data-theme] .kami-scope .focus\:border-gray-300:focus {
+  border-color: var(--kami-border-strong) !important;
+}
+
+/* Dividers */
+html[data-theme] .kami-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--kami-border-strong) !important;
+}
+
+/* --- Theme-specific overrides for intermediate classes --- */
+
+/* Brutalist */
+html[data-theme="brutalist"] .kami-scope .bg-gray-200 {
+  background-color: rgba(0, 0, 0, 0.10) !important;
+}
+html[data-theme="brutalist"] .kami-scope .hover\:bg-gray-50:hover,
+html[data-theme="brutalist"] .kami-scope .hover\:bg-gray-100:hover,
+html[data-theme="brutalist"] .kami-scope .hover\:bg-gray-200:hover {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+html[data-theme="brutalist"] .kami-scope .hover\:border-gray-300:hover,
+html[data-theme="brutalist"] .kami-scope .hover\:border-gray-400:hover {
+  border-color: #000 !important;
+}
+html[data-theme="brutalist"] .kami-scope .ring-gray-200,
+html[data-theme="brutalist"] .kami-scope .focus\:ring-gray-200:focus {
+  --tw-ring-color: #000 !important;
+}
+html[data-theme="brutalist"] .kami-scope .focus\:border-gray-300:focus {
+  border-color: #000 !important;
+}
+html[data-theme="brutalist"] .kami-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="brutalist"] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #000 !important;
+}
+
+/* Terminal */
+html[data-theme="terminal"] .kami-scope .bg-gray-200 {
+  background-color: rgba(138, 247, 167, 0.12) !important;
+}
+html[data-theme="terminal"] .kami-scope .hover\:bg-gray-50:hover,
+html[data-theme="terminal"] .kami-scope .hover\:bg-gray-100:hover,
+html[data-theme="terminal"] .kami-scope .hover\:bg-gray-200:hover {
+  background-color: rgba(138, 247, 167, 0.10) !important;
+}
+html[data-theme="terminal"] .kami-scope .hover\:border-gray-300:hover,
+html[data-theme="terminal"] .kami-scope .hover\:border-gray-400:hover {
+  border-color: rgba(138, 247, 167, 0.35) !important;
+}
+html[data-theme="terminal"] .kami-scope .hover\:text-gray-600:hover,
+html[data-theme="terminal"] .kami-scope .hover\:text-gray-700:hover,
+html[data-theme="terminal"] .kami-scope .hover\:text-gray-900:hover {
+  color: #8af7a7 !important;
+}
+html[data-theme="terminal"] .kami-scope .ring-gray-200,
+html[data-theme="terminal"] .kami-scope .focus\:ring-gray-200:focus {
+  --tw-ring-color: rgba(138, 247, 167, 0.35) !important;
+}
+html[data-theme="terminal"] .kami-scope .focus\:border-gray-300:focus {
+  border-color: rgba(138, 247, 167, 0.35) !important;
+}
+html[data-theme="terminal"] .kami-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="terminal"] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(138, 247, 167, 0.20) !important;
+}
+
+/* Editorial */
+html[data-theme="editorial"] .kami-scope .bg-gray-200 {
+  background-color: rgba(47, 42, 38, 0.10) !important;
+}
+html[data-theme="editorial"] .kami-scope .hover\:bg-gray-50:hover,
+html[data-theme="editorial"] .kami-scope .hover\:bg-gray-100:hover,
+html[data-theme="editorial"] .kami-scope .hover\:bg-gray-200:hover {
+  background-color: rgba(47, 42, 38, 0.06) !important;
+}
+html[data-theme="editorial"] .kami-scope .hover\:border-gray-300:hover,
+html[data-theme="editorial"] .kami-scope .hover\:border-gray-400:hover {
+  border-color: rgba(47, 42, 38, 0.25) !important;
+}
+html[data-theme="editorial"] .kami-scope .hover\:text-gray-600:hover,
+html[data-theme="editorial"] .kami-scope .hover\:text-gray-700:hover {
+  color: #6b5c52 !important;
+}
+html[data-theme="editorial"] .kami-scope .hover\:text-gray-900:hover {
+  color: #2f2a26 !important;
+}
+html[data-theme="editorial"] .kami-scope .ring-gray-200,
+html[data-theme="editorial"] .kami-scope .focus\:ring-gray-200:focus {
+  --tw-ring-color: rgba(47, 42, 38, 0.18) !important;
+}
+html[data-theme="editorial"] .kami-scope .focus\:border-gray-300:focus {
+  border-color: rgba(47, 42, 38, 0.25) !important;
+}
+html[data-theme="editorial"] .kami-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="editorial"] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(47, 42, 38, 0.12) !important;
+}
+
+/* Zen */
+html[data-theme="zen"] .kami-scope .bg-gray-200 {
+  background-color: rgba(122, 132, 113, 0.12) !important;
+}
+html[data-theme="zen"] .kami-scope .hover\:bg-gray-50:hover,
+html[data-theme="zen"] .kami-scope .hover\:bg-gray-100:hover,
+html[data-theme="zen"] .kami-scope .hover\:bg-gray-200:hover {
+  background-color: rgba(122, 132, 113, 0.08) !important;
+}
+html[data-theme="zen"] .kami-scope .hover\:border-gray-300:hover,
+html[data-theme="zen"] .kami-scope .hover\:border-gray-400:hover {
+  border-color: rgba(122, 132, 113, 0.30) !important;
+}
+html[data-theme="zen"] .kami-scope .hover\:text-gray-600:hover,
+html[data-theme="zen"] .kami-scope .hover\:text-gray-700:hover {
+  color: #7a8471 !important;
+}
+html[data-theme="zen"] .kami-scope .hover\:text-gray-900:hover {
+  color: #4a5240 !important;
+}
+html[data-theme="zen"] .kami-scope .ring-gray-200,
+html[data-theme="zen"] .kami-scope .focus\:ring-gray-200:focus {
+  --tw-ring-color: rgba(122, 132, 113, 0.20) !important;
+}
+html[data-theme="zen"] .kami-scope .focus\:border-gray-300:focus {
+  border-color: rgba(122, 132, 113, 0.30) !important;
+}
+html[data-theme="zen"] .kami-scope .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+html[data-theme="zen"] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(122, 132, 113, 0.12) !important;
+}
+
+/* Panel radius — only on elements that are also surfaces, so pills
+   and status bars keep their own shape. */
+html[data-theme] .kami-scope .bg-white.rounded-lg,
+html[data-theme] .kami-scope .bg-white.rounded-xl,
+html[data-theme] .kami-scope .bg-white.rounded-2xl,
+html[data-theme] .kami-scope .bg-gray-50.rounded-lg,
+html[data-theme] .kami-scope .bg-gray-50.rounded-xl,
+html[data-theme] .kami-scope .bg-gray-50.rounded-2xl {
+  border-radius: var(--kami-card-radius) !important;
+}
+
+/* Shadow remap */
+html[data-theme] .kami-scope .shadow-sm,
+html[data-theme] .kami-scope .shadow {
+  box-shadow: var(--kami-card-shadow) !important;
+}
+html[data-theme] .kami-scope .shadow-md,
+html[data-theme] .kami-scope .shadow-lg {
+  box-shadow: var(--kami-card-shadow-hover) !important;
+}
+
+/* Brutalist: force panels to use brutalist card construction */
+html[data-theme="brutalist"] .kami-scope .bg-white.rounded-lg,
+html[data-theme="brutalist"] .kami-scope .bg-white.rounded-xl,
+html[data-theme="brutalist"] .kami-scope .bg-white.rounded-2xl,
+html[data-theme="brutalist"] .kami-scope .bg-gray-50.rounded-lg,
+html[data-theme="brutalist"] .kami-scope .bg-gray-50.rounded-xl,
+html[data-theme="brutalist"] .kami-scope .bg-gray-50.rounded-2xl {
+  border: 2px solid #000 !important;
+  box-shadow: 4px 4px 0 #000 !important;
+}
+
+/* Editorial: hairline, no shadow */
+html[data-theme="editorial"] .kami-scope .bg-white.rounded-lg,
+html[data-theme="editorial"] .kami-scope .bg-white.rounded-xl,
+html[data-theme="editorial"] .kami-scope .bg-white.rounded-2xl {
+  background-color: var(--kami-surface-solid) !important;
+  border: 1px solid rgba(47,42,38,0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Terminal: transparent panel on dark bg with dashed phosphor border */
+html[data-theme="terminal"] .kami-scope .bg-white,
+html[data-theme="terminal"] .kami-scope .bg-gray-50 {
+  background-color: rgba(138, 247, 167, 0.04) !important;
+}
+html[data-theme="terminal"] .kami-scope .bg-white.rounded-lg,
+html[data-theme="terminal"] .kami-scope .bg-white.rounded-xl,
+html[data-theme="terminal"] .kami-scope .bg-white.rounded-2xl,
+html[data-theme="terminal"] .kami-scope .bg-gray-50.rounded-lg,
+html[data-theme="terminal"] .kami-scope .bg-gray-50.rounded-xl,
+html[data-theme="terminal"] .kami-scope .bg-gray-50.rounded-2xl {
+  border: 1px dashed rgba(138, 247, 167, 0.35) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+html[data-theme="terminal"] .kami-scope .bg-gray-100 {
+  background-color: rgba(138, 247, 167, 0.08) !important;
+}
+
+/* Zen: soft wash, no border */
+html[data-theme="zen"] .kami-scope .bg-white.rounded-lg,
+html[data-theme="zen"] .kami-scope .bg-white.rounded-xl,
+html[data-theme="zen"] .kami-scope .bg-white.rounded-2xl {
+  background-color: rgba(255,255,255,0.6) !important;
+  border: 1px solid rgba(122,132,113,0.12) !important;
+  box-shadow: none !important;
+}
+
+/* Input fields inside tool pages (character-counter goal input, etc.) */
+html[data-theme] .kami-scope input[type="text"],
+html[data-theme] .kami-scope input[type="number"],
+html[data-theme] .kami-scope input[type="search"],
+html[data-theme] .kami-scope input[type="email"],
+html[data-theme] .kami-scope input[type="url"],
+html[data-theme] .kami-scope textarea {
+  background: var(--kami-input-bg) !important;
+  border: var(--kami-input-border) !important;
+  border-radius: var(--kami-input-radius) !important;
+  color: var(--kami-text) !important;
+  caret-color: var(--kami-caret) !important;
+  font-family: var(--kami-font-body) !important;
+}
+html[data-theme] .kami-scope input[type="text"]:focus,
+html[data-theme] .kami-scope input[type="number"]:focus,
+html[data-theme] .kami-scope input[type="search"]:focus,
+html[data-theme] .kami-scope input[type="email"]:focus,
+html[data-theme] .kami-scope input[type="url"]:focus,
+html[data-theme] .kami-scope textarea:focus {
+  outline: none !important;
+  box-shadow: var(--kami-input-focus-ring) !important;
+  border-color: var(--kami-accent) !important;
+}
+
+/* CTA buttons & links inside tool pages — the common pattern
+   is bg-gray-900 text-white. Remap to brand CTA token. */
+html[data-theme] .kami-scope button.bg-gray-900,
+html[data-theme] .kami-scope a.bg-gray-900 {
+  background-color: var(--kami-cta-bg) !important;
+  color: var(--kami-cta-text) !important;
+  border-radius: var(--kami-cta-radius) !important;
+  font-family: var(--kami-font-display) !important;
+}
+html[data-theme] .kami-scope button.bg-gray-900:hover,
+html[data-theme] .kami-scope a.bg-gray-900:hover {
+  background-color: var(--kami-cta-bg-hover) !important;
+}
+html[data-theme="brutalist"] .kami-scope button.bg-gray-900,
+html[data-theme="brutalist"] .kami-scope a.bg-gray-900 {
+  background: #000 !important;
+  color: #fff !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+html[data-theme="brutalist"] .kami-scope button.bg-gray-900:hover,
+html[data-theme="brutalist"] .kami-scope a.bg-gray-900:hover {
+  background: #000 !important;
+  color: #fff !important;
+  box-shadow: 4px 4px 0 #d946ef !important;
+  transform: translate(-1px, -1px);
+}
+/* --- Terminal CTAs --- */
+html[data-theme="terminal"] .kami-scope button.bg-gray-900,
+html[data-theme="terminal"] .kami-scope a.bg-gray-900 {
+  background: transparent !important;
+  color: #ffd166 !important;
+  border: 1px dashed #ffd166 !important;
+  border-radius: 0 !important;
+  font-family: var(--kami-font-display) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 16ms linear, color 16ms linear !important;
+}
+html[data-theme="terminal"] .kami-scope button.bg-gray-900:hover,
+html[data-theme="terminal"] .kami-scope a.bg-gray-900:hover {
+  background: #ffd166 !important;
+  color: #0d1117 !important;
+  border-style: solid !important;
+}
+html[data-theme="terminal"] .kami-scope a.bg-white,
+html[data-theme="terminal"] .kami-scope button.bg-white {
+  background: transparent !important;
+  color: #ffd166 !important;
+  border: 1px solid #ffd166 !important;
+  border-radius: 0 !important;
+  font-family: var(--kami-font-display) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 16ms linear, color 16ms linear !important;
+}
+html[data-theme="terminal"] .kami-scope a.bg-white:hover,
+html[data-theme="terminal"] .kami-scope button.bg-white:hover {
+  background: #ffd166 !important;
+  color: #0d1117 !important;
+}
+
+/* --- Editorial CTAs --- */
+html[data-theme="editorial"] .kami-scope button.bg-gray-900,
+html[data-theme="editorial"] .kami-scope a.bg-gray-900 {
+  background: #2f2a26 !important;
+  color: #f8f3ea !important;
+  border: 1px solid #2f2a26 !important;
+  border-radius: 2px !important;
+  font-family: var(--kami-font-display) !important;
+  font-style: italic;
+  transition: background 400ms ease, color 400ms ease !important;
+}
+html[data-theme="editorial"] .kami-scope button.bg-gray-900:hover,
+html[data-theme="editorial"] .kami-scope a.bg-gray-900:hover {
+  background: #8a2f1b !important;
+  border-color: #8a2f1b !important;
+}
+html[data-theme="editorial"] .kami-scope a.bg-white,
+html[data-theme="editorial"] .kami-scope button.bg-white {
+  background: transparent !important;
+  color: #8a2f1b !important;
+  border: 1px solid #8a2f1b !important;
+  border-radius: 2px !important;
+  font-family: var(--kami-font-display) !important;
+  font-style: italic;
+  transition: background 400ms ease, color 400ms ease !important;
+}
+html[data-theme="editorial"] .kami-scope a.bg-white:hover,
+html[data-theme="editorial"] .kami-scope button.bg-white:hover {
+  background: #8a2f1b !important;
+  color: #f5f0eb !important;
+}
+
+/* --- Zen CTAs --- */
+html[data-theme="zen"] .kami-scope button.bg-gray-900,
+html[data-theme="zen"] .kami-scope a.bg-gray-900 {
+  background: #7a8471 !important;
+  color: #f7f9fb !important;
+  border: 1px solid #7a8471 !important;
+  border-radius: 999px !important;
+  font-family: var(--kami-font-display) !important;
+  letter-spacing: 0.04em;
+  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease !important;
+}
+html[data-theme="zen"] .kami-scope button.bg-gray-900:hover,
+html[data-theme="zen"] .kami-scope a.bg-gray-900:hover {
+  background: #5c6355 !important;
+  border-color: #5c6355 !important;
+}
+html[data-theme="zen"] .kami-scope a.bg-white,
+html[data-theme="zen"] .kami-scope button.bg-white {
+  background: transparent !important;
+  color: #7a8471 !important;
+  border: 1px solid rgba(122,132,113,0.4) !important;
+  border-radius: 999px !important;
+  font-family: var(--kami-font-display) !important;
+  letter-spacing: 0.04em;
+  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease !important;
+}
+html[data-theme="zen"] .kami-scope a.bg-white:hover,
+html[data-theme="zen"] .kami-scope button.bg-white:hover {
+  background: rgba(122,132,113,0.12) !important;
+  border-color: #7a8471 !important;
+}
+
+/* --- Brutalist CTAs (secondary) --- */
+html[data-theme="brutalist"] .kami-scope a.bg-white,
+html[data-theme="brutalist"] .kami-scope button.bg-white {
+  background: #fff !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 #000 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--kami-font-display) !important;
+}
+html[data-theme="brutalist"] .kami-scope a.bg-white:hover,
+html[data-theme="brutalist"] .kami-scope button.bg-white:hover {
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: 4px 4px 0 #d946ef !important;
+  transform: translate(-1px, -1px);
+}

@@ -1,0 +1,1825 @@
+/*
+ * "Ink & Void"
+ * A CSS Zen Garden submission by Kesava Mandiga
+ * https://iamkesava.com
+ *
+ * Written by Sorkin. Scored by Rahman. Directed by Nolan.
+ *
+ * The page is a film. Each scroll is a cut.
+ * The void breathes. Light bleeds where the story demands it.
+ * Typography has mass, weight, and gravity.
+ * Color is not decoration — it's emotion.
+ *
+ * Zero images. Zero JavaScript. Pure CSS.
+ *
+ * Built with: @property, scroll-driven animations,
+ * oklch, container queries, subgrid, 3D transforms,
+ * multi-layer backgrounds, CSS Houdini, and obsessive craft.
+ */
+
+
+/* ============================================
+   Fonts — Three voices for the narrative
+   ============================================
+   Display: Instrument Serif — the protagonist. Warm, confident, italic.
+   Body: Space Grotesk — the narrator. Clear, measured, modern.
+   Mono: JetBrains Mono — the footnotes. Technical, precise, small.
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@300;500&display=swap');
+
+
+/* ============================================
+   @property — The Houdini layer
+   ============================================
+   These registered properties make the impossible
+   possible: animating gradients, transitioning
+   hue across the entire page, morphing glow.
+*/
+
+@property --hue {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 25;
+}
+
+@property --hue-secondary {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 205;
+}
+
+@property --glow-intensity {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --depth {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --grain-seed {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --text-glow {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --letterbox {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 6vh;
+}
+
+@property --accent-chroma {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0.18;
+}
+
+@property --warp {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+
+/* ============================================
+   Root — The palette is a character
+   ============================================
+   The entire color system derives from one variable: --hue.
+   As you scroll, --hue rotates through oklch space:
+   warm orange (25) → burnt coral (10) → hot magenta (340).
+   Every color on the page responds. The page warms
+   as you read, like a film shifting from dawn to dusk.
+*/
+
+:root {
+  --hue: 25;
+  --hue-secondary: 205;
+  --accent-chroma: 0.18;
+
+  /* Primary accent — shifts with scroll */
+  --accent: oklch(0.75 var(--accent-chroma) var(--hue));
+  --accent-hot: oklch(0.65 0.25 var(--hue));
+  --accent-dim: oklch(0.45 0.1 var(--hue));
+  --accent-wash: oklch(0.15 0.04 var(--hue));
+  --accent-glow: oklch(0.55 0.2 var(--hue) / 0.4);
+
+  /* Secondary accent — cool complement */
+  --secondary: oklch(0.6 0.1 var(--hue-secondary));
+  --secondary-dim: oklch(0.3 0.06 var(--hue-secondary));
+
+  /* The void — near-black with subtle warmth */
+  --ink: oklch(0.93 0.01 var(--hue));
+  --ink-mid: oklch(0.58 0.02 var(--hue));
+  --ink-dim: oklch(0.38 0.015 var(--hue));
+  --void: oklch(0.05 0.01 var(--hue));
+  --void-light: oklch(0.09 0.015 var(--hue));
+  --void-lighter: oklch(0.13 0.02 var(--hue));
+  --line: oklch(0.18 0.02 var(--hue));
+
+  /* Typography */
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+  --font-display: "Instrument Serif", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Spacing — fluid, cinematic proportions */
+  --space-xs: clamp(0.5rem, 1vw, 0.75rem);
+  --space-s: clamp(0.75rem, 1.5vw, 1.25rem);
+  --space-m: clamp(1.5rem, 3vw, 2.5rem);
+  --space-l: clamp(2.5rem, 6vw, 5rem);
+  --space-xl: clamp(4rem, 10vw, 8rem);
+  --space-2xl: clamp(6rem, 15vw, 12rem);
+  --space-3xl: clamp(10rem, 20vw, 18rem);
+
+  --measure: 42rem;
+
+  /* The scroll-driven hue shift */
+  animation: hue-journey 1s linear both;
+  animation-timeline: scroll();
+}
+
+@keyframes hue-journey {
+  0%   { --hue: 25;  --hue-secondary: 205; --accent-chroma: 0.18; }
+  25%  { --hue: 15;  --hue-secondary: 195; --accent-chroma: 0.22; }
+  50%  { --hue: 5;   --hue-secondary: 185; --accent-chroma: 0.25; }
+  75%  { --hue: 350; --hue-secondary: 170; --accent-chroma: 0.22; }
+  100% { --hue: 335; --hue-secondary: 155; --accent-chroma: 0.18; }
+}
+
+
+/* ============================================
+   Reset & base
+   ============================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.1vw + 0.5rem, 1.125rem);
+  font-weight: 350;
+  line-height: 1.75;
+  color: var(--ink-mid);
+  background-color: var(--void);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+
+  /* 3D perspective — the Nolan layer */
+  perspective: 1200px;
+  perspective-origin: 50% 30%;
+}
+
+abbr[title] {
+  text-decoration: none;
+  border-bottom: none;
+}
+
+
+/* ============================================
+   Page wrapper — Cinematic grid
+   ============================================ */
+
+.page-wrapper {
+  display: grid;
+  grid-template-columns:
+    [bleed-start] minmax(var(--space-m), 1fr)
+    [content-start] min(var(--measure), 100%)
+    [content-end] minmax(var(--space-m), 1fr)
+    [bleed-end];
+  grid-template-rows: auto;
+  min-height: 100vh;
+  position: relative;
+
+  /* Subtle 3D rotation that shifts as you scroll */
+  transform-style: preserve-3d;
+}
+
+@media (min-width: 72rem) {
+  .page-wrapper {
+    grid-template-columns:
+      [bleed-start] minmax(var(--space-l), 1fr)
+      [content-start] min(var(--measure), 60vw)
+      [content-end] minmax(var(--space-l), 1fr)
+      [bleed-end];
+  }
+}
+
+
+/* ============================================
+   INTRO — ACT I: The Opening
+   ============================================
+   "Once, the web was a prison of tables and
+   inline styles."
+
+   Cinematic letterbox → full bleed.
+   The title fills your viewport.
+   The room goes dark. Then — light.
+*/
+
+.intro {
+  grid-column: bleed;
+  display: grid;
+  grid-template-columns: subgrid;
+  position: relative;
+  min-height: 100lvh;
+  align-content: end;
+  padding-block: 0 var(--space-xl);
+
+  /* Cinematic letterbox effect — bars recede on scroll */
+  --letterbox: 6vh;
+}
+
+/* Letterbox: top bar */
+.intro::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--letterbox);
+  background: black;
+  z-index: 50;
+  pointer-events: none;
+
+  animation: letterbox-open 1s ease-out both;
+  animation-timeline: scroll();
+  animation-range: 0vh 50vh;
+}
+
+/* Letterbox: bottom bar */
+.intro::after {
+  content: "";
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--letterbox);
+  background: black;
+  z-index: 50;
+  pointer-events: none;
+
+  animation: letterbox-open 1s ease-out both;
+  animation-timeline: scroll();
+  animation-range: 0vh 50vh;
+}
+
+@keyframes letterbox-open {
+  from { height: 6vh; }
+  to   { height: 0vh; }
+}
+
+
+/* ============================================
+   Header — The title card
+   ============================================ */
+
+header[role="banner"] {
+  grid-column: content;
+  margin-bottom: var(--space-l);
+  position: relative;
+}
+
+/* Narrative voice — the opening line */
+/* Uses time-based animation (not scroll-driven) because the header
+   is already in the viewport on page load — view() entry never fires. */
+header[role="banner"]::before {
+  content: "Once, the web was a prison of tables and inline styles.";
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(0.875rem, 1.5vw, 1.125rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-dim);
+  margin-bottom: var(--space-xl);
+  opacity: 0;
+  max-width: 24ch;
+
+  animation: narrative-fade 1.2s ease-out 0.8s both;
+}
+
+@keyframes narrative-fade {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 0.6;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* The title — massive, cinematic, breathing */
+h1 {
+  font-family: var(--font-display);
+  font-size: clamp(6rem, 18vw, 18rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+  text-wrap: balance;
+  margin-bottom: var(--space-s);
+  position: relative;
+
+  /* Multi-layer text shadow for depth */
+  text-shadow:
+    0 0 80px oklch(0.5 0.15 var(--hue) / 0.15),
+    0 0 160px oklch(0.3 0.1 var(--hue) / 0.08);
+
+  /* Entrance: blur → sharp, expand → settle */
+  animation:
+    title-emerge 1.2s cubic-bezier(0.16, 1, 0.3, 1) both,
+    title-breathe 10s ease-in-out infinite 3s;
+  animation-timeline: view(), auto;
+  animation-range: entry 0% entry 40%, normal;
+}
+
+@keyframes title-emerge {
+  from {
+    opacity: 0;
+    letter-spacing: 0.3em;
+    filter: blur(30px);
+    transform: translateY(4rem) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    letter-spacing: -0.05em;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes title-breathe {
+  0%, 100% {
+    text-shadow:
+      0 0 80px oklch(0.5 0.15 var(--hue) / 0.15),
+      0 0 160px oklch(0.3 0.1 var(--hue) / 0.08);
+  }
+  50% {
+    text-shadow:
+      0 0 120px oklch(0.6 0.2 var(--hue) / 0.25),
+      0 0 200px oklch(0.4 0.15 var(--hue) / 0.12);
+  }
+}
+
+/* Accent underline — glowing bar beneath title */
+h1::after {
+  content: "";
+  display: block;
+  width: 5rem;
+  height: 3px;
+  background: var(--accent-hot);
+  margin-top: var(--space-m);
+  box-shadow:
+    0 0 30px oklch(0.65 0.25 var(--hue) / 0.5),
+    0 0 80px oklch(0.65 0.25 var(--hue) / 0.2);
+  border-radius: 2px;
+
+  animation: bar-glow 6s ease-in-out infinite;
+}
+
+@keyframes bar-glow {
+  0%, 100% { width: 5rem; opacity: 1; }
+  50%      { width: 7rem; opacity: 0.7; }
+}
+
+/* Subtitle */
+h2 {
+  font-family: var(--font-mono);
+  font-size: clamp(0.75rem, 1.2vw, 0.9375rem);
+  font-weight: 300;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-top: var(--space-m);
+}
+
+h2 abbr {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+
+/* ============================================
+   Summary — The premise
+   ============================================ */
+
+.summary {
+  grid-column: content;
+  padding-block: var(--space-xl);
+  position: relative;
+  container-type: inline-size;
+}
+
+.summary p {
+  max-width: var(--measure);
+  font-size: clamp(1.375rem, 2.2vw, 1.75rem);
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.summary p:first-child {
+  margin-bottom: var(--space-m);
+}
+
+/* Accent bar on left — the continuity line */
+/* Time-based animation: summary is near page top, view() entry won't fire */
+.summary::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--space-m));
+  top: var(--space-xl);
+  bottom: var(--space-xl);
+  width: 2px;
+  background: linear-gradient(180deg, var(--accent), var(--accent-dim), transparent);
+  opacity: 0;
+
+  animation: fade-in 1s ease-out 1.2s both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.summary a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid oklch(0.75 var(--accent-chroma) var(--hue) / 0.3);
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.summary a:hover {
+  color: var(--accent-hot);
+  border-color: var(--accent-hot);
+  text-shadow: 0 0 40px oklch(0.65 0.25 var(--hue) / 0.3);
+}
+
+/* Narrative voice for summary */
+.summary::after {
+  content: "A single HTML file. A universe of possibility.";
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(0.8125rem, 1.2vw, 1rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--ink-dim);
+  margin-top: var(--space-l);
+  max-width: 28ch;
+  line-height: 1.5;
+  opacity: 0;
+
+  animation: narrative-fade 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 50%;
+}
+
+
+/* ============================================
+   PREAMBLE — "The Road to Enlightenment"
+   ============================================
+   Narrative voice: "Then came the separation —
+   content from form, meaning from expression."
+*/
+
+.preamble {
+  grid-column: content;
+  padding-block: var(--space-l) var(--space-2xl);
+  position: relative;
+  container-type: inline-size;
+}
+
+.preamble h3 {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 0.95;
+  color: var(--ink);
+  margin-bottom: var(--space-m);
+  text-wrap: balance;
+  position: relative;
+
+  animation: heading-emerge 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 40%;
+}
+
+@keyframes heading-emerge {
+  from {
+    opacity: 0;
+    transform: translateX(-4rem);
+    filter: blur(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+/* Narrative voice for preamble */
+.preamble h3::before {
+  content: "Then came the separation — content from form, meaning from expression.";
+  display: block;
+  font-family: var(--font-display);
+  font-size: clamp(0.8125rem, 1.2vw, 1rem);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-dim);
+  margin-bottom: var(--space-m);
+  opacity: 0.5;
+  max-width: 30ch;
+  line-height: 1.5;
+}
+
+/* Section number */
+.preamble h3::after {
+  content: "00";
+  position: absolute;
+  right: 0;
+  top: 0.2em;
+  font-family: var(--font-mono);
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-style: normal;
+  font-weight: 300;
+  color: var(--void-lighter);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  z-index: -1;
+}
+
+.preamble p {
+  max-width: var(--measure);
+  margin-bottom: var(--space-s);
+  color: var(--ink-mid);
+
+  animation: paragraph-rise 0.8s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 30%;
+}
+
+@keyframes paragraph-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Drop cap — the opening letter as sculpture */
+.preamble p:first-of-type::first-letter {
+  font-family: var(--font-display);
+  font-size: 5em;
+  font-style: italic;
+  float: left;
+  line-height: 0.72;
+  padding-right: 0.12em;
+  padding-top: 0.08em;
+  color: var(--accent-hot);
+  text-shadow:
+    0 0 40px oklch(0.65 0.25 var(--hue) / 0.35),
+    0 0 80px oklch(0.65 0.25 var(--hue) / 0.15);
+}
+
+
+/* ============================================
+   ACT II — The Main Content
+   ============================================
+   Four sections. Four movements.
+   Each one escalates the visual intensity.
+*/
+
+.main.supporting {
+  grid-column: bleed;
+  display: grid;
+  grid-template-columns: subgrid;
+  padding-bottom: var(--space-xl);
+}
+
+.main.supporting > div[role="article"] {
+  grid-column: bleed;
+  display: grid;
+  grid-template-columns: subgrid;
+  padding-block: var(--space-xl);
+  position: relative;
+  container-type: inline-size;
+
+  animation: section-reveal 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 25%;
+}
+
+@keyframes section-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(3rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.main.supporting h3 {
+  grid-column: content;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 0.95;
+  color: var(--ink);
+  margin-bottom: var(--space-m);
+  text-wrap: balance;
+  position: relative;
+
+  animation: heading-emerge 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 40%;
+}
+
+.main.supporting p {
+  grid-column: content;
+  max-width: var(--measure);
+  margin-bottom: var(--space-s);
+  color: var(--ink-mid);
+
+  animation: paragraph-rise 0.8s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 30%;
+}
+
+.main.supporting p:last-child {
+  margin-bottom: 0;
+}
+
+.main.supporting a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid oklch(0.75 var(--accent-chroma) var(--hue) / 0.25);
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  position: relative;
+}
+
+.main.supporting a:hover {
+  color: var(--accent-hot);
+  border-color: var(--accent-hot);
+  text-shadow: 0 0 30px oklch(0.65 0.25 var(--hue) / 0.3);
+}
+
+
+/* ============================================
+   EXPLANATION — Movement I: "The Power"
+   ============================================
+   "CSS became the unseen hand shaping
+   every pixel you see."
+*/
+
+.explanation {
+  border-top: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Narrative voice */
+.explanation::before {
+  content: "CSS became the unseen hand — shaping every pixel you see.";
+  position: absolute;
+  top: var(--space-xl);
+  right: var(--space-m);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--ink-dim);
+  opacity: 0.35;
+  max-width: 18ch;
+  text-align: right;
+  line-height: 1.5;
+  pointer-events: none;
+
+  animation: narrative-drift 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 50%;
+}
+
+@keyframes narrative-drift {
+  from {
+    opacity: 0;
+    transform: translateX(2rem);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 0.35;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+/* Section number — massive ghost typography */
+.explanation h3::after {
+  content: "01";
+  position: absolute;
+  right: 0;
+  top: -0.1em;
+  font-family: var(--font-mono);
+  font-size: clamp(5rem, 12vw, 10rem);
+  font-style: normal;
+  font-weight: 300;
+  color: var(--void-lighter);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  z-index: -1;
+  opacity: 0;
+
+  animation: number-reveal 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 60%;
+}
+
+@keyframes number-reveal {
+  from { opacity: 0; transform: translateY(1rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll-driven border intensity */
+.explanation {
+  animation: border-intensify 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 30%;
+}
+
+@keyframes border-intensify {
+  from { border-top-color: var(--line); }
+  to   { border-top-color: oklch(0.45 0.12 var(--hue) / 0.6); }
+}
+
+
+/* ============================================
+   PARTICIPATION — Movement II: "The Constraint"
+   ============================================
+   "The constraint — one HTML file, infinite
+   possibility — became the art itself."
+
+   This section shifts into a warm gradient band.
+   The constraint becomes the beauty.
+*/
+
+.participation {
+  background:
+    linear-gradient(
+      160deg,
+      var(--void-light) 0%,
+      oklch(0.10 0.04 var(--hue)) 30%,
+      oklch(0.08 0.03 calc(var(--hue) + 15)) 70%,
+      var(--void-light) 100%
+    );
+  border-top: 1px solid oklch(0.22 0.04 var(--hue));
+  border-bottom: 1px solid oklch(0.22 0.04 var(--hue));
+  position: relative;
+  overflow: hidden;
+}
+
+/* Narrative voice */
+.participation::before {
+  content: "One HTML file. Infinite possibility. The constraint became the art.";
+  position: absolute;
+  bottom: var(--space-xl);
+  left: var(--space-m);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--accent-dim);
+  opacity: 0.4;
+  max-width: 22ch;
+  line-height: 1.5;
+  pointer-events: none;
+
+  animation: narrative-fade 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 20% entry 60%;
+}
+
+/* Section number */
+.participation h3::after {
+  content: "02";
+  position: absolute;
+  right: 0;
+  top: -0.1em;
+  font-family: var(--font-mono);
+  font-size: clamp(5rem, 12vw, 10rem);
+  font-style: normal;
+  font-weight: 300;
+  color: oklch(0.12 0.025 var(--hue));
+  letter-spacing: -0.02em;
+  line-height: 1;
+  z-index: -1;
+  opacity: 0;
+
+  animation: number-reveal 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 60%;
+}
+
+/* Warm edge glow that bleeds in from the right */
+.participation::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40%;
+  height: 100%;
+  background: radial-gradient(
+    ellipse at 100% 50%,
+    oklch(0.15 0.06 var(--hue) / 0.4) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+/* ============================================
+   BENEFITS — Movement III: THE CRESCENDO
+   ============================================
+   "This is what remains when everything
+   unnecessary has been removed."
+
+   This is the Rahman moment.
+   Everything intensifies. The typography swells.
+   The glow brightens. The pacing slows.
+   One paragraph that carries the weight of the
+   entire argument.
+*/
+
+.benefits {
+  border-top: 1px solid var(--line);
+  padding-block: var(--space-3xl) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+/* The crescendo glow — the entire section warms */
+.benefits::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 60% at 30% 50%,
+      oklch(0.10 0.05 var(--hue) / 0.5) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 60% 80% at 80% 60%,
+      oklch(0.08 0.04 calc(var(--hue) - 20) / 0.3) 0%,
+      transparent 60%
+    );
+  z-index: -1;
+  opacity: 0;
+
+  animation: crescendo-glow 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 50%;
+}
+
+@keyframes crescendo-glow {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Narrative voice — positioned as a pull quote above */
+.benefits::after {
+  content: "This is what remains when everything unnecessary has been removed.";
+  display: block;
+  position: absolute;
+  top: var(--space-xl);
+  left: var(--space-m);
+  right: var(--space-m);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--accent-dim);
+  opacity: 0.45;
+  line-height: 1.5;
+  text-align: center;
+  pointer-events: none;
+  max-width: 35ch;
+  margin-inline: auto;
+
+  animation: narrative-fade 1.2s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 15% entry 55%;
+}
+
+/* Section number — enormous, almost filling the section */
+.benefits h3::after {
+  content: "03";
+  position: absolute;
+  left: -0.1em;
+  top: -0.5em;
+  font-family: var(--font-mono);
+  font-size: clamp(8rem, 20vw, 16rem);
+  font-style: normal;
+  font-weight: 300;
+  color: oklch(0.08 0.02 var(--hue));
+  letter-spacing: -0.02em;
+  line-height: 1;
+  z-index: -1;
+  opacity: 0;
+
+  animation: number-reveal 1.5s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 60%;
+}
+
+/* The benefits text becomes larger, lighter, more prominent */
+.benefits p {
+  font-size: clamp(1.5rem, 2.5vw, 2rem) !important;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--ink) !important;
+  max-width: 36rem;
+
+  /* The text itself has a subtle glow at peak intensity */
+  text-shadow: 0 0 60px oklch(0.5 0.1 var(--hue) / 0.08);
+}
+
+
+/* ============================================
+   REQUIREMENTS — Movement IV: "Resolution"
+   ============================================
+   "The only rule: what you build must work."
+
+   The intensity subsides. We return to measured
+   pacing. The resolution. Credits approaching.
+*/
+
+.requirements {
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+
+/* Narrative voice */
+.requirements::before {
+  content: "The only rule: what you build must work.";
+  position: absolute;
+  top: var(--space-xl);
+  right: var(--space-m);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(0.8125rem, 1vw, 0.9375rem);
+  color: var(--ink-dim);
+  opacity: 0.3;
+  max-width: 18ch;
+  text-align: right;
+  line-height: 1.5;
+  pointer-events: none;
+
+  animation: narrative-drift 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 10% entry 50%;
+}
+
+/* Section number */
+.requirements h3::after {
+  content: "04";
+  position: absolute;
+  right: 0;
+  top: -0.1em;
+  font-family: var(--font-mono);
+  font-size: clamp(5rem, 12vw, 10rem);
+  font-style: normal;
+  font-weight: 300;
+  color: var(--void-lighter);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  z-index: -1;
+  opacity: 0;
+
+  animation: number-reveal 1s ease-out both;
+  animation-timeline: view();
+  animation-range: entry 0% entry 60%;
+}
+
+.requirements p[role="contentinfo"] {
+  margin-top: var(--space-m);
+  padding-top: var(--space-m);
+  border-top: 1px solid var(--line);
+  font-size: 0.8125rem;
+  color: var(--ink-dim);
+}
+
+
+/* ============================================
+   FOOTER — The credits
+   ============================================ */
+
+footer {
+  grid-column: content;
+  display: flex;
+  gap: var(--space-s);
+  padding-block: var(--space-l) var(--space-2xl);
+  flex-wrap: wrap;
+  position: relative;
+}
+
+/* "End of transmission" — the closing line */
+footer::before {
+  content: "Pure CSS. Zero images. Zero JavaScript. End of transmission.";
+  display: block;
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-dim);
+  margin-bottom: var(--space-m);
+  opacity: 0.5;
+}
+
+footer a {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--ink-dim);
+  padding: var(--space-xs) var(--space-s);
+  border: 1px solid var(--line);
+  transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover: glow fill effect */
+footer a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent-wash);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  z-index: -1;
+}
+
+footer a:hover::before {
+  transform: scaleX(1);
+}
+
+footer a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  box-shadow:
+    0 0 20px oklch(0.75 var(--accent-chroma) var(--hue) / 0.15),
+    inset 0 0 20px oklch(0.75 var(--accent-chroma) var(--hue) / 0.05);
+}
+
+
+/* ============================================
+   SIDEBAR — The dark companion
+   ============================================ */
+
+.sidebar {
+  grid-column: bleed;
+  padding: var(--space-xl) var(--space-m) var(--space-l);
+  background:
+    linear-gradient(180deg, var(--void-light) 0%, var(--void) 100%);
+  border-top: 1px solid var(--line);
+  position: relative;
+}
+
+@media (min-width: 72rem) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(22rem, 26vw);
+    height: 100vh;
+    overflow-y: auto;
+    border-top: none;
+    border-left: 1px solid var(--line);
+    background:
+      linear-gradient(
+        200deg,
+        oklch(0.08 0.02 var(--hue)) 0%,
+        var(--void) 100%
+      );
+    padding: var(--space-xl) var(--space-m);
+    z-index: 10;
+
+    scrollbar-width: none;
+  }
+
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glow leak — light bleeds from the sidebar into content */
+  .sidebar::before {
+    content: "";
+    position: absolute;
+    top: 15%;
+    left: -100px;
+    width: 100px;
+    height: 70%;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(0.07 0.03 var(--hue) / 0.4) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Accent line at top of sidebar */
+  .sidebar::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      var(--accent-hot),
+      var(--accent),
+      transparent
+    );
+    opacity: 0.6;
+  }
+}
+
+.sidebar .wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+.sidebar h3 {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-dim);
+  margin-bottom: var(--space-s);
+}
+
+.sidebar nav ul,
+.sidebar .zen-resources ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar nav li,
+.sidebar .zen-resources li {
+  padding-block: 0.625rem;
+  border-bottom: 1px solid oklch(0.14 0.01 var(--hue));
+}
+
+.sidebar nav li:last-child,
+.sidebar .zen-resources li:last-child {
+  border-bottom: none;
+}
+
+
+/* ============================================
+   Design selection — Hover-glow links
+   ============================================ */
+
+.design-selection nav li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.375rem;
+  transition: all 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  padding-inline: var(--space-xs);
+  margin-inline: calc(-1 * var(--space-xs));
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Hover background fill */
+.design-selection nav li::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: oklch(0.12 0.025 var(--hue));
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+}
+
+.design-selection nav li:hover::before {
+  opacity: 1;
+}
+
+a.design-name {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-style: italic;
+  color: var(--ink);
+  text-decoration: none;
+  transition: all 0.4s ease;
+  line-height: 1.3;
+}
+
+a.design-name:hover {
+  color: var(--accent);
+  text-shadow: 0 0 25px oklch(0.75 var(--accent-chroma) var(--hue) / 0.3);
+}
+
+a.designer-name {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 300;
+  color: var(--ink-dim);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+a.designer-name:hover {
+  color: var(--accent);
+}
+
+
+/* ============================================
+   Archives & Resources
+   ============================================ */
+
+.design-archives a,
+.zen-resources a {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 350;
+  color: var(--ink-dim);
+  text-decoration: none;
+  transition: all 0.4s ease;
+}
+
+.design-archives a:hover,
+.zen-resources a:hover {
+  color: var(--accent);
+}
+
+.indicator {
+  font-size: 1.2em;
+  color: var(--accent-dim);
+}
+
+
+/* ============================================
+   THE ATMOSPHERE ENGINE — The 6 extra divs
+   ============================================
+   This is the Nolan layer. Six presentational divs
+   become a living environment. The void is not empty —
+   it breathes, glows, shifts, and responds.
+
+   1: The Sun — warm radial glow, top-right, drifting
+   2: The Counter — cool complement, bottom-left
+   3: The Timeline — vertical accent line that draws with scroll
+   4: The Grain — film texture overlay
+   5: The Orb — floating accent sphere, mid-page
+   6: The Enso — draws a circle as you reach the bottom
+*/
+
+.extra1,
+.extra2,
+.extra3,
+.extra4,
+.extra5,
+.extra6 {
+  position: fixed;
+  pointer-events: none;
+}
+
+
+/* EXTRA1: THE SUN
+   A massive warm radial glow — the primary light source.
+   It drifts slowly, pulsing like a heartbeat.
+   The chroma intensifies as the hue shifts on scroll. */
+
+.extra1 {
+  top: -35vh;
+  right: -25vw;
+  width: 80vw;
+  height: 80vh;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 40% 50%,
+      oklch(0.22 0.14 var(--hue) / 0.45) 0%,
+      oklch(0.14 0.10 var(--hue) / 0.25) 25%,
+      oklch(0.08 0.05 var(--hue) / 0.1) 50%,
+      transparent 70%
+    );
+  filter: blur(40px);
+  z-index: -1;
+
+  animation: sun-orbit 25s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+@keyframes sun-orbit {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  25%  { transform: translate(-3%, 5%) scale(1.05); opacity: 0.7; }
+  50%  { transform: translate(-5%, 10%) scale(1.12); opacity: 0.85; }
+  75%  { transform: translate(-2%, 8%) scale(1.08); opacity: 0.7; }
+  100% { transform: translate(-6%, 12%) scale(1.15); opacity: 0.6; }
+}
+
+
+/* EXTRA2: THE COUNTER
+   Cool complement glow — balances the warm sun.
+   Creates visual tension. Moves in counter-rhythm (3/4 time). */
+
+.extra2 {
+  bottom: -35vh;
+  left: -20vw;
+  width: 60vw;
+  height: 60vh;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle,
+      oklch(0.14 0.08 var(--hue-secondary) / 0.25) 0%,
+      oklch(0.08 0.04 var(--hue-secondary) / 0.1) 40%,
+      transparent 65%
+    );
+  filter: blur(50px);
+  z-index: -1;
+
+  animation: counter-orbit 18s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+@keyframes counter-orbit {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(4%, -3%) scale(1.06); }
+  66%  { transform: translate(6%, -6%) scale(1.1); }
+  100% { transform: translate(3%, -4%) scale(1.04); }
+}
+
+
+/* EXTRA3: THE TIMELINE
+   A vertical accent line on the left edge.
+   Draws from top to bottom as you scroll through the page.
+   It's the visual through-line — the spine of the narrative. */
+
+.extra3 {
+  top: 0;
+  left: var(--space-m);
+  width: 1px;
+  height: 100%;
+  z-index: 1;
+
+  /* Multi-stop gradient for varied intensity */
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    oklch(0.55 0.12 var(--hue) / 0.5) 10%,
+    oklch(0.45 0.10 var(--hue) / 0.3) 30%,
+    oklch(0.55 0.15 var(--hue) / 0.5) 50%,
+    oklch(0.45 0.10 var(--hue) / 0.3) 70%,
+    oklch(0.55 0.12 var(--hue) / 0.5) 90%,
+    transparent 100%
+  );
+
+  /* Glow along the line */
+  box-shadow:
+    0 0 8px oklch(0.55 0.12 var(--hue) / 0.2),
+    0 0 20px oklch(0.55 0.12 var(--hue) / 0.1);
+
+  /* Scroll-driven reveal: draws top→bottom */
+  animation: timeline-draw 1s ease-out both;
+  animation-timeline: scroll();
+}
+
+@keyframes timeline-draw {
+  from { clip-path: inset(0 0 100% 0); }
+  to   { clip-path: inset(0 0 0% 0); }
+}
+
+/* Node markers on the timeline — at section boundaries */
+.extra3::before {
+  content: "";
+  position: absolute;
+  top: 25%;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px oklch(0.65 0.2 var(--hue) / 0.5);
+}
+
+.extra3::after {
+  content: "";
+  position: absolute;
+  top: 55%;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px oklch(0.65 0.2 var(--hue) / 0.5);
+}
+
+
+/* EXTRA4: THE GRAIN
+   Film grain overlay — subtle noise texture.
+   The whole page feels like celluloid.
+   Nolan shoots on IMAX film. So do we. */
+
+.extra4 {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  opacity: 0.04;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 512px 512px;
+}
+
+
+/* EXTRA5: THE ORB
+   A floating sphere of light — the soul of the page.
+   Moves in a Lissajous curve (complex orbital path).
+   Responds to the hue shift. Feels alive. */
+
+.extra5 {
+  display: block;
+  top: 45%;
+  right: 18vw;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      circle at 35% 35%,
+      oklch(0.75 0.22 var(--hue) / 0.18) 0%,
+      oklch(0.5 0.15 var(--hue) / 0.06) 40%,
+      oklch(0.3 0.08 var(--hue) / 0.02) 65%,
+      transparent 75%
+    );
+  z-index: -1;
+  filter: blur(12px);
+
+  animation: orb-lissajous 16s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+@keyframes orb-lissajous {
+  0%   { transform: translate(0, 0) scale(1); }
+  20%  { transform: translate(-2.5rem, -4rem) scale(1.15); }
+  40%  { transform: translate(1rem, -2rem) scale(0.85); }
+  60%  { transform: translate(-3rem, 1rem) scale(1.25); }
+  80%  { transform: translate(0.5rem, 3rem) scale(0.9); }
+  100% { transform: translate(-1.5rem, -1rem) scale(1.1); }
+}
+
+
+/* EXTRA6: THE ENSO
+   An incomplete circle — the Zen symbol.
+   Draws itself as you scroll to the bottom of the page.
+   The gap in the circle is intentional.
+   Perfection through imperfection. */
+
+.extra6 {
+  display: block;
+  bottom: 8vh;
+  right: 8vw;
+  width: clamp(6rem, 12vw, 10rem);
+  height: clamp(6rem, 12vw, 10rem);
+  border-radius: 50%;
+  border: 2px solid oklch(0.35 0.08 var(--hue) / 0.4);
+  background: transparent;
+  z-index: 1;
+  filter: none;
+
+  /* The Enso draws itself — clip-path reveals the circle stroke */
+  clip-path: polygon(50% 0%, 50% 0%, 50% 50%, 50% 50%);
+
+  animation: enso-draw 1s ease-out both;
+  animation-timeline: scroll();
+  animation-range: 80% 98%;
+}
+
+@keyframes enso-draw {
+  0% {
+    clip-path: polygon(50% 0%, 50% 0%, 50% 50%, 50% 50%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    /* Leave a gap — the Enso is intentionally incomplete */
+    clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 40% 0%, 40% 8%, 8% 8%, 8% 92%, 92% 92%, 92% 8%, 50% 8%);
+    opacity: 0.6;
+  }
+}
+
+/* Glow behind the Enso */
+.extra6::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    oklch(0.3 0.08 var(--hue) / 0.12) 0%,
+    transparent 60%
+  );
+}
+
+
+/* Hide decorative elements on smaller screens where they'd overwhelm */
+@media (max-width: 64rem) {
+  .extra5 {
+    display: none;
+  }
+
+  .extra6 {
+    width: 4rem;
+    height: 4rem;
+    bottom: 4vh;
+    right: 4vw;
+  }
+
+  .extra3 {
+    display: none;
+  }
+}
+
+@media (max-width: 48rem) {
+  .extra6 {
+    display: none;
+  }
+}
+
+
+/* ============================================
+   Container query responsive behaviors
+   ============================================ */
+
+@container (max-width: 30rem) {
+  .summary p {
+    font-size: 1.125rem;
+  }
+
+  .preamble p:first-of-type::first-letter {
+    font-size: 3.5em;
+  }
+}
+
+
+/* ============================================
+   Animated link underlines
+   ============================================ */
+
+.preamble a,
+.main.supporting a {
+  position: relative;
+}
+
+.preamble a::after,
+.summary a::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--accent-hot);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.preamble a:hover::after,
+.summary a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+
+/* ============================================
+   Selection & focus
+   ============================================ */
+
+::selection {
+  background: oklch(0.4 0.15 var(--hue) / 0.6);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+
+/* ============================================
+   INTERSTITIAL — The void between acts
+   ============================================
+   The space between intro and main content
+   gets a dramatic pause — a visual breath.
+*/
+
+.preamble::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 1px;
+  margin-top: var(--space-xl);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    oklch(0.5 0.12 var(--hue) / 0.5) 20%,
+    var(--accent) 50%,
+    oklch(0.5 0.12 var(--hue) / 0.5) 80%,
+    transparent 100%
+  );
+}
+
+
+/* ============================================
+   The closing rule — intro to main
+   ============================================ */
+
+.intro > :last-child::after {
+  content: "";
+  grid-column: bleed;
+  display: block;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-dim) 20%,
+    var(--accent) 50%,
+    var(--accent-dim) 80%,
+    transparent 100%
+  );
+  margin-top: var(--space-l);
+}
+
+
+/* ============================================
+   Sidebar padding compensation (large screens)
+   ============================================ */
+
+@media (min-width: 72rem) {
+  .page-wrapper {
+    margin-right: min(22rem, 26vw);
+  }
+}
+
+
+/* ============================================
+   Reduced motion — respectful degradation
+   ============================================
+   The design still works. The narrative still
+   flows. Only the motion is removed.
+*/
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .extra1, .extra2, .extra5 {
+    opacity: 0.3;
+  }
+
+  .extra6 {
+    clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 40% 0%, 40% 8%, 8% 8%, 8% 92%, 92% 92%, 92% 8%, 50% 8%);
+    opacity: 0.4;
+  }
+
+  /* Ensure all elements are visible without animation */
+  h1,
+  .preamble h3,
+  .main.supporting h3,
+  .main.supporting > div[role="article"],
+  .preamble p,
+  .main.supporting p {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+
+/* ============================================
+   Print styles — clean, readable, bookish
+   ============================================ */
+
+@media print {
+  .sidebar,
+  .extra1, .extra2, .extra3, .extra4, .extra5, .extra6,
+  footer {
+    display: none !important;
+  }
+
+  .page-wrapper {
+    display: block;
+    margin-right: 0;
+  }
+
+  body {
+    color: black;
+    background: white;
+    font-size: 11pt;
+    perspective: none;
+  }
+
+  h1 {
+    font-size: 36pt;
+    text-shadow: none;
+    animation: none;
+  }
+  h3 {
+    font-size: 18pt;
+    animation: none;
+  }
+  h3::after {
+    display: none;
+  }
+
+  .preamble h3::before,
+  header[role="banner"]::before,
+  footer::before,
+  .explanation::before,
+  .participation::before,
+  .benefits::before,
+  .benefits::after,
+  .requirements::before {
+    display: none;
+  }
+
+  a { color: black; border-bottom: none; }
+  a::after { content: " (" attr(href) ")"; font-size: 0.8em; }
+}
+
+
+/* ============================================
+   Scrollbar — part of the design
+   ============================================ */
+
+@supports (scrollbar-color: auto) {
+  html {
+    scrollbar-color: oklch(0.3 0.06 var(--hue)) var(--void);
+    scrollbar-width: thin;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.3 0.06 var(--hue));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dim);
+}
