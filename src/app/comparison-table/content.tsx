@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -484,18 +485,17 @@ export default function ComparisonTableContent() {
   // --- Render ---
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--kami-text)", fontFamily: "var(--kami-font-display)" }}
-        >
-          Comparison Table Builder
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-          Build feature comparison tables and export to HTML or Markdown.
-        </p>
-      </div>
+      <ToolIntro
+        title="Comparison Table Builder"
+        tagline="Build the classic &quot;us vs. them&quot; feature table — or any comparison grid — and export it as HTML, Markdown, or CSV."
+        description="Start from a template (feature comparison, pricing tiers, integration matrix) or a blank grid. Cells support check / cross / partial / text — perfect for &quot;our product has X, theirs doesn't.&quot; Rearrange rows and columns, highlight your winning column, and export ready-to-paste Markdown or HTML."
+        audience={["PMMs", "Sales", "Content marketers"]}
+        whenToUse={[
+          "Building a competitor comparison page",
+          "Turning a pricing page into a feature-tier grid",
+          "Documenting which integrations each plan includes",
+        ]}
+      />
 
       {/* Controls bar */}
       <div

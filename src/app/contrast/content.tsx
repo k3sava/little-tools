@@ -3,6 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- WCAG contrast utilities ---
 
@@ -132,13 +134,21 @@ export default function ContrastContent() {
 
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Contrast Checker
-        </h1>
-        <p className="mt-2 text-gray-500">
-          Check WCAG contrast compliance between foreground and background
-          colors. See suggestions when contrast fails.
-        </p>
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Contrast Checker"
+          tagline="Check any color combo against WCAG AA and AAA, with live preview and suggestions when it fails."
+          description="Pick a foreground and background color. We compute the WCAG contrast ratio and tell you whether it passes AA / AAA for body text, large text, and UI components. When it fails, we offer nudges (darker text, lighter background) that would bring it into compliance."
+          audience={["Designers", "Accessibility engineers", "Front-end devs"]}
+          whenToUse={[
+            "Verifying a brand color against a background",
+            "Checking a button or link meets WCAG",
+            "Auditing a page for accessibility failures",
+          ]}
+          quickLinks={[
+            { label: "WCAG thresholds explained", href: "#wcag-thresholds" },
+          ]}
+        />
 
         {/* Color Inputs */}
         <div className="mt-8 grid gap-4 sm:grid-cols-[1fr_auto_1fr]">
@@ -221,6 +231,38 @@ export default function ContrastContent() {
             Color Palette Generator
           </a>
         </div>
+
+        <ReferencePanel
+          id="wcag-thresholds"
+          title="WCAG contrast thresholds, explained"
+          summary="The specific numbers you need to hit, and when to hit them."
+          defaultOpen
+        >
+          <div className="space-y-3">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="text-sm font-semibold text-gray-900">Level AA (the common baseline)</div>
+              <div className="mt-2 space-y-1">
+                <RuleRow rule="4.5 : 1" explanation="Normal body text (<18pt or <14pt bold)" />
+                <RuleRow rule="3.0 : 1" explanation="Large text (18pt+ or 14pt+ bold)" />
+                <RuleRow rule="3.0 : 1" explanation="UI components, icons, focus indicators" />
+              </div>
+              <div className="mt-2 text-xs text-gray-500">Required by ADA, Section 508, European EN 301 549, and most design systems.</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="text-sm font-semibold text-gray-900">Level AAA (the stricter bar)</div>
+              <div className="mt-2 space-y-1">
+                <RuleRow rule="7.0 : 1" explanation="Normal body text" />
+                <RuleRow rule="4.5 : 1" explanation="Large text" />
+              </div>
+              <div className="mt-2 text-xs text-gray-500">Required for some government / medical / financial contexts. Not always achievable with brand colors.</div>
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+              <strong>Gotcha:</strong> WCAG contrast is based on luminance only — it doesn&apos;t
+              capture hue or saturation differences. Two very different-looking colors can fail.
+              For body text, prefer AA (4.5:1) as a baseline; AAA is a nice-to-have.
+            </div>
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

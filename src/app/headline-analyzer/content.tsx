@@ -3,6 +3,8 @@
 import { useCallback, useMemo, useState } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel } from "@/components/tools/reference-panel";
 
 // ---------------------------------------------------------------------------
 // Word lists
@@ -670,15 +672,20 @@ export default function HeadlineAnalyzerContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className={`mx-auto px-4 py-12 sm:py-16 ${mode === "compare" ? "w-[92%] max-w-[1400px]" : "max-w-7xl"}`}>
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Headline Analyzer
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Score your headlines for emotional value, power words, readability, and click potential.
-          </p>
-        </div>
+        <ToolIntro
+          title="Headline Analyzer"
+          tagline="Score any headline on emotional appeal, power words, readability, and click potential — in real time."
+          description="Paste a headline and see it scored across six dimensions that correlate with click-through: sentiment, power words, clarity, length, word balance, and skim-readability. Switch to 'compare' mode to A/B two variants side-by-side. Every score shows you what to change to get higher."
+          audience={["Copywriters", "Content marketers", "Editors", "Ads"]}
+          whenToUse={[
+            "Rewriting a blog title or ad headline",
+            "Picking between two variants for an email subject",
+            "Stress-testing a launch post title before publishing",
+          ]}
+          quickLinks={[
+            { label: "What each score means", href: "#scoring-guide" },
+          ]}
+        />
 
         {/* Mode toggle */}
         <div className="mb-6 flex justify-center">
@@ -895,6 +902,22 @@ export default function HeadlineAnalyzerContent() {
             )}
           </>
         )}
+
+        <ReferencePanel
+          id="scoring-guide"
+          title="What each score actually measures"
+          summary="The numbers aren't magic — here's the math behind each dimension."
+          defaultOpen={false}
+        >
+          <div className="space-y-3 text-xs">
+            <p><strong>Emotional value:</strong> counts words from curated lists of positive, negative, and fear/curiosity triggers. A balanced headline with 1–2 emotional words tends to outperform flat ones.</p>
+            <p><strong>Power words:</strong> matches against a list of proven attention-grabbers (free, proven, secret, surprising, etc.). 1 is good; 3+ starts to feel clickbaity.</p>
+            <p><strong>Clarity:</strong> penalizes jargon, hedges (&quot;kind of&quot;, &quot;might&quot;), and very long words. Plain, concrete nouns score highest.</p>
+            <p><strong>Length:</strong> 6–12 words / 50–70 characters is the sweet spot for most platforms. Google truncates titles around 60 chars.</p>
+            <p><strong>Word balance:</strong> measures the ratio of common to uncommon words. Too many rare words = hard to skim; too many common words = forgettable.</p>
+            <p><strong>Click potential:</strong> weighted composite. High scores correlate with higher CTR in the general case — <em>not a substitute for testing with your audience.</em></p>
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // ---------------------------------------------------------------------------
 // Statistical helpers
@@ -295,16 +297,21 @@ export default function ABTestCalculatorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            A/B Test Calculator
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Statistical significance and sample size for your experiments. No
-            ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="A/B Test Calculator"
+          tagline="Check if your experiment is statistically significant, or plan the sample size you'll need before you start."
+          description="Two modes: (1) Significance — paste visitor and conversion counts for control + variant, see if the difference is real or noise (p-value, confidence interval, and a plain-English verdict). (2) Sample size — set your baseline rate, target lift, and power, we tell you how many visitors you need."
+          audience={["Growth", "PMMs", "PMs", "Marketers"]}
+          whenToUse={[
+            "Calling an experiment winner (or not)",
+            "Planning a test before launching it",
+            "Defending a result to a skeptical stakeholder",
+          ]}
+          quickLinks={[
+            { label: "Stats terms, decoded", href: "#stats-glossary" },
+            { label: "Common pitfalls", href: "#ab-pitfalls" },
+          ]}
+        />
 
         {/* Tabs */}
         <div className="mb-8 flex justify-center">
@@ -347,6 +354,37 @@ export default function ABTestCalculatorContent() {
             onUpdate={updatePlanner}
           />
         )}
+
+        <ReferencePanel
+          id="stats-glossary"
+          title="Stats terms, in plain English"
+          summary="The five terms that appear in every A/B test readout."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="p-value" explanation="Probability your difference is random noise. <0.05 = &quot;unlikely to be luck.&quot;" example="p = 0.02 → significant" />
+            <RuleRow rule="Confidence level" explanation="How sure you are of the result. 95% is standard." example="1 − α" />
+            <RuleRow rule="Statistical power" explanation="Your ability to detect a real difference. 80% is standard." example="1 − β" />
+            <RuleRow rule="Minimum detectable effect" explanation="The smallest lift your test can reliably catch given your sample." example="MDE = 5%" />
+            <RuleRow rule="Confidence interval" explanation="The range where the true lift probably sits. Narrow = precise; wide = noisy." example="+3% [−1%, +7%]" />
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="ab-pitfalls"
+          title="Common A/B testing mistakes"
+          summary="If you're about to call a winner, read this first."
+          defaultOpen={false}
+        >
+          <ul className="space-y-3 text-xs">
+            <li><strong>Peeking.</strong> Checking results early and stopping the moment you see significance inflates false positives. Decide sample size before you start, and wait.</li>
+            <li><strong>Too-small samples.</strong> A 10% lift on 200 visitors is noise. Use the sample-size calculator to set a floor.</li>
+            <li><strong>Not accounting for weekly cycles.</strong> Run tests for at least a full week — ideally two — to cover weekday/weekend differences.</li>
+            <li><strong>Testing too many metrics.</strong> Pick ONE primary metric. If you test 20 secondary metrics, one will look significant by chance.</li>
+            <li><strong>Ignoring practical significance.</strong> A 0.1% lift can be statistically significant with enough data, but irrelevant to the business.</li>
+            <li><strong>SRM (Sample Ratio Mismatch).</strong> If your control and variant visitor counts differ much more than expected (say 48%/52% vs. 50%/50%), your test infrastructure is probably broken — results are untrustworthy.</li>
+          </ul>
+        </ReferencePanel>
       </div>
     </div>
   );

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Types ---
 
@@ -233,15 +235,21 @@ export default function UtmBuilderContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            UTM Builder
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Build campaign URLs with UTM parameters. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="UTM Builder"
+          tagline="Generate tagged campaign URLs that show up correctly in Google Analytics, and bulk-build variants for every channel at once."
+          description="Fill in your destination URL and campaign details; we assemble a UTM-tagged link you can share. Platform presets (Facebook, LinkedIn, Email, etc.) pre-fill source and medium for you. Switch to Bulk mode to produce a dozen variants (one per channel) in a single click — handy for launch campaigns."
+          audience={["Marketers", "Growth", "PMMs", "Ads managers"]}
+          whenToUse={[
+            "Sharing a blog post across multiple channels",
+            "Building a launch spreadsheet of tagged links",
+            "Auditing what UTM naming conventions mean",
+          ]}
+          quickLinks={[
+            { label: "UTM parameter guide", href: "#utm-guide" },
+            { label: "Naming conventions that don't fall apart", href: "#utm-naming" },
+          ]}
+        />
 
         {/* Platform Presets */}
         <div className="mb-6">
@@ -539,6 +547,42 @@ export default function UtmBuilderContent() {
             </div>
           </div>
         )}
+
+        <ReferencePanel
+          id="utm-guide"
+          title="UTM parameters — what each one actually does"
+          summary="Five parameters; only three are really essential."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="utm_source" explanation="Where the traffic came from. The specific platform or publication." example="google, newsletter, linkedin" />
+            <RuleRow rule="utm_medium" explanation="The type of traffic — the 'how'." example="cpc, email, social, referral" />
+            <RuleRow rule="utm_campaign" explanation="The marketing campaign or initiative." example="spring-launch, q3-webinar" />
+            <RuleRow rule="utm_term" explanation="Paid-search keyword. Optional." example="retargeting+software" />
+            <RuleRow rule="utm_content" explanation="Distinguishes variants — use for A/B tests or multiple links on one page." example="cta-top, cta-footer" />
+          </div>
+          <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <strong>GA4 note:</strong> Google Analytics 4 adds <code>utm_source_platform</code>,
+            <code>utm_creative_format</code>, and <code>utm_marketing_tactic</code>. They&apos;re
+            optional — most teams stick with the original five.
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="utm-naming"
+          title="Naming conventions that don't fall apart at scale"
+          summary="The rules that keep your analytics tidy after 200 campaigns."
+          defaultOpen={false}
+        >
+          <ul className="space-y-3 text-xs">
+            <li><strong>Always lowercase.</strong> <code>Facebook</code> and <code>facebook</code> become two different sources in most analytics tools. Pick lowercase once and enforce it.</li>
+            <li><strong>Never use spaces.</strong> Use hyphens (<code>spring-launch</code>) or underscores (<code>spring_launch</code>) — not both. Pick one.</li>
+            <li><strong>Keep mediums to a small set.</strong> <code>cpc</code>, <code>email</code>, <code>social</code>, <code>referral</code>, <code>organic</code>, <code>affiliate</code>. If your team uses 30 different mediums, filtering becomes useless.</li>
+            <li><strong>Campaign name = what a human would call it.</strong> <code>q3-launch-webinar</code> beats <code>fb_v2_final_final</code>.</li>
+            <li><strong>utm_content is for variants of the same link.</strong> Not a dumping ground for extra notes. Think: which CTA on the page? which button variant?</li>
+            <li><strong>Document it.</strong> Keep a short Notion/Sheet with your naming rules. Future-you will thank present-you.</li>
+          </ul>
+        </ReferencePanel>
       </div>
     </div>
   );

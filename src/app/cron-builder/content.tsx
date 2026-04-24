@@ -3,6 +3,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Types ---
 
@@ -557,15 +559,21 @@ export default function CronBuilderContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Cron Expression Builder
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Build and decode cron expressions visually
-          </p>
-        </div>
+        <ToolIntro
+          title="Cron Expression Builder"
+          tagline="Build or decode cron expressions visually — with plain-English translation and the next five run times."
+          description="Pick a preset (every 5 min, nightly, weekdays…) or tweak each field directly. We translate the expression into plain English, show the next 5 scheduled run times, and validate syntax as you type. Supports both 5-field (standard Unix cron) and 6-field (Quartz / Spring with seconds)."
+          audience={["Developers", "DevOps", "Data engineers"]}
+          whenToUse={[
+            "Scheduling a cron job or GitHub Action",
+            "Decoding a legacy crontab nobody remembers writing",
+            "Picking the right expression for a Kubernetes CronJob",
+          ]}
+          quickLinks={[
+            { label: "Cron field reference", href: "#cron-fields" },
+            { label: "Special syntax (@hourly, */5, etc.)", href: "#cron-special" },
+          ]}
+        />
 
         {/* Presets */}
         <div className="mb-6">
@@ -734,7 +742,46 @@ export default function CronBuilderContent() {
           )}
         </div>
 
-        {/* Footer */}
+        <ReferencePanel
+          id="cron-fields"
+          title="The 5 (or 6) fields of a cron expression"
+          summary="Left to right: minute, hour, day-of-month, month, day-of-week — plus seconds in Quartz."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="Minute" explanation="0–59" example="0 = top of hour" />
+            <RuleRow rule="Hour" explanation="0–23 (24-hour clock)" example="14 = 2 PM" />
+            <RuleRow rule="Day of month (DOM)" explanation="1–31" example="15 = the 15th" />
+            <RuleRow rule="Month" explanation="1–12 (or JAN–DEC)" example="6 = June" />
+            <RuleRow rule="Day of week (DOW)" explanation="0–6, where 0 = Sunday (or SUN–SAT)" example="1 = Monday" />
+            <RuleRow rule="Seconds (Quartz only)" explanation="0–59 — goes at the very start" example="30 = 30s past minute" />
+          </div>
+          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <strong>Classic gotcha:</strong> if both day-of-month and day-of-week are set
+            (both non-&quot;*&quot;), most cron daemons run the job on EITHER match — not both.
+            Cloud schedulers sometimes differ; check your runtime&apos;s docs.
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="cron-special"
+          title="Special syntax — *, /, -, and shortcuts"
+          summary="The metacharacters you'll see everywhere."
+          defaultOpen={false}
+        >
+          <div className="space-y-1">
+            <RuleRow rule="*" explanation="Every value. In minute = every minute." example="* = always" />
+            <RuleRow rule="*/N" explanation="Every N units from 0." example="*/15 = 0, 15, 30, 45" />
+            <RuleRow rule="A-B" explanation="A range (inclusive)." example="9-17 = 9am–5pm" />
+            <RuleRow rule="A,B,C" explanation="A list of specific values." example="1,15 = 1st and 15th" />
+            <RuleRow rule="A/B" explanation="Starting at A, every B." example="5/10 = 5, 15, 25…" />
+            <RuleRow rule="@hourly" explanation="Shortcut for 0 * * * *" example="top of every hour" />
+            <RuleRow rule="@daily / @midnight" explanation="0 0 * * *" example="midnight daily" />
+            <RuleRow rule="@weekly" explanation="0 0 * * 0" example="midnight Sunday" />
+            <RuleRow rule="@monthly" explanation="0 0 1 * *" example="midnight 1st of month" />
+            <RuleRow rule="@yearly" explanation="0 0 1 1 *" example="midnight Jan 1" />
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

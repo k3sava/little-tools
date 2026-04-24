@@ -3,6 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Common regex patterns ---
 
@@ -343,13 +345,21 @@ export default function RegexTesterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Regex Tester</h1>
-          <p className="mt-2 text-gray-500">
-            Test, match, replace, and understand regular expressions. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Regex Tester"
+          tagline="Build and debug regular expressions with live match highlighting, flag explanations, and a cheat-sheet of common patterns."
+          description="Type a pattern and a test string; every match is highlighted as you type. Switch to Replace mode to preview substitutions with $1, $2 capture references. All regex flags are explained inline, and a curated library of common patterns (email, URL, phone, date, etc.) is one click away."
+          audience={["Developers", "QA engineers", "Data people", "Editors"]}
+          whenToUse={[
+            "Writing a validator for user input",
+            "Sanitizing or bulk-rewriting text",
+            "Debugging a regex that almost works",
+          ]}
+          quickLinks={[
+            { label: "Flag reference", href: "#flag-reference" },
+            { label: "Regex cheat sheet", href: "#regex-cheatsheet" },
+          ]}
+        />
 
         {/* Mode toggle */}
         <div className="mb-4 flex items-center gap-2">
@@ -621,7 +631,72 @@ export default function RegexTesterContent() {
           </div>
         )}
 
-        {/* Footer */}
+        <ReferencePanel
+          id="flag-reference"
+          title="Regex flags — what each letter does"
+          summary="The flags after the closing slash (e.g. /pattern/gi) change matching behavior."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="g (global)" explanation="Find all matches instead of stopping at the first." example="/cat/g" />
+            <RuleRow rule="i (insensitive)" explanation="Case-insensitive — 'Cat' matches 'CAT' and 'cat'." example="/cat/i" />
+            <RuleRow rule="m (multiline)" explanation="^ and $ match the start/end of each line, not just the whole string." example="/^foo/m" />
+            <RuleRow rule="s (dotAll)" explanation="'.' matches newlines too. Off by default." example="/a.b/s" />
+            <RuleRow rule="u (unicode)" explanation="Enables full Unicode support — needed for emoji and surrogate pairs." example="/\\p{Emoji}/u" />
+            <RuleRow rule="y (sticky)" explanation="Matches only from lastIndex — no &quot;scanning forward&quot; through the string." example="/foo/y" />
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="regex-cheatsheet"
+          title="Regex cheat sheet"
+          summary="The building blocks — with examples."
+          defaultOpen={false}
+        >
+          <div className="space-y-4 text-xs">
+            <div>
+              <div className="mb-1 font-semibold text-gray-900">Character classes</div>
+              <div className="space-y-1">
+                <RuleRow rule="." explanation="Any character except newline" example="a.c → abc, aXc" />
+                <RuleRow rule="\d \D" explanation="Digit / non-digit" example="\d{3}-\d{4}" />
+                <RuleRow rule="\w \W" explanation="Word char (letters, digits, _) / non-word" example="\w+" />
+                <RuleRow rule="\s \S" explanation="Whitespace / non-whitespace" example="\S+" />
+                <RuleRow rule="[abc]" explanation="Any of a, b, or c" example="[aeiou]" />
+                <RuleRow rule="[^abc]" explanation="NOT a, b, or c" example="[^0-9]" />
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 font-semibold text-gray-900">Quantifiers</div>
+              <div className="space-y-1">
+                <RuleRow rule="*" explanation="0 or more" example="a* → '', a, aaa" />
+                <RuleRow rule="+" explanation="1 or more" example="a+ → a, aaa" />
+                <RuleRow rule="?" explanation="0 or 1 (optional)" example="colou?r" />
+                <RuleRow rule="{n}" explanation="Exactly n" example="\d{4}" />
+                <RuleRow rule="{n,m}" explanation="Between n and m" example="\d{2,4}" />
+                <RuleRow rule="+?" explanation="Lazy (shortest) instead of greedy" example="<.+?>" />
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 font-semibold text-gray-900">Anchors & groups</div>
+              <div className="space-y-1">
+                <RuleRow rule="^ $" explanation="Start / end of string (or line with /m)" example="^Hello" />
+                <RuleRow rule="\b" explanation="Word boundary" example="\bcat\b" />
+                <RuleRow rule="(abc)" explanation="Capturing group" example="(\d+)-(\d+)" />
+                <RuleRow rule="(?:abc)" explanation="Non-capturing group" example="(?:foo|bar)" />
+                <RuleRow rule="(?&lt;name&gt;…)" explanation="Named capture group" example="(?<year>\d{4})" />
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 font-semibold text-gray-900">Replace references</div>
+              <div className="space-y-1">
+                <RuleRow rule="$1 $2" explanation="Nth capture group" example="($1) $2" />
+                <RuleRow rule="$&" explanation="The entire match" example="**$&**" />
+                <RuleRow rule="$`" explanation="Text before match" example="" />
+                <RuleRow rule="$'" explanation="Text after match" example="" />
+              </div>
+            </div>
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );
