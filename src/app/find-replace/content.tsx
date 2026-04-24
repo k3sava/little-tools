@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -306,15 +307,17 @@ export default function FindReplaceContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Find &amp; Replace
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Search and replace text with regex support. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Find &amp; Replace"
+          tagline="Bulk find-and-replace across pasted text — with regex, case-insensitive matching, whole-word matching, and match counting."
+          description="Paste your text, type what to find, type what to replace it with. Regex mode unlocks capture groups ($1, $2). Matches are highlighted live, and the result area shows the count before you commit. Works for renaming variables, cleaning up CSVs, swapping brand terms, or any bulk edit."
+          audience={["Developers", "Writers", "Editors", "Data folks"]}
+          whenToUse={[
+            "Renaming a variable across pasted code",
+            "Swapping brand terms site-wide before republishing",
+            "Cleaning up a CSV field before importing",
+          ]}
+        />
 
         {/* Mode toggle */}
         <div className="mb-4 flex gap-2">

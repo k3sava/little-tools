@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Stop words ---
 
@@ -458,15 +459,17 @@ export default function CharacterCounterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Character Counter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Count characters, words, sentences &amp; more. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Character Counter"
+          tagline="Live character, word, sentence, and paragraph counts — with progress bars for Twitter, SMS, meta descriptions, and custom goals."
+          description="Type or paste into the box; we count everything in real time: characters (with and without spaces), words, sentences, paragraphs, reading time. Set a goal (280 chars for a tweet, 160 for SMS, 155 for a meta description) and watch the progress bar fill."
+          audience={["Writers", "Marketers", "Students", "Developers"]}
+          whenToUse={[
+            "Staying under Twitter / SMS / meta description limits",
+            "Writing to a word-count target",
+            "Estimating reading time for a post or email",
+          ]}
+        />
 
         {/* Input */}
         <textarea

@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -491,16 +492,17 @@ export default function ColorConverterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Color Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert between HEX, RGB, HSL, HSB/HSV, and CMYK. Contrast checker
-            and palette generator included.
-          </p>
-        </div>
+        <ToolIntro
+          title="Color Converter"
+          tagline="Convert any color between HEX, RGB, HSL, HSB/HSV, OKLCH, and CMYK — with live picker and contrast check."
+          description="Type a color in any format (hex code, rgb(), hsl()) and see it converted to all others simultaneously. Drag the hue and saturation pickers to tweak it visually. Built-in WCAG contrast check against white and black tells you if the color is usable for text."
+          audience={["Designers", "Front-end developers", "Brand teams"]}
+          whenToUse={[
+            "Translating a Figma hex into HSL for a CSS variable",
+            "Checking if a brand color works as text on white",
+            "Exploring a color's saturation/lightness neighbors",
+          ]}
+        />
 
         {/* Color preview + picker */}
         <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

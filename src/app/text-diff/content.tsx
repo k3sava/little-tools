@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Simple LCS-based diff ---
 
@@ -648,15 +649,17 @@ export default function TextDiffContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Text Diff
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Compare two texts and see the differences. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Text Diff"
+          tagline="Paste two versions of anything — docs, emails, code — and see a line-by-line diff with word-level highlighting."
+          description="Side-by-side or unified view, word-level diffs (not just lines), case-insensitive and whitespace-insensitive toggles, and stats showing how many lines were added, removed, or changed. Works on any text — copy/pasted docs, SQL, JSON, email drafts, chapter revisions."
+          audience={["Developers", "Writers", "Editors", "Lawyers"]}
+          whenToUse={[
+            "Reviewing edits to a document",
+            "Comparing two SQL queries or config files",
+            "Spotting subtle changes before publishing a revision",
+          ]}
+        />
 
         {/* Input textareas */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">

@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Base64 helpers ---
 
@@ -191,15 +192,17 @@ export default function Base64Content() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Base64 Encode / Decode
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert text and files to Base64. Standard, URL-safe, and Data URL formats.
-          </p>
-        </div>
+        <ToolIntro
+          title="Base64 Encode / Decode"
+          tagline="Encode or decode text and files with Standard, URL-safe, or Data URL variants — with drag-and-drop file support."
+          description="Paste text (or drop a file) and toggle encode/decode. Supports three Base64 flavors: Standard (RFC 4648), URL-safe (replaces + and / with - and _), and Data URL (ready to embed in HTML or CSS). Handles binary files up to tens of megabytes — entirely in your browser."
+          audience={["Developers", "API integrators", "Support engineers"]}
+          whenToUse={[
+            "Embedding a small image as a data URL",
+            "Decoding a Base64 token from logs",
+            "Encoding credentials for an Authorization header",
+          ]}
+        />
 
         {/* Options bar */}
         <div className="mb-4 flex flex-wrap items-center gap-3">

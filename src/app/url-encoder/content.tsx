@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- URL parsing ---
 
@@ -66,15 +67,17 @@ export default function UrlEncoderContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            URL Encode / Decode
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Encode, decode, and parse URLs. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="URL Encode / Decode"
+          tagline="Encode, decode, and dissect URLs — component-by-component, with per-part encoding for tricky query params."
+          description="Encode or decode an entire URL, or just a single component (like a query value with special characters). Parse mode splits a URL into protocol / host / path / query / fragment so you can edit a specific piece. Supports both %-encoding and + encoding for form-style query strings."
+          audience={["Developers", "QA testers", "Marketers"]}
+          whenToUse={[
+            "Debugging a URL with escaped characters in logs",
+            "Building a search URL with unusual characters in a query param",
+            "Comparing two URLs that look different but decode to the same thing",
+          ]}
+        />
 
         {/* Mode toggle */}
         <div className="mb-4 flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5 w-fit">

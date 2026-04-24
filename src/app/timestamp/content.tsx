@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Timezones ---
 
@@ -223,15 +224,17 @@ export default function TimestampContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Timestamp Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert timestamps, calculate dates, compare timezones. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Timestamp Converter"
+          tagline="Convert between Unix timestamps, ISO 8601, and human dates — with timezone comparison and date math."
+          description="Paste a Unix timestamp (seconds or milliseconds), an ISO date, or a human-readable date, and see all other formats at once. Compare the same moment across multiple timezones. Use the date-math mode to add / subtract days, hours, or weeks from any date."
+          audience={["Developers", "SREs", "Data engineers"]}
+          whenToUse={[
+            "Decoding a timestamp from a log line",
+            "Checking what time a UTC event fires in your local zone",
+            "Computing a date N days before/after another",
+          ]}
+        />
 
         {/* Live Clock */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 type StyleMode = "glass" | "neumorph";
 
@@ -63,8 +64,18 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
 
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Glassmorphism / Neumorphism</h1>
-        <p className="mt-2 text-gray-500">Generate trendy glass and soft UI effects with live preview.</p>
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Glassmorphism / Neumorphism"
+          tagline="Generate the two trendiest surface styles — frosted glass (backdrop blur) and soft UI (neumorphic shadows) — with live CSS output."
+          description="Switch between modes and drag the sliders for blur, transparency, border, and shadow. Glass mode produces backdrop-filter-based frosted panels (perfect for overlays on photos). Neumorph mode generates the inner/outer shadow pair that creates the soft extruded look."
+          audience={["Designers", "Front-end developers"]}
+          whenToUse={[
+            "Building a card or modal with a frosted-glass look",
+            "Prototyping a soft-UI toggle or dial",
+            "Exploring which look fits your brand",
+          ]}
+        />
 
         {/* Mode tabs */}
         <div className="mt-6 flex gap-2">

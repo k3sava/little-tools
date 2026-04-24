@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // ============================================================================
 // ID Generation Engines (pure browser APIs, zero dependencies)
@@ -412,15 +413,17 @@ export default function UuidGeneratorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Universal ID Generator
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Generate, inspect, and compare every major ID format. No ads, no tracking, no dependencies.
-          </p>
-        </div>
+        <ToolIntro
+          title="Universal ID Generator"
+          tagline="Generate UUIDv4, UUIDv7, ULID, NanoID, CUID2, KSUID, TSID, Snowflake — with format info and bulk generation."
+          description="Pick an ID format, see how it's structured (timestamp vs random, length, sortability), and generate one or a thousand. Decode any ID to reveal embedded timestamps. Use the format picker as a learning tool when choosing an ID scheme for a new database column or API."
+          audience={["Developers", "Database engineers"]}
+          whenToUse={[
+            "Picking an ID format for a new table or record type",
+            "Decoding a ULID / UUIDv7 to read its timestamp",
+            "Bulk-generating IDs for a migration or seed script",
+          ]}
+        />
 
         {/* Quick Generate Cards */}
         <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">

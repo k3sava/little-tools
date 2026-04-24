@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -442,10 +443,17 @@ export default function BorderRadiusContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Border Radius Generator</h1>
-        <p className="mt-2 text-gray-500">
-          Shape corners with simple or advanced 8-value syntax. Drag corners directly on the preview, pick presets, and export to CSS, Tailwind, or React Native.
-        </p>
+        <ToolIntro
+          title="Border Radius Generator"
+          tagline="Shape corners visually — drag handles on the preview or fine-tune with the 8-value elliptical syntax."
+          description="Start from a preset (pill, squircle, leaf, etc.) or drag the four corner handles on the preview box. Advanced mode exposes the full 8-value border-radius (horizontal + vertical radii per corner) for real elliptical shapes. Copy as CSS, Tailwind classes, or React Native style."
+          audience={["Designers", "Front-end developers"]}
+          whenToUse={[
+            "Turning a design mockup into real CSS",
+            "Matching a specific logo-shape container",
+            "Exploring squircle / superellipse variants",
+          ]}
+        />
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
           {/* ============ LEFT: Preview + Output ============ */}

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -216,8 +217,17 @@ export default function KeyframeAnimatorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Keyframe Animator</h1>
-        <p className="mt-2 text-gray-500">Build CSS @keyframes animations visually. Drag the timeline, tweak properties, copy the CSS.</p>
+        <ToolIntro
+          title="Keyframe Animator"
+          tagline="Build @keyframes animations visually — drag keyframes on a timeline, tweak properties, copy the generated CSS."
+          description="Pick a preset (fadeIn, slideUp, pulse, shake…) or start blank. Drag keyframes on the timeline to time the motion; per-keyframe panels let you edit transform, opacity, color, and custom properties. Live preview loops continuously. Output is clean @keyframes + animation CSS you can paste directly."
+          audience={["Designers", "Motion designers", "Front-end developers"]}
+          whenToUse={[
+            "Building a loading or attention-getting animation",
+            "Prototyping a micro-interaction before handing off",
+            "Translating a designer's motion spec into CSS",
+          ]}
+        />
 
         {/* Presets */}
         <div className="mt-6">

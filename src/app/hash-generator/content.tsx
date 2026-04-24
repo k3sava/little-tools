@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -349,13 +350,17 @@ export default function HashGeneratorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Hash Generator</h1>
-          <p className="mt-2 text-gray-500">
-            Generate hashes, compute HMACs, and verify checksums. MD5, SHA-1, SHA-256, SHA-384, SHA-512, CRC32.
-          </p>
-        </div>
+        <ToolIntro
+          title="Hash Generator"
+          tagline="Generate MD5, SHA-1, SHA-256/384/512, and CRC32 hashes of text or files — plus HMAC and checksum verification."
+          description="Paste text or drop a file; we compute every major hash at once. Three modes: (1) Hash — all algorithms in one click; (2) HMAC — keyed hash with a secret; (3) Verify — paste an expected hash and we tell you if it matches (with char-by-char diff when it doesn't)."
+          audience={["Developers", "Security engineers", "Ops"]}
+          whenToUse={[
+            "Verifying a download against a published checksum",
+            "Computing an integrity hash for a CDN <script integrity=…>",
+            "Signing a webhook payload with HMAC",
+          ]}
+        />
 
         {/* Tabs */}
         <div className="mb-6 flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5 w-fit">

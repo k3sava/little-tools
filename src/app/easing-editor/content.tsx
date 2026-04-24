@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ─── Types ─── */
 
@@ -417,10 +418,17 @@ export default function EasingEditorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Easing Curve Editor</h1>
-        <p className="mt-2 text-gray-500">
-          Design cubic-bezier and linear() easing curves visually. Drag the control points, pick a preset, or switch to linear() mode.
-        </p>
+        <ToolIntro
+          title="Easing Curve Editor"
+          tagline="Design cubic-bezier() and linear() easing curves visually — drag handles, watch the animation preview, copy the CSS."
+          description="Edit the bezier curve by dragging its control points. A sample ball animates in real time so you feel the motion, not just see the curve. linear() mode unlocks multi-stop easing for spring-like motion (supported in modern browsers). Presets mirror Apple, Material, and popular animation libraries."
+          audience={["Designers", "Motion designers", "Front-end devs"]}
+          whenToUse={[
+            "Tuning the feel of a hover or modal transition",
+            "Matching an easing curve from a design system",
+            "Building a springy / bouncy effect with linear()",
+          ]}
+        />
 
         {/* Mode toggle */}
         <div className="mt-6 flex gap-2">

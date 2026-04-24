@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // Common English stop words
 const DEFAULT_STOP_WORDS = [
@@ -187,15 +188,17 @@ export default function WordFrequencyContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Word Frequency Counter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Paste text to see word frequency analysis. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Word Frequency Counter"
+          tagline="See which words, bigrams, and trigrams dominate your copy — with stop-word filtering and CSV export."
+          description="Paste any text and we count how often each word (or 2-word / 3-word phrase) appears. Toggle stop-words (the, and, a…) to see what actually matters. Useful for SEO keyword density, content audits, or figuring out what a transcript is really about."
+          audience={["SEOs", "Writers", "Content strategists", "Researchers"]}
+          whenToUse={[
+            "Auditing keyword density on a blog post",
+            "Finding filler words you over-use",
+            "Summarizing the themes in a transcript or review dump",
+          ]}
+        />
 
         {/* Controls */}
         <div className="mb-4 flex flex-wrap items-center gap-4">

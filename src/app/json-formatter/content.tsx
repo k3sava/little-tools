@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- JSON parsing ---
 
@@ -459,15 +460,17 @@ export default function JsonFormatterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            JSON Formatter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Format, validate, query, transform, and explore JSON. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="JSON Formatter"
+          tagline="Format, validate, query with JSONPath, and explore a JSON tree — with inline syntax errors and size stats."
+          description="Paste any JSON and we validate it, pretty-print with the indentation you pick, and show the structure as a collapsible tree. Errors show the exact line and column. Use JSONPath expressions ($.data.items[*].id) to pull values out of large documents without a script."
+          audience={["Developers", "API testers", "Data engineers"]}
+          whenToUse={[
+            "Pretty-printing an API response to read it",
+            "Finding a specific value inside a large JSON payload",
+            "Catching a subtle syntax error (trailing comma, unquoted key)",
+          ]}
+        />
 
         {/* Input */}
         <textarea

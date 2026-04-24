@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Flavor word pools ---
 
@@ -419,15 +420,17 @@ export default function LoremIpsumContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Lorem Ipsum Generator
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Generate placeholder text. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Lorem Ipsum Generator"
+          tagline="Placeholder text in multiple flavors — classic Latin, Bacon, Hipster, Corporate, Pirate — sized to words, sentences, or paragraphs."
+          description="Pick how many paragraphs / sentences / words you need, pick a flavor (boring Latin, Bacon Ipsum, tech jargon, etc.), and click to copy. Great for mocking up designs without leaving tabs; useful for stress-testing layouts with different word-length distributions."
+          audience={["Designers", "Developers", "Writers"]}
+          whenToUse={[
+            "Filling a mockup with realistic-length copy",
+            "Stress-testing a component with long-word languages",
+            "Giving stakeholders placeholder text that looks final",
+          ]}
+        />
 
         {/* Controls */}
         <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">

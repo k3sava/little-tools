@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -395,12 +396,19 @@ export default function GridContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">CSS Grid Generator</h1>
-        <p className="mt-2 text-gray-500">
-          Visual grid builder with presets, named areas, per-track sizing, and multi-format output.
-          {placing && <span className="ml-2 font-medium text-indigo-600">Click second cell to set span...</span>}
-          {areaMode && <span className="ml-2 font-medium text-amber-600">Area mode: click cells to assign "{areaName}"</span>}
-        </p>
+        <ToolIntro
+          title="CSS Grid Generator"
+          tagline="Design a CSS grid visually — set columns and rows, define named areas, span cells by dragging."
+          description="Drag to create cell spans, click a track handle to resize columns and rows (fr, px, %, minmax), and switch to area mode to assign named grid-areas for readable layouts. Presets cover 12-column holy-grail, image galleries, and magazine layouts. Output is clean grid-template-columns/rows/areas CSS."
+          audience={["Front-end developers", "Designers"]}
+          whenToUse={[
+            "Translating a dashboard wireframe into grid CSS",
+            "Building a magazine-style multi-column layout",
+            "Learning grid-area and named lines",
+          ]}
+        />
+        {placing && <p className="mt-2 text-sm font-medium text-indigo-600">Click second cell to set span...</p>}
+        {areaMode && <p className="mt-2 text-sm font-medium text-amber-600">Area mode: click cells to assign &quot;{areaName}&quot;</p>}
 
         {/* Presets */}
         <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">

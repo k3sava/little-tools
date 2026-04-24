@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Color utilities ---
 
@@ -323,15 +324,22 @@ export default function PaletteContent() {
 
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Color Palette Generator
-        </h1>
-        <p className="mt-2 text-gray-500">
-          Generate color palettes with harmony modes. Press{" "}
-          <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs">
-            Space
-          </kbd>{" "}
-          to shuffle. Lock colors you like.
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Color Palette Generator"
+          tagline="Generate 5-color palettes using color-harmony rules — analogous, complementary, triadic, tetradic, and more."
+          description={`Press spacebar to shuffle a fresh palette. Lock the colors you want to keep and reshuffle the rest. Every palette is built from a harmony rule (not just random) so the colors actually work together. Export as CSS variables, SCSS, Tailwind config, or a Figma-ready JSON.`}
+          audience={["Designers", "Brand teams", "Developers"]}
+          whenToUse={[
+            "Kicking off a new brand or side-project",
+            "Exploring accent colors around a primary brand color",
+            "Generating a neutral scale to pair with a brand color",
+          ]}
+        />
+        <p className="mt-4 text-xs text-gray-500">
+          Tip: press{" "}
+          <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs">Space</kbd>{" "}
+          to shuffle. Click a swatch to lock it.
         </p>
 
         {/* Controls */}
