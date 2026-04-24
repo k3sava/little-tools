@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Stop words ---
 
@@ -661,16 +662,17 @@ export default function SeoContentAnalyzerContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            SEO Content Analyzer
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Analyze content for keyword density, heading structure, readability,
-            and SEO score. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="SEO Content Analyzer"
+          tagline="Score an article for SEO before publishing — keyword density, heading structure, readability, meta length, internal links."
+          description="Paste your article and target keyword. We check keyword density, count H2s/H3s and flag missing heading hierarchy, compute reading grade, check word count against SEO norms, and identify meta title/description length issues. Every check links to a specific fix."
+          audience={["SEOs", "Content marketers", "Bloggers"]}
+          whenToUse={[
+            "Final check before publishing a blog post",
+            "Auditing an underperforming page to find easy wins",
+            "Training junior writers on SEO basics",
+          ]}
+        />
 
         {/* Target keyword */}
         <div className="mb-3">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { jsPDF } from "jspdf";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -525,16 +526,17 @@ export default function InvoiceGeneratorContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Invoice Generator
-          </h1>
-          <p className="mt-3 text-gray-500">
-            Create professional invoices, quotes, and credit notes — export to PDF. No signup, no ads —
-            everything stays in your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="Invoice Generator"
+          tagline="Create an invoice, quote, or credit note — fill in the fields, export as a clean PDF. No signup, nothing saved to a server."
+          description="Fill in your business info once (saved locally for next time), enter line items with quantities and rates, add tax and discount, pick a currency. Live preview updates as you type. Switch between invoice / quote / credit-note layouts. Export a print-ready PDF with a single click."
+          audience={["Freelancers", "Small business owners", "Contractors"]}
+          whenToUse={[
+            "Invoicing a client without a full accounting app",
+            "Sending a quote before starting work",
+            "Issuing a credit note for a refund",
+          ]}
+        />
 
         {/* Document type selector */}
         <div className="mb-6">

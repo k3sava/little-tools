@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 interface PdfEntry {
   id: string;
@@ -113,18 +114,17 @@ export default function PdfMergeContent() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--kami-text)" }}
-        >
-          Merge PDF
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-          Combine multiple PDF files into one. 100% client-side — your PDFs never leave your
-          browser.
-        </p>
-      </div>
+      <ToolIntro
+        title="Merge PDF"
+        tagline="Combine any number of PDFs into one — drag to reorder, remove pages you don't want, export in seconds."
+        description="Drop multiple PDFs (or add them one by one). Drag cards to reorder the final document. Everything runs in your browser — the files never leave your device, so it's safe to use with sensitive contracts or financials."
+        audience={["Everyone"]}
+        whenToUse={[
+          "Combining a scanned cover letter + resume",
+          "Assembling a contract from multiple signed pages",
+          "Collating expense reports for one submission",
+        ]}
+      />
 
       {/* Drop zone */}
       <div className="mb-6">

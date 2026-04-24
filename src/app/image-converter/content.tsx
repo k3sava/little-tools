@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp";
 
@@ -302,15 +303,17 @@ export default function ImageConverterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Image Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert images between PNG, JPG, and WebP. Resize and compress — all
-            in your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="Image Converter"
+          tagline="Convert and batch-optimize images — PNG, JPG, WebP, AVIF — with resize and quality controls."
+          description="Drop one or many images. Pick output format (including AVIF for the smallest modern-web sizes), optionally resize, and set quality. Runs entirely in your browser — useful for private photos, client work, or anything you don't want to upload."
+          audience={["Everyone", "Designers", "Photographers"]}
+          whenToUse={[
+            "Converting iPhone HEIC photos for sharing",
+            "Batch-optimizing hero images for a website",
+            "Generating a smaller file for email or chat",
+          ]}
+        />
 
         {/* Drop Zone */}
         <FileDropZone

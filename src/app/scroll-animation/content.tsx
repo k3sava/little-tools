@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -309,13 +310,17 @@ export default function ScrollAnimationContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Scroll Animation Generator
-        </h1>
-        <p className="mt-2 text-gray-500">
-          Generate modern CSS scroll-driven animations with live preview. No
-          JavaScript required.
-        </p>
+        <ToolIntro
+          title="Scroll Animation Generator"
+          tagline="Build modern scroll-driven animations (animation-timeline: scroll/view) with a live preview — no JavaScript required."
+          description="Pick a preset (parallax, reveal, progress bar, horizontal-on-scroll) or build your own. Choose between scroll() and view() timelines, set the range, tweak easing, and watch the effect trigger as you scroll the preview frame. Output is vanilla CSS using the new CSS Scroll-Driven Animations spec."
+          audience={["Front-end developers", "Designers"]}
+          whenToUse={[
+            "Adding a subtle parallax or reveal to a marketing page",
+            "Building a scroll progress indicator",
+            "Exploring what CSS scroll-timeline can do before reaching for JS",
+          ]}
+        />
 
         {/* Browser support badge */}
         <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-700">
