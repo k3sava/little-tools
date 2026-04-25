@@ -927,8 +927,16 @@ export default function InvoiceGeneratorContent() {
           </fieldset>
 
           <div className="space-y-4">
-            <fieldset className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <legend className="px-2 text-sm font-semibold text-gray-700">
+            <fieldset
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Tax & Discount
               </legend>
               <div className="mt-2 grid grid-cols-2 gap-3">
