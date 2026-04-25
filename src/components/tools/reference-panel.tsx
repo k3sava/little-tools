@@ -38,7 +38,7 @@ export function ReferencePanel({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-start justify-between gap-4 px-5 py-4 text-left"
+        className="kami-panel-toggle flex w-full items-start justify-between gap-4 px-5 py-4 text-left"
         aria-expanded={open}
       >
         <div className="flex-1">
