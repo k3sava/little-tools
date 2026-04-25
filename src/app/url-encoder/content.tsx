@@ -64,8 +64,14 @@ export default function UrlEncoderContent() {
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [output, handleCopy]));
 
+  const inputBg = "var(--kami-input-bg, var(--kami-surface-solid))";
+  const inputBorder = "1px solid var(--kami-border-strong)";
+  const inputRadius = "var(--kami-input-radius, 0.75rem)";
+  const cardBg = "var(--kami-surface-solid)";
+  const cardRadius = "var(--kami-card-radius, 0.75rem)";
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="URL Encode / Decode"
@@ -80,24 +86,33 @@ export default function UrlEncoderContent() {
         />
 
         {/* Mode toggle */}
-        <div className="mb-4 flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5 w-fit">
+        <div
+          className="mb-4 flex items-center gap-1 px-1 py-0.5 w-fit"
+          style={{
+            background: cardBg,
+            border: inputBorder,
+            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+          }}
+        >
           <button
             onClick={() => setMode("encode")}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "encode"
-                ? "bg-gray-900 text-white"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={{
+              background: mode === "encode" ? "var(--kami-cta-bg)" : "transparent",
+              color: mode === "encode" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+            }}
           >
             Encode
           </button>
           <button
             onClick={() => setMode("decode")}
-            className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "decode"
-                ? "bg-gray-900 text-white"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={{
+              background: mode === "decode" ? "var(--kami-cta-bg)" : "transparent",
+              color: mode === "decode" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+            }}
           >
             Decode
           </button>
@@ -112,14 +127,21 @@ export default function UrlEncoderContent() {
               ? "Type or paste text to encode..."
               : "Paste URL-encoded text to decode..."
           }
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+          style={{
+            background: inputBg,
+            color: "var(--kami-text)",
+            border: inputBorder,
+            borderRadius: inputRadius,
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={4}
           autoFocus
         />
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
           <span>{input.length} chars</span>
           {input && (
-            <button onClick={() => setInput("")} className="hover:text-gray-600">
+            <button onClick={() => setInput("")}>
               Clear
             </button>
           )}
@@ -129,12 +151,17 @@ export default function UrlEncoderContent() {
         {input && output && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 {mode === "encode" ? "Encoded" : "Decoded"} Output
               </span>
               <button
                 onClick={() => handleCopy(output)}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied ? (
                   <><CheckIcon /> Copied</>
@@ -143,7 +170,16 @@ export default function UrlEncoderContent() {
                 )}
               </button>
             </div>
-            <div className="whitespace-pre-wrap break-all rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm">
+            <div
+              className="whitespace-pre-wrap break-all px-4 py-3 text-base font-mono"
+              style={{
+                background: cardBg,
+                color: "var(--kami-text)",
+                border: inputBorder,
+                borderRadius: cardRadius,
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {output}
             </div>
           </div>
@@ -152,10 +188,18 @@ export default function UrlEncoderContent() {
         {/* URL Parser */}
         {urlParts && (
           <div className="mt-6">
-            <h2 className="text-sm font-medium text-gray-500 mb-2">
+            <h2 className="text-sm font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
               URL Components
             </h2>
-            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div
+              className="overflow-hidden"
+              style={{
+                background: cardBg,
+                border: inputBorder,
+                borderRadius: cardRadius,
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <table className="w-full text-sm">
                 <tbody>
                   {[
@@ -165,8 +209,8 @@ export default function UrlEncoderContent() {
                     ["Search", urlParts.search || "(none)"],
                     ["Hash", urlParts.hash || "(none)"],
                   ].map(([label, value]) => (
-                    <tr key={label} className="border-b border-gray-100 last:border-0">
-                      <td className="px-4 py-2 text-gray-500 font-medium w-28">
+                    <tr key={label} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <td className="px-4 py-2 font-medium w-28" style={{ color: "var(--kami-text-muted)" }}>
                         {label}
                       </td>
                       <td className="px-4 py-2 font-mono break-all">{value}</td>
@@ -179,25 +223,33 @@ export default function UrlEncoderContent() {
             {/* Query params */}
             {urlParts.params.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">
+                <h3 className="text-sm font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
                   Query Parameters
                 </h3>
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <div
+                  className="overflow-hidden"
+                  style={{
+                    background: cardBg,
+                    border: inputBorder,
+                    borderRadius: cardRadius,
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 ">
-                        <th className="px-4 py-2 text-left font-medium text-gray-500">
+                      <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
                           Key
                         </th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-500">
+                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
                           Value
                         </th>
                       </tr>
                     </thead>
                     <tbody>
                       {urlParts.params.map(([key, value], i) => (
-                        <tr key={i} className="border-b border-gray-100 last:border-0">
-                          <td className="px-4 py-2 font-mono text-gray-700">
+                        <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                          <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text-muted)" }}>
                             {key}
                           </td>
                           <td className="px-4 py-2 font-mono break-all">

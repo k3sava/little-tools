@@ -257,8 +257,27 @@ export default function TextCleanerContent() {
     return computeInlineDiff(input, output);
   }, [input, output, hasChanges]);
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  };
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Text Cleaner"
@@ -277,17 +296,23 @@ export default function TextCleanerContent() {
           {OPERATIONS.map((op) => (
             <label
               key={op.value}
-              className="flex items-start gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 cursor-pointer hover:border-gray-300 transition-colors"
+              className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               <input
                 type="checkbox"
                 checked={ops.has(op.value)}
                 onChange={() => toggleOp(op.value)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-200"
+                className="mt-0.5 h-4 w-4"
+                style={{ accentColor: "var(--kami-text)" }}
               />
               <div>
                 <span className="text-sm font-medium">{op.label}</span>
-                <span className="ml-2 text-xs text-gray-400">
+                <span className="ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                   {op.description}
                 </span>
               </div>
@@ -300,22 +325,20 @@ export default function TextCleanerContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste your messy text here..."
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={inputStyle}
           rows={6}
           autoFocus
         />
 
         {/* Stats */}
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
           <span>
             {lineCount} {lineCount === 1 ? "line" : "lines"} · {charCount}{" "}
             {charCount === 1 ? "character" : "characters"}
           </span>
           {input && (
-            <button
-              onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setInput("")}>
               Clear
             </button>
           )}
@@ -325,12 +348,13 @@ export default function TextCleanerContent() {
         {output && input && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Cleaned result
               </span>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={ctaStyle}
               >
                 {copied ? (
                   <>
@@ -345,7 +369,7 @@ export default function TextCleanerContent() {
                 )}
               </button>
             </div>
-            <div className="whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm">
+            <div className="whitespace-pre-wrap px-4 py-3 text-base" style={cardStyle}>
               {output}
             </div>
           </div>
@@ -355,14 +379,14 @@ export default function TextCleanerContent() {
         {hasChanges && diffSegments && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Changes
-                <span className="ml-2 text-xs text-gray-400 font-normal">
+                <span className="ml-2 text-xs font-normal" style={{ color: "var(--kami-text-dim)" }}>
                   removed / added
                 </span>
               </span>
             </div>
-            <div className="whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm max-h-64 overflow-y-auto">
+            <div className="whitespace-pre-wrap px-4 py-3 text-base max-h-64 overflow-y-auto" style={cardStyle}>
               {diffSegments.map((seg, i) => {
                 if (seg.type === "removed") {
                   return (

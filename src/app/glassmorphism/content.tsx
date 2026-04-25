@@ -62,8 +62,22 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
     { key: "Enter", meta: true, action: () => copy(), label: "Copy CSS" },
   ], [currentCSS]));
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+
+  const tabStyle = (active: boolean) => ({
+    background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+    border: active ? "1px solid var(--kami-cta-bg)" : "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  });
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Glassmorphism / Neumorphism"
@@ -81,13 +95,15 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         <div className="mt-6 flex gap-2">
           <button
             onClick={() => setMode("glass")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${mode === "glass" ? "bg-gray-900 text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"}`}
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={tabStyle(mode === "glass")}
           >
             Glassmorphism
           </button>
           <button
             onClick={() => setMode("neumorph")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${mode === "neumorph" ? "bg-gray-900 text-white" : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"}`}
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={tabStyle(mode === "neumorph")}
           >
             Neumorphism
           </button>
@@ -97,8 +113,13 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
           {/* Preview */}
           {mode === "glass" ? (
             <div
-              className="relative flex min-h-[360px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 shadow-sm"
-              style={{ background: `linear-gradient(135deg, ${sceneBg}, ${adjustColor(sceneBg, 40)})` }}
+              className="relative flex min-h-[360px] items-center justify-center overflow-hidden"
+              style={{
+                background: `linear-gradient(135deg, ${sceneBg}, ${adjustColor(sceneBg, 40)})`,
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
             >
               {/* Decorative blobs */}
               <div className="absolute top-8 left-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: adjustColor(sceneBg, -30) }} />
@@ -119,8 +140,13 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
             </div>
           ) : (
             <div
-              className="flex min-h-[360px] items-center justify-center rounded-xl border border-gray-200 shadow-sm"
-              style={{ backgroundColor: neuDark ? "#2d2d2d" : neuBg }}
+              className="flex min-h-[360px] items-center justify-center"
+              style={{
+                backgroundColor: neuDark ? "#2d2d2d" : neuBg,
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
             >
               <div
                 className="flex h-48 w-64 items-center justify-center"
@@ -136,37 +162,37 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
           )}
 
           {/* Controls */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div className="p-4" style={cardStyle}>
             {mode === "glass" ? (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Glass Settings</h3>
+                <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Glass Settings</h3>
                 <SliderRow label="Blur" value={glassBlur} min={0} max={40} suffix="px" onChange={setGlassBlur} />
                 <SliderRow label="Opacity" value={glassOpacity} min={0} max={100} suffix="%" onChange={setGlassOpacity} />
                 <SliderRow label="Border" value={glassBorder} min={0} max={5} suffix="px" onChange={setGlassBorder} />
                 <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs text-gray-500">Card</span>
-                  <input type="color" value={glassBg} onChange={(e) => setGlassBg(e.target.value)} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                  <span className="text-xs font-mono text-gray-400">{glassBg}</span>
+                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Card</span>
+                  <input type="color" value={glassBg} onChange={(e) => setGlassBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{glassBg}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs text-gray-500">Scene</span>
-                  <input type="color" value={sceneBg} onChange={(e) => setSceneBg(e.target.value)} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                  <span className="text-xs font-mono text-gray-400">{sceneBg}</span>
+                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Scene</span>
+                  <input type="color" value={sceneBg} onChange={(e) => setSceneBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{sceneBg}</span>
                 </div>
               </div>
             ) : (
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-700">Neumorphism Settings</h3>
+                <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Neumorphism Settings</h3>
                 <SliderRow label="Distance" value={neuDistance} min={1} max={30} suffix="px" onChange={setNeuDistance} />
                 <SliderRow label="Intensity" value={neuIntensity} min={1} max={50} suffix="%" onChange={setNeuIntensity} />
                 <SliderRow label="Blur" value={neuBlur} min={0} max={60} suffix="px" onChange={setNeuBlur} />
                 <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs text-gray-500">Color</span>
-                  <input type="color" value={neuBg} onChange={(e) => setNeuBg(e.target.value)} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                  <span className="text-xs font-mono text-gray-400">{neuBg}</span>
+                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Color</span>
+                  <input type="color" value={neuBg} onChange={(e) => setNeuBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{neuBg}</span>
                 </div>
-                <label className="flex items-center gap-2 text-xs text-gray-500">
-                  <input type="checkbox" checked={neuDark} onChange={(e) => setNeuDark(e.target.checked)} className="rounded" />
+                <label className="flex items-center gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  <input type="checkbox" checked={neuDark} onChange={(e) => setNeuDark(e.target.checked)} />
                   Dark Mode
                 </label>
               </div>
@@ -175,14 +201,29 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         </div>
 
         {/* CSS */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mt-6 p-4" style={cardStyle}>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-medium text-gray-700">CSS</h2>
-            <button onClick={copy} className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:text-gray-700">
+            <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>CSS</h2>
+            <button
+              onClick={copy}
+              className="px-2 py-1 text-xs"
+              style={{
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
+            >
               {copied ? "Copied!" : "Copy"}
             </button>
           </div>
-          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100"><code>{currentCSS}</code></pre>
+          <pre
+            className="overflow-x-auto p-4 text-sm"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          ><code>{currentCSS}</code></pre>
         </div>
       </div>
     </div>
@@ -192,9 +233,20 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
 function SliderRow({ label, value, min, max, suffix, onChange }: { label: string; value: number; min: number; max: number; suffix: string; onChange: (v: number) => void }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="w-16 text-xs text-gray-500">{label}</span>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-      <span className="w-12 text-right text-xs font-mono text-gray-400">{value}{suffix}</span>
+      <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{
+          background: "var(--kami-border-strong)",
+          accentColor: "var(--kami-text)",
+        }}
+      />
+      <span className="w-12 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}{suffix}</span>
     </div>
   );
 }

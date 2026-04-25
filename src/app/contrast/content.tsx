@@ -118,22 +118,37 @@ export default function ContrastContent() {
   }: {
     level: WcagLevel;
     label: string;
-  }) => (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
-        level === "AAA"
-          ? "bg-green-100 text-green-800"
-          : level === "AA"
-            ? "bg-yellow-100 text-yellow-800"
-            : "bg-red-100 text-red-800"
-      }`}
-    >
-      {level === "Fail" ? "✗" : "✓"} {label} {level}
-    </span>
-  );
+  }) => {
+    const tone =
+      level === "AAA"
+        ? { bg: "rgba(34,197,94,0.14)", fg: "#16a34a", border: "rgba(34,197,94,0.30)" }
+        : level === "AA"
+          ? { bg: "rgba(234,179,8,0.14)", fg: "#a16207", border: "rgba(234,179,8,0.30)" }
+          : { bg: "rgba(239,68,68,0.14)", fg: "#b91c1c", border: "rgba(239,68,68,0.30)" };
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium"
+        style={{
+          background: tone.bg,
+          color: tone.fg,
+          border: `1px solid ${tone.border}`,
+          borderRadius: "999px",
+        }}
+      >
+        {level === "Fail" ? "✗" : "✓"} {label} {level}
+      </span>
+    );
+  };
+
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Contrast Checker"
@@ -156,7 +171,13 @@ export default function ContrastContent() {
           <div className="flex items-end justify-center pb-2">
             <button
               onClick={swap}
-              className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 hover:bg-gray-100 transition-colors"
+              className="p-2 transition-colors"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
               title="Swap colors"
             >
               ⇄
@@ -166,10 +187,10 @@ export default function ContrastContent() {
         </div>
 
         {/* Ratio Display */}
-        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm text-center">
+        <div className="mt-8 p-6 text-center" style={cardStyle}>
           <div className="text-5xl font-bold tabular-nums">
             {ratio.toFixed(2)}
-            <span className="text-lg font-normal text-gray-400">:1</span>
+            <span className="text-lg font-normal" style={{ color: "var(--kami-text-dim)" }}>:1</span>
           </div>
           <div className="mt-4 flex flex-wrap justify-center gap-2">
             <Badge level={levels.normal} label="Normal Text" />
@@ -178,7 +199,14 @@ export default function ContrastContent() {
         </div>
 
         {/* Preview */}
-        <div className="mt-6 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div
+          className="mt-6 overflow-hidden"
+          style={{
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="p-6" style={{ backgroundColor: bg, color: fg }}>
             <h3 className="text-2xl font-bold mb-2">Heading (24px Bold)</h3>
             <p className="text-base mb-3">
@@ -196,7 +224,7 @@ export default function ContrastContent() {
 
         {/* Suggestions */}
         {(aaFix || aaaFix) && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="mt-6 p-6" style={cardStyle}>
             <h2 className="text-lg font-semibold mb-3">Suggested Fixes</h2>
             <div className="space-y-3">
               {aaFix && (
@@ -222,11 +250,12 @@ export default function ContrastContent() {
         )}
 
         {/* Cross-link */}
-        <div className="mt-6 text-sm text-gray-400">
+        <div className="mt-6 text-sm" style={{ color: "var(--kami-text-dim)" }}>
           Need a full palette?{" "}
           <a
             href="/palette"
-            className="text-gray-600 underline hover:text-gray-800"
+            className="underline"
+            style={{ color: "var(--kami-text-muted)" }}
           >
             Color Palette Generator
           </a>
@@ -239,24 +268,46 @@ export default function ContrastContent() {
           defaultOpen
         >
           <div className="space-y-3">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="text-sm font-semibold text-gray-900">Level AA (the common baseline)</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Level AA (the common baseline)</div>
               <div className="mt-2 space-y-1">
                 <RuleRow rule="4.5 : 1" explanation="Normal body text (<18pt or <14pt bold)" />
                 <RuleRow rule="3.0 : 1" explanation="Large text (18pt+ or 14pt+ bold)" />
                 <RuleRow rule="3.0 : 1" explanation="UI components, icons, focus indicators" />
               </div>
-              <div className="mt-2 text-xs text-gray-500">Required by ADA, Section 508, European EN 301 549, and most design systems.</div>
+              <div className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>Required by ADA, Section 508, European EN 301 549, and most design systems.</div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="text-sm font-semibold text-gray-900">Level AAA (the stricter bar)</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Level AAA (the stricter bar)</div>
               <div className="mt-2 space-y-1">
                 <RuleRow rule="7.0 : 1" explanation="Normal body text" />
                 <RuleRow rule="4.5 : 1" explanation="Large text" />
               </div>
-              <div className="mt-2 text-xs text-gray-500">Required for some government / medical / financial contexts. Not always achievable with brand colors.</div>
+              <div className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>Required for some government / medical / financial contexts. Not always achievable with brand colors.</div>
             </div>
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <div
+              className="p-3 text-xs"
+              style={{
+                background: "color-mix(in srgb, var(--kami-accent, #f59e0b) 10%, var(--kami-surface))",
+                color: "var(--kami-text)",
+                border: "1px solid color-mix(in srgb, var(--kami-accent, #f59e0b) 30%, transparent)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
               <strong>Gotcha:</strong> WCAG contrast is based on luminance only - it doesn&apos;t
               capture hue or saturation differences. Two very different-looking colors can fail.
               For body text, prefer AA (4.5:1) as a baseline; AAA is a nice-to-have.
@@ -281,10 +332,17 @@ function ColorInput({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium text-gray-700">
+      <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
         {label}
       </label>
-      <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-2">
+      <div
+        className="flex items-center gap-2 p-2"
+        style={{
+          background: "var(--kami-surface-solid)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.5rem)",
+        }}
+      >
         <input
           type="color"
           value={value}
@@ -300,7 +358,8 @@ function ColorInput({
             else if (/^#[0-9a-fA-F]{0,6}$/.test(v))
               onChange(v); // allow partial typing
           }}
-          className="w-full rounded border-0 px-2 py-1 font-mono text-sm focus:outline-none"
+          className="w-full border-0 bg-transparent px-2 py-1 font-mono text-sm focus:outline-none"
+          style={{ color: "var(--kami-text)" }}
           placeholder="#000000"
         />
       </div>
@@ -324,24 +383,37 @@ function SuggestionRow({
   return (
     <div className="flex items-center gap-3">
       <div
-        className="h-8 w-8 rounded border border-gray-200"
-        style={{ backgroundColor: color }}
+        className="h-8 w-8"
+        style={{
+          backgroundColor: color,
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        }}
       />
       <div className="flex-1">
         <span className="text-sm font-medium">{label}</span>
-        <span className="ml-2 text-xs text-gray-400">
+        <span className="ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
           {color} - {ratio.toFixed(2)}:1
         </span>
       </div>
       <div
-        className="rounded px-3 py-1 text-xs"
-        style={{ backgroundColor: bg, color }}
+        className="px-3 py-1 text-xs"
+        style={{
+          backgroundColor: bg,
+          color,
+          borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        }}
       >
         Preview
       </div>
       <button
         onClick={onApply}
-        className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200"
+        className="px-3 py-1.5 text-xs font-medium"
+        style={{
+          background: "var(--kami-cta-bg)",
+          color: "var(--kami-cta-text)",
+          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+        }}
       >
         Apply
       </button>

@@ -189,8 +189,32 @@ export default function Base64Content() {
     { key: "k", meta: true, action: handleClear, label: "Clear" },
   ], [b64Output, handleCopy, handleClear]));
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const segActive = (active: boolean) => ({
+    background: active ? "var(--kami-cta-bg)" : "transparent",
+    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+  });
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  };
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Base64 Encode / Decode"
@@ -206,22 +230,31 @@ export default function Base64Content() {
 
         {/* Options bar */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5">
+          <div
+            className="flex items-center gap-1 px-1 py-0.5"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >
             <button
               onClick={() => setVariant("standard")}
-              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${variant === "standard" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"}`}
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={segActive(variant === "standard")}
             >
               Standard
             </button>
             <button
               onClick={() => setVariant("urlsafe")}
-              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${variant === "urlsafe" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"}`}
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={segActive(variant === "urlsafe")}
             >
               URL-safe
             </button>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="text-gray-500">Wrap:</span>
+            <span style={{ color: "var(--kami-text-muted)" }}>Wrap:</span>
             {[
               { label: "None", value: 0 },
               { label: "64 (PEM)", value: 64 },
@@ -230,7 +263,12 @@ export default function Base64Content() {
               <button
                 key={opt.value}
                 onClick={() => setLineWrap(opt.value)}
-                className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${lineWrap === opt.value ? "bg-gray-200 text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+                className="px-2 py-0.5 text-xs font-medium transition-colors"
+                style={{
+                  background: lineWrap === opt.value ? "var(--kami-surface)" : "transparent",
+                  color: lineWrap === opt.value ? "var(--kami-text)" : "var(--kami-text-muted)",
+                  borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                }}
               >
                 {opt.label}
               </button>
@@ -242,11 +280,12 @@ export default function Base64Content() {
           {/* Plain text side */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">Plain Text</span>
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Plain Text</span>
               {plainText && (
                 <button
                   onClick={() => handleCopy(plainText, "plain")}
-                  className="flex items-center gap-1 rounded-lg bg-gray-900 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-800"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
+                  style={ctaStyle}
                 >
                   {copied === "plain" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
                 </button>
@@ -256,14 +295,15 @@ export default function Base64Content() {
               value={plainText}
               onChange={(e) => handlePlainChange(e.target.value)}
               placeholder="Type or paste plain text..."
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+              style={inputStyle}
               rows={10}
               autoFocus
             />
-            <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
               <span>{plainText.length} chars / {new TextEncoder().encode(plainText).length} bytes</span>
               {plainText && (
-                <button onClick={handleClear} className="hover:text-gray-600">Clear</button>
+                <button onClick={handleClear}>Clear</button>
               )}
             </div>
           </div>
@@ -271,14 +311,15 @@ export default function Base64Content() {
           {/* Base64 side */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Base64{variant === "urlsafe" ? " (URL-safe)" : ""}
-                {fileName && <span className="text-gray-400 font-normal"> - {fileName}</span>}
+                {fileName && <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}> - {fileName}</span>}
               </span>
               {b64Output && (
                 <button
                   onClick={() => handleCopy(b64Output, "base64")}
-                  className="flex items-center gap-1 rounded-lg bg-gray-900 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-800"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
+                  style={ctaStyle}
                 >
                   {copied === "base64" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
                 </button>
@@ -288,16 +329,17 @@ export default function Base64Content() {
               value={b64Output}
               onChange={(e) => handleBase64Change(e.target.value)}
               placeholder="Type or paste Base64..."
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+              style={inputStyle}
               rows={10}
             />
-            <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
               <span>
                 {base64Text.length} base64 chars
                 {byteSize > 0 && ` / ${byteSize.toLocaleString()} decoded bytes`}
               </span>
               {base64Text && (
-                <button onClick={handleClear} className="hover:text-gray-600">Clear</button>
+                <button onClick={handleClear}>Clear</button>
               )}
             </div>
           </div>
@@ -308,20 +350,28 @@ export default function Base64Content() {
           <div className="mt-4 space-y-3">
             {/* Data URL */}
             {dataUrl && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="p-4" style={cardStyle}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-500">
+                  <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                     Data URL
-                    {detectedMime && <span className="text-gray-400 font-normal ml-2 text-xs">{detectedMime}</span>}
+                    {detectedMime && <span className="font-normal ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>{detectedMime}</span>}
                   </span>
                   <button
                     onClick={() => handleCopy(dataUrl, "dataurl")}
-                    className="flex items-center gap-1 rounded-lg bg-gray-900 px-2.5 py-1 text-xs font-medium text-white transition-colors hover:bg-gray-800"
+                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
+                    style={ctaStyle}
                   >
                     {copied === "dataurl" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy Data URL</>}
                   </button>
                 </div>
-                <div className="font-mono text-xs text-gray-600 break-all max-h-20 overflow-auto bg-gray-50 rounded-lg p-2">
+                <div
+                  className="font-mono text-xs break-all max-h-20 overflow-auto p-2"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
                   {dataUrl.slice(0, 200)}{dataUrl.length > 200 ? "..." : ""}
                 </div>
               </div>
@@ -329,9 +379,17 @@ export default function Base64Content() {
 
             {/* Image preview */}
             {showImagePreview && dataUrl && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <span className="text-sm font-medium text-gray-500 mb-2 block">Preview</span>
-                <div className="flex items-center justify-center rounded-lg bg-gray-50 p-4" style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Crect%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23f0f0f0%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23f0f0f0%22%2F%3E%3C%2Fsvg%3E')" }}>
+              <div className="p-4" style={cardStyle}>
+                <span className="text-sm font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Preview</span>
+                <div
+                  className="flex items-center justify-center p-4"
+                  style={{
+                    background: "var(--kami-surface)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    backgroundImage:
+                      "url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%3E%3Crect%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23f0f0f0%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%2210%22%20width%3D%2210%22%20height%3D%2210%22%20fill%3D%22%23f0f0f0%22%2F%3E%3C%2Fsvg%3E')",
+                  }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={dataUrl} alt="Preview" className="max-w-full max-h-64 rounded" />
                 </div>
@@ -353,10 +411,13 @@ export default function Base64Content() {
 
         {/* Quick reference */}
         <details className="mt-6">
-          <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-600">
+          <summary className="cursor-pointer text-sm" style={{ color: "var(--kami-text-dim)" }}>
             Base64 reference
           </summary>
-          <div className="mt-2 rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-xs text-gray-500 space-y-2">
+          <div
+            className="mt-2 p-4 text-xs space-y-2"
+            style={{ ...cardStyle, color: "var(--kami-text-muted)" }}
+          >
             <p><strong>Standard Base64</strong> uses A-Z, a-z, 0-9, +, / and = for padding. Used in emails (MIME), PEM certificates, and data URIs.</p>
             <p><strong>URL-safe Base64</strong> replaces + with - and / with _, strips = padding. Used in JWTs, URL parameters, and file names.</p>
             <p><strong>Line wrapping</strong>: PEM (64 chars/line) for certificates, MIME (76 chars/line) for email attachments.</p>
