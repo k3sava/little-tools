@@ -763,14 +763,7 @@ function StyleRuleCard({
   example: string;
 }) {
   return (
-    <div
-      className="p-4"
-      style={{
-        background: "var(--kami-surface)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-      }}
-    >
+    <div>
       <div className="flex items-baseline justify-between gap-3">
         <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{name}</div>
         <div className="text-xs text-right" style={{ color: "var(--kami-text-dim)" }}>{tagline}</div>
