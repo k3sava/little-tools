@@ -474,7 +474,7 @@ export default function PositioningBuilderContent() {
   }, [activeFramework, framework.sample]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Positioning Statement Builder"
@@ -502,7 +502,7 @@ export default function PositioningBuilderContent() {
         />
 
         <div className="mb-6">
-          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
             Pick a framework
           </div>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -512,19 +512,30 @@ export default function PositioningBuilderContent() {
                 <button
                   key={fw.id}
                   onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                  className={`rounded-xl border p-3 text-left transition-all ${
+                  className="p-3 text-left transition-all"
+                  style={
                     active
-                      ? "border-gray-900 bg-gray-900 text-white shadow-md"
-                      : "border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm"
-                  }`}
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          border: "1px solid var(--kami-cta-bg)",
+                          borderRadius: "var(--kami-card-radius, 0.75rem)",
+                          boxShadow: "var(--kami-card-shadow, none)",
+                        }
+                      : {
+                          background: "var(--kami-surface-solid)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-card-radius, 0.75rem)",
+                        }
+                  }
                 >
-                  <div className={`text-sm font-semibold ${active ? "text-white" : "text-gray-900"}`}>
+                  <div className="text-sm font-semibold" style={{ color: active ? "var(--kami-cta-text)" : "var(--kami-text)" }}>
                     {fw.name}
                   </div>
-                  <div className={`text-xs ${active ? "text-gray-300" : "text-gray-500"}`}>
+                  <div className="text-xs" style={{ color: active ? "var(--kami-overlay-text-dim)" : "var(--kami-text-muted)" }}>
                     {fw.author}
                   </div>
-                  <div className={`mt-1 text-xs ${active ? "text-gray-200" : "text-gray-600"}`}>
+                  <div className="mt-1 text-xs" style={{ color: active ? "var(--kami-overlay-text-dim)" : "var(--kami-text-muted)" }}>
                     {fw.tagline}
                   </div>
                 </button>
@@ -532,13 +543,19 @@ export default function PositioningBuilderContent() {
             })}
           </div>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            <div className="flex-1 text-xs text-gray-500">
-              <span className="font-medium text-gray-700">Best for:</span> {framework.bestFor}
+            <div className="flex-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {framework.bestFor}
             </div>
             {framework.sample && (
               <button
                 onClick={loadSample}
-                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:border-gray-400"
+                className="px-3 py-1 text-xs font-medium"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "999px",
+                }}
               >
                 Load sample
               </button>
@@ -546,11 +563,21 @@ export default function PositioningBuilderContent() {
             {filledFrameworks.length > 0 && (
               <button
                 onClick={() => setViewMode(viewMode === "compare" ? "edit" : "compare")}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                className="px-3 py-1 text-xs font-medium transition-colors"
+                style={
                   viewMode === "compare"
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900"
-                }`}
+                    ? {
+                        background: "var(--kami-cta-bg)",
+                        color: "var(--kami-cta-text)",
+                        borderRadius: "999px",
+                      }
+                    : {
+                        background: "var(--kami-surface-solid)",
+                        color: "var(--kami-text-muted)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "999px",
+                      }
+                }
               >
                 {viewMode === "compare" ? "Back to edit" : `Compare all (${filledFrameworks.length})`}
               </button>
@@ -574,21 +601,36 @@ export default function PositioningBuilderContent() {
                   <button
                     key={fw.id}
                     onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                    className="group rounded-xl border border-gray-200 bg-white p-5 text-left shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
+                    className="group p-5 text-left transition-all"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-card-radius, 0.75rem)",
+                      boxShadow: "var(--kami-card-shadow, none)",
+                    }}
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900">
+                        <h3 className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
                           {fw.name}
                         </h3>
-                        <p className="text-xs text-gray-400">{fw.author}</p>
+                        <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{fw.author}</p>
                       </div>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        className="px-2 py-0.5 text-xs font-medium"
+                        style={
                           filledCount === totalCount
-                            ? "bg-green-50 text-green-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
+                            ? {
+                                background: "color-mix(in srgb, #16a34a 10%, var(--kami-surface))",
+                                color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+                                borderRadius: "999px",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "999px",
+                              }
+                        }
                       >
                         {filledCount}/{totalCount} fields
                       </span>
@@ -596,21 +638,21 @@ export default function PositioningBuilderContent() {
                     <p className="text-sm leading-relaxed">
                       {statement.parts.map((part, i) =>
                         part.filled ? (
-                          <span key={i} className="font-semibold text-gray-900">
+                          <span key={i} className="font-semibold" style={{ color: "var(--kami-text)" }}>
                             {part.text}
                           </span>
                         ) : part.text.startsWith("[") && part.text.endsWith("]") ? (
-                          <span key={i} className="italic text-gray-300">
+                          <span key={i} className="italic" style={{ color: "var(--kami-text-dim)" }}>
                             {part.text}
                           </span>
                         ) : (
-                          <span key={i} className="text-gray-500">
+                          <span key={i} style={{ color: "var(--kami-text-muted)" }}>
                             {part.text}
                           </span>
                         )
                       )}
                     </p>
-                    <p className="mt-3 text-xs text-gray-400 opacity-0 transition-opacity group-hover:opacity-100">
+                    <p className="mt-3 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ color: "var(--kami-text-dim)" }}>
                       Click to edit
                     </p>
                   </button>
@@ -618,7 +660,7 @@ export default function PositioningBuilderContent() {
               })}
             </div>
             {filledFrameworks.length === 0 && (
-              <p className="text-center text-sm text-gray-400 py-8">
+              <p className="text-center text-sm py-8" style={{ color: "var(--kami-text-dim)" }}>
                 Fill in at least one framework to see the comparison.
               </p>
             )}
@@ -626,19 +668,28 @@ export default function PositioningBuilderContent() {
         )}
 
         {/* Guided form */}
-        {viewMode === "edit" && <><div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        {viewMode === "edit" && <><div
+          className="mb-8 p-6"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-gray-900">
+              <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
                 {framework.name} · {framework.author}
               </h2>
-              <p className="text-xs text-gray-500">{framework.tagline}</p>
+              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{framework.tagline}</p>
             </div>
             <div className="flex items-center gap-3">
               {framework.sample && (
                 <button
                   onClick={loadSample}
-                  className="text-xs font-medium text-gray-600 underline underline-offset-2 hover:text-gray-900"
+                  className="text-xs font-medium underline underline-offset-2"
+                  style={{ color: "var(--kami-text-muted)" }}
                 >
                   Load sample
                 </button>
@@ -646,7 +697,8 @@ export default function PositioningBuilderContent() {
               {hasAnyValue && (
                 <button
                   onClick={clearForm}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-xs transition-colors"
+                  style={{ color: "var(--kami-text-dim)" }}
                 >
                   Clear
                 </button>
@@ -658,15 +710,16 @@ export default function PositioningBuilderContent() {
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label
                   htmlFor={`field-${field.key}`}
-                  className="flex items-center gap-1.5 text-sm font-medium text-gray-800"
+                  className="flex items-center gap-1.5 text-sm font-medium"
+                  style={{ color: "var(--kami-text)" }}
                 >
                   {field.label}
                   <InfoTip label={`About: ${field.label}`}>
-                    <div className="font-semibold text-gray-900">{field.hint}</div>
-                    <div className="mt-1.5 text-gray-600">{field.example}</div>
+                    <div className="font-semibold" style={{ color: "var(--kami-text)" }}>{field.hint}</div>
+                    <div className="mt-1.5" style={{ color: "var(--kami-text-muted)" }}>{field.example}</div>
                   </InfoTip>
                 </label>
-                <p className="text-xs text-gray-400">{field.hint}</p>
+                <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{field.hint}</p>
                 {field.multiline ? (
                   <textarea
                     id={`field-${field.key}`}
@@ -674,7 +727,13 @@ export default function PositioningBuilderContent() {
                     onChange={(e) => setFieldValue(field.key, e.target.value)}
                     placeholder={field.example}
                     rows={3}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-300 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 resize-none"
+                    className="px-3 py-2 text-sm focus:outline-none resize-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 ) : (
                   <input
@@ -683,7 +742,13 @@ export default function PositioningBuilderContent() {
                     value={values[field.key] ?? ""}
                     onChange={(e) => setFieldValue(field.key, e.target.value)}
                     placeholder={field.example}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-300 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 )}
               </div>
@@ -692,25 +757,34 @@ export default function PositioningBuilderContent() {
         </div>
 
         {/* Live preview */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-medium text-gray-500 uppercase tracking-wide">
+        <div
+          className="mb-8 p-6"
+          style={{
+            background: "var(--kami-surface)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Live Preview
           </h2>
           <p className="text-lg leading-relaxed">
             {previewParts.parts.map((part, i) =>
               part.filled ? (
-                <span key={i} className="font-semibold text-gray-900">
+                <span key={i} className="font-semibold" style={{ color: "var(--kami-text)" }}>
                   {part.text}
                 </span>
               ) : part.text.startsWith("[") && part.text.endsWith("]") ? (
                 <span
                   key={i}
-                  className="italic text-gray-400"
+                  className="italic"
+                  style={{ color: "var(--kami-text-dim)" }}
                 >
                   {part.text}
                 </span>
               ) : (
-                <span key={i} className="text-gray-600">
+                <span key={i} style={{ color: "var(--kami-text-muted)" }}>
                   {part.text}
                 </span>
               )
@@ -719,21 +793,40 @@ export default function PositioningBuilderContent() {
         </div>
 
         {/* Output section */}
-        <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-sm font-medium text-gray-500 uppercase tracking-wide">
+        <div
+          className="p-6"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Export
           </h2>
           <div className="flex flex-wrap gap-3">
             <button
               onClick={handleCopyPlain}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-colors"
+              style={{
+                background: "var(--kami-cta-bg)",
+                color: "var(--kami-cta-text)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {copiedPlain ? <CheckIcon /> : <CopyIcon />}
               {copiedPlain ? "Copied" : "Copy as plain text"}
             </button>
             <button
               onClick={handleCopyFormatted}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:border-gray-300 hover:text-gray-900 flex items-center gap-1.5 transition-colors"
+              className="px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-colors"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {copiedFormatted ? <CheckIcon /> : <CopyIcon />}
               {copiedFormatted ? "Copied" : "Copy as formatted"}
@@ -744,7 +837,8 @@ export default function PositioningBuilderContent() {
               <button
                 key={fw.id}
                 onClick={() => setActiveFramework(fw.id)}
-                className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2 transition-colors"
+                className="text-sm underline underline-offset-2 transition-colors"
+                style={{ color: "var(--kami-text-muted)" }}
               >
                 Try {fw.name} framework
               </button>
@@ -761,22 +855,31 @@ export default function PositioningBuilderContent() {
         >
           <div className="space-y-4">
             {FRAMEWORKS.map((fw) => (
-              <div key={fw.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div
+                key={fw.id}
+                className="p-3"
+                style={{
+                  background: "var(--kami-surface)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              >
                 <div className="flex items-baseline justify-between gap-2">
                   <div>
-                    <div className="text-sm font-semibold text-gray-900">{fw.name}</div>
-                    <div className="text-xs text-gray-500">{fw.author}</div>
+                    <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{fw.name}</div>
+                    <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{fw.author}</div>
                   </div>
                   <button
                     onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                    className="text-xs font-medium text-gray-600 underline underline-offset-2 hover:text-gray-900"
+                    className="text-xs font-medium underline underline-offset-2"
+                    style={{ color: "var(--kami-text-muted)" }}
                   >
                     Use this →
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-700">{fw.tagline}</p>
-                <p className="mt-1 text-xs text-gray-500">
-                  <span className="font-medium text-gray-700">Best for:</span> {fw.bestFor}
+                <p className="mt-1 text-xs" style={{ color: "var(--kami-text)" }}>{fw.tagline}</p>
+                <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {fw.bestFor}
                 </p>
               </div>
             ))}
@@ -791,37 +894,37 @@ export default function PositioningBuilderContent() {
         >
           <ul className="space-y-3">
             <li>
-              <div className="text-sm font-medium text-gray-900">Be specific, not aspirational.</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Be specific, not aspirational.</div>
+              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 &quot;B2B SaaS teams with 500+ accounts&quot; beats &quot;enterprise customers.&quot;
                 &quot;Reduce churn by 30%&quot; beats &quot;improve retention.&quot;
               </div>
             </li>
             <li>
-              <div className="text-sm font-medium text-gray-900">Name your real alternatives.</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Name your real alternatives.</div>
+              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 The competitor field isn&apos;t just direct competitors - it&apos;s the spreadsheet,
                 the intern, or the status quo. If you skip this, your positioning has no edge.
               </div>
             </li>
             <li>
-              <div className="text-sm font-medium text-gray-900">Differentiators must be defensible.</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Differentiators must be defensible.</div>
+              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 &quot;Easy to use&quot; and &quot;fast&quot; aren&apos;t differentiators - everyone claims them.
                 Look for something that requires specific data, tech, or expertise alternatives lack.
               </div>
             </li>
             <li>
-              <div className="text-sm font-medium text-gray-900">Category frames the value.</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Category frames the value.</div>
+              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 The category you pick changes who compares you to what. &quot;Email tool&quot; competes
                 with Gmail; &quot;sales engagement platform&quot; competes with Outreach. Pick the
                 frame that makes your differentiation obvious.
               </div>
             </li>
             <li>
-              <div className="text-sm font-medium text-gray-900">Test it out loud.</div>
-              <div className="text-xs text-gray-600">
+              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Test it out loud.</div>
+              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 Read the final statement to a target customer. If they say &quot;so what?&quot;, the
                 value isn&apos;t concrete enough. If they say &quot;sounds like everyone,&quot; the
                 differentiator isn&apos;t sharp enough.
@@ -830,7 +933,7 @@ export default function PositioningBuilderContent() {
           </ul>
         </ReferencePanel>
 
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-6 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
           ⌘Enter copies the statement · ⌘K clears the form · Runs entirely in
           your browser - nothing is saved to a server.
         </div>

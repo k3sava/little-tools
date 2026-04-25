@@ -54,18 +54,38 @@ function getValidation(row: FeatureRow): ValidationStatus {
 
 function getStatusLabel(status: ValidationStatus): {
   label: string;
-  color: string;
-  bg: string;
+  style: React.CSSProperties;
 } {
   switch (status) {
     case "valid":
-      return { label: "Good", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" };
+      return {
+        label: "Good",
+        style: {
+          color: "color-mix(in srgb, #10b981 70%, var(--kami-text))",
+          background: "color-mix(in srgb, #10b981 10%, var(--kami-surface))",
+          border: "1px solid color-mix(in srgb, #10b981 30%, transparent)",
+        },
+      };
     case "missing-benefit":
-      return { label: "Needs benefit", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" };
+      return {
+        label: "Needs benefit",
+        style: {
+          color: "color-mix(in srgb, #f59e0b 70%, var(--kami-text))",
+          background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
+          border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+        },
+      };
     case "feature-speak":
-      return { label: "Feature-speak", color: "text-red-600", bg: "bg-red-50 border-red-200" };
+      return {
+        label: "Feature-speak",
+        style: {
+          color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+          background: "color-mix(in srgb, #ef4444 10%, var(--kami-surface))",
+          border: "1px solid color-mix(in srgb, #ef4444 30%, transparent)",
+        },
+      };
     case "empty":
-      return { label: "", color: "text-gray-400", bg: "" };
+      return { label: "", style: { color: "var(--kami-text-dim)" } };
   }
 }
 
@@ -195,7 +215,7 @@ export default function FeatureBenefitMapperContent() {
   }, [rows]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Feature-Benefit Mapper"
@@ -213,33 +233,43 @@ export default function FeatureBenefitMapperContent() {
         />
 
         {/* Score bar */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div
+          className="mb-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <div
-                  className={`text-3xl font-bold ${
-                    stats.score >= 80
-                      ? "text-emerald-600"
-                      : stats.score >= 50
-                      ? "text-amber-600"
-                      : "text-red-600"
-                  }`}
+                  className="text-3xl font-bold"
+                  style={{
+                    color:
+                      stats.score >= 80
+                        ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
+                        : stats.score >= 50
+                        ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
+                        : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+                  }}
                 >
                   {stats.score}%
                 </div>
-                <div className="text-xs text-gray-500">Benefit Coverage</div>
+                <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Benefit Coverage</div>
               </div>
-              <div className="h-10 w-px bg-gray-200" />
+              <div className="h-10 w-px" style={{ background: "var(--kami-border-strong)" }} />
               <div className="flex gap-4 text-sm">
-                <span className="text-emerald-600">
+                <span style={{ color: "color-mix(in srgb, #10b981 70%, var(--kami-text))" }}>
                   {stats.valid} mapped
                 </span>
-                <span className="text-amber-600">
+                <span style={{ color: "color-mix(in srgb, #f59e0b 70%, var(--kami-text))" }}>
                   {stats.needsBenefit} missing
                 </span>
                 {stats.featureSpeak > 0 && (
-                  <span className="text-red-600">
+                  <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                     {stats.featureSpeak} feature-speak
                   </span>
                 )}
@@ -248,60 +278,89 @@ export default function FeatureBenefitMapperContent() {
             <div className="flex gap-2">
               <button
                 onClick={handleCopyMarkdown}
-                className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+                className="px-4 py-2 text-sm font-medium"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied ? "Copied!" : "Copy Markdown"}
               </button>
               <button
                 onClick={handleDownloadCSV}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:border-gray-300"
+                className="px-4 py-2 text-sm"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 CSV
               </button>
               <button
                 onClick={clearAll}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:border-gray-300"
+                className="px-4 py-2 text-sm"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 Clear
               </button>
             </div>
           </div>
           {/* Progress bar */}
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "var(--kami-surface)" }}>
             <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                stats.score >= 80
-                  ? "bg-emerald-500"
-                  : stats.score >= 50
-                  ? "bg-amber-500"
-                  : "bg-red-500"
-              }`}
-              style={{ width: `${stats.score}%` }}
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${stats.score}%`,
+                background:
+                  stats.score >= 80
+                    ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
+                    : stats.score >= 50
+                    ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
+                    : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+              }}
             />
           </div>
         </div>
 
         {/* Table */}
-        <div className="rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           {/* Header */}
-          <div className="hidden border-b border-gray-100 px-5 py-3 sm:grid sm:grid-cols-12 sm:gap-3">
-            <div className="col-span-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <div
+            className="hidden px-5 py-3 sm:grid sm:grid-cols-12 sm:gap-3"
+            style={{ borderBottom: "1px solid var(--kami-border)" }}
+          >
+            <div className="col-span-3 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted)" }}>
               Feature
             </div>
-            <div className="col-span-5 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="col-span-5 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted)" }}>
               Customer Benefit
             </div>
-            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="col-span-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted)" }}>
               Audience
             </div>
-            <div className="col-span-1 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            <div className="col-span-1 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted)" }}>
               Status
             </div>
             <div className="col-span-1" />
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-gray-50">
+          <div>
             {rows.map((row) => {
               const status = getValidation(row);
               const statusMeta = getStatusLabel(status);
@@ -311,7 +370,7 @@ export default function FeatureBenefitMapperContent() {
                   className="group grid grid-cols-1 gap-2 px-5 py-3 sm:grid-cols-12 sm:gap-3 sm:py-2"
                 >
                   <div className="sm:col-span-3">
-                    <label className="mb-1 block text-xs text-gray-400 sm:hidden">
+                    <label className="mb-1 block text-xs sm:hidden" style={{ color: "var(--kami-text-dim)" }}>
                       Feature
                     </label>
                     <input
@@ -321,11 +380,17 @@ export default function FeatureBenefitMapperContent() {
                         updateRow(row.id, "feature", e.target.value)
                       }
                       placeholder="What you built"
-                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                     />
                   </div>
                   <div className="sm:col-span-5">
-                    <label className="mb-1 block text-xs text-gray-400 sm:hidden">
+                    <label className="mb-1 block text-xs sm:hidden" style={{ color: "var(--kami-text-dim)" }}>
                       Customer Benefit
                     </label>
                     <input
@@ -335,17 +400,29 @@ export default function FeatureBenefitMapperContent() {
                         updateRow(row.id, "benefit", e.target.value)
                       }
                       placeholder="Why the customer cares"
-                      className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200 ${
-                        status === "missing-benefit"
-                          ? "border-amber-300 bg-amber-50/50"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        color: "var(--kami-text)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        ...(status === "missing-benefit"
+                          ? {
+                              border: "1px solid color-mix(in srgb, #f59e0b 40%, var(--kami-border-strong))",
+                              background: "color-mix(in srgb, #f59e0b 6%, var(--kami-surface-solid))",
+                            }
                           : status === "feature-speak"
-                          ? "border-red-300 bg-red-50/50"
-                          : "border-gray-200 bg-white"
-                      }`}
+                          ? {
+                              border: "1px solid color-mix(in srgb, #ef4444 40%, var(--kami-border-strong))",
+                              background: "color-mix(in srgb, #ef4444 6%, var(--kami-surface-solid))",
+                            }
+                          : {
+                              border: "1px solid var(--kami-border-strong)",
+                              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                            }),
+                      }}
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <label className="mb-1 block text-xs text-gray-400 sm:hidden">
+                    <label className="mb-1 block text-xs sm:hidden" style={{ color: "var(--kami-text-dim)" }}>
                       Audience
                     </label>
                     <input
@@ -355,13 +432,23 @@ export default function FeatureBenefitMapperContent() {
                         updateRow(row.id, "audience", e.target.value)
                       }
                       placeholder="Who"
-                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                     />
                   </div>
                   <div className="flex items-center sm:col-span-1">
                     {status !== "empty" && (
                       <span
-                        className={`inline-block rounded-md border px-2 py-0.5 text-xs font-medium ${statusMeta.bg} ${statusMeta.color}`}
+                        className="inline-block px-2 py-0.5 text-xs font-medium"
+                        style={{
+                          ...statusMeta.style,
+                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                        }}
                       >
                         {statusMeta.label}
                       </span>
@@ -370,7 +457,8 @@ export default function FeatureBenefitMapperContent() {
                   <div className="flex items-center justify-end sm:col-span-1">
                     <button
                       onClick={() => removeRow(row.id)}
-                      className="rounded px-1.5 py-0.5 text-xs text-gray-400 opacity-0 transition-opacity hover:text-gray-600 group-hover:opacity-100"
+                      className="rounded px-1.5 py-0.5 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+                      style={{ color: "var(--kami-text-dim)" }}
                     >
                       ✕
                     </button>
@@ -381,10 +469,15 @@ export default function FeatureBenefitMapperContent() {
           </div>
 
           {/* Add row */}
-          <div className="border-t border-gray-100 px-5 py-3">
+          <div className="px-5 py-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
             <button
               onClick={addRow}
-              className="w-full rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+              className="w-full px-4 py-2 text-sm transition-colors"
+              style={{
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                color: "var(--kami-text-muted)",
+              }}
             >
               + Add Feature
             </button>
@@ -392,45 +485,53 @@ export default function FeatureBenefitMapperContent() {
         </div>
 
         {/* Tips */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">
+        <div
+          className="mt-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
             Writing better benefits
           </h2>
           <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
             <div>
-              <p className="mb-1 font-medium text-red-600">
+              <p className="mb-1 font-medium" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                 Feature-speak (avoid)
               </p>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1" style={{ color: "var(--kami-text-muted)" }}>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;Webhook
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;Webhook
                   infrastructure enables pipeline automation&quot;
                 </li>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;Built on a
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;Built on a
                   microservices architecture&quot;
                 </li>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;Native CRM
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;Native CRM
                   integration&quot;
                 </li>
               </ul>
             </div>
             <div>
-              <p className="mb-1 font-medium text-emerald-600">
+              <p className="mb-1 font-medium" style={{ color: "color-mix(in srgb, #10b981 70%, var(--kami-text))" }}>
                 Customer benefit (use)
               </p>
-              <ul className="space-y-1 text-gray-600">
+              <ul className="space-y-1" style={{ color: "var(--kami-text-muted)" }}>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;Reps save 30
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;Reps save 30
                   min per day by eliminating manual data entry&quot;
                 </li>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;99.99% uptime
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;99.99% uptime
                   means your team never misses a call&quot;
                 </li>
                 <li>
-                  <span className="text-gray-300">•</span> &quot;One-click sync
+                  <span style={{ color: "var(--kami-text-dim)" }}>•</span> &quot;One-click sync
                   keeps your CRM accurate without copy-pasting&quot;
                 </li>
               </ul>
@@ -445,22 +546,51 @@ export default function FeatureBenefitMapperContent() {
           defaultOpen
         >
           <div className="space-y-4 text-sm">
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 1</div>
-              <div className="mt-1 font-medium text-gray-900">State the feature (what it does)</div>
-              <div className="mt-1 text-xs text-gray-600">&quot;AES-256 encryption at rest and in transit.&quot;</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 1</div>
+              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>State the feature (what it does)</div>
+              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;AES-256 encryption at rest and in transit.&quot;</div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 2</div>
-              <div className="mt-1 font-medium text-gray-900">Ask &quot;so what?&quot; until it hits a human outcome</div>
-              <div className="mt-1 text-xs text-gray-600">Encrypted → unreadable if stolen → customer data stays safe → you don&apos;t make the news.</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 2</div>
+              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Ask &quot;so what?&quot; until it hits a human outcome</div>
+              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>Encrypted → unreadable if stolen → customer data stays safe → you don&apos;t make the news.</div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 3</div>
-              <div className="mt-1 font-medium text-gray-900">Rewrite as what the customer gains</div>
-              <div className="mt-1 text-xs text-gray-600">&quot;Your customer data stays private - even if a backup is stolen.&quot;</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 3</div>
+              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Rewrite as what the customer gains</div>
+              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;Your customer data stays private - even if a backup is stolen.&quot;</div>
             </div>
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <div
+              className="p-3 text-xs"
+              style={{
+                background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
+                border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+                color: "var(--kami-text)",
+              }}
+            >
               <strong>Rule of thumb:</strong> if you can put &quot;so what?&quot; after your
               sentence and it still needs an answer, it&apos;s a feature. If the reader&apos;s
               reaction is &quot;oh - I want that,&quot; it&apos;s a benefit.

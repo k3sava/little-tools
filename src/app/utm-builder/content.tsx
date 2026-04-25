@@ -233,7 +233,7 @@ export default function UtmBuilderContent() {
   );
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="UTM Builder"
@@ -253,7 +253,7 @@ export default function UtmBuilderContent() {
 
         {/* Platform Presets */}
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium text-gray-500">
+          <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
             Platform Preset
           </label>
           <div className="flex flex-wrap gap-2">
@@ -261,11 +261,21 @@ export default function UtmBuilderContent() {
               <button
                 key={preset.label}
                 onClick={() => selectPreset(preset)}
-                className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   activePreset === preset.label
-                    ? "bg-gray-900 text-white"
-                    : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900"
-                }`}
+                    ? {
+                        background: "var(--kami-cta-bg)",
+                        color: "var(--kami-cta-text)",
+                        borderRadius: "999px",
+                      }
+                    : {
+                        background: "var(--kami-surface-solid)",
+                        color: "var(--kami-text-muted)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "999px",
+                      }
+                }
               >
                 {preset.label}
               </button>
@@ -291,7 +301,7 @@ export default function UtmBuilderContent() {
               }}
             />
           </button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
             Bulk mode {bulkMode ? "on" : "off"}
           </span>
         </div>
@@ -299,37 +309,47 @@ export default function UtmBuilderContent() {
         {/* URL Input */}
         {!bulkMode ? (
           <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Website URL <span className="text-red-400">*</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              Website URL <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>*</span>
             </label>
             <input
               type="text"
               value={params.url}
               onChange={(e) => updateParam("url", e.target.value)}
               placeholder="https://example.com/page"
-              className={`w-full rounded-xl border bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
-                urlWarning
-                  ? "border-red-300 focus:border-red-300 focus:ring-red-200"
-                  : "border-gray-200 focus:border-gray-300 focus:ring-gray-200"
-              }`}
+              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: urlWarning
+                  ? "1px solid color-mix(in srgb, #ef4444 40%, var(--kami-border-strong))"
+                  : "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
               autoFocus
             />
             {urlWarning && (
-              <p className="mt-1 text-xs text-red-500">
+              <p className="mt-1 text-xs" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                 Enter a valid URL (e.g. example.com/page or https://example.com)
               </p>
             )}
           </div>
         ) : (
           <div className="mb-4">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              Base URLs <span className="text-gray-400">(one per line)</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              Base URLs <span style={{ color: "var(--kami-text-dim)" }}>(one per line)</span>
             </label>
             <textarea
               value={bulkUrls}
               onChange={(e) => setBulkUrls(e.target.value)}
               placeholder={"https://example.com/page-1\nhttps://example.com/page-2\nhttps://example.com/page-3"}
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
               rows={4}
               autoFocus
             />
@@ -339,63 +359,93 @@ export default function UtmBuilderContent() {
         {/* UTM Fields */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              utm_source <span className="text-red-400">*</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              utm_source <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>*</span>
             </label>
             <input
               type="text"
               value={params.source}
               onChange={(e) => updateParam("source", e.target.value)}
               placeholder="google, facebook, newsletter"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              utm_medium <span className="text-red-400">*</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              utm_medium <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>*</span>
             </label>
             <input
               type="text"
               value={params.medium}
               onChange={(e) => updateParam("medium", e.target.value)}
               placeholder="cpc, email, social, banner"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              utm_campaign <span className="text-red-400">*</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              utm_campaign <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>*</span>
             </label>
             <input
               type="text"
               value={params.campaign}
               onChange={(e) => updateParam("campaign", e.target.value)}
               placeholder="spring_sale, product_launch"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              utm_term <span className="text-gray-400">(optional)</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              utm_term <span style={{ color: "var(--kami-text-dim)" }}>(optional)</span>
             </label>
             <input
               type="text"
               value={params.term}
               onChange={(e) => updateParam("term", e.target.value)}
               placeholder="paid search keywords"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
-              utm_content <span className="text-gray-400">(optional)</span>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              utm_content <span style={{ color: "var(--kami-text-dim)" }}>(optional)</span>
             </label>
             <input
               type="text"
               value={params.content}
               onChange={(e) => updateParam("content", e.target.value)}
               placeholder="ad variation, CTA label"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+              }}
             />
           </div>
         </div>
@@ -404,12 +454,17 @@ export default function UtmBuilderContent() {
         {!bulkMode && generatedUrl && (
           <div className="mt-8">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Generated URL
               </span>
               <button
                 onClick={() => handleCopy(generatedUrl)}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied ? (
                   <>
@@ -422,10 +477,19 @@ export default function UtmBuilderContent() {
                 )}
               </button>
             </div>
-            <div className="break-all rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-mono text-sm shadow-sm">
+            <div
+              className="break-all px-4 py-3 font-mono text-sm"
+              style={{
+                background: "var(--kami-surface)",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {generatedUrl}
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
               Use a URL shortener like bit.ly for cleaner sharing.
             </p>
           </div>
@@ -435,12 +499,17 @@ export default function UtmBuilderContent() {
         {bulkMode && bulkGenerated.length > 0 && (
           <div className="mt-8">
             <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Generated URLs ({bulkGenerated.filter((b) => b.generated).length})
               </span>
               <button
                 onClick={handleCopyAll}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copiedAll ? (
                   <>
@@ -453,21 +522,33 @@ export default function UtmBuilderContent() {
                 )}
               </button>
             </div>
-            <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {bulkGenerated.map((item, i) => (
-                <div key={i} className="px-4 py-3">
+                <div
+                  key={i}
+                  className="px-4 py-3"
+                  style={i > 0 ? { borderTop: "1px solid var(--kami-border)" } : undefined}
+                >
                   {!item.valid ? (
-                    <p className="text-sm text-red-500">
+                    <p className="text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                       Invalid URL: {item.base}
                     </p>
                   ) : item.generated ? (
                     <div className="group flex items-start gap-2">
-                      <p className="min-w-0 flex-1 break-all font-mono text-xs text-gray-700">
+                      <p className="min-w-0 flex-1 break-all font-mono text-xs" style={{ color: "var(--kami-text-muted)" }}>
                         {item.generated}
                       </p>
                       <button
                         onClick={() => handleCopyBulkItem(item.generated, i)}
-                        className="shrink-0 text-gray-400 transition-colors hover:text-gray-700"
+                        className="shrink-0 transition-colors"
+                        style={{ color: "var(--kami-text-dim)" }}
                         title="Copy"
                       >
                         {copiedIndex === i ? (
@@ -478,14 +559,14 @@ export default function UtmBuilderContent() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
                       Fill in required UTM fields to generate
                     </p>
                   )}
                 </div>
               ))}
             </div>
-            <p className="mt-2 text-xs text-gray-400">
+            <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
               Use a URL shortener like bit.ly for cleaner sharing.
             </p>
           </div>
@@ -495,27 +576,36 @@ export default function UtmBuilderContent() {
         {history.length > 0 && (
           <div className="mt-12">
             <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-sm font-medium text-gray-500">
+              <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Recent ({history.length})
               </h2>
               <button
                 onClick={clearHistory}
-                className="text-xs text-gray-400 transition-colors hover:text-gray-600"
+                className="text-xs transition-colors"
+                style={{ color: "var(--kami-text-dim)" }}
               >
                 Clear history
               </button>
             </div>
-            <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white shadow-sm">
+            <div
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {history.map((entry, i) => (
                 <div
                   key={i}
                   className="group flex items-center gap-3 px-4 py-3"
+                  style={i > 0 ? { borderTop: "1px solid var(--kami-border)" } : undefined}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-mono text-xs text-gray-700">
+                    <p className="truncate font-mono text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       {entry.url}
                     </p>
-                    <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400">
+                    <div className="mt-0.5 flex items-center gap-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                       <span>{entry.campaign}</span>
                       <span>&middot;</span>
                       <span>
@@ -529,14 +619,16 @@ export default function UtmBuilderContent() {
                   <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       onClick={() => loadFromHistory(entry)}
-                      className="rounded px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      className="rounded px-2 py-1 text-xs transition-colors"
+                      style={{ color: "var(--kami-text-muted)" }}
                       title="Load into form"
                     >
                       <LoadIcon />
                     </button>
                     <button
                       onClick={() => handleCopy(entry.url)}
-                      className="rounded px-2 py-1 text-xs text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                      className="rounded px-2 py-1 text-xs transition-colors"
+                      style={{ color: "var(--kami-text-muted)" }}
                       title="Copy URL"
                     >
                       <CopyIcon />
@@ -561,7 +653,15 @@ export default function UtmBuilderContent() {
             <RuleRow rule="utm_term" explanation="Paid-search keyword. Optional." example="retargeting+software" />
             <RuleRow rule="utm_content" explanation="Distinguishes variants - use for A/B tests or multiple links on one page." example="cta-top, cta-footer" />
           </div>
-          <div className="mt-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+          <div
+            className="mt-4 p-3 text-xs"
+            style={{
+              background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
+              color: "var(--kami-text)",
+              border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          >
             <strong>GA4 note:</strong> Google Analytics 4 adds <code>utm_source_platform</code>,
             <code>utm_creative_format</code>, and <code>utm_marketing_tactic</code>. They&apos;re
             optional - most teams stick with the original five.

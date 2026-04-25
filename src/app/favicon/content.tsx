@@ -366,7 +366,7 @@ export default function FaviconContent() {
   const hasInput = mode === "emoji" || uploadedImage;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Favicon Generator"
@@ -384,28 +384,56 @@ export default function FaviconContent() {
         <div className="mt-8 flex gap-2">
           <button
             onClick={() => setMode("upload")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={
               mode === "upload"
-                ? "bg-gray-900 text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
-            }`}
+                ? {
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }
+                : {
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }
+            }
           >
             Upload Image
           </button>
           <button
             onClick={() => setMode("emoji")}
-            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={
               mode === "emoji"
-                ? "bg-gray-900 text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
-            }`}
+                ? {
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }
+                : {
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }
+            }
           >
             Emoji / Text
           </button>
         </div>
 
         {/* Input Area */}
-        <div className="mt-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div
+          className="mt-4 p-6"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           {mode === "upload" ? (
             <div className="space-y-4">
               {/* Drop zone */}
@@ -415,7 +443,11 @@ export default function FaviconContent() {
                     setUploadedImage(null);
                     setUploadedName("");
                   }}
-                  className="flex min-h-[140px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 transition-colors hover:border-gray-400 hover:bg-gray-100"
+                  className="flex min-h-[140px] cursor-pointer flex-col items-center justify-center transition-colors"
+                  style={{
+                    border: "2px dashed var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  }}
                 >
                   <div className="flex flex-col items-center gap-2">
                     <img
@@ -423,8 +455,8 @@ export default function FaviconContent() {
                       alt="Uploaded"
                       className="h-16 w-16 rounded object-contain"
                     />
-                    <span className="text-sm text-gray-500">{uploadedName}</span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{uploadedName}</span>
+                    <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                       Click to replace
                     </span>
                   </div>
@@ -441,19 +473,20 @@ export default function FaviconContent() {
 
               {/* Dark mode variant */}
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Dark Mode Variant{" "}
-                  <span className="text-gray-400">(optional)</span>
+                  <span style={{ color: "var(--kami-text-dim)" }}>(optional)</span>
                 </label>
                 {darkImage ? (
                   <div className="flex items-center gap-3">
-                    <span className="text-sm text-gray-600">{darkName}</span>
+                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{darkName}</span>
                     <button
                       onClick={() => {
                         setDarkImage(null);
                         setDarkName("");
                       }}
-                      className="text-sm text-gray-400 hover:text-gray-600"
+                      className="text-sm"
+                      style={{ color: "var(--kami-text-dim)" }}
                     >
                       Remove
                     </button>
@@ -472,24 +505,42 @@ export default function FaviconContent() {
               {/* Theme toggle (when dark variant exists) */}
               {darkImage && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Preview:</span>
+                  <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Preview:</span>
                   <button
                     onClick={() => setActiveTheme("light")}
-                    className={`rounded px-3 py-1 text-sm ${
+                    className="px-3 py-1 text-sm"
+                    style={
                       activeTheme === "light"
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg)",
+                            color: "var(--kami-cta-text)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }
+                    }
                   >
                     Light
                   </button>
                   <button
                     onClick={() => setActiveTheme("dark")}
-                    className={`rounded px-3 py-1 text-sm ${
+                    className="px-3 py-1 text-sm"
+                    style={
                       activeTheme === "dark"
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-600"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg)",
+                            color: "var(--kami-cta-text)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }
+                    }
                   >
                     Dark
                   </button>
@@ -499,7 +550,7 @@ export default function FaviconContent() {
           ) : (
             <div className="space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Emoji or Character
                 </label>
                 <input
@@ -507,11 +558,17 @@ export default function FaviconContent() {
                   value={emoji}
                   onChange={(e) => setEmoji(e.target.value)}
                   maxLength={4}
-                  className="w-24 rounded-lg border border-gray-200 px-3 py-2 text-center text-2xl focus:border-gray-400 focus:outline-none"
+                  className="w-24 px-3 py-2 text-center text-2xl focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  }}
                 />
               </div>
               <div>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
+                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Background Color
                 </label>
                 <div className="flex items-center gap-3">
@@ -519,21 +576,42 @@ export default function FaviconContent() {
                     type="color"
                     value={emojiBg}
                     onChange={(e) => setEmojiBg(e.target.value)}
-                    className="h-10 w-10 cursor-pointer rounded border border-gray-200"
+                    className="h-10 w-10 cursor-pointer"
+                    style={{
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.375rem)",
+                    }}
                   />
                   <input
                     type="text"
                     value={emojiBg}
                     onChange={(e) => setEmojiBg(e.target.value)}
-                    className="w-28 rounded-lg border border-gray-200 px-3 py-2 text-sm font-mono focus:border-gray-400 focus:outline-none"
+                    className="w-28 px-3 py-2 text-sm font-mono focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                   <button
                     onClick={() => setEmojiBg("transparent")}
-                    className={`rounded-lg border px-3 py-2 text-sm ${
+                    className="px-3 py-2 text-sm"
+                    style={
                       emojiBg === "transparent"
-                        ? "border-gray-400 bg-gray-100"
-                        : "border-gray-200 hover:bg-gray-50"
-                    }`}
+                        ? {
+                            background: "var(--kami-surface)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            color: "var(--kami-text)",
+                          }
+                        : {
+                            background: "var(--kami-surface-solid)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            color: "var(--kami-text-muted)",
+                          }
+                    }
                   >
                     Transparent
                   </button>
@@ -545,37 +623,57 @@ export default function FaviconContent() {
 
         {/* Browser Tab Preview */}
         {icons.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div
+            className="mt-6 p-6"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <h2 className="mb-4 text-lg font-semibold">Browser Preview</h2>
             <div className="flex items-center gap-3 mb-3">
-              <label className="text-sm text-gray-500">Page title:</label>
+              <label className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Page title:</label>
               <input
                 type="text"
                 value={previewTitle}
                 onChange={(e) => setPreviewTitle(e.target.value)}
-                className="rounded border border-gray-200 px-2 py-1 text-sm focus:border-gray-400 focus:outline-none"
+                className="px-2 py-1 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.375rem)",
+                }}
               />
             </div>
-            {/* Mock browser tab */}
-            <div className="inline-flex flex-col rounded-lg border border-gray-300 overflow-hidden">
-              <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 border-b border-gray-200">
+            {/* Mock browser tab - keep theme-neutral, this is a UI mock */}
+            <div
+              className="inline-flex flex-col overflow-hidden"
+              style={{
+                border: "1px solid #d1d5db",
+                borderRadius: "0.5rem",
+              }}
+            >
+              <div className="flex items-center gap-2 px-3 py-2" style={{ background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
                 <div className="flex gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-red-400" />
                   <div className="h-3 w-3 rounded-full bg-yellow-400" />
                   <div className="h-3 w-3 rounded-full bg-green-400" />
                 </div>
               </div>
-              <div className="flex items-center  border-b border-gray-200">
-                <div className="flex items-center gap-2 bg-white border-r border-gray-200 px-3 py-1.5 max-w-[200px]">
+              <div className="flex items-center" style={{ borderBottom: "1px solid #e5e7eb" }}>
+                <div className="flex items-center gap-2 px-3 py-1.5 max-w-[200px]" style={{ background: "#ffffff", borderRight: "1px solid #e5e7eb" }}>
                   <FaviconPreview canvas={icons.find((i) => i.size === 16)?.canvas} />
-                  <span className="truncate text-xs text-gray-700">
+                  <span className="truncate text-xs" style={{ color: "#374151" }}>
                     {previewTitle}
                   </span>
                 </div>
-                <div className="px-3 py-1.5 text-xs text-gray-400">+</div>
+                <div className="px-3 py-1.5 text-xs" style={{ color: "#9ca3af" }}>+</div>
               </div>
-              <div className="flex items-center gap-2 bg-white px-3 py-1.5">
-                <span className="text-xs text-gray-400">
+              <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: "#ffffff" }}>
+                <span className="text-xs" style={{ color: "#9ca3af" }}>
                   🔒 example.com
                 </span>
               </div>
@@ -585,19 +683,38 @@ export default function FaviconContent() {
 
         {/* Generated Icons */}
         {icons.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div
+            className="mt-6 p-6"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Generated Icons</h2>
               <div className="flex gap-2">
                 <button
                   onClick={downloadICO}
-                  className="rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors"
+                  className="px-3 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Download .ico
                 </button>
                 <button
                   onClick={downloadZip}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+                  className="px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Download All (.zip)
                 </button>
@@ -607,7 +724,11 @@ export default function FaviconContent() {
               {icons.map((icon) => (
                 <div
                   key={icon.size}
-                  className="flex flex-col items-center rounded-lg border border-gray-100  p-3"
+                  className="flex flex-col items-center p-3"
+                  style={{
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  }}
                 >
                   <div className="flex h-20 w-20 items-center justify-center">
                     <CanvasPreview
@@ -615,10 +736,10 @@ export default function FaviconContent() {
                       displaySize={Math.min(icon.size, 64)}
                     />
                   </div>
-                  <span className="mt-2 text-xs font-medium text-gray-700">
+                  <span className="mt-2 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                     {icon.size}×{icon.size}
                   </span>
-                  <span className="text-[10px] text-gray-400 text-center">
+                  <span className="text-[10px] text-center" style={{ color: "var(--kami-text-dim)" }}>
                     {icon.label.split("-")[1]?.trim()}
                   </span>
                 </div>
@@ -629,13 +750,21 @@ export default function FaviconContent() {
 
         {/* Code Snippets */}
         {icons.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div
+            className="mt-6 p-6"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <button
               onClick={() => setShowCode(!showCode)}
               className="flex w-full items-center justify-between"
             >
               <h2 className="text-lg font-semibold">Code Snippets</h2>
-              <span className="text-sm text-gray-400">
+              <span className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
                 {showCode ? "▲ Hide" : "▼ Show"}
               </span>
             </button>
@@ -644,24 +773,38 @@ export default function FaviconContent() {
                 {/* HTML Meta Tags */}
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-gray-700">
+                    <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       HTML Meta Tags
                     </h3>
                     <CopyButton text={generateMetaTags()} />
                   </div>
-                  <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <pre
+                    className="overflow-x-auto p-4 text-sm"
+                    style={{
+                      background: "var(--kami-overlay-bg)",
+                      color: "var(--kami-overlay-text)",
+                      borderRadius: "var(--kami-card-radius, 0.5rem)",
+                    }}
+                  >
                     <code>{generateMetaTags()}</code>
                   </pre>
                 </div>
                 {/* manifest.json */}
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-sm font-medium text-gray-700">
+                    <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       site.webmanifest
                     </h3>
                     <CopyButton text={generateManifest()} />
                   </div>
-                  <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                  <pre
+                    className="overflow-x-auto p-4 text-sm"
+                    style={{
+                      background: "var(--kami-overlay-bg)",
+                      color: "var(--kami-overlay-text)",
+                      borderRadius: "var(--kami-card-radius, 0.5rem)",
+                    }}
+                  >
                     <code>{generateManifest()}</code>
                   </pre>
                 </div>
@@ -672,13 +815,13 @@ export default function FaviconContent() {
 
         {/* Empty state */}
         {!hasInput && icons.length === 0 && (
-          <div className="mt-8 text-center text-sm text-gray-400">
+          <div className="mt-8 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
             Upload an image or pick an emoji to get started.
           </div>
         )}
 
         {generating && (
-          <div className="mt-4 text-center text-sm text-gray-400">
+          <div className="mt-4 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
             Generating...
           </div>
         )}
@@ -737,7 +880,12 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+      className="px-2 py-1 text-xs transition-colors"
+      style={{
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        color: "var(--kami-text-muted)",
+      }}
     >
       {copied ? "Copied!" : "Copy"}
     </button>

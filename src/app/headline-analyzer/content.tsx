@@ -289,17 +289,17 @@ function analyze(headline: string): AnalysisResult | null {
 
 function scoreColor(score: number, max: number): string {
   const pct = (score / max) * 100;
-  if (pct >= 75) return "#22c55e";
-  if (pct >= 60) return "#f97316";
-  if (pct >= 40) return "#eab308";
-  return "#ef4444";
+  if (pct >= 75) return "color-mix(in srgb, #22c55e 70%, var(--kami-text))";
+  if (pct >= 60) return "color-mix(in srgb, #f97316 70%, var(--kami-text))";
+  if (pct >= 40) return "color-mix(in srgb, #eab308 70%, var(--kami-text))";
+  return "color-mix(in srgb, #ef4444 70%, var(--kami-text))";
 }
 
 function overallColor(score: number): string {
-  if (score > 75) return "#22c55e";
-  if (score > 60) return "#f97316";
-  if (score > 40) return "#eab308";
-  return "#ef4444";
+  if (score > 75) return "color-mix(in srgb, #22c55e 70%, var(--kami-text))";
+  if (score > 60) return "color-mix(in srgb, #f97316 70%, var(--kami-text))";
+  if (score > 40) return "color-mix(in srgb, #eab308 70%, var(--kami-text))";
+  return "color-mix(in srgb, #ef4444 70%, var(--kami-text))";
 }
 
 function overallLabel(score: number): string {
@@ -325,7 +325,7 @@ function ScoreCircle({ score }: { score: number }) {
       <svg width="120" height="120" viewBox="0 0 120 120">
         <circle
           cx="60" cy="60" r={radius}
-          fill="none" stroke="#e5e7eb" strokeWidth="8"
+          fill="none" stroke="var(--kami-border-strong)" strokeWidth="8"
         />
         <circle
           cx="60" cy="60" r={radius}
@@ -345,7 +345,7 @@ function ScoreCircle({ score }: { score: number }) {
         </text>
         <text
           x="60" y="72" textAnchor="middle"
-          fill="#9ca3af" fontSize="11" fontWeight="500"
+          fill="var(--kami-text-dim)" fontSize="11" fontWeight="500"
         >
           / 100
         </text>
@@ -374,14 +374,22 @@ function ScoreCard({
   const pct = (score / max) * 100;
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+    <div
+      className="p-4"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">{title}</span>
+        <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>{title}</span>
         <span className="text-sm font-semibold" style={{ color }}>
           {score}/{max}
         </span>
       </div>
-      <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+      <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: "var(--kami-surface)" }}>
         <div
           className="h-full rounded-full"
           style={{
@@ -391,7 +399,7 @@ function ScoreCard({
           }}
         />
       </div>
-      <p className="mt-2 text-xs text-gray-500">{detail}</p>
+      <p className="mt-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>{detail}</p>
     </div>
   );
 }
@@ -411,9 +419,17 @@ function WordBalanceBar({ balance }: { balance: WordBalance }) {
   ];
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Word Balance</h3>
-      <div className="flex h-6 w-full overflow-hidden rounded-full bg-gray-100">
+    <div
+      className="p-4"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
+      <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Word Balance</h3>
+      <div className="flex h-6 w-full overflow-hidden rounded-full" style={{ background: "var(--kami-surface)" }}>
         {segments.map((seg) => {
           const pct = (seg.count / balance.total) * 100;
           if (pct === 0) return null;
@@ -435,7 +451,7 @@ function WordBalanceBar({ balance }: { balance: WordBalance }) {
         {segments.map((seg) => {
           const pct = Math.round((seg.count / balance.total) * 100);
           return (
-            <div key={seg.label} className="flex items-center gap-1.5 text-xs text-gray-600">
+            <div key={seg.label} className="flex items-center gap-1.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
                 style={{ backgroundColor: seg.color }}
@@ -455,8 +471,16 @@ function WordBalanceBar({ balance }: { balance: WordBalance }) {
 
 function PlatformPreviews({ headline }: { headline: string }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-      <h3 className="mb-3 text-sm font-medium text-gray-700">Platform Character Limits</h3>
+    <div
+      className="p-4"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
+      <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Platform Character Limits</h3>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {PLATFORMS.map((p) => {
           const fits = headline.length <= p.max;
@@ -465,14 +489,28 @@ function PlatformPreviews({ headline }: { headline: string }) {
             : headline;
 
           return (
-            <div key={p.name} className="rounded-lg border border-gray-100 p-3">
+            <div
+              key={p.name}
+              className="p-3"
+              style={{
+                border: "1px solid var(--kami-border)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-gray-600">{p.label}</span>
-                <span className={`text-xs font-mono ${fits ? "text-green-600" : "text-red-500"}`}>
+                <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>{p.label}</span>
+                <span
+                  className="text-xs font-mono"
+                  style={{
+                    color: fits
+                      ? "color-mix(in srgb, #16a34a 70%, var(--kami-text))"
+                      : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+                  }}
+                >
                   {headline.length}/{p.max}
                 </span>
               </div>
-              <p className="text-sm text-gray-800 break-all leading-snug">
+              <p className="text-sm break-all leading-snug" style={{ color: "var(--kami-text)" }}>
                 {truncated}
               </p>
             </div>
@@ -529,7 +567,7 @@ function SingleResultPanel({
   return (
     <div className="space-y-6">
       {label && (
-        <div className="text-xs font-medium text-gray-400 uppercase tracking-wide">{label}</div>
+        <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{label}</div>
       )}
 
       {/* Overall score */}
@@ -579,11 +617,19 @@ function SingleResultPanel({
 
       {/* Suggestions */}
       {result.suggestions.length > 0 && (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-medium text-gray-700">Suggestions</h3>
+        <div
+          className="p-4"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Suggestions</h3>
           <ul className="space-y-2">
             {result.suggestions.map((s, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: "var(--kami-text-muted)" }}>
                 <svg
                   width="16" height="16" viewBox="0 0 24 24" fill="none"
                   stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -608,8 +654,11 @@ function SingleResultPanel({
 // ---------------------------------------------------------------------------
 
 function ComparisonRow({ dim }: { dim: DimensionComparison }) {
-  const colorA = dim.winner === "A" ? "#22c55e" : dim.winner === "tie" ? "#eab308" : "#9ca3af";
-  const colorB = dim.winner === "B" ? "#22c55e" : dim.winner === "tie" ? "#eab308" : "#9ca3af";
+  const win = "color-mix(in srgb, #22c55e 70%, var(--kami-text))";
+  const tie = "color-mix(in srgb, #eab308 70%, var(--kami-text))";
+  const loss = "var(--kami-text-dim)";
+  const colorA = dim.winner === "A" ? win : dim.winner === "tie" ? tie : loss;
+  const colorB = dim.winner === "B" ? win : dim.winner === "tie" ? tie : loss;
 
   return (
     <div className="flex items-center gap-3 py-2">
@@ -619,7 +668,7 @@ function ComparisonRow({ dim }: { dim: DimensionComparison }) {
         </span>
       </div>
       <div className="flex-1 text-center">
-        <span className="text-xs font-medium text-gray-500">{dim.title}</span>
+        <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>{dim.title}</span>
       </div>
       <div className="w-16 text-left">
         <span className="text-sm font-semibold tabular-nums" style={{ color: colorB }}>
@@ -670,7 +719,7 @@ export default function HeadlineAnalyzerContent() {
   }, [resultA, resultB]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className={`mx-auto px-4 py-12 sm:py-16 ${mode === "compare" ? "w-[92%] max-w-[1400px]" : "max-w-7xl"}`}>
         <ToolIntro
           title="Headline Analyzer"
@@ -689,24 +738,42 @@ export default function HeadlineAnalyzerContent() {
 
         {/* Mode toggle */}
         <div className="mb-6 flex justify-center">
-          <div className="inline-flex rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
+          <div
+            className="inline-flex p-1"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <button
               onClick={() => setMode("single")}
-              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+              className="px-4 py-1.5 text-sm font-medium transition-colors"
+              style={
                 mode === "single"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+                  ? {
+                      background: "var(--kami-cta-bg)",
+                      color: "var(--kami-cta-text)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }
+                  : { color: "var(--kami-text-muted)" }
+              }
             >
               Single
             </button>
             <button
               onClick={() => setMode("compare")}
-              className={`rounded-md px-4 py-1.5 text-sm font-medium transition-colors ${
+              className="px-4 py-1.5 text-sm font-medium transition-colors"
+              style={
                 mode === "compare"
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+                  ? {
+                      background: "var(--kami-cta-bg)",
+                      color: "var(--kami-cta-text)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }
+                  : { color: "var(--kami-text-muted)" }
+              }
             >
               Compare
             </button>
@@ -729,7 +796,8 @@ export default function HeadlineAnalyzerContent() {
               {headline && (
                 <button
                   onClick={() => setHeadline("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: "var(--kami-text-dim)" }}
                   aria-label="Clear"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -749,7 +817,7 @@ export default function HeadlineAnalyzerContent() {
 
             {/* Empty state */}
             {!resultA && (
-              <div className="mt-16 text-center text-gray-400 text-sm">
+              <div className="mt-16 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
                 Start typing a headline to see your score.
               </div>
             )}
@@ -762,7 +830,7 @@ export default function HeadlineAnalyzerContent() {
             {/* Two inputs */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="relative">
-                <div className="mb-1.5 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <div className="mb-1.5 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                   Headline A
                 </div>
                 <input
@@ -770,13 +838,21 @@ export default function HeadlineAnalyzerContent() {
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
                   placeholder="First headline..."
-                  className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 text-lg shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="w-full px-5 py-4 text-lg focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
                   autoFocus
                 />
                 {headline && (
                   <button
                     onClick={() => setHeadline("")}
-                    className="absolute right-4 bottom-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 bottom-4 transition-colors"
+                    style={{ color: "var(--kami-text-dim)" }}
                     aria-label="Clear A"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -787,7 +863,7 @@ export default function HeadlineAnalyzerContent() {
                 )}
               </div>
               <div className="relative">
-                <div className="mb-1.5 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <div className="mb-1.5 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                   Headline B
                 </div>
                 <input
@@ -795,12 +871,20 @@ export default function HeadlineAnalyzerContent() {
                   value={headlineB}
                   onChange={(e) => setHeadlineB(e.target.value)}
                   placeholder="Second headline..."
-                  className="w-full rounded-xl border border-gray-200 bg-white px-5 py-4 text-lg shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="w-full px-5 py-4 text-lg focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
                 />
                 {headlineB && (
                   <button
                     onClick={() => setHeadlineB("")}
-                    className="absolute right-4 bottom-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute right-4 bottom-4 transition-colors"
+                    style={{ color: "var(--kami-text-dim)" }}
                     aria-label="Clear B"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -818,16 +902,16 @@ export default function HeadlineAnalyzerContent() {
                 {/* Side-by-side overall scores */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-[1fr_auto_1fr] items-center">
                   <div className="flex flex-col items-center">
-                    <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                    <div className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                       Headline A
                     </div>
                     <ScoreCircle score={resultA.overall} />
                   </div>
-                  <div className="hidden sm:flex flex-col items-center justify-center text-gray-300">
+                  <div className="hidden sm:flex flex-col items-center justify-center" style={{ color: "var(--kami-text-dim)" }}>
                     <span className="text-2xl font-bold">vs</span>
                   </div>
                   <div className="flex flex-col items-center">
-                    <div className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">
+                    <div className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                       Headline B
                     </div>
                     <ScoreCircle score={resultB.overall} />
@@ -835,33 +919,41 @@ export default function HeadlineAnalyzerContent() {
                 </div>
 
                 {/* Dimension-by-dimension comparison */}
-                <div className="mt-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <h3 className="mb-4 text-sm font-semibold text-gray-900 text-center">
+                <div
+                  className="mt-8 p-5"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <h3 className="mb-4 text-sm font-semibold text-center" style={{ color: "var(--kami-text)" }}>
                     Dimension Breakdown
                   </h3>
                   {/* Column headers */}
-                  <div className="flex items-center gap-3 pb-2 border-b border-gray-100">
-                    <div className="w-16 text-right text-xs font-medium text-gray-400 uppercase tracking-wide">A</div>
-                    <div className="flex-1 text-center text-xs font-medium text-gray-400 uppercase tracking-wide">Dimension</div>
-                    <div className="w-16 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">B</div>
+                  <div className="flex items-center gap-3 pb-2" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <div className="w-16 text-right text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>A</div>
+                    <div className="flex-1 text-center text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Dimension</div>
+                    <div className="w-16 text-left text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>B</div>
                   </div>
-                  <div className="divide-y divide-gray-50">
+                  <div>
                     {dimensions.map((dim) => (
                       <ComparisonRow key={dim.title} dim={dim} />
                     ))}
                   </div>
                   {/* Winner summary */}
-                  <div className="mt-4 pt-3 border-t border-gray-100 text-center">
+                  <div className="mt-4 pt-3 text-center" style={{ borderTop: "1px solid var(--kami-border)" }}>
                     {resultA.overall > resultB.overall ? (
-                      <span className="text-sm font-medium text-green-600">
+                      <span className="text-sm font-medium" style={{ color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))" }}>
                         Headline A wins overall ({resultA.overall} vs {resultB.overall})
                       </span>
                     ) : resultB.overall > resultA.overall ? (
-                      <span className="text-sm font-medium text-green-600">
+                      <span className="text-sm font-medium" style={{ color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))" }}>
                         Headline B wins overall ({resultB.overall} vs {resultA.overall})
                       </span>
                     ) : (
-                      <span className="text-sm font-medium text-yellow-600">
+                      <span className="text-sm font-medium" style={{ color: "color-mix(in srgb, #eab308 70%, var(--kami-text))" }}>
                         It&apos;s a tie ({resultA.overall} each)
                       </span>
                     )}
@@ -880,12 +972,12 @@ export default function HeadlineAnalyzerContent() {
             {(!resultA || !resultB) && (resultA || resultB) && (
               <div className="mt-10">
                 {resultA && !resultB && (
-                  <div className="text-center text-gray-400 text-sm mb-8">
+                  <div className="text-center text-sm mb-8" style={{ color: "var(--kami-text-dim)" }}>
                     Enter a second headline to compare.
                   </div>
                 )}
                 {!resultA && resultB && (
-                  <div className="text-center text-gray-400 text-sm mb-8">
+                  <div className="text-center text-sm mb-8" style={{ color: "var(--kami-text-dim)" }}>
                     Enter the first headline to compare.
                   </div>
                 )}
@@ -896,7 +988,7 @@ export default function HeadlineAnalyzerContent() {
 
             {/* Empty state */}
             {!resultA && !resultB && (
-              <div className="mt-16 text-center text-gray-400 text-sm">
+              <div className="mt-16 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
                 Enter two headlines to compare them side by side.
               </div>
             )}
