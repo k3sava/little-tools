@@ -261,7 +261,13 @@ function CopyButton({ text }: { text: string }) {
   return (
     <button
       onClick={copy}
-      className="inline-flex items-center gap-1 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
+      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium"
+      style={{
+        background: "var(--kami-cta-bg)",
+        color: "var(--kami-cta-text)",
+        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+        boxShadow: "var(--kami-cta-shadow, none)",
+      }}
       title="Copy"
     >
       {copied ? <CheckIcon /> : <CopyIcon />}
@@ -486,11 +492,24 @@ export default function ColorConverterContent() {
     { key: "Enter", meta: true, action: () => { navigator.clipboard.writeText(fmtHex(rgb)); }, label: "Copy HEX" },
   ], [rgb]));
 
-  const inputClass =
-    "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200";
+  const inputClass = "w-full px-3 py-2 text-sm focus:outline-none";
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Color Converter"
@@ -505,37 +524,47 @@ export default function ColorConverterContent() {
         />
 
         {/* Color preview + picker */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-8 p-5" style={cardStyle}>
           <div className="flex flex-col items-center gap-4 sm:flex-row">
             <div
-              className="h-28 w-28 shrink-0 rounded-xl border border-gray-200 shadow-sm"
-              style={{ backgroundColor: rgbToHex(rgb) }}
+              className="h-28 w-28 shrink-0"
+              style={{
+                backgroundColor: rgbToHex(rgb),
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
             />
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Color Picker
               </label>
               <input
                 type="color"
                 value={rgbToHex(rgb)}
                 onChange={(e) => onPickerChange(e.target.value)}
-                className="h-10 w-20 cursor-pointer rounded border border-gray-200"
+                className="h-10 w-20 cursor-pointer"
+                style={{
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.25rem)",
+                }}
               />
             </div>
           </div>
         </div>
 
         {/* Conversion fields */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Color Values</h2>
+        <div className="mb-8 p-5" style={cardStyle}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Color Values</h2>
           <div className="grid gap-4">
             {/* HEX */}
             <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium text-gray-600">
+              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 HEX
               </label>
               <input
                 className={inputClass}
+                style={inputStyle}
                 value={hexField}
                 onChange={(e) => onHexChange(e.target.value)}
               />
@@ -543,11 +572,12 @@ export default function ColorConverterContent() {
             </div>
             {/* RGB */}
             <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium text-gray-600">
+              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 RGB
               </label>
               <input
                 className={inputClass}
+                style={inputStyle}
                 value={rgbField}
                 onChange={(e) => onRgbChange(e.target.value)}
               />
@@ -555,11 +585,12 @@ export default function ColorConverterContent() {
             </div>
             {/* HSL */}
             <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium text-gray-600">
+              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 HSL
               </label>
               <input
                 className={inputClass}
+                style={inputStyle}
                 value={hslField}
                 onChange={(e) => onHslChange(e.target.value)}
               />
@@ -567,11 +598,12 @@ export default function ColorConverterContent() {
             </div>
             {/* HSV / HSB */}
             <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium text-gray-600">
+              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 HSB
               </label>
               <input
                 className={inputClass}
+                style={inputStyle}
                 value={hsvField}
                 onChange={(e) => onHsvChange(e.target.value)}
               />
@@ -579,11 +611,12 @@ export default function ColorConverterContent() {
             </div>
             {/* CMYK */}
             <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium text-gray-600">
+              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 CMYK
               </label>
               <input
                 className={inputClass}
+                style={inputStyle}
                 value={cmykField}
                 onChange={(e) => onCmykChange(e.target.value)}
               />
@@ -593,13 +626,13 @@ export default function ColorConverterContent() {
         </div>
 
         {/* Contrast checker */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">
+        <div className="mb-8 p-5" style={cardStyle}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
             Contrast Checker (WCAG)
           </h2>
           <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-600">
+              <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Foreground (text)
               </label>
               <div className="flex items-center gap-2">
@@ -607,17 +640,22 @@ export default function ColorConverterContent() {
                   type="color"
                   value={rgbToHex(fgColor)}
                   onChange={(e) => onFgHexChange(e.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded border border-gray-200"
+                  className="h-9 w-12 cursor-pointer"
+                  style={{
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.25rem)",
+                  }}
                 />
                 <input
                   className={inputClass}
+                  style={inputStyle}
                   value={fgHex}
                   onChange={(e) => onFgHexChange(e.target.value)}
                 />
               </div>
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-600">
+              <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Background
               </label>
               <div className="flex items-center gap-2">
@@ -625,10 +663,15 @@ export default function ColorConverterContent() {
                   type="color"
                   value={rgbToHex(bgColor)}
                   onChange={(e) => onBgHexChange(e.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded border border-gray-200"
+                  className="h-9 w-12 cursor-pointer"
+                  style={{
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.25rem)",
+                  }}
                 />
                 <input
                   className={inputClass}
+                  style={inputStyle}
                   value={bgHex}
                   onChange={(e) => onBgHexChange(e.target.value)}
                 />
@@ -636,12 +679,13 @@ export default function ColorConverterContent() {
             </div>
           </div>
 
-          {/* Live preview */}
+          {/* Live preview - user data colors preserved */}
           <div
-            className="mb-4 rounded-lg p-6 text-center"
+            className="mb-4 p-6 text-center"
             style={{
               backgroundColor: rgbToHex(bgColor),
               color: rgbToHex(fgColor),
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
             }}
           >
             <p className="text-lg font-semibold">
@@ -678,16 +722,24 @@ export default function ColorConverterContent() {
             ].map((item) => (
               <div
                 key={item.label}
-                className={`rounded-lg border p-3 text-center text-sm font-medium ${
-                  item.pass
-                    ? "border-green-200 bg-green-50 text-green-800"
-                    : "border-red-200 bg-red-50 text-red-800"
-                }`}
+                className="p-3 text-center text-sm font-medium"
+                style={{
+                  background: item.pass
+                    ? "color-mix(in srgb, #16a34a 12%, var(--kami-surface))"
+                    : "color-mix(in srgb, #dc2626 12%, var(--kami-surface))",
+                  color: item.pass
+                    ? "color-mix(in srgb, #166534 80%, var(--kami-text))"
+                    : "color-mix(in srgb, #991b1b 80%, var(--kami-text))",
+                  border: item.pass
+                    ? "1px solid color-mix(in srgb, #16a34a 35%, transparent)"
+                    : "1px solid color-mix(in srgb, #dc2626 35%, transparent)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
               >
-                <div className="text-xs text-gray-500">{item.label}</div>
+                <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{item.label}</div>
                 <div className="mt-1">
                   {item.pass ? "Pass" : "Fail"}{" "}
-                  <span className="text-xs font-normal text-gray-400">
+                  <span className="text-xs font-normal" style={{ color: "var(--kami-text-dim)" }}>
                     ({item.req})
                   </span>
                 </div>
@@ -697,8 +749,8 @@ export default function ColorConverterContent() {
         </div>
 
         {/* Palette generator */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Palette Generator</h2>
+        <div className="mb-8 p-5" style={cardStyle}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Palette Generator</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {/* Current color */}
             <PaletteSwatch label="Current" color={rgb} />
@@ -713,8 +765,8 @@ export default function ColorConverterContent() {
         </div>
 
         {/* Shade generator */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Shades & Tints</h2>
+        <div className="mb-8 p-5" style={cardStyle}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Shades & Tints</h2>
           <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-11">
             {generateShades(rgb).map((shade, i) => (
               <PaletteSwatch
@@ -728,8 +780,8 @@ export default function ColorConverterContent() {
         </div>
 
         {/* Color blindness simulation */}
-        <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Color Blindness Simulation</h2>
+        <div className="mb-8 p-5" style={cardStyle}>
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Color Blindness Simulation</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <PaletteSwatch label="Normal Vision" color={rgb} />
             <PaletteSwatch label="Protanopia (no red)" color={simulateColorBlindness(rgb, "protanopia")} />
@@ -871,22 +923,42 @@ function NamedColorLookup({ currentRgb, onSelect }: { currentRgb: RGB; onSelect:
   }, [search]);
 
   return (
-    <div className="mb-8 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-lg font-semibold">CSS Named Colors</h2>
+    <div
+      className="mb-8 p-5"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
+      <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>CSS Named Colors</h2>
 
       {/* Closest matches */}
       <div className="mb-4">
-        <p className="text-xs text-gray-500 mb-2">Closest named colors to current:</p>
+        <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>Closest named colors to current:</p>
         <div className="flex flex-wrap gap-2">
           {closest.map((c) => (
             <button
               key={c.name}
               onClick={() => onSelect(c.rgb)}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 px-3 py-1.5 text-sm hover:shadow-md transition"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm transition"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
-              <div className="h-4 w-4 rounded border border-gray-100" style={{ backgroundColor: c.hex }} />
-              <span className="text-gray-700">{c.name}</span>
-              <span className="text-[10px] text-gray-400">{c.hex}</span>
+              <div
+                className="h-4 w-4"
+                style={{
+                  backgroundColor: c.hex,
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "4px",
+                }}
+              />
+              <span style={{ color: "var(--kami-text-muted)" }}>{c.name}</span>
+              <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{c.hex}</span>
             </button>
           ))}
         </div>
@@ -897,7 +969,14 @@ function NamedColorLookup({ currentRgb, onSelect }: { currentRgb: RGB; onSelect:
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Search 147 named colors..."
-        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+        className="w-full px-3 py-2 text-sm focus:outline-none"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.5rem)",
+          boxShadow: "var(--kami-card-shadow, none)",
+        }}
       />
       {filtered && filtered.length > 0 && (
         <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
@@ -905,16 +984,27 @@ function NamedColorLookup({ currentRgb, onSelect }: { currentRgb: RGB; onSelect:
             <button
               key={c.name}
               onClick={() => { onSelect(c.rgb); setSearch(""); }}
-              className="flex items-center gap-2 rounded-lg border border-gray-100 px-2.5 py-1.5 text-xs hover:bg-gray-50 transition"
+              className="flex items-center gap-2 px-2.5 py-1.5 text-xs transition"
+              style={{
+                border: "1px solid var(--kami-border)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
-              <div className="h-3.5 w-3.5 rounded border border-gray-100 shrink-0" style={{ backgroundColor: c.hex }} />
-              <span className="text-gray-700 truncate">{c.name}</span>
+              <div
+                className="h-3.5 w-3.5 shrink-0"
+                style={{
+                  backgroundColor: c.hex,
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "4px",
+                }}
+              />
+              <span className="truncate" style={{ color: "var(--kami-text-muted)" }}>{c.name}</span>
             </button>
           ))}
         </div>
       )}
       {filtered && filtered.length === 0 && (
-        <p className="mt-2 text-xs text-gray-400">No matching color names</p>
+        <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>No matching color names</p>
       )}
     </div>
   );
@@ -939,14 +1029,22 @@ function PaletteSwatch({ label, color, compact }: { label: string; color: RGB; c
     return (
       <button
         onClick={copy}
-        className="case-preserve group flex flex-col items-center gap-1 rounded-lg border border-gray-100 p-1.5 text-center transition hover:shadow-md"
+        className="case-preserve group flex flex-col items-center gap-1 p-1.5 text-center transition"
+        style={{
+          border: "1px solid var(--kami-border)",
+          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+        }}
         title={`Copy ${hex}`}
       >
         <div
-          className="h-8 w-full rounded border border-gray-100"
-          style={{ backgroundColor: hex }}
+          className="h-8 w-full"
+          style={{
+            backgroundColor: hex,
+            border: "1px solid var(--kami-border)",
+            borderRadius: "4px",
+          }}
         />
-        <span className="text-[10px] text-gray-500">
+        <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
           {copied ? "Copied!" : label}
         </span>
       </button>
@@ -956,17 +1054,25 @@ function PaletteSwatch({ label, color, compact }: { label: string; color: RGB; c
   return (
     <button
       onClick={copy}
-      className="case-preserve group flex flex-col items-center gap-1.5 rounded-lg border border-gray-200 p-3 text-center transition hover:shadow-md"
+      className="case-preserve group flex flex-col items-center gap-1.5 p-3 text-center transition"
+      style={{
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+      }}
       title={`Copy ${hex}`}
     >
       <div
-        className="h-12 w-full rounded-md border border-gray-100"
-        style={{ backgroundColor: hex }}
+        className="h-12 w-full"
+        style={{
+          backgroundColor: hex,
+          border: "1px solid var(--kami-border)",
+          borderRadius: "6px",
+        }}
       />
-      <span className="text-xs font-medium text-gray-700">
+      <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
         {copied ? "Copied!" : hex}
       </span>
-      <span className="text-[10px] text-gray-400">{label}</span>
+      <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{label}</span>
     </button>
   );
 }

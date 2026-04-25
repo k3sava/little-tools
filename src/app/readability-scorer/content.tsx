@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { ToolIntro } from "@/components/tools/tool-intro";
@@ -185,22 +185,26 @@ function getGradeLevelLabel(grade: number): string {
   return "Graduate";
 }
 
-function getScoreColor(grade: number): string {
-  if (grade <= 6) return "text-green-600";
-  if (grade <= 10) return "text-yellow-600";
-  return "text-red-600";
+function getScoreSemanticHex(grade: number): string {
+  if (grade <= 6) return "#16a34a";
+  if (grade <= 10) return "#ca8a04";
+  return "#dc2626";
 }
 
-function getScoreBg(grade: number): string {
-  if (grade <= 6) return "bg-green-50 border-green-200";
-  if (grade <= 10) return "bg-yellow-50 border-yellow-200";
-  return "bg-red-50 border-red-200";
+function getScoreColorStyle(grade: number): React.CSSProperties {
+  return { color: `color-mix(in srgb, ${getScoreSemanticHex(grade)} 80%, var(--kami-text))` };
 }
 
-function getScoreDot(grade: number): string {
-  if (grade <= 6) return "bg-green-500";
-  if (grade <= 10) return "bg-yellow-500";
-  return "bg-red-500";
+function getScoreBgStyle(grade: number): React.CSSProperties {
+  const hex = getScoreSemanticHex(grade);
+  return {
+    background: `color-mix(in srgb, ${hex} 10%, var(--kami-surface))`,
+    border: `1px solid color-mix(in srgb, ${hex} 30%, transparent)`,
+  };
+}
+
+function getScoreDotStyle(grade: number): React.CSSProperties {
+  return { background: getScoreSemanticHex(grade) };
 }
 
 function getOverallGrade(scores: ReadabilityScores): number {
@@ -365,15 +369,18 @@ interface ScoreCardProps {
 
 function ScoreCard({ name, score, interpretation, grade }: ScoreCardProps) {
   return (
-    <div className={`rounded-xl border px-4 py-3.5 ${getScoreBg(grade)}`}>
+    <div
+      className="px-4 py-3.5"
+      style={{ ...getScoreBgStyle(grade), borderRadius: "var(--kami-card-radius, 0.75rem)" }}
+    >
       <div className="flex items-center gap-2 mb-1.5">
-        <div className={`h-2.5 w-2.5 rounded-full ${getScoreDot(grade)}`} />
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{name}</span>
+        <div className="h-2.5 w-2.5 rounded-full" style={getScoreDotStyle(grade)} />
+        <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>{name}</span>
       </div>
-      <div className={`text-2xl font-bold tabular-nums ${getScoreColor(grade)}`}>
+      <div className="text-2xl font-bold tabular-nums" style={getScoreColorStyle(grade)}>
         {Math.round(score * 10) / 10}
       </div>
-      <div className="text-xs text-gray-500 mt-0.5">{interpretation}</div>
+      <div className="text-xs mt-0.5" style={{ color: "var(--kami-text-muted)" }}>{interpretation}</div>
     </div>
   );
 }
@@ -394,16 +401,23 @@ function DistributionBar({
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <div className="flex items-center gap-3">
-      <div className="w-28 shrink-0 text-sm text-gray-600">{label}</div>
+      <div className="w-28 shrink-0 text-sm" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
       <div className="flex-1">
-        <div className="h-5 w-full rounded bg-gray-100 overflow-hidden">
+        <div
+          className="h-5 w-full overflow-hidden"
+          style={{
+            background: "var(--kami-surface)",
+            border: "1px solid var(--kami-border)",
+            borderRadius: "4px",
+          }}
+        >
           <div
             className={`h-full rounded transition-all duration-200 ${color}`}
             style={{ width: `${pct}%` }}
           />
         </div>
       </div>
-      <div className="w-20 shrink-0 text-right text-sm text-gray-600 tabular-nums">
+      <div className="w-20 shrink-0 text-right text-sm tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
         {count} ({pct}%)
       </div>
     </div>
@@ -452,7 +466,7 @@ export default function ReadabilityScorerContent() {
   const hasContent = words.length > 0 && stats.totalSentences > 0;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Readability Scorer"
@@ -474,15 +488,22 @@ export default function ReadabilityScorerContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste or type your text here to analyze readability..."
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={8}
           autoFocus
         />
 
         {/* Clear */}
-        <div className="mt-1.5 flex items-center justify-end text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-end text-xs" style={{ color: "var(--kami-text-dim)" }}>
           {input && (
-            <button onClick={() => setInput("")} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
               Clear
             </button>
           )}
@@ -490,34 +511,42 @@ export default function ReadabilityScorerContent() {
 
         {/* Summary bar */}
         {hasContent && scores && overallGrade !== null && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
+          <div
+            className="mt-6 px-5 py-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
+                <div className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
                   Overall Grade Level
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-3xl font-bold tabular-nums ${getScoreColor(overallGrade)}`}>
+                  <span className="text-3xl font-bold tabular-nums" style={getScoreColorStyle(overallGrade)}>
                     {overallGrade}
                   </span>
-                  <span className="text-sm text-gray-500">{getGradeLevelLabel(overallGrade)}</span>
+                  <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{getGradeLevelLabel(overallGrade)}</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
+                <div className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
                   Reading Ease
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`text-xl font-bold tabular-nums ${getScoreColor(overallGrade)}`}>
+                  <span className="text-xl font-bold tabular-nums" style={getScoreColorStyle(overallGrade)}>
                     {overallCategory}
                   </span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1">
+                <div className="text-xs font-medium uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
                   Reading Time
                 </div>
-                <div className="text-xl font-bold text-gray-700">{formatTime(stats.readingTimeMin)}</div>
+                <div className="text-xl font-bold" style={{ color: "var(--kami-text-muted)" }}>{formatTime(stats.readingTimeMin)}</div>
               </div>
             </div>
           </div>
@@ -552,7 +581,7 @@ export default function ReadabilityScorerContent() {
                 grade={scores.smog}
               />
               {stats.totalSentences < 30 && (
-                <div className="mt-1 px-1 text-xs text-gray-400">
+                <div className="mt-1 px-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                   (requires 30+ sentences for accuracy)
                 </div>
               )}
@@ -574,11 +603,19 @@ export default function ReadabilityScorerContent() {
 
         {/* Text Statistics */}
         {hasContent && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div
+            className="mt-6 overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="px-5 py-4">
               <div className="flex items-center gap-2.5 mb-4">
                 <StatsIcon />
-                <span className="text-sm font-semibold text-gray-900">Text Statistics</span>
+                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Text Statistics</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 <StatItem label="Total Words" value={stats.totalWords} />
@@ -594,25 +631,41 @@ export default function ReadabilityScorerContent() {
 
         {/* Sentence Difficulty Highlighting */}
         {hasContent && sentences.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div
+            className="mt-6 overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="px-5 py-4">
               <div className="flex items-center gap-2.5 mb-3">
                 <HighlightIcon />
-                <span className="text-sm font-semibold text-gray-900">Sentence Difficulty</span>
+                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Sentence Difficulty</span>
               </div>
 
               {/* Legend */}
               <div className="flex flex-wrap gap-3 mb-4">
                 {LEGEND_ITEMS.map((item) => (
                   <div key={item.label} className="flex items-center gap-1.5">
-                    <div className={`h-3 w-5 rounded border ${item.color || "bg-white"} ${item.border}`} />
-                    <span className="text-xs text-gray-500">{item.label}</span>
+                    <div className={`h-3 w-5 rounded border ${item.color || ""} ${item.border}`} />
+                    <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{item.label}</span>
                   </div>
                 ))}
               </div>
 
               {/* Highlighted text */}
-              <div className="max-h-64 overflow-y-auto rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm leading-relaxed">
+              <div
+                className="max-h-64 overflow-y-auto p-4 text-sm leading-relaxed"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
+              >
                 {sentences.map((s, i) => (
                   <span
                     key={i}
@@ -630,12 +683,27 @@ export default function ReadabilityScorerContent() {
 
         {/* Per-sentence suggestions */}
         {hasContent && suggestions.length > 0 && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div
+            className="mt-6 overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="px-5 py-4">
               <div className="flex items-center gap-2.5 mb-3">
                 <SuggestionsIcon />
-                <span className="text-sm font-semibold text-gray-900">Suggestions</span>
-                <span className="ml-auto inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Suggestions</span>
+                <span
+                  className="ml-auto inline-flex items-center px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: "color-mix(in srgb, #f59e0b 18%, var(--kami-surface))",
+                    color: "color-mix(in srgb, #b45309 80%, var(--kami-text))",
+                    borderRadius: "999px",
+                  }}
+                >
                   {suggestions.length}
                 </span>
               </div>
@@ -658,8 +726,8 @@ export default function ReadabilityScorerContent() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm text-gray-700">{s.suggestion}</p>
-                      <p className="mt-0.5 text-xs text-gray-400 truncate">{s.sentence}</p>
+                      <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{s.suggestion}</p>
+                      <p className="mt-0.5 text-xs truncate" style={{ color: "var(--kami-text-dim)" }}>{s.sentence}</p>
                     </div>
                   </li>
                 ))}
@@ -670,11 +738,19 @@ export default function ReadabilityScorerContent() {
 
         {/* Distribution chart */}
         {hasContent && (
-          <div className="mt-6 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+          <div
+            className="mt-6 overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="px-5 py-4">
               <div className="flex items-center gap-2.5 mb-4">
                 <ChartIcon />
-                <span className="text-sm font-semibold text-gray-900">Sentence Length Distribution</span>
+                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Sentence Length Distribution</span>
               </div>
               <div className="flex flex-col gap-2.5">
                 <DistributionBar
@@ -708,7 +784,7 @@ export default function ReadabilityScorerContent() {
 
         {/* Empty state */}
         {!hasContent && (
-          <div className="mt-12 text-center text-gray-400">
+          <div className="mt-12 text-center" style={{ color: "var(--kami-text-dim)" }}>
             <EmptyIcon />
             <p className="mt-3 text-sm">Paste or type text above to see readability scores.</p>
             <p className="mt-1 text-xs">Works best with 2+ sentences.</p>
@@ -729,7 +805,15 @@ export default function ReadabilityScorerContent() {
             <RuleRow rule="ARI" explanation="Uses character count instead of syllables - faster and language-agnostic." example="Grade-level output" />
             <RuleRow rule="Coleman-Liau" explanation="Also character-based; designed for computer-generated scoring." example="Grade-level output" />
           </div>
-          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+          <div
+            className="mt-3 p-3 text-xs"
+            style={{
+              background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
+              color: "var(--kami-text)",
+              border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          >
             <strong>Tip:</strong> readability formulas reward short sentences and common
             words. They don&apos;t judge whether ideas are <em>clear</em> - a string of
             short nonsense will score high. Use the score as a smell test, not a verdict.
@@ -744,9 +828,15 @@ export default function ReadabilityScorerContent() {
 
 function StatItem({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="rounded-lg border border-gray-100 px-3 py-2.5">
-      <div className="text-lg font-bold text-gray-900">{value}</div>
-      <div className="text-xs text-gray-500">{label}</div>
+    <div
+      className="px-3 py-2.5"
+      style={{
+        border: "1px solid var(--kami-border)",
+        borderRadius: "var(--kami-input-radius, 0.5rem)",
+      }}
+    >
+      <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{value}</div>
+      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
     </div>
   );
 }
@@ -755,7 +845,7 @@ function StatItem({ label, value }: { label: string; value: string | number }) {
 
 function StatsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--kami-text-dim)" }}>
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   );
@@ -763,7 +853,7 @@ function StatsIcon() {
 
 function HighlightIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--kami-text-dim)" }}>
       <path d="M12 20h9" />
       <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
     </svg>
@@ -772,7 +862,7 @@ function HighlightIcon() {
 
 function SuggestionsIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--kami-text-dim)" }}>
       <circle cx="12" cy="12" r="10" />
       <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
       <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -782,7 +872,7 @@ function SuggestionsIcon() {
 
 function ChartIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--kami-text-dim)" }}>
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
@@ -792,7 +882,7 @@ function ChartIcon() {
 
 function EmptyIcon() {
   return (
-    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-300">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto" style={{ color: "var(--kami-text-dim)" }}>
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
       <polyline points="14 2 14 8 20 8" />
       <line x1="16" y1="13" x2="8" y2="13" />

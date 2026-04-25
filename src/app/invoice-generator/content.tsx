@@ -524,7 +524,7 @@ export default function InvoiceGeneratorContent() {
   if (!loaded) return null;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Invoice Generator"
@@ -540,27 +540,40 @@ export default function InvoiceGeneratorContent() {
 
         {/* Document type selector */}
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
             Document Type
           </label>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(documentTypeLabels) as DocumentType[]).map((dt) => (
-              <button
-                key={dt}
-                onClick={() => handleDocTypeChange(dt)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
-                  invoice.documentType === dt
-                    ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                {documentTypeLabels[dt].label}
-              </button>
-            ))}
+            {(Object.keys(documentTypeLabels) as DocumentType[]).map((dt) => {
+              const active = invoice.documentType === dt;
+              return (
+                <button
+                  key={dt}
+                  onClick={() => handleDocTypeChange(dt)}
+                  className="px-4 py-2 text-sm font-medium transition-all"
+                  style={{
+                    background: active ? "var(--kami-cta-bg)" : "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                    color: active ? "var(--kami-cta-text)" : "var(--kami-cta2-text, var(--kami-text-muted))",
+                    border: active
+                      ? "1px solid var(--kami-cta-bg)"
+                      : "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    boxShadow: active ? "var(--kami-cta-shadow, none)" : "none",
+                  }}
+                >
+                  {documentTypeLabels[dt].label}
+                </button>
+              );
+            })}
             <div className="flex-1" />
             <button
               onClick={handleNewInvoice}
-              className="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+              className="px-4 py-2 text-sm transition-colors"
+              style={{
+                color: "var(--kami-text-muted)",
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               + New {documentTypeLabels[invoice.documentType].label}
             </button>
@@ -569,34 +582,50 @@ export default function InvoiceGeneratorContent() {
 
         {/* Template selector */}
         <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
             Template
           </label>
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(templateStyles) as TemplateName[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => update("template", t)}
-                className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
-                  invoice.template === t
-                    ? "border-gray-900 bg-gray-900 text-white"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                <span
-                  className="mr-2 inline-block h-3 w-3 rounded-full"
-                  style={{ backgroundColor: templateStyles[t].accent }}
-                />
-                {templateStyles[t].label}
-              </button>
-            ))}
+            {(Object.keys(templateStyles) as TemplateName[]).map((t) => {
+              const active = invoice.template === t;
+              return (
+                <button
+                  key={t}
+                  onClick={() => update("template", t)}
+                  className="px-4 py-2 text-sm font-medium transition-all"
+                  style={{
+                    background: active ? "var(--kami-cta-bg)" : "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                    color: active ? "var(--kami-cta-text)" : "var(--kami-cta2-text, var(--kami-text-muted))",
+                    border: active
+                      ? "1px solid var(--kami-cta-bg)"
+                      : "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    boxShadow: active ? "var(--kami-cta-shadow, none)" : "none",
+                  }}
+                >
+                  <span
+                    className="mr-2 inline-block h-3 w-3 rounded-full"
+                    style={{ backgroundColor: templateStyles[t].accent }}
+                  />
+                  {templateStyles[t].label}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
           {/* From */}
-          <fieldset className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <legend className="px-2 text-sm font-semibold text-gray-700">
+          <fieldset
+            className="p-5"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
               From (Your Details)
             </legend>
             <div className="mt-2 space-y-3">
@@ -625,8 +654,16 @@ export default function InvoiceGeneratorContent() {
           </fieldset>
 
           {/* To */}
-          <fieldset className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <legend className="px-2 text-sm font-semibold text-gray-700">
+          <fieldset
+            className="p-5"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
               To (Client)
             </legend>
             <div className="mt-2 space-y-3">
@@ -651,8 +688,16 @@ export default function InvoiceGeneratorContent() {
         </div>
 
         {/* Invoice details */}
-        <fieldset className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <legend className="px-2 text-sm font-semibold text-gray-700">
+        <fieldset
+          className="mt-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
             {documentTypeLabels[invoice.documentType].label} Details
           </legend>
           <div className="mt-2 grid gap-3 sm:grid-cols-5">
@@ -668,13 +713,19 @@ export default function InvoiceGeneratorContent() {
               onChange={(v) => update("invoiceDate", v)}
             />
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
+              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Payment Terms
               </label>
               <select
                 value={invoice.paymentTerm}
                 onChange={(e) => update("paymentTerm", e.target.value as PaymentTerm)}
-                className="w-full rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
               >
                 {paymentTerms.map((pt) => (
                   <option key={pt.value} value={pt.value}>
@@ -693,13 +744,19 @@ export default function InvoiceGeneratorContent() {
               }}
             />
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-500">
+              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Currency
               </label>
               <select
                 value={invoice.currency}
                 onChange={(e) => update("currency", e.target.value)}
-                className="w-full rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
               >
                 {currencies.map((c) => (
                   <option key={c.code} value={c.code}>
@@ -712,13 +769,21 @@ export default function InvoiceGeneratorContent() {
         </fieldset>
 
         {/* Line items */}
-        <fieldset className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <legend className="px-2 text-sm font-semibold text-gray-700">
+        <fieldset
+          className="mt-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
             Line Items
           </legend>
           <div className="mt-2 space-y-3">
             {/* Header row */}
-            <div className="hidden sm:grid sm:grid-cols-[1fr_80px_100px_100px_36px] sm:gap-2 text-xs font-medium text-gray-500">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_80px_100px_100px_36px] sm:gap-2 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
               <span>Description</span>
               <span>Qty</span>
               <span>Rate</span>
@@ -740,7 +805,13 @@ export default function InvoiceGeneratorContent() {
                     onChange={(e) =>
                       updateItem(item.id, "description", e.target.value)
                     }
-                    className="rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                   <input
                     type="number"
@@ -753,7 +824,13 @@ export default function InvoiceGeneratorContent() {
                         Math.max(0, parseFloat(e.target.value) || 0)
                       )
                     }
-                    className="rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                   <input
                     type="number"
@@ -767,15 +844,25 @@ export default function InvoiceGeneratorContent() {
                         Math.max(0, parseFloat(e.target.value) || 0)
                       )
                     }
-                    className="rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
-                  <div className="flex items-center text-sm font-medium text-gray-700">
+                  <div className="flex items-center text-sm font-medium" style={{ color: "var(--kami-text)" }}>
                     {isCreditNote && amount > 0 ? "-" : ""}
                     {formatMoney(amount, invoice.currency)}
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="flex h-9 w-9 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+                    className="flex h-9 w-9 items-center justify-center transition-colors"
+                    style={{
+                      color: "var(--kami-text-dim)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
                     title="Remove item"
                   >
                     <svg
@@ -798,7 +885,12 @@ export default function InvoiceGeneratorContent() {
 
             <button
               onClick={addItem}
-              className="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+              className="px-4 py-2 text-sm transition-colors"
+              style={{
+                color: "var(--kami-text-muted)",
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               + Add Item
             </button>
@@ -807,8 +899,16 @@ export default function InvoiceGeneratorContent() {
 
         {/* Tax, Discount, Notes */}
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <fieldset className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-            <legend className="px-2 text-sm font-semibold text-gray-700">
+          <fieldset
+            className="p-5"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
               Notes
             </legend>
             <textarea
@@ -816,7 +916,13 @@ export default function InvoiceGeneratorContent() {
               onChange={(e) => update("notes", e.target.value)}
               placeholder="Payment terms, thank you message, etc."
               rows={4}
-              className="mt-2 w-full rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none resize-none"
+              className="mt-2 w-full px-3 py-2 text-sm resize-none focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
             />
           </fieldset>
 
@@ -846,17 +952,25 @@ export default function InvoiceGeneratorContent() {
             </fieldset>
 
             {/* Summary */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Subtotal</span>
+                  <span style={{ color: "var(--kami-text-muted)" }}>Subtotal</span>
                   <span>
                     {isCreditNote && subtotal > 0 ? "-" : ""}
                     {formatMoney(subtotal, invoice.currency)}
                   </span>
                 </div>
                 {invoice.discountRate > 0 && (
-                  <div className="flex justify-between text-red-600">
+                  <div className="flex justify-between" style={{ color: "color-mix(in srgb, #dc2626 80%, var(--kami-text))" }}>
                     <span>Discount ({invoice.discountRate}%)</span>
                     <span>
                       -{formatMoney(discountAmt, invoice.currency)}
@@ -865,7 +979,7 @@ export default function InvoiceGeneratorContent() {
                 )}
                 {invoice.taxRate > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-500">
+                    <span style={{ color: "var(--kami-text-muted)" }}>
                       Tax ({invoice.taxRate}%)
                     </span>
                     <span>
@@ -874,9 +988,12 @@ export default function InvoiceGeneratorContent() {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between border-t border-gray-200 pt-2 text-lg font-bold">
+                <div
+                  className="flex justify-between pt-2 text-lg font-bold"
+                  style={{ borderTop: "1px solid var(--kami-border)" }}
+                >
                   <span>Total</span>
-                  <span className={isCreditNote ? "text-red-600" : ""}>
+                  <span style={isCreditNote ? { color: "color-mix(in srgb, #dc2626 80%, var(--kami-text))" } : undefined}>
                     {displayTotal < 0 ? "-" : ""}
                     {formatMoney(total, invoice.currency)}
                   </span>
@@ -890,7 +1007,13 @@ export default function InvoiceGeneratorContent() {
         <div className="mt-8 flex justify-center">
           <button
             onClick={handleExport}
-            className="rounded-xl bg-gray-900 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-gray-800 hover:shadow-md active:scale-[0.98]"
+            className="px-8 py-3 text-sm font-semibold transition-all active:scale-[0.98]"
+            style={{
+              background: "var(--kami-cta-bg)",
+              color: "var(--kami-cta-text)",
+              borderRadius: "var(--kami-cta-radius, 0.75rem)",
+              boxShadow: "var(--kami-cta-shadow, var(--kami-card-shadow, none))",
+            }}
           >
             Download PDF
           </button>
@@ -917,14 +1040,20 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-gray-500">
+      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
         {label}
       </label>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-gray-200  px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+        className="w-full px-3 py-2 text-sm focus:outline-none"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.5rem)",
+        }}
       />
     </div>
   );
