@@ -182,8 +182,21 @@ export default function PdfCompressContent() {
 
   useKeyboardShortcuts(shortcuts);
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  };
+  const accentBg = "var(--kami-accent, #f43f5e)";
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Compress PDF"
@@ -210,11 +223,20 @@ export default function PdfCompressContent() {
 
         {/* Error state */}
         {status === "error" && !file && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-            <p className="text-sm font-medium text-red-700">{errorMessage}</p>
+          <div
+            className="p-6 text-center"
+            style={{
+              background: "color-mix(in srgb, #ef4444 10%, var(--kami-surface))",
+              color: "var(--kami-text)",
+              border: "1px solid color-mix(in srgb, #ef4444 30%, transparent)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <p className="text-sm font-medium">{errorMessage}</p>
             <button
               onClick={reset}
-              className="mt-4 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+              className="mt-4 px-4 py-2 text-sm font-medium transition-colors"
+              style={ctaStyle}
             >
               Try another file
             </button>
@@ -225,20 +247,21 @@ export default function PdfCompressContent() {
         {file && status !== "done" && (
           <div className="space-y-6">
             {/* File info card */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="p-5" style={cardStyle}>
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-gray-900">
+                  <p className="truncate text-sm font-medium" style={{ color: "var(--kami-text)" }}>
                     {file.name}
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                     {formatBytes(originalSize)} &middot; {pageCount}{" "}
                     {pageCount === 1 ? "page" : "pages"}
                   </p>
                 </div>
                 <button
                   onClick={reset}
-                  className="ml-4 shrink-0 text-xs text-gray-400 hover:text-gray-600"
+                  className="ml-4 shrink-0 text-xs"
+                  style={{ color: "var(--kami-text-dim)" }}
                 >
                   Remove
                 </button>
@@ -247,39 +270,52 @@ export default function PdfCompressContent() {
 
             {/* Compression level selector */}
             <div>
-              <p className="mb-3 text-sm font-medium text-gray-700">
+              <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Compression level
               </p>
               <div className="grid grid-cols-3 gap-3">
-                {(["low", "medium", "high"] as CompressionLevel[]).map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setLevel(l)}
-                    className={`rounded-xl border p-4 text-left transition-all ${
-                      level === l
-                        ? "border-rose-300 bg-rose-50 ring-2 ring-rose-200"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <p
-                      className={`text-sm font-semibold ${
-                        level === l ? "text-rose-700" : "text-gray-900"
-                      }`}
+                {(["low", "medium", "high"] as CompressionLevel[]).map((l) => {
+                  const active = level === l;
+                  return (
+                    <button
+                      key={l}
+                      onClick={() => setLevel(l)}
+                      className="p-4 text-left transition-all"
+                      style={{
+                        background: active ? "color-mix(in srgb, var(--kami-accent, #f43f5e) 10%, var(--kami-surface))" : "var(--kami-surface-solid)",
+                        border: active
+                          ? `1px solid color-mix(in srgb, var(--kami-accent, #f43f5e) 35%, transparent)`
+                          : "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-card-radius, 0.75rem)",
+                      }}
                     >
-                      {LEVEL_INFO[l].label}
-                    </p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {LEVEL_INFO[l].description}
-                    </p>
-                  </button>
-                ))}
+                      <p
+                        className="text-sm font-semibold"
+                        style={{ color: active ? "var(--kami-accent, #be123c)" : "var(--kami-text)" }}
+                      >
+                        {LEVEL_INFO[l].label}
+                      </p>
+                      <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        {LEVEL_INFO[l].description}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Error during compression */}
             {status === "error" && errorMessage && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-                <p className="text-sm text-red-700">{errorMessage}</p>
+              <div
+                className="p-4"
+                style={{
+                  background: "color-mix(in srgb, #ef4444 10%, var(--kami-surface))",
+                  color: "var(--kami-text)",
+                  border: "1px solid color-mix(in srgb, #ef4444 30%, transparent)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
+                <p className="text-sm">{errorMessage}</p>
               </div>
             )}
 
@@ -287,7 +323,13 @@ export default function PdfCompressContent() {
             <button
               onClick={compress}
               disabled={status === "compressing"}
-              className="w-full rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full px-6 py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+              style={{
+                background: accentBg,
+                color: "#ffffff",
+                borderRadius: "var(--kami-cta-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
             >
               {status === "compressing" ? (
                 <span className="flex items-center justify-center gap-2">
@@ -305,22 +347,22 @@ export default function PdfCompressContent() {
         {status === "done" && file && (
           <div className="space-y-6">
             {/* Results card */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <p className="mb-4 text-sm font-medium text-gray-700">
+            <div className="p-6" style={cardStyle}>
+              <p className="mb-4 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Compression result
               </p>
 
               {/* Size comparison */}
               <div className="flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-400">
+                  <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                     Original
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                  <p className="mt-1 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
                     {formatBytes(originalSize)}
                   </p>
                 </div>
-                <div className="pb-1 text-gray-300">
+                <div className="pb-1" style={{ color: "var(--kami-text-dim)" }}>
                   <svg
                     width="24"
                     height="24"
@@ -336,10 +378,10 @@ export default function PdfCompressContent() {
                   </svg>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs uppercase tracking-wide text-gray-400">
+                  <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                     Compressed
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-gray-900">
+                  <p className="mt-1 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
                     {formatBytes(compressedSize)}
                   </p>
                 </div>
@@ -347,7 +389,10 @@ export default function PdfCompressContent() {
 
               {/* Visual bar */}
               <div className="mt-4">
-                <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-3 w-full overflow-hidden rounded-full"
+                  style={{ background: "var(--kami-surface)" }}
+                >
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -356,7 +401,7 @@ export default function PdfCompressContent() {
                         (compressedSize / originalSize) * 100
                       )}%`,
                       backgroundColor:
-                        reductionPercent > 0 ? "#f43f5e" : "#9ca3af",
+                        reductionPercent > 0 ? accentBg : "var(--kami-text-dim)",
                     }}
                   />
                 </div>
@@ -365,15 +410,15 @@ export default function PdfCompressContent() {
               {/* Reduction label */}
               <div className="mt-3 text-center">
                 {reductionPercent > 0 ? (
-                  <p className="text-sm font-medium text-rose-600">
+                  <p className="text-sm font-medium" style={{ color: accentBg }}>
                     {reductionPercent.toFixed(1)}% smaller
                   </p>
                 ) : reductionPercent === 0 ? (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                     No size change. This PDF is already well-optimized.
                   </p>
                 ) : (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                     File grew by {Math.abs(reductionPercent).toFixed(1)}%.
                     This PDF is already well-optimized and re-encoding added overhead.
                   </p>
@@ -385,13 +430,26 @@ export default function PdfCompressContent() {
             <div className="flex gap-3">
               <button
                 onClick={download}
-                className="flex-1 rounded-xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700"
+                className="flex-1 px-6 py-3 text-sm font-semibold transition-colors"
+                style={{
+                  background: accentBg,
+                  color: "#ffffff",
+                  borderRadius: "var(--kami-cta-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               >
                 Download compressed PDF
               </button>
               <button
                 onClick={reset}
-                className="rounded-xl border border-gray-200 bg-white px-6 py-3 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50"
+                className="px-6 py-3 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               >
                 Try another file
               </button>
