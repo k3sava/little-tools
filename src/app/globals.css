@@ -308,8 +308,10 @@ html[data-theme="brutalist"] body:not(:has(.kami-playground)) {
 html[data-theme="brutalist"] body:has(.kami-playground) {
   font-family: var(--kami-font-body);
 }
-html[data-theme="brutalist"] .kami-scope canvas,
-html[data-theme="brutalist"] .kami-blob-canvas { display: none !important; }
+html[data-theme="brutalist"] .kami-scope canvas { display: none !important; }
+/* Default: blob canvas off; only zen opts in. */
+.kami-blob-canvas { display: none; }
+html[data-theme="zen"] .kami-blob-canvas { display: block; }
 
 /* Headings: ALL CAPS BLOCK */
 html[data-theme="brutalist"] .kami-scope h1,
@@ -450,8 +452,7 @@ html[data-theme="editorial"] body:has(.kami-playground) {
   font-family: var(--kami-font-body);
   font-feature-settings: "liga", "kern";
 }
-html[data-theme="editorial"] .kami-scope canvas,
-html[data-theme="editorial"] .kami-blob-canvas { display: none !important; }
+html[data-theme="editorial"] .kami-scope canvas { display: none !important; }
 
 /* Headings: serif display, italic for h1 */
 html[data-theme="editorial"] .kami-scope h1,
@@ -612,8 +613,7 @@ html[data-theme="terminal"] body:not(:has(.kami-playground)) {
 html[data-theme="terminal"] body:has(.kami-playground) {
   font-family: var(--kami-font-body);
 }
-html[data-theme="terminal"] .kami-scope canvas,
-html[data-theme="terminal"] .kami-blob-canvas { display: none !important; }
+html[data-theme="terminal"] .kami-scope canvas { display: none !important; }
 /* Scanline overlay */
 html[data-theme="terminal"] body:not(:has(.kami-playground))::after {
   content: "";
@@ -797,6 +797,7 @@ html[data-theme="zen"] .kami-scope canvas,
 html[data-theme="zen"] .kami-blob-canvas {
   opacity: 0.3 !important;
 }
+html[data-theme="zen"] .kami-blob-canvas { display: block; }
 
 /* Headings: serif display, light weight, wide tracking, lowercase feel */
 html[data-theme="zen"] .kami-scope h1,
