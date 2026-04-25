@@ -777,21 +777,33 @@ export default function JsonFormatterContent() {
         {/* --- Query Tab --- */}
         {hasData && activeTab === "query" && (
           <div className="mt-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">JSON Path Query</h3>
+            <div className="p-5" style={cardStyle}>
+              <h3 className="text-sm font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>JSON Path Query</h3>
               <input
                 type="text"
                 value={jsonPathQuery}
                 onChange={(e) => setJsonPathQuery(e.target.value)}
                 placeholder="$.users[*].name  or  data.items[0]"
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-mono placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-4 py-2.5 text-sm font-mono focus:outline-none"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
               />
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {["$", "$..*", "$[0]", "$[*]"].map((example) => (
                   <button
                     key={example}
                     onClick={() => setJsonPathQuery(example)}
-                    className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                    className="px-2 py-0.5 text-xs font-mono"
+                    style={{
+                      background: "var(--kami-surface)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
                   >
                     {example}
                   </button>
@@ -800,19 +812,28 @@ export default function JsonFormatterContent() {
               {jsonPathQuery && (
                 <div className="mt-4">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       {pathResults.length} result{pathResults.length !== 1 ? "s" : ""}
                     </span>
                     {pathResults.length > 0 && (
                       <button
                         onClick={() => handleCopy(JSON.stringify(pathResults.length === 1 ? pathResults[0] : pathResults, null, 2), "query")}
-                        className="text-xs text-gray-400 hover:text-gray-600"
+                        className="text-xs"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         {copied === "query" ? "Copied!" : "Copy result"}
                       </button>
                     )}
                   </div>
-                  <pre className="overflow-auto whitespace-pre rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-mono max-h-64">
+                  <pre
+                    className="overflow-auto whitespace-pre px-4 py-3 text-sm font-mono max-h-64"
+                    style={{
+                      background: "var(--kami-surface)",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
+                  >
                     {pathResults.length === 0
                       ? "No results"
                       : JSON.stringify(pathResults.length === 1 ? pathResults[0] : pathResults, null, 2)}
@@ -867,15 +888,16 @@ export default function JsonFormatterContent() {
                 <button
                   key={t.label}
                   onClick={t.action}
-                  className="rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-colors hover:border-gray-300 hover:bg-gray-50"
+                  className="p-4 text-left transition-colors"
+                  style={cardStyle}
                 >
-                  <div className="text-sm font-medium text-gray-900">{t.label}</div>
-                  <div className="mt-0.5 text-xs text-gray-500">{t.desc}</div>
+                  <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>{t.label}</div>
+                  <div className="mt-0.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>{t.desc}</div>
                 </button>
               ))}
             </div>
             {copied === "escaped" && (
-              <div className="mt-2 text-xs text-green-600">Escaped JSON copied to clipboard</div>
+              <div className="mt-2 text-xs" style={{ color: "#16a34a" }}>Escaped JSON copied to clipboard</div>
             )}
           </div>
         )}
@@ -884,15 +906,25 @@ export default function JsonFormatterContent() {
         {hasData && activeTab === "types" && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">TypeScript Interface</span>
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>TypeScript Interface</span>
               <button
                 onClick={() => handleCopy(tsType, "types")}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={ctaStyle}
               >
                 {copied === "types" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
               </button>
             </div>
-            <pre className="overflow-auto whitespace-pre rounded-xl border border-gray-200 bg-gray-900 px-4 py-3 text-sm font-mono text-gray-100 shadow-sm max-h-[500px]">
+            <pre
+              className="overflow-auto whitespace-pre px-4 py-3 text-sm font-mono max-h-[500px]"
+              style={{
+                background: "var(--kami-overlay-bg, #0f172a)",
+                color: "var(--kami-overlay-text, #f1f5f9)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {tsType}
             </pre>
           </div>
