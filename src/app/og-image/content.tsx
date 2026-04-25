@@ -619,7 +619,7 @@ export default function OgImageContent() {
   ], [handleExport]));
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="OG Image Generator"
@@ -635,16 +635,31 @@ export default function OgImageContent() {
         </div>
 
         {/* Tabs */}
-        <div className="mb-6 flex items-center justify-center gap-1 rounded-lg border border-gray-200 bg-white p-1 w-fit mx-auto">
+        <div
+          className="mb-6 flex items-center justify-center gap-1 p-1 w-fit mx-auto"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.5rem)",
+          }}
+        >
           {(["editor", "preview", "validator"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+              className="px-4 py-2 text-sm font-medium transition-colors"
+              style={
                 activeTab === tab
-                  ? "bg-gray-900 text-white"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+                  ? {
+                      background: "var(--kami-cta-bg, #111827)",
+                      color: "var(--kami-cta-text, #ffffff)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }
+                  : {
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }
+              }
             >
               {tab === "editor"
                 ? "Editor"
@@ -660,7 +675,15 @@ export default function OgImageContent() {
           <div className="grid gap-6 lg:grid-cols-[1fr,380px]">
             {/* Canvas Preview */}
             <div>
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
                 <canvas
                   ref={canvasRef}
                   width={OG_WIDTH}
@@ -672,17 +695,32 @@ export default function OgImageContent() {
 
               {/* Export controls */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 py-1">
-                  <span className="text-xs text-gray-500">Format:</span>
+                <div
+                  className="flex items-center gap-1 px-2 py-1"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Format:</span>
                   {(["png", "jpeg"] as ExportFormat[]).map((fmt) => (
                     <button
                       key={fmt}
                       onClick={() => setExportFormat(fmt)}
-                      className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
+                      className="px-2 py-0.5 text-xs font-medium transition-colors"
+                      style={
                         exportFormat === fmt
-                          ? "bg-gray-900 text-white"
-                          : "text-gray-600 hover:text-gray-900"
-                      }`}
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                            }
+                          : {
+                              color: "var(--kami-text-muted)",
+                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                            }
+                      }
                     >
                       {fmt.toUpperCase()}
                     </button>
@@ -690,17 +728,28 @@ export default function OgImageContent() {
                 </div>
                 <button
                   onClick={handleExport}
-                  className="rounded-lg bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  className="px-4 py-1.5 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-cta-bg, #111827)",
+                    color: "var(--kami-cta-text, #ffffff)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Download {exportFormat.toUpperCase()}
                 </button>
                 <button
                   onClick={handleCopyMetaTags}
-                  className="rounded-lg border border-gray-200 bg-white px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 hover:border-gray-300"
+                  className="px-4 py-1.5 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   {copied ? "Copied!" : "Copy Meta Tags"}
                 </button>
-                <span className="ml-auto text-xs text-gray-400">
+                <span className="ml-auto text-xs" style={{ color: "var(--kami-text-dim)" }}>
                   1200 x 630px
                 </span>
               </div>
@@ -709,8 +758,16 @@ export default function OgImageContent() {
             {/* Controls Panel */}
             <div className="space-y-5">
               {/* Templates */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Templates
                 </h3>
                 <div className="grid grid-cols-4 gap-2">
@@ -718,11 +775,18 @@ export default function OgImageContent() {
                     <button
                       key={t.id}
                       onClick={() => applyTemplate(t)}
-                      className={`rounded-lg p-2 text-center text-xs font-medium transition-all ${
+                      className="p-2 text-center text-xs font-medium transition-all"
+                      style={
                         templateId === t.id
-                          ? "ring-2 ring-gray-900 "
-                          : "border border-gray-200 hover:border-gray-300"
-                      }`}
+                          ? {
+                              boxShadow: "0 0 0 2px var(--kami-text)",
+                              borderRadius: "var(--kami-card-radius, 0.5rem)",
+                            }
+                          : {
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-card-radius, 0.5rem)",
+                            }
+                      }
                     >
                       <div
                         className="mx-auto mb-1.5 h-6 w-full rounded"
@@ -733,64 +797,96 @@ export default function OgImageContent() {
                               : t.bgValue,
                         }}
                       />
-                      <span className="text-gray-600">{t.name}</span>
+                      <span style={{ color: "var(--kami-text-muted)" }}>{t.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Text Fields */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Content
                 </h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       Title
                     </label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                       placeholder="Your title here"
                     />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       Subtitle
                     </label>
                     <input
                       type="text"
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                       placeholder="A brief description"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-xs text-gray-500">
+                      <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
                         Author
                       </label>
                       <input
                         type="text"
                         value={author}
                         onChange={(e) => setAuthor(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        className="w-full px-3 py-2 text-sm focus:outline-none"
+                        style={{
+                          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                          color: "var(--kami-text)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        }}
                         placeholder="Author name"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs text-gray-500">
+                      <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
                         Domain
                       </label>
                       <input
                         type="text"
                         value={domain}
                         onChange={(e) => setDomain(e.target.value)}
-                        className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                        className="w-full px-3 py-2 text-sm focus:outline-none"
+                        style={{
+                          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                          color: "var(--kami-text)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        }}
                         placeholder="example.com"
                       />
                     </div>
@@ -799,21 +895,43 @@ export default function OgImageContent() {
               </div>
 
               {/* Background */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Background
                 </h3>
-                <div className="mb-3 flex gap-1 rounded-lg border border-gray-200 p-0.5">
+                <div
+                  className="mb-3 flex gap-1 p-0.5"
+                  style={{
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
                   {(["gradient", "solid", "pattern", "image"] as BgType[]).map(
                     (bt) => (
                       <button
                         key={bt}
                         onClick={() => setBgType(bt)}
-                        className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                        className="flex-1 px-2 py-1.5 text-xs font-medium transition-colors"
+                        style={
                           bgType === bt
-                            ? "bg-gray-900 text-white"
-                            : "text-gray-600 hover:text-gray-900"
-                        }`}
+                            ? {
+                                background: "var(--kami-cta-bg, #111827)",
+                                color: "var(--kami-cta-text, #ffffff)",
+                                borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                              }
+                            : {
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                              }
+                        }
                       >
                         {bt.charAt(0).toUpperCase() + bt.slice(1)}
                       </button>
@@ -827,13 +945,23 @@ export default function OgImageContent() {
                       type="color"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="h-8 w-8 cursor-pointer rounded border border-gray-200"
+                      className="h-8 w-8 cursor-pointer"
+                      style={{
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                     <input
                       type="text"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="flex-1 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-mono focus:border-gray-300 focus:outline-none"
+                      className="flex-1 px-3 py-1.5 text-sm font-mono focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                     />
                   </div>
                 )}
@@ -846,12 +974,20 @@ export default function OgImageContent() {
                           <button
                             key={t.id}
                             onClick={() => setBgGradient(t.bgValue)}
-                            className={`h-8 rounded-md transition-all ${
+                            className="h-8 transition-all"
+                            style={
                               bgGradient === t.bgValue
-                                ? "ring-2 ring-gray-900 ring-offset-1"
-                                : "ring-1 ring-gray-200"
-                            }`}
-                            style={{ background: t.bgValue }}
+                                ? {
+                                    background: t.bgValue,
+                                    boxShadow: "0 0 0 2px var(--kami-text), 0 0 0 3px var(--kami-surface-solid)",
+                                    borderRadius: "var(--kami-card-radius, 0.375rem)",
+                                  }
+                                : {
+                                    background: t.bgValue,
+                                    boxShadow: "0 0 0 1px var(--kami-border-strong)",
+                                    borderRadius: "var(--kami-card-radius, 0.375rem)",
+                                  }
+                            }
                           />
                         )
                       )}
@@ -866,20 +1002,33 @@ export default function OgImageContent() {
                         type="color"
                         value={bgColor}
                         onChange={(e) => setBgColor(e.target.value)}
-                        className="h-8 w-8 cursor-pointer rounded border border-gray-200"
+                        className="h-8 w-8 cursor-pointer"
+                        style={{
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-input-radius, 0.25rem)",
+                        }}
                       />
-                      <span className="text-xs text-gray-500">Base color</span>
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Base color</span>
                     </div>
                     <div className="grid grid-cols-4 gap-1.5">
                       {PATTERNS.map((p) => (
                         <button
                           key={p.id}
                           onClick={() => setBgPattern(p.id)}
-                          className={`rounded-md px-2 py-1.5 text-xs font-medium transition-all ${
+                          className="px-2 py-1.5 text-xs font-medium transition-all"
+                          style={
                             bgPattern === p.id
-                              ? "bg-gray-900 text-white"
-                              : "border border-gray-200 text-gray-600 hover:border-gray-300"
-                          }`}
+                              ? {
+                                  background: "var(--kami-cta-bg, #111827)",
+                                  color: "var(--kami-cta-text, #ffffff)",
+                                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                                }
+                              : {
+                                  border: "1px solid var(--kami-border-strong)",
+                                  color: "var(--kami-text-muted)",
+                                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                                }
+                          }
                         >
                           {p.name}
                         </button>
@@ -890,7 +1039,14 @@ export default function OgImageContent() {
 
                 {bgType === "image" && (
                   <div>
-                    <label className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 px-4 py-6 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
+                    <label
+                      className="flex cursor-pointer items-center justify-center px-4 py-6 text-sm transition-colors"
+                      style={{
+                        border: "2px dashed var(--kami-border-strong)",
+                        color: "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-card-radius, 0.5rem)",
+                      }}
+                    >
                       {bgImageData
                         ? "Image loaded - click to change"
                         : "Click to upload background image"}
@@ -906,12 +1062,27 @@ export default function OgImageContent() {
               </div>
 
               {/* Logo upload */}
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 text-sm font-semibold text-gray-700">
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Logo
                 </h3>
                 <div className="flex items-center gap-3">
-                  <label className="flex cursor-pointer items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-xs text-gray-500 hover:border-gray-300 transition-colors">
+                  <label
+                    className="flex cursor-pointer items-center justify-center px-4 py-2 text-xs transition-colors"
+                    style={{
+                      border: "1px solid var(--kami-border-strong)",
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
+                  >
                     {logoData ? "Change logo" : "Upload logo"}
                     <input
                       type="file"
@@ -923,7 +1094,8 @@ export default function OgImageContent() {
                   {logoData && (
                     <button
                       onClick={() => setLogoData(null)}
-                      className="text-xs text-gray-400 hover:text-gray-600"
+                      className="text-xs"
+                      style={{ color: "var(--kami-text-dim)" }}
                     >
                       Remove
                     </button>
@@ -937,7 +1109,15 @@ export default function OgImageContent() {
         {/* Preview Tab */}
         {activeTab === "preview" && (
           <div className="space-y-6">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <canvas
                 ref={activeTab === "preview" ? undefined : canvasRef}
                 className="hidden"
@@ -945,7 +1125,7 @@ export default function OgImageContent() {
               <div className="grid gap-6 md:grid-cols-2">
                 {PLATFORMS.map((platform) => (
                   <div key={platform.name}>
-                    <h3 className="mb-2 text-sm font-semibold text-gray-700">
+                    <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                       {platform.name}
                     </h3>
                     <div
@@ -998,11 +1178,19 @@ export default function OgImageContent() {
         {/* Validator Tab */}
         {activeTab === "validator" && (
           <div className="space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 OG Tag Validator
               </h3>
-              <p className="mb-3 text-xs text-gray-500">
+              <p className="mb-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                 Paste HTML source code to check which Open Graph tags are
                 present.
               </p>
@@ -1010,23 +1198,45 @@ export default function OgImageContent() {
                 value={validatorInput}
                 onChange={(e) => setValidatorInput(e.target.value)}
                 placeholder='Paste HTML here... e.g. <meta property="og:title" content="My Page" />'
-                className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm font-mono placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
                 rows={6}
                 spellCheck={false}
               />
               <button
                 onClick={runValidator}
                 disabled={!validatorInput.trim()}
-                className="mt-2 rounded-lg bg-gray-900 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="mt-2 px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  background: "var(--kami-cta-bg, #111827)",
+                  color: "var(--kami-cta-text, #ffffff)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 Validate
               </button>
             </div>
 
             {validatorResults.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-                <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-                  <span className="text-sm font-semibold text-gray-700">
+              <div
+                className="overflow-hidden"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <div
+                  className="px-4 py-3 flex items-center gap-3"
+                  style={{ borderBottom: "1px solid var(--kami-border)" }}
+                >
+                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                     Results
                   </span>
                   <span className="text-xs text-green-600">
@@ -1053,14 +1263,14 @@ export default function OgImageContent() {
                 </div>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100 /50">
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                         Status
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                         Tag
                       </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                         Content
                       </th>
                     </tr>
@@ -1069,7 +1279,7 @@ export default function OgImageContent() {
                     {validatorResults.map((r, i) => (
                       <tr
                         key={i}
-                        className="border-b border-gray-50 last:border-0"
+                        style={{ borderBottom: "1px solid var(--kami-border)" }}
                       >
                         <td className="px-4 py-2">
                           {r.status === "present" && (
@@ -1088,14 +1298,14 @@ export default function OgImageContent() {
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-2 font-mono text-xs text-gray-700">
+                        <td className="px-4 py-2 font-mono text-xs" style={{ color: "var(--kami-text)" }}>
                           {r.tag}
                         </td>
-                        <td className="px-4 py-2 text-xs text-gray-500">
+                        <td className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                           {r.content ? (
                             <span className="break-all">{r.content}</span>
                           ) : (
-                            <span className="italic text-gray-400">
+                            <span className="italic" style={{ color: "var(--kami-text-dim)" }}>
                               {r.message}
                             </span>
                           )}

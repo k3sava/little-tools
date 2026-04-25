@@ -331,22 +331,36 @@ function AnimationPreview({
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <button
+          id="easing-play-btn"
           onClick={play}
-          className="rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
+          className="px-3 py-1.5 text-xs font-medium"
+          style={{
+            background: "var(--kami-cta-bg, #111827)",
+            color: "var(--kami-cta-text, #ffffff)",
+            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+          }}
         >
           {playing ? "Playing..." : "Play"}
         </button>
-        <span className="text-xs text-gray-400">{duration}s</span>
+        <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{duration}s</span>
       </div>
       {/* Custom easing */}
-      <div className="relative h-8 rounded-lg bg-gray-100 overflow-hidden">
+      <div
+        className="relative h-8 overflow-hidden"
+        style={{
+          background: "var(--kami-surface)",
+          borderRadius: "var(--kami-card-radius, 0.5rem)",
+        }}
+      >
         <div className="absolute left-0 top-0 h-full flex items-center px-1">
-          <span className="text-[9px] text-gray-400 font-medium">custom</span>
+          <span className="text-[9px] font-medium" style={{ color: "var(--kami-text-dim)" }}>custom</span>
         </div>
         <div
           key={`custom-${key}`}
-          className="absolute top-1 left-1 h-6 w-6 rounded-md bg-gray-900"
+          className="absolute top-1 left-1 h-6 w-6"
           style={{
+            background: "var(--kami-cta-bg, #111827)",
+            borderRadius: "var(--kami-cta-radius, 0.375rem)",
             transform: playing ? "translateX(calc(100cqw - 32px))" : "translateX(0)",
             transition: playing ? `transform ${duration}s ${easingCSS}` : "none",
             containIntrinsicSize: "auto",
@@ -355,14 +369,22 @@ function AnimationPreview({
         <style>{`.relative { container-type: inline-size; }`}</style>
       </div>
       {/* Linear reference */}
-      <div className="relative h-8 rounded-lg bg-gray-50 overflow-hidden">
+      <div
+        className="relative h-8 overflow-hidden"
+        style={{
+          background: "var(--kami-surface)",
+          borderRadius: "var(--kami-card-radius, 0.5rem)",
+        }}
+      >
         <div className="absolute left-0 top-0 h-full flex items-center px-1">
-          <span className="text-[9px] text-gray-400 font-medium">linear</span>
+          <span className="text-[9px] font-medium" style={{ color: "var(--kami-text-dim)" }}>linear</span>
         </div>
         <div
           key={`linear-${key}`}
-          className="absolute top-1 left-1 h-6 w-6 rounded-md bg-gray-400"
+          className="absolute top-1 left-1 h-6 w-6"
           style={{
+            background: "var(--kami-text-dim, #9ca3af)",
+            borderRadius: "var(--kami-cta-radius, 0.375rem)",
             transform: playing ? "translateX(calc(100cqw - 32px))" : "translateX(0)",
             transition: playing ? `transform ${duration}s linear` : "none",
           }}
@@ -416,7 +438,7 @@ export default function EasingEditorContent() {
   };
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Easing Curve Editor"
@@ -436,9 +458,20 @@ export default function EasingEditorContent() {
             <button
               key={m}
               onClick={() => setMode(m)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-mono ${
-                mode === m ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
+              className="px-3 py-1.5 text-sm font-mono"
+              style={
+                mode === m
+                  ? {
+                      background: "var(--kami-cta-bg, #111827)",
+                      color: "var(--kami-cta-text, #ffffff)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }
+                  : {
+                      background: "var(--kami-surface)",
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }
+              }
             >
               {m === "cubic-bezier" ? "cubic-bezier()" : "linear()"}
             </button>
@@ -448,7 +481,7 @@ export default function EasingEditorContent() {
         {/* Presets (cubic-bezier only) */}
         {mode === "cubic-bezier" && (
           <div className="mt-5">
-            <h2 className="mb-2 text-sm font-medium text-gray-700">Presets</h2>
+            <h2 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
             <div className="flex flex-wrap gap-2">
               {PRESETS.map((p) => {
                 const active =
@@ -460,11 +493,22 @@ export default function EasingEditorContent() {
                   <button
                     key={p.name}
                     onClick={() => applyPreset(p)}
-                    className={`rounded-lg border px-2.5 py-1 text-xs font-mono transition ${
+                    className="px-2.5 py-1 text-xs font-mono transition"
+                    style={
                       active
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-400"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg, #111827)",
+                            color: "var(--kami-cta-text, #ffffff)",
+                            border: "1px solid var(--kami-cta-bg, #111827)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface-solid)",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                    }
                   >
                     {p.name}
                   </button>
@@ -476,13 +520,21 @@ export default function EasingEditorContent() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[auto_1fr]">
           {/* Canvas */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div
+            className="p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             {mode === "cubic-bezier" ? (
               <BezierCanvas bezier={bezier} onChange={setBezier} />
             ) : (
               <>
                 <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
-                <p className="mt-2 text-center text-[10px] text-gray-400">
+                <p className="mt-2 text-center text-[10px]" style={{ color: "var(--kami-text-dim)" }}>
                   Click canvas to add points. Double-click a point to remove.
                 </p>
               </>
@@ -501,7 +553,13 @@ export default function EasingEditorContent() {
                       max={1}
                       value={bezier.x1}
                       onChange={(e) => setBezier((b) => ({ ...b, x1: Math.max(0, Math.min(1, +e.target.value)) }))}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-xs font-mono text-gray-700 focus:border-blue-400 focus:outline-none"
+                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                     <input
                       type="number"
@@ -510,7 +568,13 @@ export default function EasingEditorContent() {
                       max={1.5}
                       value={bezier.y1}
                       onChange={(e) => setBezier((b) => ({ ...b, y1: Math.max(-0.5, Math.min(1.5, +e.target.value)) }))}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-xs font-mono text-gray-700 focus:border-blue-400 focus:outline-none"
+                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                   </div>
                 </div>
@@ -524,7 +588,13 @@ export default function EasingEditorContent() {
                       max={1}
                       value={bezier.x2}
                       onChange={(e) => setBezier((b) => ({ ...b, x2: Math.max(0, Math.min(1, +e.target.value)) }))}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-xs font-mono text-gray-700 focus:border-red-400 focus:outline-none"
+                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                     <input
                       type="number"
@@ -533,7 +603,13 @@ export default function EasingEditorContent() {
                       max={1.5}
                       value={bezier.y2}
                       onChange={(e) => setBezier((b) => ({ ...b, y2: Math.max(-0.5, Math.min(1.5, +e.target.value)) }))}
-                      className="w-full rounded border border-gray-200 px-2 py-1 text-xs font-mono text-gray-700 focus:border-red-400 focus:outline-none"
+                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                   </div>
                 </div>
@@ -544,11 +620,19 @@ export default function EasingEditorContent() {
           {/* Right panel */}
           <div className="space-y-4">
             {/* Preview */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">Preview</h2>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Preview</h2>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gray-400">Duration</span>
+                  <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>Duration</span>
                   <input
                     type="range"
                     min={0.2}
@@ -556,9 +640,13 @@ export default function EasingEditorContent() {
                     step={0.1}
                     value={duration}
                     onChange={(e) => setDuration(+e.target.value)}
-                    className="h-1 w-24 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1 w-24 cursor-pointer appearance-none rounded-full"
+                    style={{
+                      background: "var(--kami-border)",
+                      accentColor: "var(--kami-text)",
+                    }}
                   />
-                  <span className="w-8 text-right text-[10px] font-mono text-gray-400">{duration}s</span>
+                  <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{duration}s</span>
                 </div>
               </div>
               <div id="easing-play-btn-wrapper">
@@ -567,38 +655,88 @@ export default function EasingEditorContent() {
             </div>
 
             {/* CSS Output */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">CSS Output</h2>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>CSS Output</h2>
                 <button
                   onClick={() => copy(transitionCSS)}
-                  className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
               <div className="space-y-2">
-                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100">
+                <pre
+                  className="overflow-x-auto p-3 text-xs"
+                  style={{
+                    background: "var(--kami-overlay-bg, #111827)",
+                    color: "var(--kami-overlay-text, #f3f4f6)",
+                    borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  }}
+                >
                   <code>{transitionCSS}</code>
                 </pre>
-                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-3 text-xs text-gray-100">
+                <pre
+                  className="overflow-x-auto p-3 text-xs"
+                  style={{
+                    background: "var(--kami-overlay-bg, #111827)",
+                    color: "var(--kami-overlay-text, #f3f4f6)",
+                    borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  }}
+                >
                   <code>{animationCSS}</code>
                 </pre>
               </div>
             </div>
 
             {/* Value only */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">Value</h2>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</h2>
                 <button
                   onClick={() => copy(easingCSS)}
-                  className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   Copy
                 </button>
               </div>
-              <pre className="overflow-x-auto rounded-lg bg-gray-50 border border-gray-200 p-3 text-xs text-gray-800 font-mono">
+              <pre
+                className="overflow-x-auto p-3 text-xs font-mono"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              >
                 <code>{easingCSS}</code>
               </pre>
             </div>

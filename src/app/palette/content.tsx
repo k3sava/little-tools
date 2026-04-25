@@ -307,14 +307,22 @@ export default function PaletteContent() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen text-gray-900">
+      <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
         <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Color Palette Generator
           </h1>
-          <p className="mt-2 text-gray-500">
+          <p className="mt-2" style={{ color: "var(--kami-text-muted)" }}>
             Generate color palettes with harmony modes. Press{" "}
-            <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs">Space</kbd>{" "}
+            <kbd
+              className="px-1.5 py-0.5 text-xs"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                color: "var(--kami-text-muted)",
+              }}
+            >Space</kbd>{" "}
             to shuffle. Lock colors you like.
           </p>
         </div>
@@ -323,7 +331,7 @@ export default function PaletteContent() {
   }
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Color Palette Generator"
@@ -336,9 +344,17 @@ export default function PaletteContent() {
             "Generating a neutral scale to pair with a brand color",
           ]}
         />
-        <p className="mt-4 text-xs text-gray-500">
+        <p className="mt-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
           Tip: press{" "}
-          <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs">Space</kbd>{" "}
+          <kbd
+            className="px-1.5 py-0.5 text-xs"
+            style={{
+              background: "var(--kami-surface)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              color: "var(--kami-text-muted)",
+            }}
+          >Space</kbd>{" "}
           to shuffle. Click a swatch to lock it.
         </p>
 
@@ -347,7 +363,13 @@ export default function PaletteContent() {
           <select
             value={harmony}
             onChange={(e) => setHarmony(e.target.value as HarmonyMode)}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+            className="px-3 py-2 text-sm focus:outline-none"
+            style={{
+              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+              color: "var(--kami-text)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+            }}
           >
             <option value="random">Random</option>
             <option value="complementary">Complementary</option>
@@ -358,13 +380,24 @@ export default function PaletteContent() {
           </select>
           <button
             onClick={shuffle}
-            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
+            className="px-4 py-2 text-sm font-medium transition-colors"
+            style={{
+              background: "var(--kami-cta-bg, #111827)",
+              color: "var(--kami-cta-text, #ffffff)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
           >
             Shuffle
           </button>
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-100"
+            className="px-3 py-2 text-sm"
+            style={{
+              background: "var(--kami-surface-solid)",
+              color: "var(--kami-text-muted)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
           >
             From Image
           </button>
@@ -378,14 +411,27 @@ export default function PaletteContent() {
           <button
             onClick={addColor}
             disabled={colors.length >= 10}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 disabled:opacity-40"
+            className="px-3 py-2 text-sm disabled:opacity-40"
+            style={{
+              background: "var(--kami-surface-solid)",
+              color: "var(--kami-text-muted)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
           >
             + Add Color
           </button>
         </div>
 
         {/* Palette Display */}
-        <div className="mt-6 flex overflow-hidden rounded-xl border border-gray-200 shadow-sm">
+        <div
+          className="mt-6 flex overflow-hidden"
+          style={{
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           {colors.map((color, i) => (
             <div
               key={i}
@@ -455,7 +501,8 @@ export default function PaletteContent() {
             return (
               <div
                 key={i}
-                className="flex-1 text-center text-[10px] text-gray-400 leading-tight"
+                className="flex-1 text-center text-[10px] leading-tight"
+                style={{ color: "var(--kami-text-dim)" }}
               >
                 <div>
                   RGB({r},{g},{b})
@@ -469,24 +516,33 @@ export default function PaletteContent() {
         </div>
 
         {/* Cross-link */}
-        <div className="mt-4 text-sm text-gray-400">
+        <div className="mt-4 text-sm" style={{ color: "var(--kami-text-dim)" }}>
           Need to convert individual colors?{" "}
           <a
             href="/contrast"
-            className="text-gray-600 underline hover:text-gray-800"
+            className="underline"
+            style={{ color: "var(--kami-text-muted)" }}
           >
             Contrast Checker
           </a>
         </div>
 
         {/* Export */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div
+          className="mt-6 p-6"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <button
             onClick={() => setShowExport(!showExport)}
             className="flex w-full items-center justify-between"
           >
             <h2 className="text-lg font-semibold">Export</h2>
-            <span className="text-sm text-gray-400">
+            <span className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
               {showExport ? "▲ Hide" : "▼ Show"}
             </span>
           </button>
@@ -497,23 +553,44 @@ export default function PaletteContent() {
                   <button
                     key={f.id}
                     onClick={() => setExportFormat(f.id)}
-                    className={`rounded-lg px-3 py-1.5 text-sm ${
+                    className="px-3 py-1.5 text-sm"
+                    style={
                       exportFormat === f.id
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg, #111827)",
+                            color: "var(--kami-cta-text, #ffffff)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                    }
                   >
                     {f.label}
                   </button>
                 ))}
               </div>
               <div className="relative">
-                <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100">
+                <pre
+                  className="overflow-x-auto p-4 text-sm"
+                  style={{
+                    background: "var(--kami-overlay-bg, #111827)",
+                    color: "var(--kami-overlay-text, #f3f4f6)",
+                    borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  }}
+                >
                   <code>{exportText}</code>
                 </pre>
                 <button
                   onClick={() => navigator.clipboard.writeText(exportText)}
-                  className="absolute right-3 top-3 rounded border border-gray-600 px-2 py-1 text-xs text-gray-300 hover:bg-gray-800"
+                  className="absolute right-3 top-3 px-2 py-1 text-xs"
+                  style={{
+                    border: "1px solid color-mix(in srgb, var(--kami-overlay-text, #f3f4f6) 30%, transparent)",
+                    color: "var(--kami-overlay-text, #d1d5db)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   Copy
                 </button>
@@ -545,7 +622,13 @@ export default function PaletteContent() {
                 URL.revokeObjectURL(url);
               });
             }}
-            className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-100"
+            className="px-3 py-2 text-sm"
+            style={{
+              background: "var(--kami-surface-solid)",
+              color: "var(--kami-text-muted)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
           >
             Download PNG Swatch
           </button>

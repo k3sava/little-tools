@@ -215,7 +215,7 @@ export default function KeyframeAnimatorContent() {
   }, [stops]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Keyframe Animator"
@@ -231,13 +231,20 @@ export default function KeyframeAnimatorContent() {
 
         {/* Presets */}
         <div className="mt-6">
-          <h2 className="mb-3 text-sm font-medium text-gray-700">Presets</h2>
+          <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
               <button
                 key={p.label}
                 onClick={() => applyPreset(p)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-600 shadow-sm transition hover:bg-gray-50 hover:shadow"
+                className="px-3 py-1.5 text-xs transition"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               >
                 {p.label}
               </button>
@@ -249,7 +256,14 @@ export default function KeyframeAnimatorContent() {
           {/* Left column: preview + timeline + CSS output */}
           <div className="space-y-4">
             {/* Live Preview */}
-            <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div
+              className="overflow-hidden"
+              style={{
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="relative flex items-center justify-center bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#fff_0%_50%)] bg-[length:20px_20px] min-h-[280px]">
                 <div
                   ref={previewRef}
@@ -261,11 +275,23 @@ export default function KeyframeAnimatorContent() {
                   }}
                 />
               </div>
-              <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-2">
-                <span className="text-xs text-gray-400">Live preview</span>
+              <div
+                className="flex items-center justify-between px-4 py-2"
+                style={{
+                  borderTop: "1px solid var(--kami-border-strong)",
+                  background: "var(--kami-surface-solid)",
+                }}
+              >
+                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Live preview</span>
                 <button
                   onClick={replay}
-                  className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   Replay
                 </button>
@@ -273,27 +299,47 @@ export default function KeyframeAnimatorContent() {
             </div>
 
             {/* Timeline */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">Timeline</h2>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Timeline</h2>
                 <button
                   onClick={addStop}
-                  className="rounded border border-dashed border-gray-300 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    border: "1px dashed var(--kami-border-strong)",
+                    color: "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   + Add Keyframe
                 </button>
               </div>
 
               {/* Timeline bar */}
-              <div className="relative h-10 rounded-lg bg-gray-100 border border-gray-200">
+              <div
+                className="relative h-10"
+                style={{
+                  background: "var(--kami-surface)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              >
                 {/* Tick marks */}
                 {[0, 25, 50, 75, 100].map((t) => (
                   <div
                     key={t}
-                    className="absolute top-0 h-full border-l border-gray-200"
-                    style={{ left: `${t}%` }}
+                    className="absolute top-0 h-full"
+                    style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
                   >
-                    <span className="absolute -top-5 -translate-x-1/2 text-[10px] text-gray-400">{t}%</span>
+                    <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
                   </div>
                 ))}
                 {/* Keyframe dots */}
@@ -301,12 +347,22 @@ export default function KeyframeAnimatorContent() {
                   <button
                     key={s._i}
                     onClick={() => setSelected(s._i)}
-                    className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 rounded-full border-2 transition-all ${
+                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 rounded-full transition-all"
+                    style={
                       selected === s._i
-                        ? "border-gray-900 bg-gray-900 scale-125 shadow-md"
-                        : "border-gray-400 bg-white hover:border-gray-600 hover:scale-110"
-                    }`}
-                    style={{ left: `${s.percent}%` }}
+                        ? {
+                            border: "2px solid var(--kami-text)",
+                            background: "var(--kami-text)",
+                            transform: "translate(-50%, -50%) scale(1.25)",
+                            boxShadow: "var(--kami-card-shadow, 0 4px 6px rgba(0,0,0,0.1))",
+                            left: `${s.percent}%`,
+                          }
+                        : {
+                            border: "2px solid var(--kami-border-strong)",
+                            background: "var(--kami-surface-solid)",
+                            left: `${s.percent}%`,
+                          }
+                    }
                     title={`${s.percent}%`}
                   />
                 ))}
@@ -318,18 +374,38 @@ export default function KeyframeAnimatorContent() {
                   <div
                     key={s._i}
                     onClick={() => setSelected(s._i)}
-                    className={`flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition ${
+                    className="flex cursor-pointer items-center gap-1.5 px-2.5 py-1 text-xs transition"
+                    style={
                       selected === s._i
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg, #111827)",
+                            color: "var(--kami-cta-text, #ffffff)",
+                            border: "1px solid var(--kami-cta-bg, #111827)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                    }
                   >
                     <span className="font-mono">{s.percent}%</span>
-                    <div className="h-3 w-3 rounded-full border border-gray-300" style={{ backgroundColor: s.backgroundColor }} />
+                    <div
+                      className="h-3 w-3 rounded-full"
+                      style={{
+                        backgroundColor: s.backgroundColor,
+                        border: "1px solid var(--kami-border)",
+                      }}
+                    />
                     {stops.length > 2 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); removeStop(s._i); }}
-                        className={`ml-0.5 ${selected === s._i ? "text-gray-300 hover:text-white" : "text-gray-400 hover:text-red-500"}`}
+                        className="ml-0.5"
+                        style={{
+                          color: selected === s._i ? "var(--kami-cta-text, #d1d5db)" : "var(--kami-text-dim)",
+                        }}
                       >
                         &times;
                       </button>
@@ -340,17 +416,38 @@ export default function KeyframeAnimatorContent() {
             </div>
 
             {/* CSS Output */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">Generated CSS</h2>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Generated CSS</h2>
                 <button
                   onClick={copyCSS}
-                  className="rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50"
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   {copied ? "Copied!" : "Copy"}
                 </button>
               </div>
-              <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm leading-relaxed text-gray-100">
+              <pre
+                className="overflow-x-auto p-4 text-sm leading-relaxed"
+                style={{
+                  background: "var(--kami-overlay-bg, #111827)",
+                  color: "var(--kami-overlay-text, #f3f4f6)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              >
                 <code>{css}</code>
               </pre>
             </div>
@@ -359,27 +456,49 @@ export default function KeyframeAnimatorContent() {
           {/* Right column: controls */}
           <div className="space-y-4">
             {/* Animation Name */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Animation Name</label>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Animation Name</label>
               <input
                 type="text"
                 value={config.name}
                 onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value.replace(/[^a-zA-Z0-9_-]/g, "") }))}
-                className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 font-mono text-sm outline-none focus:border-gray-400 focus:ring-1 focus:ring-gray-300"
+                className="w-full px-3 py-2 font-mono text-sm outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
               />
             </div>
 
             {/* Keyframe Properties */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 className="mb-3 text-sm font-medium text-gray-700">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Keyframe at <span className="font-mono">{current.percent}%</span>
               </h2>
               <div className="space-y-3">
                 {/* Percent */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Position</label>
-                    <span className="font-mono text-xs text-gray-400">{current.percent}%</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Position</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.percent}%</span>
                   </div>
                   <input
                     type="range"
@@ -387,14 +506,15 @@ export default function KeyframeAnimatorContent() {
                     max={100}
                     value={current.percent}
                     onChange={(e) => updateStop(selected, { percent: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Opacity */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Opacity</label>
-                    <span className="font-mono text-xs text-gray-400">{current.opacity}</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Opacity</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.opacity}</span>
                   </div>
                   <input
                     type="range"
@@ -403,14 +523,15 @@ export default function KeyframeAnimatorContent() {
                     step={0.05}
                     value={current.opacity}
                     onChange={(e) => updateStop(selected, { opacity: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Translate X */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Translate X</label>
-                    <span className="font-mono text-xs text-gray-400">{current.translateX}px</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Translate X</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.translateX}px</span>
                   </div>
                   <input
                     type="range"
@@ -418,14 +539,15 @@ export default function KeyframeAnimatorContent() {
                     max={200}
                     value={current.translateX}
                     onChange={(e) => updateStop(selected, { translateX: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Translate Y */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Translate Y</label>
-                    <span className="font-mono text-xs text-gray-400">{current.translateY}px</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Translate Y</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.translateY}px</span>
                   </div>
                   <input
                     type="range"
@@ -433,14 +555,15 @@ export default function KeyframeAnimatorContent() {
                     max={200}
                     value={current.translateY}
                     onChange={(e) => updateStop(selected, { translateY: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Scale */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Scale</label>
-                    <span className="font-mono text-xs text-gray-400">{current.scale}</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Scale</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.scale}</span>
                   </div>
                   <input
                     type="range"
@@ -449,14 +572,15 @@ export default function KeyframeAnimatorContent() {
                     step={0.05}
                     value={current.scale}
                     onChange={(e) => updateStop(selected, { scale: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Rotate */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Rotate</label>
-                    <span className="font-mono text-xs text-gray-400">{current.rotate}deg</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Rotate</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.rotate}deg</span>
                   </div>
                   <input
                     type="range"
@@ -464,24 +588,35 @@ export default function KeyframeAnimatorContent() {
                     max={360}
                     value={current.rotate}
                     onChange={(e) => updateStop(selected, { rotate: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Background Color */}
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Background Color</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Background Color</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="color"
                       value={current.backgroundColor}
                       onChange={(e) => updateStop(selected, { backgroundColor: e.target.value })}
-                      className="h-8 w-8 cursor-pointer rounded border border-gray-200"
+                      className="h-8 w-8 cursor-pointer"
+                      style={{
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
                     />
                     <input
                       type="text"
                       value={current.backgroundColor}
                       onChange={(e) => updateStop(selected, { backgroundColor: e.target.value })}
-                      className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1 font-mono text-xs outline-none focus:border-gray-400"
+                      className="flex-1 px-2 py-1 font-mono text-xs outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                     />
                   </div>
                 </div>
@@ -489,14 +624,22 @@ export default function KeyframeAnimatorContent() {
             </div>
 
             {/* Animation Controls */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 className="mb-3 text-sm font-medium text-gray-700">Animation Controls</h2>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Animation Controls</h2>
               <div className="space-y-3">
                 {/* Duration */}
                 <div>
                   <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs text-gray-500">Duration</label>
-                    <span className="font-mono text-xs text-gray-400">{config.duration}s</span>
+                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Duration</label>
+                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{config.duration}s</span>
                   </div>
                   <input
                     type="range"
@@ -505,16 +648,23 @@ export default function KeyframeAnimatorContent() {
                     step={0.1}
                     value={config.duration}
                     onChange={(e) => setConfig((c) => ({ ...c, duration: Number(e.target.value) }))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
                   />
                 </div>
                 {/* Timing Function */}
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Timing Function</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Timing Function</label>
                   <select
                     value={config.timing}
                     onChange={(e) => setConfig((c) => ({ ...c, timing: e.target.value as TimingFunction }))}
-                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-1.5 text-sm outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     {(["ease", "linear", "ease-in", "ease-out", "ease-in-out"] as TimingFunction[]).map((t) => (
                       <option key={t} value={t}>{t}</option>
@@ -523,15 +673,26 @@ export default function KeyframeAnimatorContent() {
                 </div>
                 {/* Iteration Count */}
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Iterations</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Iterations</label>
                   <div className="flex gap-1.5">
                     {(["1", "2", "3", "infinite"] as IterationCount[]).map((v) => (
                       <button
                         key={v}
                         onClick={() => setConfig((c) => ({ ...c, iterations: v }))}
-                        className={`flex-1 rounded-lg px-2 py-1 text-xs capitalize ${
-                          config.iterations === v ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className="flex-1 px-2 py-1 text-xs capitalize"
+                        style={
+                          config.iterations === v
+                            ? {
+                                background: "var(--kami-cta-bg, #111827)",
+                                color: "var(--kami-cta-text, #ffffff)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                        }
                       >
                         {v === "infinite" ? "\u221e" : v}
                       </button>
@@ -540,11 +701,17 @@ export default function KeyframeAnimatorContent() {
                 </div>
                 {/* Direction */}
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Direction</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Direction</label>
                   <select
                     value={config.direction}
                     onChange={(e) => setConfig((c) => ({ ...c, direction: e.target.value as Direction }))}
-                    className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm outline-none focus:border-gray-400"
+                    className="w-full px-3 py-1.5 text-sm outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     {(["normal", "reverse", "alternate", "alternate-reverse"] as Direction[]).map((d) => (
                       <option key={d} value={d}>{d}</option>
@@ -553,15 +720,26 @@ export default function KeyframeAnimatorContent() {
                 </div>
                 {/* Fill Mode */}
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Fill Mode</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Fill Mode</label>
                   <div className="flex gap-1.5">
                     {(["none", "forwards", "backwards", "both"] as FillMode[]).map((f) => (
                       <button
                         key={f}
                         onClick={() => setConfig((c) => ({ ...c, fillMode: f }))}
-                        className={`flex-1 rounded-lg px-1.5 py-1 text-[11px] capitalize ${
-                          config.fillMode === f ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className="flex-1 px-1.5 py-1 text-[11px] capitalize"
+                        style={
+                          config.fillMode === f
+                            ? {
+                                background: "var(--kami-cta-bg, #111827)",
+                                color: "var(--kami-cta-text, #ffffff)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                        }
                       >
                         {f}
                       </button>

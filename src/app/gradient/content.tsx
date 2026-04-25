@@ -343,7 +343,7 @@ export default function GradientContent() {
   const sortedStops = [...layer.stops].sort((a, b) => a.position - b.position);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Gradient Generator"
@@ -357,21 +357,52 @@ export default function GradientContent() {
           ]}
         />
         <div className="mt-4 flex justify-end gap-2">
-          <button onClick={applyRandom} className="rounded-lg bg-gray-100 px-3 py-2 text-sm text-gray-700 hover:bg-gray-200">Random</button>
-          <button onClick={() => setFullscreen(true)} className="rounded-lg bg-gray-900 px-3 py-2 text-sm text-white hover:bg-gray-800">Fullscreen</button>
+          <button
+            onClick={applyRandom}
+            className="px-3 py-2 text-sm"
+            style={{
+              background: "var(--kami-surface)",
+              color: "var(--kami-text-muted)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >Random</button>
+          <button
+            onClick={() => setFullscreen(true)}
+            className="px-3 py-2 text-sm"
+            style={{
+              background: "var(--kami-cta-bg, #111827)",
+              color: "var(--kami-cta-text, #ffffff)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >Fullscreen</button>
         </div>
 
         {/* Preset Gallery */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h2 className="mb-3 text-sm font-medium text-gray-700">Presets</h2>
+        <div
+          className="mt-6 p-4"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
           {PRESET_CATEGORIES.map((cat) => (
             <div key={cat} className="mb-3 last:mb-0">
-              <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-gray-400">{cat}</span>
+              <span className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat}</span>
               <div className="flex flex-wrap gap-2">
                 {PRESETS.filter((p) => p.category === cat).map((p) => (
                   <button key={p.name} onClick={() => applyPreset(p)} className="group flex flex-col items-center gap-1">
-                    <div className="h-10 w-16 rounded-lg border border-gray-200 transition-transform group-hover:scale-105" style={{ background: buildLayerCSS({ ...defaultLayer(), stops: p.stops, type: p.type, angle: p.angle }, "hex") }} />
-                    <span className="text-[10px] text-gray-400">{p.name}</span>
+                    <div
+                      className="h-10 w-16 transition-transform group-hover:scale-105"
+                      style={{
+                        background: buildLayerCSS({ ...defaultLayer(), stops: p.stops, type: p.type, angle: p.angle }, "hex"),
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-card-radius, 0.5rem)",
+                      }}
+                    />
+                    <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{p.name}</span>
                   </button>
                 ))}
               </div>
@@ -383,14 +414,39 @@ export default function GradientContent() {
           {/* Left column */}
           <div className="space-y-4">
             {/* Preview */}
-            <div ref={previewRef} className="cursor-crosshair overflow-hidden rounded-xl border border-gray-200 shadow-sm" onClick={handlePreviewClick} title={layer.type !== "radial" ? "Click to set angle" : ""}>
+            <div
+              ref={previewRef}
+              className="cursor-crosshair overflow-hidden"
+              style={{
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+              onClick={handlePreviewClick}
+              title={layer.type !== "radial" ? "Click to set angle" : ""}
+            >
               <div className="min-h-[340px]" style={{ background: gradient }} />
             </div>
 
             {/* Gradient Strip */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-medium text-gray-700">Color Ramp</h2>
-              <div className="relative h-8 w-full overflow-hidden rounded-lg border border-gray-200" style={{ background: buildLayerCSS({ ...layer, type: "linear", angle: 90, repeating: false }, colorFormat) }}>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Color Ramp</h2>
+              <div
+                className="relative h-8 w-full overflow-hidden"
+                style={{
+                  background: buildLayerCSS({ ...layer, type: "linear", angle: 90, repeating: false }, colorFormat),
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              >
                 {sortedStops.map((s, i) => (
                   <div key={i} className="absolute top-0 h-full w-0.5 bg-white/80" style={{ left: `${s.position}%` }}>
                     <div className="absolute -top-1 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 border-white shadow" style={{ background: s.color }} />
@@ -400,56 +456,151 @@ export default function GradientContent() {
             </div>
 
             {/* Import */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-medium text-gray-700">Import CSS Gradient</h2>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Import CSS Gradient</h2>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={importText}
                   onChange={(e) => { setImportText(e.target.value); setImportError(""); }}
                   placeholder="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  className="flex-1 rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-700 placeholder:text-gray-400 focus:border-gray-400 focus:outline-none"
+                  className="flex-1 px-3 py-2 text-sm focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  }}
                 />
-                <button onClick={handleImport} className="rounded-lg bg-gray-900 px-3 py-2 text-sm text-white hover:bg-gray-800">Parse</button>
+                <button
+                  onClick={handleImport}
+                  className="px-3 py-2 text-sm"
+                  style={{
+                    background: "var(--kami-cta-bg, #111827)",
+                    color: "var(--kami-cta-text, #ffffff)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >Parse</button>
               </div>
-              {importError && <p className="mt-1.5 text-xs text-red-500">{importError}</p>}
+              {importError && (
+                <p
+                  className="mt-1.5 text-xs"
+                  style={{ color: "var(--kami-accent, #ef4444)" }}
+                >{importError}</p>
+              )}
             </div>
 
             {/* Multi-format Output */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex gap-1">
                   {(["css", "tailwind", "scss", "custom-property"] as OutputTab[]).map((tab) => (
-                    <button key={tab} onClick={() => setOutputTab(tab)} className={`rounded-lg px-2.5 py-1 text-xs font-medium capitalize ${outputTab === tab ? "bg-gray-900 text-white" : "text-gray-500 hover:bg-gray-100"}`}>
+                    <button
+                      key={tab}
+                      onClick={() => setOutputTab(tab)}
+                      className="px-2.5 py-1 text-xs font-medium capitalize"
+                      style={
+                        outputTab === tab
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                          : {
+                              color: "var(--kami-text-muted)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                      }
+                    >
                       {tab === "custom-property" ? "CSS Var" : tab.toUpperCase()}
                     </button>
                   ))}
                 </div>
-                <button onClick={() => copy(outputMap[outputTab], "output")} className="flex items-center gap-1 rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:text-gray-700">
+                <button
+                  onClick={() => copy(outputMap[outputTab], "output")}
+                  className="flex items-center gap-1 px-2 py-1 text-xs"
+                  style={{
+                    border: "1px solid var(--kami-border-strong)",
+                    color: "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
+                >
                   {copiedKey === "output" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
                 </button>
               </div>
-              <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100"><code>{outputMap[outputTab]}</code></pre>
+              <pre
+                className="overflow-x-auto p-4 text-sm"
+                style={{
+                  background: "var(--kami-overlay-bg, #111827)",
+                  color: "var(--kami-overlay-text, #f3f4f6)",
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                }}
+              ><code>{outputMap[outputTab]}</code></pre>
             </div>
           </div>
 
           {/* Right column - Controls */}
           <div className="space-y-4">
             {/* Layers */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium text-gray-700">Layers</h2>
-                <button onClick={addLayer} className="text-xs text-gray-500 hover:text-gray-700">+ Add</button>
+                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Layers</h2>
+                <button onClick={addLayer} className="text-xs" style={{ color: "var(--kami-text-muted)" }}>+ Add</button>
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {layers.map((l, i) => (
                   <div key={i} className="flex items-center gap-1">
-                    <button onClick={() => setActiveLayer(i)} className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs ${activeLayer === i ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}>
+                    <button
+                      onClick={() => setActiveLayer(i)}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs"
+                      style={
+                        activeLayer === i
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              border: "1px solid var(--kami-cta-bg, #111827)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                          : {
+                              color: "var(--kami-text-muted)",
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                      }
+                    >
                       <span className="inline-block h-3 w-5 rounded" style={{ background: buildLayerCSS(l, "hex") }} />
                       {i + 1}
                     </button>
                     {layers.length > 1 && (
-                      <button onClick={() => removeLayer(i)} className="text-[10px] text-gray-400 hover:text-red-500">×</button>
+                      <button
+                        onClick={() => removeLayer(i)}
+                        className="text-[10px]"
+                        style={{ color: "var(--kami-text-dim)" }}
+                      >×</button>
                     )}
                   </div>
                 ))}
@@ -457,45 +608,122 @@ export default function GradientContent() {
             </div>
 
             {/* Type + Repeating */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <label className="mb-2 block text-sm font-medium text-gray-700">Type</label>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Type</label>
               <div className="flex gap-2">
                 {(["linear", "radial", "conic"] as GradientType[]).map((t) => (
-                  <button key={t} onClick={() => updateLayer(activeLayer, { type: t })} className={`rounded-lg px-3 py-1.5 text-sm capitalize ${layer.type === t ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>
+                  <button
+                    key={t}
+                    onClick={() => updateLayer(activeLayer, { type: t })}
+                    className="px-3 py-1.5 text-sm capitalize"
+                    style={
+                      layer.type === t
+                        ? {
+                            background: "var(--kami-cta-bg, #111827)",
+                            color: "var(--kami-cta-text, #ffffff)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                    }
+                  >
                     {t}
                   </button>
                 ))}
               </div>
-              <label className="mt-3 flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" checked={layer.repeating} onChange={(e) => updateLayer(activeLayer, { repeating: e.target.checked })} className="rounded border-gray-300 accent-gray-700" />
+              <label className="mt-3 flex items-center gap-2 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                <input
+                  type="checkbox"
+                  checked={layer.repeating}
+                  onChange={(e) => updateLayer(activeLayer, { repeating: e.target.checked })}
+                  style={{ accentColor: "var(--kami-text)" }}
+                />
                 Repeating
               </label>
             </div>
 
             {/* Angle (visual wheel + slider) */}
             {(layer.type === "linear" || layer.type === "conic") && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Angle</label>
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Angle</label>
                 <div className="flex items-center gap-4">
                   {/* Visual angle wheel */}
                   <div
                     ref={angleWheelRef}
                     onClick={handleAngleWheel}
-                    className="relative h-16 w-16 flex-shrink-0 cursor-pointer rounded-full border-2 border-gray-200 bg-gray-50"
+                    className="relative h-16 w-16 flex-shrink-0 cursor-pointer rounded-full"
+                    style={{
+                      border: "2px solid var(--kami-border-strong)",
+                      background: "var(--kami-surface)",
+                    }}
                   >
                     <div
-                      className="absolute left-1/2 top-1/2 h-6 w-0.5 origin-bottom -translate-x-1/2 rounded bg-gray-900"
-                      style={{ transform: `translate(-50%, -100%) rotate(${layer.angle}deg)`, transformOrigin: "bottom center" }}
+                      className="absolute left-1/2 top-1/2 h-6 w-0.5 origin-bottom -translate-x-1/2 rounded"
+                      style={{
+                        background: "var(--kami-text)",
+                        transform: `translate(-50%, -100%) rotate(${layer.angle}deg)`,
+                        transformOrigin: "bottom center",
+                      }}
                     />
-                    <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-900" />
+                    <div
+                      className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full"
+                      style={{ background: "var(--kami-text)" }}
+                    />
                   </div>
                   <div className="flex-1">
-                    <input type="range" min={0} max={360} value={layer.angle} onChange={(e) => updateLayer(activeLayer, { angle: Number(e.target.value) })} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
+                    <input
+                      type="range"
+                      min={0}
+                      max={360}
+                      value={layer.angle}
+                      onChange={(e) => updateLayer(activeLayer, { angle: Number(e.target.value) })}
+                      className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                      style={{
+                        background: "var(--kami-border)",
+                        accentColor: "var(--kami-text)",
+                      }}
+                    />
                     <div className="mt-1 flex justify-between">
-                      <span className="text-xs font-mono text-gray-400">{layer.angle}°</span>
+                      <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{layer.angle}°</span>
                       <div className="flex gap-1">
                         {[0, 45, 90, 135, 180, 270].map((a) => (
-                          <button key={a} onClick={() => updateLayer(activeLayer, { angle: a })} className={`rounded px-1.5 py-0.5 text-[10px] ${layer.angle === a ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>{a}°</button>
+                          <button
+                            key={a}
+                            onClick={() => updateLayer(activeLayer, { angle: a })}
+                            className="px-1.5 py-0.5 text-[10px]"
+                            style={
+                              layer.angle === a
+                                ? {
+                                    background: "var(--kami-cta-bg, #111827)",
+                                    color: "var(--kami-cta-text, #ffffff)",
+                                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                                  }
+                                : {
+                                    background: "var(--kami-surface)",
+                                    color: "var(--kami-text-muted)",
+                                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                                  }
+                            }
+                          >{a}°</button>
                         ))}
                       </div>
                     </div>
@@ -506,30 +734,88 @@ export default function GradientContent() {
 
             {/* Radial options */}
             {layer.type === "radial" && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <label className="mb-2 block text-sm font-medium text-gray-700">Radial Options</label>
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Radial Options</label>
                 <div className="flex gap-2">
                   {(["circle", "ellipse"] as RadialShape[]).map((s) => (
-                    <button key={s} onClick={() => updateLayer(activeLayer, { radialShape: s })} className={`rounded-lg px-3 py-1.5 text-sm capitalize ${layer.radialShape === s ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{s}</button>
+                    <button
+                      key={s}
+                      onClick={() => updateLayer(activeLayer, { radialShape: s })}
+                      className="px-3 py-1.5 text-sm capitalize"
+                      style={
+                        layer.radialShape === s
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                          : {
+                              background: "var(--kami-surface)",
+                              color: "var(--kami-text-muted)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                      }
+                    >{s}</button>
                   ))}
                 </div>
-                <label className="mt-3 mb-1.5 block text-xs text-gray-500">Position</label>
+                <label className="mt-3 mb-1.5 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Position</label>
                 <div className="flex flex-wrap gap-1.5">
                   {(["center", "top", "bottom", "left", "right", "custom"] as RadialPosition[]).map((p) => (
-                    <button key={p} onClick={() => updateLayer(activeLayer, { radialPosition: p })} className={`rounded-lg px-2 py-1 text-xs capitalize ${layer.radialPosition === p ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>{p}</button>
+                    <button
+                      key={p}
+                      onClick={() => updateLayer(activeLayer, { radialPosition: p })}
+                      className="px-2 py-1 text-xs capitalize"
+                      style={
+                        layer.radialPosition === p
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                          : {
+                              background: "var(--kami-surface)",
+                              color: "var(--kami-text-muted)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                      }
+                    >{p}</button>
                   ))}
                 </div>
                 {layer.radialPosition === "custom" && (
                   <div className="mt-2 grid grid-cols-2 gap-2">
                     <div>
-                      <label className="text-[10px] text-gray-400">X %</label>
-                      <input type="range" min={0} max={100} value={layer.radialCustomX} onChange={(e) => updateLayer(activeLayer, { radialCustomX: Number(e.target.value) })} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-                      <span className="text-[10px] font-mono text-gray-400">{layer.radialCustomX}%</span>
+                      <label className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>X %</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={layer.radialCustomX}
+                        onChange={(e) => updateLayer(activeLayer, { radialCustomX: Number(e.target.value) })}
+                        className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                        style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
+                      />
+                      <span className="text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{layer.radialCustomX}%</span>
                     </div>
                     <div>
-                      <label className="text-[10px] text-gray-400">Y %</label>
-                      <input type="range" min={0} max={100} value={layer.radialCustomY} onChange={(e) => updateLayer(activeLayer, { radialCustomY: Number(e.target.value) })} className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-                      <span className="text-[10px] font-mono text-gray-400">{layer.radialCustomY}%</span>
+                      <label className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>Y %</label>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={layer.radialCustomY}
+                        onChange={(e) => updateLayer(activeLayer, { radialCustomY: Number(e.target.value) })}
+                        className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
+                        style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
+                      />
+                      <span className="text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{layer.radialCustomY}%</span>
                     </div>
                   </div>
                 )}
@@ -537,29 +823,83 @@ export default function GradientContent() {
             )}
 
             {/* Color Stops */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Color Stops</label>
+                <label className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Color Stops</label>
                 <div className="flex gap-1">
                   {(["hex", "rgb", "hsl"] as ColorFormat[]).map((f) => (
-                    <button key={f} onClick={() => setColorFormat(f)} className={`rounded px-2 py-0.5 text-[10px] font-medium uppercase ${colorFormat === f ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"}`}>{f}</button>
+                    <button
+                      key={f}
+                      onClick={() => setColorFormat(f)}
+                      className="px-2 py-0.5 text-[10px] font-medium uppercase"
+                      style={
+                        colorFormat === f
+                          ? {
+                              background: "var(--kami-cta-bg, #111827)",
+                              color: "var(--kami-cta-text, #ffffff)",
+                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                            }
+                          : {
+                              background: "var(--kami-surface)",
+                              color: "var(--kami-text-muted)",
+                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                            }
+                      }
+                    >{f}</button>
                   ))}
                 </div>
               </div>
               <div className="space-y-2">
                 {layer.stops.map((stop, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <input type="color" value={stop.color} onChange={(e) => updateStop(i, { color: e.target.value })} className="h-8 w-8 cursor-pointer rounded border border-gray-200" />
-                    <span className="w-[110px] truncate text-[11px] font-mono text-gray-500">{formatColor(stop.color, colorFormat)}</span>
-                    <input type="range" min={0} max={100} value={stop.position} onChange={(e) => updateStop(i, { position: Number(e.target.value) })} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-                    <span className="w-8 text-right text-xs font-mono text-gray-400">{stop.position}%</span>
+                    <input
+                      type="color"
+                      value={stop.color}
+                      onChange={(e) => updateStop(i, { color: e.target.value })}
+                      className="h-8 w-8 cursor-pointer"
+                      style={{
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.25rem)",
+                      }}
+                    />
+                    <span className="w-[110px] truncate text-[11px] font-mono" style={{ color: "var(--kami-text-muted)" }}>{formatColor(stop.color, colorFormat)}</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={stop.position}
+                      onChange={(e) => updateStop(i, { position: Number(e.target.value) })}
+                      className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+                      style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
+                    />
+                    <span className="w-8 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{stop.position}%</span>
                     {layer.stops.length > 2 && (
-                      <button onClick={() => removeStop(i)} className="text-xs text-gray-400 hover:text-red-500">×</button>
+                      <button
+                        onClick={() => removeStop(i)}
+                        className="text-xs"
+                        style={{ color: "var(--kami-text-dim)" }}
+                      >×</button>
                     )}
                   </div>
                 ))}
               </div>
-              <button onClick={addStop} className="mt-3 w-full rounded-lg border border-dashed border-gray-300 py-1.5 text-xs text-gray-500 hover:border-gray-400">
+              <button
+                onClick={addStop}
+                className="mt-3 w-full py-1.5 text-xs"
+                style={{
+                  border: "1px dashed var(--kami-border-strong)",
+                  color: "var(--kami-text-muted)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
                 + Add Stop
               </button>
             </div>
