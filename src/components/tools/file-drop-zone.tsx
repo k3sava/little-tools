@@ -63,12 +63,16 @@ export function FileDropZone({
       <div
         ref={dropRef}
         onClick={triggerPicker}
-        className={`flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-12 transition-colors ${
-          isDragging
-            ? "border-rose-400 bg-rose-50/10"
-            : "border-gray-300 hover:border-gray-400 dark:border-gray-600 dark:hover:border-gray-500"
-        }`}
-        style={{ background: isDragging ? undefined : "var(--kami-input-bg)" }}
+        className="kami-file-drop flex cursor-pointer flex-col items-center justify-center border-2 border-dashed px-6 py-12 transition-colors"
+        style={{
+          background: isDragging
+            ? "color-mix(in srgb, var(--kami-accent, currentColor) 10%, transparent)"
+            : "var(--kami-input-bg, var(--kami-surface))",
+          borderColor: isDragging
+            ? "var(--kami-accent, var(--kami-text))"
+            : "var(--kami-border-strong)",
+          borderRadius: "var(--kami-card-radius, 0.75rem)",
+        }}
       >
         {icon && <span className="mb-2 text-3xl opacity-40">{icon}</span>}
         <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>

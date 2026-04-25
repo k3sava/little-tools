@@ -41,15 +41,23 @@ export function CopyToastContainer() {
       {toasts.map((toast) => (
         <div
           key={toast.id}
-          className="copy-toast flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm shadow-lg"
-          style={{ animation: "toastIn 0.2s ease-out" }}
+          className="copy-toast flex items-center gap-2 px-4 py-2.5 text-sm"
+          style={{
+            animation: "toastIn 0.2s ease-out",
+            background: "var(--kami-overlay-bg, var(--kami-surface-solid))",
+            color: "var(--kami-overlay-text, var(--kami-text))",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.5rem)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.18)",
+          }}
         >
           <svg
             width="16"
             height="16"
             viewBox="0 0 16 16"
             fill="none"
-            className="text-emerald-400 shrink-0"
+            className="shrink-0"
+            style={{ color: "var(--kami-accent, currentColor)" }}
           >
             <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" />
             <path

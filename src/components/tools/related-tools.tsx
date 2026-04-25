@@ -45,7 +45,7 @@ export function RelatedTools({ currentHref, count = 4 }: RelatedToolsProps) {
       </div>
       <div className="mt-6 text-center">
         <Link
-          href={collection?.href ?? "/tools"}
+          href={collection?.href ?? "/"}
           className="text-sm transition-colors"
           style={{ color: "var(--kami-text-muted)" }}
         >
