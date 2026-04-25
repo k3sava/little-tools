@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 type Status = "idle" | "loading" | "extracting" | "done" | "error";
 
@@ -229,18 +230,17 @@ export default function PdfSplitContent() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
-      <div className="mb-6">
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--kami-text)" }}
-        >
-          Split PDF
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-          Extract specific pages from a PDF. 100% client-side — your files never leave your
-          browser.
-        </p>
-      </div>
+      <ToolIntro
+        title="Split PDF"
+        tagline="Extract specific pages from a PDF — pick ranges, individual pages, or every-N-pages splits."
+        description="Drop a PDF, click to select pages, or type a range (1-5, 8, 10-12). Split modes: extract selected pages as a new PDF, split every page into its own file, or split at fixed intervals. Everything runs locally in your browser — safe for sensitive documents."
+        audience={["Everyone"]}
+        whenToUse={[
+          "Pulling one chapter out of an ebook",
+          "Extracting a signature page from a contract",
+          "Splitting a scanned multi-page document into individual PDFs",
+        ]}
+      />
 
       {/* Drop zone (shown when no file loaded) */}
       {!file && status !== "error" && (

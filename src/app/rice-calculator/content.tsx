@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -278,18 +279,20 @@ export default function RiceCalculatorContent() {
   // --- Render ---
   return (
     <div className="mx-auto max-w-7xl px-4 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-semibold tracking-tight"
-          style={{ color: "var(--kami-text)", fontFamily: "var(--kami-font-display)" }}
-        >
-          RICE Scoring Calculator
-        </h1>
-        <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-          Prioritize features by Reach, Impact, Confidence, and Effort. Score = (R x I x C) / E
-        </p>
-      </div>
+      <ToolIntro
+        title="RICE Scoring Calculator"
+        tagline="Prioritize a list of product ideas, features, or bugs using the RICE framework from Intercom."
+        description="Enter each candidate with four numbers — Reach (people affected per quarter), Impact (0.25 minimal → 3 massive), Confidence (50–100%), and Effort (person-months). We compute (R × I × C) / E for each, rank them, and let you export the table as CSV or Markdown."
+        audience={["PMs", "Engineering managers", "Founders"]}
+        whenToUse={[
+          "Planning a roadmap with a long candidate list",
+          "Justifying why X ships before Y",
+          "Comparing initiatives across teams",
+        ]}
+        quickLinks={[
+          { label: "What each factor means", href: "#rice-meanings" },
+        ]}
+      />
 
       {/* Summary bar */}
       {summary && (
@@ -762,6 +765,7 @@ export default function RiceCalculatorContent() {
 
       {/* Formula reference */}
       <div
+        id="rice-meanings"
         className="rounded-xl p-5"
         style={{
           background: "var(--kami-surface)",

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp";
 
@@ -302,15 +303,17 @@ export default function FileConverterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            File Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert images between PNG, JPG, and WebP. Resize and compress — all
-            in your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="File Converter"
+          tagline="Convert images between PNG, JPG, and WebP — resize and re-compress in a single pass."
+          description="Drop one or many images. Pick a target format (PNG for lossless / transparency, JPG for photos, WebP for modern web), optionally resize to a specific width or height, and choose a quality level. Everything runs in your browser — files are never uploaded."
+          audience={["Everyone", "Designers", "Developers"]}
+          whenToUse={[
+            "Converting a batch of iPhone HEICs to JPG",
+            "Re-saving PNG photos as smaller WebP",
+            "Downsizing an image to fit upload limits",
+          ]}
+        />
 
         {/* Drop Zone */}
         <FileDropZone

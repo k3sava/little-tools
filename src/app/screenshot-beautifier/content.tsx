@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -297,13 +298,17 @@ export default function ScreenshotBeautifierContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto w-[92%] max-w-[1400px] py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Screenshot Beautifier
-        </h1>
-        <p className="mt-2 text-gray-500">
-          Drop a screenshot, add a device frame, and export a beautiful image.
-          You can also <kbd className="rounded border border-gray-300 bg-gray-100 px-1 py-0.5 text-xs">Ctrl+V</kbd> to paste from clipboard.
-        </p>
+        <ToolIntro
+          title="Screenshot Beautifier"
+          tagline="Turn a flat screenshot into a styled product shot — gradient background, device frame, padding, shadow, rounded corners."
+          description="Drop a screenshot or paste one with ⌘V. Pick a background (solid, gradient, mesh, image), optional device frame (browser, iPhone, Mac), padding, and corner radius. Export a high-resolution PNG ready for social posts, landing pages, or product launches. Nothing is uploaded."
+          audience={["Content creators", "PMMs", "Support", "Designers"]}
+          whenToUse={[
+            "Making a tweet-ready screenshot of a new feature",
+            "Hero images for a product landing page",
+            "Polished screenshots for documentation or help articles",
+          ]}
+        />
 
         {!image ? (
           <div className="mt-8">

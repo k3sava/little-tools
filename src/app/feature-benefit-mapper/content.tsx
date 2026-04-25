@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel } from "@/components/tools/reference-panel";
 
 // --- Types ---
 
@@ -195,15 +197,20 @@ export default function FeatureBenefitMapperContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Feature-Benefit Mapper
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Map every feature to a customer benefit. Catch feature-speak before
-            it reaches your landing page.
-          </p>
-        </div>
+        <ToolIntro
+          title="Feature-Benefit Mapper"
+          tagline="Turn every feature into a customer benefit — and get warned when your copy is still 'feature-speak.'"
+          description="List your features in the left column. For each, write the benefit it delivers — what the customer gains, not what the product does. We flag rows that are still technical-sounding (&quot;API endpoint&quot;, &quot;integration&quot;) and suggest verbs that re-frame them as outcomes. Export the mapped table to use in your landing page copy."
+          audience={["PMMs", "Copywriters", "Founders", "Growth"]}
+          whenToUse={[
+            "Rewriting a feature-dense landing page",
+            "Turning a changelog into marketing copy",
+            "Reviewing ad copy for customer-speak",
+          ]}
+          quickLinks={[
+            { label: "Features vs benefits, explained", href: "#feat-vs-benefit" },
+          ]}
+        />
 
         {/* Score bar */}
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -430,6 +437,36 @@ export default function FeatureBenefitMapperContent() {
             </div>
           </div>
         </div>
+
+        <ReferencePanel
+          id="feat-vs-benefit"
+          title="Features vs benefits — the rewrite formula"
+          summary="A three-step translation that works on almost any feature."
+          defaultOpen
+        >
+          <div className="space-y-4 text-sm">
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 1</div>
+              <div className="mt-1 font-medium text-gray-900">State the feature (what it does)</div>
+              <div className="mt-1 text-xs text-gray-600">&quot;AES-256 encryption at rest and in transit.&quot;</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 2</div>
+              <div className="mt-1 font-medium text-gray-900">Ask &quot;so what?&quot; until it hits a human outcome</div>
+              <div className="mt-1 text-xs text-gray-600">Encrypted → unreadable if stolen → customer data stays safe → you don&apos;t make the news.</div>
+            </div>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 3</div>
+              <div className="mt-1 font-medium text-gray-900">Rewrite as what the customer gains</div>
+              <div className="mt-1 text-xs text-gray-600">&quot;Your customer data stays private — even if a backup is stolen.&quot;</div>
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+              <strong>Rule of thumb:</strong> if you can put &quot;so what?&quot; after your
+              sentence and it still needs an answer, it&apos;s a feature. If the reader&apos;s
+              reaction is &quot;oh — I want that,&quot; it&apos;s a benefit.
+            </div>
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

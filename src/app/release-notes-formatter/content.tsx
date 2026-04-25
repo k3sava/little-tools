@@ -2,6 +2,8 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Types ---
 
@@ -268,15 +270,20 @@ export default function ReleaseNotesFormatterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Release Notes Formatter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Paste raw changelog bullets. Auto-categorize, edit, and export as
-            Markdown, HTML, or plain text.
-          </p>
-        </div>
+        <ToolIntro
+          title="Release Notes Formatter"
+          tagline="Paste raw changelog bullets — we auto-sort them into New, Improved, Fixed, and more, then export clean Markdown or HTML."
+          description="Drop unstructured bullets (like a git log summary) into the input. We infer category from keywords (&quot;fixed&quot; → Fixed, &quot;added&quot; → New), let you re-categorize with one click, and emit properly formatted release notes — Keep a Changelog style — ready for GitHub releases, your blog, or an email."
+          audience={["Developers", "PMs", "DevRel"]}
+          whenToUse={[
+            "Shipping a release and need public-facing notes",
+            "Turning a noisy git log into customer-readable copy",
+            "Standardizing release format across a team",
+          ]}
+          quickLinks={[
+            { label: "What goes in each category", href: "#release-categories" },
+          ]}
+        />
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Left: Input */}
@@ -540,6 +547,27 @@ export default function ReleaseNotesFormatterContent() {
             </div>
           </div>
         </div>
+
+        <ReferencePanel
+          id="release-categories"
+          title="What goes in each category (Keep a Changelog convention)"
+          summary="The six-category taxonomy used by keepachangelog.com — the de-facto standard."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="Added / New" explanation="Brand-new features or capabilities." example="Added bulk export" />
+            <RuleRow rule="Changed / Improved" explanation="Changes to existing features — performance, UX, behavior." example="Faster search results" />
+            <RuleRow rule="Fixed" explanation="Bug fixes." example="Fixed login redirect" />
+            <RuleRow rule="Removed" explanation="Features that no longer exist." example="Removed legacy API v1" />
+            <RuleRow rule="Deprecated" explanation="Features scheduled for removal but still available." example="Deprecated basic-auth" />
+            <RuleRow rule="Security" explanation="Vulnerability fixes — called out separately so ops teams can triage." example="Patched XSS in comments" />
+          </div>
+          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <strong>Writing tips:</strong> lead with the user-visible change, not the
+            implementation. &quot;Fixed: search now respects saved filters&quot; beats
+            &quot;Refactored SearchQueryBuilder.ts.&quot; Keep each bullet under ~12 words.
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

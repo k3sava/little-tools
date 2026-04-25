@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -308,15 +309,17 @@ export default function ContentBriefBuilderContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Content Brief Builder
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Build structured briefs for writers and SEO teams. Define audience,
-            intent, outline, and CTAs in one place.
-          </p>
-        </div>
+        <ToolIntro
+          title="Content Brief Builder"
+          tagline="Produce a writer-ready content brief in minutes — target keyword, audience, intent, outline, links, and CTAs."
+          description="Fill in the audience and intent fields, sketch a heading outline, link any reference articles, and we package it all into a single brief your writer (internal or freelance) can execute against. Export as Markdown, plain text, or copy-friendly HTML for Notion / Docs."
+          audience={["Content marketers", "SEO managers", "Editors"]}
+          whenToUse={[
+            "Commissioning a piece from a freelancer",
+            "Aligning a writer before they start drafting",
+            "Standardizing briefs across a content team",
+          ]}
+        />
 
         {/* Top bar */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

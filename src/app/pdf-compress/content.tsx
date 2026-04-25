@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from "react";
 import { PDFDocument } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
+import { ToolIntro } from "@/components/tools/tool-intro";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
 import { Spinner } from "@/components/tools/spinner";
 
@@ -184,15 +185,17 @@ export default function PdfCompressContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Compress PDF
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Reduce PDF file size in your browser. Files never leave your device.
-          </p>
-        </div>
+        <ToolIntro
+          title="Compress PDF"
+          tagline="Shrink PDF file size in your browser — nothing is uploaded, so your document stays private."
+          description="Drop a PDF, pick a quality preset (high / medium / low / aggressive), and we re-encode embedded images and streams locally. The output is a valid PDF with smaller file size. Best results come from PDFs with lots of images — text-heavy PDFs usually compress less."
+          audience={["Everyone"]}
+          whenToUse={[
+            "Getting a PDF under an email attachment limit",
+            "Speeding up a slow-to-download document",
+            "Shrinking a scanned contract for uploading to a portal",
+          ]}
+        />
 
         {/* Drop zone (shown when no file loaded) */}
         {!file && status !== "error" && (

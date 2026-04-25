@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Minimal QR Code Generator (Version 1-6, Byte mode, ECC-L) ---
 // This implements a basic QR encoder sufficient for URLs and text up to ~100 chars.
@@ -403,8 +404,18 @@ export default function QrCodeContent() {
 
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">QR Code Generator</h1>
-        <p className="mt-2 text-gray-500">Generate QR codes for URLs, text, WiFi, and vCards. All client-side.</p>
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="QR Code Generator"
+          tagline="Build QR codes for URLs, text, Wi-Fi, or vCard — customize colors and corner radius, export as PNG or SVG."
+          description="Pick content type (URL, plain text, Wi-Fi credentials, or contact vCard), fill in the fields, and we generate a QR code rendered live in your browser. Adjust color, error-correction level (higher = more resilient but denser), and corner style. Download as crisp SVG or high-resolution PNG."
+          audience={["Everyone — marketers, event organizers, small business owners"]}
+          whenToUse={[
+            "Putting a URL on a flyer or poster",
+            "Sharing Wi-Fi credentials without typing",
+            "Creating a scannable contact card for an event badge",
+          ]}
+        />
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Preview */}

@@ -3,6 +3,13 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ExampleGallery } from "@/components/tools/example-gallery";
+import { InfoTip } from "@/components/tools/info-tip";
+import {
+  ReferencePanel,
+  RuleRow,
+} from "@/components/tools/reference-panel";
 
 // --- Case conversion logic ---
 
@@ -24,9 +31,9 @@ type CaseType =
 /** Split text into words, handling camelCase, snake_case, kebab-case, dots, and spaces. */
 function tokenize(text: string): string[] {
   return text
-    .replace(/([a-z])([A-Z])/g, "$1 $2") // camelCase boundaries
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2") // ACRONYMWord boundaries
-    .replace(/[_\-./]+/g, " ") // separators to spaces
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/[_\-./]+/g, " ")
     .trim()
     .split(/\s+/)
     .filter(Boolean);
@@ -103,7 +110,7 @@ function toTitleCase(text: string, style: TitleStyle): string {
   return text
     .split("\n")
     .map((line) => {
-      const tokens = line.split(/(\s+)/); // preserve whitespace
+      const tokens = line.split(/(\s+)/);
       const wordTokens = tokens.filter((w) => w.trim().length > 0);
       const lastWordIndex = wordTokens.length - 1;
       let wordCount = 0;
@@ -111,32 +118,21 @@ function toTitleCase(text: string, style: TitleStyle): string {
 
       return tokens
         .map((token) => {
-          if (token.trim().length === 0) return token; // whitespace
+          if (token.trim().length === 0) return token;
           const isFirst = wordCount === 0;
           const isLast = wordCount === lastWordIndex;
           wordCount++;
 
           const lower = token.toLowerCase();
 
-          if (
-            !isFirst &&
-            !isLast &&
-            !afterColon &&
-            minorWords.has(lower)
-          ) {
-            // Reset afterColon flag after processing
-            afterColon = token.endsWith(":") || token.endsWith("\u2014");
+          if (!isFirst && !isLast && !afterColon && minorWords.has(lower)) {
+            afterColon = token.endsWith(":") || token.endsWith("—");
             return lower;
           }
 
-          // Check if this token ends with colon/em-dash for next word
-          afterColon = token.endsWith(":") || token.endsWith("\u2014");
+          afterColon = token.endsWith(":") || token.endsWith("—");
 
-          // Capitalize first letter of each word segment (handles hyphens)
-          return lower.replace(
-            /\b([a-z])/g,
-            (_, c: string) => c.toUpperCase()
-          );
+          return lower.replace(/\b([a-z])/g, (_, c: string) => c.toUpperCase());
         })
         .join("");
     })
@@ -149,7 +145,10 @@ function toSentenceCase(text: string): string {
     .map((line) => {
       if (!line.trim()) return line;
       const lower = line.toLowerCase();
-      return lower.replace(/(^|[.!?]\s+)([a-z])/g, (_, pre, c) => pre + c.toUpperCase());
+      return lower.replace(
+        /(^|[.!?]\s+)([a-z])/g,
+        (_, pre, c) => pre + c.toUpperCase()
+      );
     })
     .join("\n");
 }
@@ -157,7 +156,6 @@ function toSentenceCase(text: string): string {
 function convert(text: string, caseType: CaseType): string {
   if (!text) return "";
 
-  // For upper/lower/sentence/title, operate on the full text preserving structure
   switch (caseType) {
     case "upper":
       return text.toUpperCase();
@@ -173,7 +171,6 @@ function convert(text: string, caseType: CaseType): string {
       return toTitleCase(text, "chicago");
   }
 
-  // For programming cases, convert line by line preserving blank lines
   return text
     .split("\n")
     .map((line) => {
@@ -220,11 +217,9 @@ function detectCase(text: string): DetectedCase | null {
   const trimmed = text.trim();
   if (!trimmed) return null;
 
-  // Use first line for detection
   const firstLine = trimmed.split("\n")[0].trim();
   if (!firstLine) return null;
 
-  // Check for single-word to avoid false positives
   const hasSpaces = /\s/.test(firstLine);
   const hasUnderscores = /_/.test(firstLine);
   const hasHyphens = /-/.test(firstLine);
@@ -232,96 +227,210 @@ function detectCase(text: string): DetectedCase | null {
   const hasUpper = /[A-Z]/.test(firstLine);
   const hasLower = /[a-z]/.test(firstLine);
 
-  // CONSTANT_CASE: all uppercase with underscores
-  if (hasUnderscores && hasUpper && !hasLower && !hasSpaces) {
-    return "CONSTANT_CASE";
-  }
+  if (hasUnderscores && hasUpper && !hasLower && !hasSpaces) return "CONSTANT_CASE";
+  if (hasUnderscores && !hasUpper && !hasSpaces) return "snake_case";
 
-  // snake_case: has underscores, all lowercase
-  if (hasUnderscores && !hasUpper && !hasSpaces) {
-    return "snake_case";
-  }
-
-  // Title-Kebab-Case: has hyphens, each segment starts uppercase
   if (hasHyphens && !hasSpaces && !hasUnderscores) {
     const segments = firstLine.split("-");
     const allTitleCase = segments.every(
-      (s) => s.length > 0 && /^[A-Z]/.test(s) && (s.length === 1 || /[a-z]/.test(s.slice(1)))
+      (s) =>
+        s.length > 0 &&
+        /^[A-Z]/.test(s) &&
+        (s.length === 1 || /[a-z]/.test(s.slice(1)))
     );
     if (allTitleCase) return "Title-Kebab-Case";
   }
 
-  // kebab-case: has hyphens, all lowercase
-  if (hasHyphens && !hasUpper && !hasSpaces && !hasUnderscores) {
-    return "kebab-case";
-  }
+  if (hasHyphens && !hasUpper && !hasSpaces && !hasUnderscores) return "kebab-case";
+  if (hasDots && !hasUpper && !hasSpaces && !hasUnderscores && !hasHyphens) return "dot.case";
+  if (hasUpper && !hasLower) return "UPPER CASE";
+  if (!hasUpper && hasLower) return "lower case";
 
-  // dot.case: has dots, all lowercase
-  if (hasDots && !hasUpper && !hasSpaces && !hasUnderscores && !hasHyphens) {
-    return "dot.case";
-  }
-
-  // UPPER CASE: all uppercase (may have spaces)
-  if (hasUpper && !hasLower) {
-    return "UPPER CASE";
-  }
-
-  // lower case: all lowercase (may have spaces)
-  if (!hasUpper && hasLower) {
-    return "lower case";
-  }
-
-  // No spaces, no separators — check for camel/pascal
   if (!hasSpaces && !hasUnderscores && !hasHyphens) {
-    if (/^[a-z]/.test(firstLine) && hasUpper) {
-      return "camelCase";
-    }
-    if (/^[A-Z]/.test(firstLine) && hasLower) {
-      return "PascalCase";
-    }
+    if (/^[a-z]/.test(firstLine) && hasUpper) return "camelCase";
+    if (/^[A-Z]/.test(firstLine) && hasLower) return "PascalCase";
   }
 
-  // Sentence case: starts with uppercase, rest mostly lower
-  if (/^[A-Z]/.test(firstLine) && hasLower && hasSpaces) {
-    return "Sentence case";
-  }
-
+  if (/^[A-Z]/.test(firstLine) && hasLower && hasSpaces) return "Sentence case";
   return "Mixed";
 }
 
-// --- UI ---
+// --- Case catalog (with explanations) ---
 
-const CASES: { value: CaseType; label: string; example: string }[] = [
-  { value: "upper", label: "UPPER CASE", example: "HELLO WORLD" },
-  { value: "lower", label: "lower case", example: "hello world" },
-  { value: "sentence", label: "Sentence case", example: "Hello world" },
-  { value: "title-ap", label: "Title Case (AP)", example: "The Quick Brown Fox" },
-  { value: "title-apa", label: "Title Case (APA)", example: "The Quick Brown Fox" },
-  { value: "title-chicago", label: "Title Case (Chicago)", example: "The Quick Brown Fox" },
-  { value: "camel", label: "camelCase", example: "helloWorld" },
-  { value: "pascal", label: "PascalCase", example: "HelloWorld" },
-  { value: "snake", label: "snake_case", example: "hello_world" },
-  { value: "kebab", label: "kebab-case", example: "hello-world" },
-  { value: "dot", label: "dot.case", example: "hello.world" },
-  { value: "constant", label: "CONSTANT_CASE", example: "HELLO_WORLD" },
-  { value: "title-kebab", label: "Title-Kebab-Case", example: "Hello-World" },
+interface CaseInfo {
+  value: CaseType;
+  label: string;
+  example: string;
+  group: "writing" | "title" | "programming";
+  description: React.ReactNode;
+  commonUse: string;
+}
+
+const CASES: CaseInfo[] = [
+  {
+    value: "upper",
+    label: "UPPER CASE",
+    example: "HELLO WORLD",
+    group: "writing",
+    description: "Every letter is capitalized.",
+    commonUse: "Acronyms, warnings, all-caps headings.",
+  },
+  {
+    value: "lower",
+    label: "lower case",
+    example: "hello world",
+    group: "writing",
+    description: "Every letter is lowercase.",
+    commonUse: "URLs, tags, relaxed/minimalist copy.",
+  },
+  {
+    value: "sentence",
+    label: "Sentence case",
+    example: "Hello world",
+    group: "writing",
+    description:
+      "Only the first word of each sentence and proper nouns are capitalized.",
+    commonUse: "Most body copy, UI microcopy, product descriptions.",
+  },
+  {
+    value: "title-ap",
+    label: "Title Case (AP)",
+    example: "The Quick Brown Fox",
+    group: "title",
+    description: (
+      <>
+        Associated Press style. Capitalize all words <em>except</em> articles
+        and short (≤3 letter) prepositions/conjunctions in the middle of a
+        title. The first and last word are always capitalized.
+      </>
+    ),
+    commonUse: "News headlines, most blog headlines.",
+  },
+  {
+    value: "title-apa",
+    label: "Title Case (APA)",
+    example: "The Quick Brown Fox",
+    group: "title",
+    description: (
+      <>
+        APA 7th edition. Capitalize all words of four letters or more,
+        plus nouns, verbs, adjectives, adverbs, and pronouns. Lowercase
+        articles and conjunctions under 4 letters.
+      </>
+    ),
+    commonUse: "Academic papers, scholarly articles.",
+  },
+  {
+    value: "title-chicago",
+    label: "Title Case (Chicago)",
+    example: "The Quick Brown Fox",
+    group: "title",
+    description: (
+      <>
+        Chicago Manual of Style. Capitalize the first and last word, nouns,
+        verbs, adjectives, adverbs, pronouns, and subordinating conjunctions.
+        Lowercase articles, coordinating conjunctions, and prepositions
+        regardless of length.
+      </>
+    ),
+    commonUse: "Books, long-form essays, book-style publications.",
+  },
+  {
+    value: "camel",
+    label: "camelCase",
+    example: "helloWorld",
+    group: "programming",
+    description:
+      "First word lowercase, subsequent words start with a capital. No separators.",
+    commonUse: "JavaScript/TypeScript variables, Java methods.",
+  },
+  {
+    value: "pascal",
+    label: "PascalCase",
+    example: "HelloWorld",
+    group: "programming",
+    description: "Every word starts with a capital. No separators.",
+    commonUse: "Class names, React components, .NET identifiers.",
+  },
+  {
+    value: "snake",
+    label: "snake_case",
+    example: "hello_world",
+    group: "programming",
+    description: "All lowercase, words joined with underscores.",
+    commonUse: "Python, Ruby, Rust, DB column names.",
+  },
+  {
+    value: "kebab",
+    label: "kebab-case",
+    example: "hello-world",
+    group: "programming",
+    description: "All lowercase, words joined with hyphens.",
+    commonUse: "URLs, CSS classes, HTML data-attributes, filenames.",
+  },
+  {
+    value: "dot",
+    label: "dot.case",
+    example: "hello.world",
+    group: "programming",
+    description: "All lowercase, words joined with dots.",
+    commonUse: "Feature flags, config keys, i18n namespaces.",
+  },
+  {
+    value: "constant",
+    label: "CONSTANT_CASE",
+    example: "HELLO_WORLD",
+    group: "programming",
+    description:
+      "SCREAMING_SNAKE_CASE — all uppercase, words joined with underscores.",
+    commonUse: "Constants, environment variables.",
+  },
+  {
+    value: "title-kebab",
+    label: "Title-Kebab-Case",
+    example: "Hello-World",
+    group: "programming",
+    description: "Each word capitalized, joined with hyphens.",
+    commonUse: "HTTP headers (Content-Type), some filename styles.",
+  },
 ];
+
+const GROUPS: { id: CaseInfo["group"]; label: string; hint: string }[] = [
+  { id: "writing", label: "Plain writing", hint: "Everyday prose and UI copy" },
+  { id: "title", label: "Title case styles", hint: "For headlines — three competing style guides" },
+  { id: "programming", label: "Programming", hint: "Identifiers, filenames, config keys" },
+];
+
+// --- Examples ---
+
+const EXAMPLES = [
+  { label: "Blog headline", value: "the quick brown fox jumps over the lazy dog", hint: "try title case" },
+  { label: "API identifier", value: "getUserByIdAndEmail", hint: "try snake / kebab" },
+  { label: "ENV variable", value: "DATABASE_CONNECTION_URL", hint: "try camel / kebab" },
+  { label: "Long sentence", value: "this is a sentence. and here is another one! and a third?", hint: "try sentence case" },
+];
+
+// --- Component ---
 
 export default function CaseConverterContent() {
   const [{ q: input }, setToolState] = useToolState({ q: "" });
-  const setInput = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
+  const setInput = useCallback(
+    (v: string) => setToolState({ q: v }),
+    [setToolState]
+  );
   const [copiedCard, setCopiedCard] = useState<CaseType | null>(null);
 
-  useKeyboardShortcuts(useMemo(() => [
-    { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-  ], []));
+  useKeyboardShortcuts(
+    useMemo(
+      () => [{ key: "k", meta: true, action: () => setInput(""), label: "Clear" }],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      []
+    )
+  );
 
   const allConversions = useMemo(() => {
     if (!input.trim()) return [];
-    return CASES.map((c) => ({
-      ...c,
-      result: convert(input, c.value),
-    }));
+    return CASES.map((c) => ({ ...c, result: convert(input, c.value) }));
   }, [input]);
 
   const wordCount = input.trim() ? input.trim().split(/\s+/).length : 0;
@@ -339,24 +448,46 @@ export default function CaseConverterContent() {
     []
   );
 
+  const grouped = useMemo(() => {
+    const map: Record<CaseInfo["group"], typeof allConversions> = {
+      writing: [],
+      title: [],
+      programming: [],
+    };
+    for (const c of allConversions) map[c.group].push(c);
+    return map;
+  }, [allConversions]);
+
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Case Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert text between naming conventions. No ads, no tracking.
-          </p>
-        </div>
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Case Converter"
+          tagline="Convert text between 13 naming conventions — and learn the rules behind each one."
+          description="Paste any text and see it converted every way at once: camelCase, snake_case, kebab-case, AP/APA/Chicago title case, and more. Click any card to copy. We detect what case your input is in, and the rules reference at the bottom explains exactly when to use each style."
+          audience={["Writers", "Engineers", "Designers", "Editors"]}
+          whenToUse={[
+            "Turn a copied sentence into a slug or variable",
+            "Rename an identifier without retyping it",
+            "Apply consistent title-case to every headline on a page",
+          ]}
+          quickLinks={[
+            { label: "Jump to title-case rules", href: "#title-case-rules" },
+            { label: "Programming case guide", href: "#programming-case-guide" },
+          ]}
+        />
 
-        {/* Input */}
+        <ExampleGallery
+          title="Try one"
+          examples={EXAMPLES}
+          onPick={(v) => setInput(v)}
+        />
+
         <div className="relative">
           {detected && input.trim() && (
             <div className="mb-2">
-              <span className="inline-block rounded-md bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
                 Detected: {detected}
               </span>
             </div>
@@ -364,14 +495,13 @@ export default function CaseConverterContent() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type or paste your text here..."
+            placeholder="Type or paste text here — conversions appear below as you type."
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
             rows={5}
             autoFocus
           />
         </div>
 
-        {/* Stats */}
         <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
           <span>
             {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount}{" "}
@@ -382,58 +512,225 @@ export default function CaseConverterContent() {
               onClick={() => setInput("")}
               className="text-gray-400 hover:text-gray-600"
             >
-              Clear
+              Clear (⌘K)
             </button>
           )}
         </div>
 
-        {/* All conversions grid */}
-        {allConversions.length > 0 && (
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {allConversions.map((c) => (
-              <button
-                key={c.value}
-                onClick={() => handleCardCopy(c.value, c.result)}
-                className="case-preserve group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-left transition-all hover:border-gray-300 hover:shadow-md cursor-pointer"
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                    {c.label}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {copiedCard === c.value ? (
-                      <>
-                        <CheckIcon />
-                        <span className="text-gray-600 font-medium">
-                          Copied!
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <CopyIcon />
-                        Copy
-                      </>
-                    )}
-                  </span>
-                </div>
-                <div className="font-mono text-sm text-gray-700 truncate">
-                  {c.result}
-                </div>
-                {copiedCard === c.value && (
-                  <div className="absolute inset-0 rounded-[inherit] border-2 border-gray-900 pointer-events-none" />
-                )}
-              </button>
-            ))}
+        {allConversions.length === 0 && (
+          <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+            Start typing above — or click an example — to see all 13 case
+            conversions.
           </div>
         )}
 
-        {/* Footer */}
+        {allConversions.length > 0 && (
+          <div className="mt-6 space-y-6">
+            {GROUPS.map((g) => {
+              const items = grouped[g.id];
+              if (!items.length) return null;
+              return (
+                <div key={g.id}>
+                  <div className="mb-2 flex items-baseline justify-between">
+                    <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                      {g.label}
+                    </div>
+                    <div className="text-xs text-gray-400">{g.hint}</div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    {items.map((c) => (
+                      <button
+                        key={c.value}
+                        onClick={() => handleCardCopy(c.value, c.result)}
+                        className="case-preserve group relative rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-gray-400 hover:shadow-md"
+                      >
+                        <div className="mb-1.5 flex items-center justify-between">
+                          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500">
+                            {c.label}
+                            <InfoTip label={`About ${c.label}`}>
+                              <div className="mb-1.5 font-semibold text-gray-900">
+                                {c.label}
+                              </div>
+                              <div className="mb-2">{c.description}</div>
+                              <div className="text-gray-500">
+                                <strong>Common use:</strong> {c.commonUse}
+                              </div>
+                            </InfoTip>
+                          </span>
+                          <span className="flex items-center gap-1 text-xs text-gray-400 opacity-0 transition-opacity group-hover:opacity-100">
+                            {copiedCard === c.value ? (
+                              <>
+                                <CheckIcon />
+                                <span className="font-medium text-gray-700">
+                                  Copied
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <CopyIcon />
+                                Copy
+                              </>
+                            )}
+                          </span>
+                        </div>
+                        <div className="truncate font-mono text-sm text-gray-800">
+                          {c.result}
+                        </div>
+                        {copiedCard === c.value && (
+                          <div className="pointer-events-none absolute inset-0 rounded-[inherit] border-2 border-gray-900" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Rules reference — the titlecaseconverter.com feature */}
+        <ReferencePanel
+          id="title-case-rules"
+          title="Title-case rules, by style guide"
+          summary="AP, APA, and Chicago disagree. Here's exactly what each one does."
+          defaultOpen
+        >
+          <div className="space-y-5">
+            <StyleRuleCard
+              name="Associated Press (AP)"
+              tagline="News headlines, most blog headlines."
+              rules={[
+                "Capitalize the first and last word of the title.",
+                "Capitalize all nouns, verbs, adjectives, adverbs, and pronouns.",
+                "Capitalize prepositions and conjunctions of 4+ letters (e.g. About, After, With).",
+                "Lowercase short articles and conjunctions (a, an, the, and, but, or, for, nor).",
+                "Lowercase short prepositions (≤3 letters) — e.g. of, to, in, on, at, by.",
+              ]}
+              example="A Guide to the Habits of Highly Effective People"
+            />
+            <StyleRuleCard
+              name="APA (7th edition)"
+              tagline="Academic papers and scholarly articles."
+              rules={[
+                "Capitalize the first word of the title and subtitle.",
+                "Capitalize major words (nouns, verbs, adjectives, adverbs, pronouns).",
+                "Capitalize all words of 4 letters or more, regardless of part of speech.",
+                "Lowercase articles, conjunctions, and prepositions shorter than 4 letters.",
+                "Capitalize the first word after a colon or em-dash.",
+              ]}
+              example="A Guide to the Habits of Highly Effective People"
+            />
+            <StyleRuleCard
+              name="Chicago Manual of Style"
+              tagline="Books and long-form essays."
+              rules={[
+                "Capitalize the first and last word.",
+                "Capitalize nouns, verbs, adjectives, adverbs, pronouns, and subordinating conjunctions (because, if, although…).",
+                "Lowercase articles (a, an, the).",
+                "Lowercase coordinating conjunctions (and, but, for, or, nor).",
+                "Lowercase prepositions regardless of length (of, between, throughout).",
+                "Capitalize the first word after a colon or em-dash.",
+              ]}
+              example="A Guide to the Habits of Highly Effective People"
+            />
+            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+              <strong>Heads up:</strong> no style guide handles every edge
+              case identically. For brand names, hyphenated terms, or unusual
+              acronyms, prefer your team's style guide over any automated
+              rule.
+            </div>
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="programming-case-guide"
+          title="Programming case — which to use where"
+          summary="The conventions most ecosystems agree on."
+          defaultOpen={false}
+        >
+          <div className="grid gap-1 sm:grid-cols-1">
+            <RuleRow
+              rule="camelCase"
+              explanation="JavaScript, TypeScript, Java, Swift variables and functions."
+              example="getUserById"
+            />
+            <RuleRow
+              rule="PascalCase"
+              explanation="Class names, React/Vue components, .NET, TypeScript types."
+              example="UserProfile"
+            />
+            <RuleRow
+              rule="snake_case"
+              explanation="Python, Rust, Ruby, PostgreSQL column names."
+              example="get_user_by_id"
+            />
+            <RuleRow
+              rule="kebab-case"
+              explanation="URLs, CSS classes, HTML attributes, most filenames."
+              example="user-profile"
+            />
+            <RuleRow
+              rule="SCREAMING_SNAKE"
+              explanation="Constants and environment variables across almost every language."
+              example="MAX_RETRY_COUNT"
+            />
+            <RuleRow
+              rule="dot.case"
+              explanation="Feature flags, i18n keys, config keys."
+              example="checkout.payment.retry"
+            />
+            <RuleRow
+              rule="Title-Kebab"
+              explanation="HTTP headers — one of the few places this hybrid is idiomatic."
+              example="Content-Type"
+            />
+          </div>
+        </ReferencePanel>
+
+        <div className="mt-6 text-center text-xs text-gray-400">
+          ⌘K clears the input · Click any card to copy · Runs entirely in your
+          browser — nothing is uploaded.
+        </div>
       </div>
     </div>
   );
 }
 
-// Inline SVG icons
+// --- Small subcomponent for rule blocks ---
+
+function StyleRuleCard({
+  name,
+  tagline,
+  rules,
+  example,
+}: {
+  name: string;
+  tagline: string;
+  rules: string[];
+  example: string;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+      <div className="flex items-baseline justify-between">
+        <div className="text-sm font-semibold text-gray-900">{name}</div>
+        <div className="text-xs text-gray-500">{tagline}</div>
+      </div>
+      <ul className="mt-2 space-y-1 text-xs text-gray-700">
+        {rules.map((r, i) => (
+          <li key={i} className="flex gap-2">
+            <span className="text-gray-400">•</span>
+            <span>{r}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mt-3 rounded-md bg-white px-3 py-2 font-mono text-xs text-gray-800">
+        {example}
+      </div>
+    </div>
+  );
+}
+
+// --- Icons ---
 
 function CopyIcon() {
   return (

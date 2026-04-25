@@ -3,6 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Cleaning operations ---
 
@@ -259,15 +260,17 @@ export default function TextCleanerContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Text Cleaner
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Clean up messy text with one click. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Text Cleaner"
+          tagline="One-click fixes for messy pasted text — smart quotes, double spaces, zero-width characters, weird line endings."
+          description="Paste text from anywhere (a PDF, a Word doc, a chat log) and toggle the fixes you want: convert smart quotes to straight, collapse multiple spaces, remove zero-width characters, normalize line endings, strip markdown, and more. Preview updates live; copy the cleaned output with one click."
+          audience={["Writers", "Editors", "Developers", "Support"]}
+          whenToUse={[
+            "Pasting copy from Word or a PDF into a CMS",
+            "Scrubbing invisible characters from a support ticket",
+            "Normalizing line breaks before diffing two files",
+          ]}
+        />
 
         {/* Operation toggles */}
         <div className="mb-4 space-y-2">

@@ -3,6 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Character limit helpers ---
 
@@ -445,14 +447,21 @@ export default function MetaTagGeneratorContent() {
   return (
     <div style={{ color: "var(--kami-text, #111)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Meta Tag Generator
-          </h1>
-          <p className="mt-2" style={{ color: "var(--kami-text-muted, #6b7280)" }}>
-            Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.
-          </p>
+        <ToolIntro
+          title="Meta Tag Generator"
+          tagline="Build SEO-ready title, description, Open Graph, and Twitter card tags with live Google, Facebook, and Twitter previews."
+          description="Fill in title, description, and URL (plus an optional image) and we generate every meta tag you need, plus live SERP previews for Google (desktop + mobile), Facebook, and Twitter. Character counters flash yellow when you're approaching the truncation limit and red when you're over."
+          audience={["SEOs", "Content marketers", "Developers", "PMMs"]}
+          whenToUse={[
+            "Shipping a new page or blog post",
+            "Auditing meta tags for an existing page",
+            "Getting an OG image to preview correctly on Slack or Twitter",
+          ]}
+          quickLinks={[
+            { label: "SEO character limits", href: "#seo-limits" },
+            { label: "OG vs Twitter cards", href: "#og-twitter-diff" },
+          ]}
+        /><div className="text-center">
           <button
             onClick={handleFillExample}
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
@@ -727,6 +736,42 @@ export default function MetaTagGeneratorContent() {
             <code>{metaTags}</code>
           </pre>
         </div>
+
+        <ReferencePanel
+          id="seo-limits"
+          title="SEO character limits you'll actually see enforced"
+          summary="Google and social networks truncate. Here's where."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="Meta title" explanation="Google cuts off around 600 pixels (~55–60 chars)." example="50–60 chars is safe" />
+            <RuleRow rule="Meta description" explanation="Google shows ~155–160 chars on desktop, ~120 on mobile." example="Aim for <155" />
+            <RuleRow rule="OG title" explanation="Facebook/LinkedIn show ~60 chars." example="<60 chars" />
+            <RuleRow rule="OG description" explanation="Usually truncated around 200 chars on FB/LinkedIn cards." example="<200 chars" />
+            <RuleRow rule="Twitter title" explanation="Twitter shows ~70 chars on large summary cards." example="<70 chars" />
+            <RuleRow rule="Twitter description" explanation="Truncated around 200 chars." example="<200 chars" />
+            <RuleRow rule="OG image" explanation="Ideal 1200×630. Under 5MB. PNG or JPG." example="1200×630 PNG" />
+          </div>
+          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <strong>Tip:</strong> Google rewrites titles ~60% of the time based on relevance
+            to the query — so treat your meta title as a hint, not a guarantee. The description
+            is more reliably shown as-written.
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="og-twitter-diff"
+          title="Open Graph vs Twitter Cards — do I need both?"
+          summary="Twitter falls back to OG tags for most fields. You can often just set OG."
+          defaultOpen={false}
+        >
+          <div className="space-y-2 text-xs">
+            <p><strong>Open Graph (og:*)</strong> is the Facebook-invented standard adopted by almost everyone: LinkedIn, Slack, Discord, iMessage, WhatsApp, and Twitter.</p>
+            <p><strong>Twitter Cards (twitter:*)</strong> exist because Twitter wants a few extras — specifically card <code>type</code> (summary vs summary_large_image) and <code>site</code>/<code>creator</code> handles.</p>
+            <p>If you only set OG tags, Twitter will still render a card. Set <code>twitter:card</code> and <code>twitter:site</code> if you want control over which card layout shows up.</p>
+            <p className="text-gray-500"><strong>Verdict:</strong> OG is the baseline. Add Twitter tags when you specifically care about card type or attribution.</p>
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

@@ -2,6 +2,11 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ExampleGallery } from "@/components/tools/example-gallery";
+import { InfoTip } from "@/components/tools/info-tip";
+import { HowToSteps } from "@/components/tools/how-to-steps";
+import { ReferencePanel } from "@/components/tools/reference-panel";
 
 // --- Types ---
 
@@ -21,6 +26,12 @@ interface Framework {
   author: string;
   template: string;
   fields: FrameworkField[];
+  /** One-line pitch for the framework itself. */
+  tagline: string;
+  /** When this framework is the right choice. */
+  bestFor: string;
+  /** A fully-filled sample for this framework the user can load. */
+  sample?: Record<string, string>;
 }
 
 // --- Frameworks ---
@@ -30,6 +41,17 @@ const FRAMEWORKS: Framework[] = [
     id: "moore",
     name: "Geoffrey Moore",
     author: "Crossing the Chasm",
+    tagline: "The classic. Seven specific slots; fill them and a clear statement falls out.",
+    bestFor: "Crossing the chasm from early adopters to mainstream — when you need to spell out segment, category, and competitor explicitly.",
+    sample: {
+      target_customer: "mid-market SaaS companies with 50–500 employees",
+      statement_of_need: "struggle to predict and prevent customer churn",
+      product_name: "RetentionIQ",
+      product_category: "customer success platform",
+      key_benefit: "identifies at-risk accounts 30 days before they cancel",
+      competitive_alternative: "manual spreadsheet tracking and gut feel",
+      key_differentiator: "uses ML on product-usage data, not just survey scores",
+    },
     template:
       "For {target_customer} who {statement_of_need}, {product_name} is a {product_category} that {key_benefit}. Unlike {competitive_alternative}, our product {key_differentiator}.",
     fields: [
@@ -84,6 +106,16 @@ const FRAMEWORKS: Framework[] = [
     id: "dunford",
     name: "April Dunford",
     author: "Obviously Awesome",
+    tagline: "Start from competitive alternatives. Let category fall out of your differentiation.",
+    bestFor: "When you're in a crowded market, pivoting, or unsure what category you're really in. Dunford forces you to discover positioning instead of declaring it.",
+    sample: {
+      product_name: "RetentionIQ",
+      competitive_alternatives: "spreadsheets, manual CS outreach, generic CRM reports",
+      unique_attributes: "ingest product-usage signals and detect behavior drift automatically",
+      value_enabled: "reduce churn by catching at-risk accounts 30 days before renewal",
+      target_customers: "B2B SaaS teams with 500+ accounts and a dedicated CS function",
+      market_category: "predictive customer success platform",
+    },
     template:
       "{product_name} is a {market_category} for {target_customers} that {value_enabled}, unlike {competitive_alternatives} which {unique_attributes}.",
     fields: [
@@ -133,6 +165,14 @@ const FRAMEWORKS: Framework[] = [
     id: "blank",
     name: "Steve Blank",
     author: "Customer Development",
+    tagline: "Short and scrappy. Four slots, job-to-be-done framing.",
+    bestFor: "Early-stage startups still proving product/market fit. Fast to fill and easy to iterate with customers.",
+    sample: {
+      customer_segment: "early-stage SaaS founders",
+      job_to_be_done: "acquire their first 100 paying customers",
+      value_proposition: "giving them a self-serve onboarding flow that converts trial users in under 5 minutes",
+      competitors: "generic landing-page builders and manual sales outreach",
+    },
     template:
       "We help {customer_segment} who want to {job_to_be_done} by {value_proposition} unlike {competitors}.",
     fields: [
@@ -169,6 +209,16 @@ const FRAMEWORKS: Framework[] = [
     id: "simple",
     name: "Simple / Internal",
     author: "General Purpose",
+    tagline: "A lightweight pitch for kickoff docs and internal alignment.",
+    bestFor: "Internal briefs, one-line descriptions, or when you need to explain the product to a new team member without full GTM rigor.",
+    sample: {
+      product: "RetentionIQ",
+      audience: "B2B SaaS customer success teams",
+      outcome: "reduce churn by 25%",
+      mechanism: "analyzing product usage patterns with ML",
+      category: "customer success platform",
+      differentiator: "uses product signals instead of lagging survey data",
+    },
     template:
       "{product} helps {audience} {outcome} by {mechanism}. It's the only {category} that {differentiator}.",
     fields: [
@@ -414,50 +464,96 @@ export default function PositioningBuilderContent() {
     )
   );
 
+  const loadSample = useCallback(() => {
+    const sample = framework.sample;
+    if (!sample) return;
+    setAllValues((prev) => ({
+      ...prev,
+      [activeFramework]: { ...sample },
+    }));
+  }, [activeFramework, framework.sample]);
+
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Positioning Statement Builder
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Build positioning statements with guided frameworks from April
-            Dunford, Geoffrey Moore, and more
-          </p>
-        </div>
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Positioning Statement Builder"
+          tagline="Draft a sharp positioning statement in five minutes using proven frameworks."
+          description="Pick a framework (Moore, Dunford, Blank, or a simple internal template), answer a guided set of questions, and watch a positioning statement assemble itself. Each framework forces you to think about a slightly different angle — pick the one that matches your situation, or fill in multiple and compare."
+          audience={["PMMs", "Founders", "PMs", "Product marketers"]}
+          whenToUse={[
+            "Kicking off a launch or rebrand",
+            "Sharpening a pitch that feels vague",
+            "Aligning a team on what the product actually is",
+          ]}
+          quickLinks={[
+            { label: "Which framework should I pick?", href: "#framework-guide" },
+            { label: "How to write a good answer", href: "#writing-tips" },
+          ]}
+        />
 
-        {/* Framework pills */}
-        <div className="mb-8">
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            {FRAMEWORKS.map((fw) => (
+        <HowToSteps
+          steps={[
+            { title: "Pick a framework below", body: "Not sure? Scroll to 'Which framework should I pick?' — we explain when each one fits." },
+            { title: "Answer each question in plain language", body: "Hints and examples sit under every field. Press 'Load sample' to see a fully-filled statement you can edit." },
+            { title: "Watch the live preview assemble", body: "Filled answers appear bold; [bracketed placeholders] show what's still missing." },
+            { title: "Copy or compare", body: "Copy as plain text or markdown. Fill in a second framework and click 'Compare all' to see which sounds sharpest." },
+          ]}
+        />
+
+        <div className="mb-6">
+          <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+            Pick a framework
+          </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {FRAMEWORKS.map((fw) => {
+              const active = activeFramework === fw.id && viewMode === "edit";
+              return (
+                <button
+                  key={fw.id}
+                  onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
+                  className={`rounded-xl border p-3 text-left transition-all ${
+                    active
+                      ? "border-gray-900 bg-gray-900 text-white shadow-md"
+                      : "border-gray-200 bg-white hover:border-gray-400 hover:shadow-sm"
+                  }`}
+                >
+                  <div className={`text-sm font-semibold ${active ? "text-white" : "text-gray-900"}`}>
+                    {fw.name}
+                  </div>
+                  <div className={`text-xs ${active ? "text-gray-300" : "text-gray-500"}`}>
+                    {fw.author}
+                  </div>
+                  <div className={`mt-1 text-xs ${active ? "text-gray-200" : "text-gray-600"}`}>
+                    {fw.tagline}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+            <div className="flex-1 text-xs text-gray-500">
+              <span className="font-medium text-gray-700">Best for:</span> {framework.bestFor}
+            </div>
+            {framework.sample && (
               <button
-                key={fw.id}
-                onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                  activeFramework === fw.id && viewMode === "edit"
+                onClick={loadSample}
+                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-700 hover:border-gray-400"
+              >
+                Load sample
+              </button>
+            )}
+            {filledFrameworks.length > 0 && (
+              <button
+                onClick={() => setViewMode(viewMode === "compare" ? "edit" : "compare")}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  viewMode === "compare"
                     ? "bg-gray-900 text-white"
                     : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900"
                 }`}
               >
-                {fw.name}
+                {viewMode === "compare" ? "Back to edit" : `Compare all (${filledFrameworks.length})`}
               </button>
-            ))}
-            {filledFrameworks.length > 0 && (
-              <>
-                <div className="mx-1 h-5 w-px bg-gray-200" />
-                <button
-                  onClick={() => setViewMode(viewMode === "compare" ? "edit" : "compare")}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    viewMode === "compare"
-                      ? "bg-gray-900 text-white"
-                      : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900"
-                  }`}
-                >
-                  Compare All
-                </button>
-              </>
             )}
           </div>
         </div>
@@ -531,27 +627,44 @@ export default function PositioningBuilderContent() {
 
         {/* Guided form */}
         {viewMode === "edit" && <><div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-              {framework.name} Framework
-            </h2>
-            {hasAnyValue && (
-              <button
-                onClick={clearForm}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                Clear all
-              </button>
-            )}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900">
+                {framework.name} · {framework.author}
+              </h2>
+              <p className="text-xs text-gray-500">{framework.tagline}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {framework.sample && (
+                <button
+                  onClick={loadSample}
+                  className="text-xs font-medium text-gray-600 underline underline-offset-2 hover:text-gray-900"
+                >
+                  Load sample
+                </button>
+              )}
+              {hasAnyValue && (
+                <button
+                  onClick={clearForm}
+                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
           <div className="space-y-5">
             {framework.fields.map((field) => (
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label
                   htmlFor={`field-${field.key}`}
-                  className="text-sm font-medium text-gray-800"
+                  className="flex items-center gap-1.5 text-sm font-medium text-gray-800"
                 >
                   {field.label}
+                  <InfoTip label={`About: ${field.label}`}>
+                    <div className="font-semibold text-gray-900">{field.hint}</div>
+                    <div className="mt-1.5 text-gray-600">{field.example}</div>
+                  </InfoTip>
                 </label>
                 <p className="text-xs text-gray-400">{field.hint}</p>
                 {field.multiline ? (
@@ -639,6 +752,88 @@ export default function PositioningBuilderContent() {
           </div>
         </div>
         </>}
+
+        <ReferencePanel
+          id="framework-guide"
+          title="Which framework should I pick?"
+          summary="A short decision guide for the four frameworks in this tool."
+          defaultOpen
+        >
+          <div className="space-y-4">
+            {FRAMEWORKS.map((fw) => (
+              <div key={fw.id} className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <div className="flex items-baseline justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900">{fw.name}</div>
+                    <div className="text-xs text-gray-500">{fw.author}</div>
+                  </div>
+                  <button
+                    onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
+                    className="text-xs font-medium text-gray-600 underline underline-offset-2 hover:text-gray-900"
+                  >
+                    Use this →
+                  </button>
+                </div>
+                <p className="mt-1 text-xs text-gray-700">{fw.tagline}</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  <span className="font-medium text-gray-700">Best for:</span> {fw.bestFor}
+                </p>
+              </div>
+            ))}
+          </div>
+        </ReferencePanel>
+
+        <ReferencePanel
+          id="writing-tips"
+          title="How to write an answer that actually lands"
+          summary="Common pitfalls and how to avoid them."
+          defaultOpen={false}
+        >
+          <ul className="space-y-3">
+            <li>
+              <div className="text-sm font-medium text-gray-900">Be specific, not aspirational.</div>
+              <div className="text-xs text-gray-600">
+                &quot;B2B SaaS teams with 500+ accounts&quot; beats &quot;enterprise customers.&quot;
+                &quot;Reduce churn by 30%&quot; beats &quot;improve retention.&quot;
+              </div>
+            </li>
+            <li>
+              <div className="text-sm font-medium text-gray-900">Name your real alternatives.</div>
+              <div className="text-xs text-gray-600">
+                The competitor field isn&apos;t just direct competitors — it&apos;s the spreadsheet,
+                the intern, or the status quo. If you skip this, your positioning has no edge.
+              </div>
+            </li>
+            <li>
+              <div className="text-sm font-medium text-gray-900">Differentiators must be defensible.</div>
+              <div className="text-xs text-gray-600">
+                &quot;Easy to use&quot; and &quot;fast&quot; aren&apos;t differentiators — everyone claims them.
+                Look for something that requires specific data, tech, or expertise alternatives lack.
+              </div>
+            </li>
+            <li>
+              <div className="text-sm font-medium text-gray-900">Category frames the value.</div>
+              <div className="text-xs text-gray-600">
+                The category you pick changes who compares you to what. &quot;Email tool&quot; competes
+                with Gmail; &quot;sales engagement platform&quot; competes with Outreach. Pick the
+                frame that makes your differentiation obvious.
+              </div>
+            </li>
+            <li>
+              <div className="text-sm font-medium text-gray-900">Test it out loud.</div>
+              <div className="text-xs text-gray-600">
+                Read the final statement to a target customer. If they say &quot;so what?&quot;, the
+                value isn&apos;t concrete enough. If they say &quot;sounds like everyone,&quot; the
+                differentiator isn&apos;t sharp enough.
+              </div>
+            </li>
+          </ul>
+        </ReferencePanel>
+
+        <div className="mt-6 text-center text-xs text-gray-400">
+          ⌘Enter copies the statement · ⌘K clears the form · Runs entirely in
+          your browser — nothing is saved to a server.
+        </div>
       </div>
     </div>
   );

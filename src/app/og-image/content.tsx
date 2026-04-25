@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -620,15 +621,17 @@ export default function OgImageContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            OG Image Generator
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Create Open Graph social cards with a visual editor. No ads, no
-            tracking.
-          </p>
+        <ToolIntro
+          title="OG Image Generator"
+          tagline="Design the 1200×630 social-share image that appears when your link is posted to Twitter, LinkedIn, Slack, or Facebook."
+          description="Pick a template, swap the title, add a subtitle or logo, tweak colors — we render a 1200×630 PNG ready to drop into your <meta property='og:image'> tag. Every template is designed to stay legible when the card is shrunk to a feed thumbnail."
+          audience={["Content marketers", "Writers", "Developers", "Designers"]}
+          whenToUse={[
+            "Publishing a blog post that needs a custom social preview",
+            "A/B testing which card drives more clicks on Twitter",
+            "Shipping a product launch with matching OG cards",
+          ]}
+        /><div className="mb-8 text-center">
         </div>
 
         {/* Tabs */}

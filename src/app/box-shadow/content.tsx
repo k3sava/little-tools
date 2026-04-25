@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -215,10 +216,17 @@ export default function BoxShadowContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Box Shadow Generator</h1>
-          <p className="mt-2 text-gray-500">Multi-layer shadows with presets. CSS, Tailwind, and React Native output.</p>
-        </div>
+        <ToolIntro
+          title="Box Shadow Generator"
+          tagline="Stack multiple shadow layers for realistic depth — with presets modeled on Material, iOS, and Tailwind conventions."
+          description="Drag the offset / blur / spread sliders on each layer. Stacking two shadows (a tight dark one and a loose soft one) is what makes UI shadows look real instead of cheap. Presets cover flat, Material 2–24, iOS, Tailwind sm–2xl, and inner shadow variants. Export as CSS, Tailwind, or React Native."
+          audience={["Designers", "Front-end developers"]}
+          whenToUse={[
+            "Matching a design-system shadow token",
+            "Adding believable depth to a card or button",
+            "Exploring inner-shadow (pressed-button) effects",
+          ]}
+        />
 
         {/* Presets */}
         <div className="mb-6">

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -367,13 +368,17 @@ export default function FaviconContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        {/* Header */}        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Favicon Generator
-        </h1>
-        <p className="mt-2 text-gray-500">
-          Generate favicons in all sizes and formats. Upload an image or design
-          from an emoji. All processing happens in your browser.
-        </p>
+        <ToolIntro
+          title="Favicon Generator"
+          tagline="Generate every favicon format and size your site needs — from a single PNG or an emoji."
+          description="Upload an image or pick an emoji as the starting point. We output the full set: favicon.ico (legacy), 16/32/48/96/192/512 PNGs, Apple touch icon, Android manifest icons, Safari pinned-tab SVG, plus the <link> tags you drop into your <head>. Download as a zip."
+          audience={["Developers", "Indie hackers", "Designers"]}
+          whenToUse={[
+            "Shipping a new site that needs proper tab icons",
+            "Fixing blurry favicons on high-DPI displays",
+            "Generating a quick icon from an emoji for a prototype",
+          ]}
+        />
 
         {/* Input Mode Tabs */}
         <div className="mt-8 flex gap-2">

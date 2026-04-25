@@ -3,6 +3,8 @@
 import { useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
+import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
 
 // --- Syllable counting ---
 
@@ -452,13 +454,20 @@ export default function ReadabilityScorerContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Readability Scorer</h1>
-          <p className="mt-2 text-gray-500">
-            Grade content with Flesch-Kincaid, Gunning Fog, SMOG, ARI, and Coleman-Liau. No ads, no tracking.
-          </p>
-        </div>
+        <ToolIntro
+          title="Readability Scorer"
+          tagline="Grade any text for reading difficulty using five established formulas — and see which sentences drag the score down."
+          description="Paste your copy and we run Flesch-Kincaid, Gunning Fog, SMOG, ARI, and Coleman-Liau in parallel, each with a grade-level translation. Sentences that hurt the score most are highlighted so you know exactly what to shorten. Aim for grade 7–8 for general web content."
+          audience={["Writers", "Editors", "Content marketers", "Educators"]}
+          whenToUse={[
+            "Proofreading a blog post before publishing",
+            "Simplifying product copy or help docs",
+            "Checking a script meets a reading level target",
+          ]}
+          quickLinks={[
+            { label: "What each formula measures", href: "#readability-formulas" },
+          ]}
+        />
 
         {/* Input */}
         <textarea
@@ -705,6 +714,27 @@ export default function ReadabilityScorerContent() {
             <p className="mt-1 text-xs">Works best with 2+ sentences.</p>
           </div>
         )}
+
+        <ReferencePanel
+          id="readability-formulas"
+          title="The five formulas, decoded"
+          summary="Each formula was built for a different purpose. Here's when to trust which."
+          defaultOpen
+        >
+          <div className="space-y-1">
+            <RuleRow rule="Flesch Reading Ease" explanation="0–100 score. Higher = easier. 60–70 is ideal for general audiences." example="60–70 = plain English" />
+            <RuleRow rule="Flesch-Kincaid Grade" explanation="US grade level. Same inputs as Reading Ease, re-scaled. Most trusted for general web." example="7–8 = ideal" />
+            <RuleRow rule="Gunning Fog" explanation="Counts complex (3+ syllable) words. Especially harsh on jargon-heavy writing." example="8 = magazine article" />
+            <RuleRow rule="SMOG" explanation="Predicts reading age needed for full comprehension. Used in healthcare and legal." example="SMOG 10 = 10th grader" />
+            <RuleRow rule="ARI" explanation="Uses character count instead of syllables — faster and language-agnostic." example="Grade-level output" />
+            <RuleRow rule="Coleman-Liau" explanation="Also character-based; designed for computer-generated scoring." example="Grade-level output" />
+          </div>
+          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <strong>Tip:</strong> readability formulas reward short sentences and common
+            words. They don&apos;t judge whether ideas are <em>clear</em> — a string of
+            short nonsense will score high. Use the score as a smell test, not a verdict.
+          </div>
+        </ReferencePanel>
       </div>
     </div>
   );

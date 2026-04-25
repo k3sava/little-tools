@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -238,10 +239,18 @@ export default function LinkInBioContent() {
 
   return (
     <div className="min-h-screen text-gray-900">
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Link-in-Bio Builder</h1>
-        <p className="mt-2 text-gray-500">
-          Create a simple link page. Customize, preview, and export as a standalone HTML file.
-        </p>
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
+        <ToolIntro
+          title="Link-in-Bio Builder"
+          tagline="Build a simple, Linktree-style landing page — customize theme, add links, export a single HTML file you can host anywhere."
+          description="Add your photo, bio, and as many link buttons as you want. Pick a theme (solid, gradient, minimal) and see the mobile preview update live. Export a standalone HTML file — drop it onto GitHub Pages, Netlify, or any static host. No accounts, no subscription, no analytics tracking."
+          audience={["Creators", "Freelancers", "Anyone with a bio link"]}
+          whenToUse={[
+            "Replacing a Linktree / Beacons subscription",
+            "Giving a workshop or event a shareable URL",
+            "Hosting a tiny personal landing page",
+          ]}
+        />
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
           {/* Editor */}

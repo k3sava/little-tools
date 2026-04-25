@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -379,16 +380,17 @@ export default function ClipboardManagerContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Clipboard Manager
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Paste text to save it. Search, pin, and copy clips anytime. Stored
-            locally in your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="Clipboard Manager"
+          tagline="A local-only clipboard history — paste once, come back to it anytime. Search, pin, and reuse common snippets."
+          description="Paste anything into the input to save it as a clip. Your history lives in your browser (nothing uploaded). Pin frequently-used snippets to the top, search across all saved clips, and one-click copy back into the system clipboard. Great for email templates, common support replies, or code snippets you keep typing."
+          audience={["Support", "Writers", "Developers", "Sales"]}
+          whenToUse={[
+            "Managing a set of reply templates",
+            "Stashing the last few things you copied",
+            "Building a scratchpad of snippets for a single task",
+          ]}
+        />
 
         {/* Tab switcher */}
         <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">

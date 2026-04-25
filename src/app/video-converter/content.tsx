@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -341,15 +342,17 @@ export default function VideoConverterContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Video Converter
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Convert videos between MP4 and WebM. 100% client-side — your files
-            never leave your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="Video Converter"
+          tagline="Convert between MP4 and WebM without uploading — everything runs in your browser using WebCodecs."
+          description="Drop a video, pick output format (MP4 for compatibility or WebM for smaller web files), optionally resize resolution or tweak bitrate. Conversion happens entirely in-browser — your video never leaves your device, so it's safe for personal or confidential footage. Works best with modern browsers; very large files may run out of memory on low-end devices."
+          audience={["Everyone", "Content creators", "Developers"]}
+          whenToUse={[
+            "Converting a phone video for web embedding",
+            "Making a smaller file for email or Slack",
+            "Moving a clip between devices that want different formats",
+          ]}
+        />
 
         {/* Browser support notice */}
         {!hasWebCodecs && (

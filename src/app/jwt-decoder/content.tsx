@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 // --- Types ---
 
@@ -1305,13 +1306,17 @@ export default function JwtDecoderContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">JWT Decoder</h1>
-          <p className="mt-2 text-gray-500">
-            Decode, inspect, build, and compare JSON Web Tokens. No ads, no tracking, runs entirely in your browser.
-          </p>
-        </div>
+        <ToolIntro
+          title="JWT Decoder"
+          tagline="Decode, inspect, build, and diff JSON Web Tokens — with claim explanations and expiry warnings."
+          description="Paste a JWT to see its header, payload, and signature decoded. Every standard claim (iss, sub, exp, iat, nbf, aud, jti) is explained in plain English. Builder mode lets you assemble a token from scratch; diff mode shows exactly what changed between two tokens (useful for debugging refresh flows)."
+          audience={["Developers", "Security engineers", "Support"]}
+          whenToUse={[
+            "Inspecting a token from a failing auth request",
+            "Checking what a refresh endpoint actually changed",
+            "Prototyping a JWT for a test harness",
+          ]}
+        />
 
         {/* Tab bar */}
         <div className="mb-6 flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm">

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { ToolIntro } from "@/components/tools/tool-intro";
 
 /* ─── Types ─── */
 interface FlexChild {
@@ -354,8 +355,17 @@ export default function FlexboxContent() {
   return (
     <div className="min-h-screen text-gray-900">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Flexbox Playground</h1>
-        <p className="mt-2 text-gray-500">Visual flexbox builder with presets, responsive preview, and multi-format output.</p>
+        <ToolIntro
+          title="Flexbox Playground"
+          tagline="Learn and generate flexbox layouts interactively — every property labeled with what it actually does."
+          description="Toggle direction, justify-content, align-items, wrap, and gap on a live preview. Hover any option to see a plain-English description (justify-content: space-between = pushes first and last items to the edges, equal gaps between). Add/remove child items to test how flex-grow and flex-shrink behave. Export as CSS, Tailwind, or an inline style object."
+          audience={["Front-end developers", "Designers learning CSS"]}
+          whenToUse={[
+            "Building a nav bar, card row, or centered dialog",
+            "Learning the difference between justify / align",
+            "Copy-pasting a working flex recipe into a project",
+          ]}
+        />
 
         {/* ─── Presets ─── */}
         <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
