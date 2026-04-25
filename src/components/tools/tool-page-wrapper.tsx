@@ -90,7 +90,8 @@ function ShortcutHintBar() {
 }
 
 function ToolPageInner({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const pathname = rawPathname?.replace(/\/$/, "") || rawPathname;
   const tool = allTools.find((t) => t.href === pathname);
   const collection = tool ? getPrimaryCollection(tool) : null;
 
