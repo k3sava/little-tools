@@ -127,6 +127,7 @@ export function BlobCanvas() {
   return (
     <canvas
       ref={canvasRef}
+      className="kami-blob-canvas"
       style={{
         position: "fixed",
         inset: 0,

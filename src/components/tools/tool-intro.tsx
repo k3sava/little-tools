@@ -65,37 +65,57 @@ export function ToolIntro({
   };
 
   return (
-    <div className="mb-6">
+    <div className="kami-tool-intro mb-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl" style={{ color: "var(--kami-text)" }}>
           {title}
         </h1>
-        <p className="mt-2 text-base text-gray-600">{tagline}</p>
+        <p className="mt-2 text-base" style={{ color: "var(--kami-text-muted)" }}>{tagline}</p>
       </div>
 
-      {hydrated && !dismissed && !alwaysShow === false ? null : null}
-
       {!dismissed && (
-        <div className="mt-5 rounded-2xl border border-gray-200 bg-white/70 p-5 text-sm text-gray-700 shadow-sm backdrop-blur-sm sm:p-6">
+        <div
+          className="kami-tool-intro-card mt-5 p-5 text-sm sm:p-6"
+          style={{
+            background: "var(--kami-surface)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 1rem)",
+            color: "var(--kami-text-muted)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="flex items-start gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-semibold text-white">
+            <div
+              className="kami-tool-intro-badge flex h-8 w-8 shrink-0 items-center justify-center text-xs font-semibold"
+              style={{
+                background: "var(--kami-cta-bg)",
+                color: "var(--kami-cta-text)",
+                borderRadius: "var(--kami-cta-radius, 999px)",
+              }}
+            >
               i
             </div>
             <div className="flex-1">
-              <p className="leading-relaxed text-gray-700">{description}</p>
+              <p className="leading-relaxed" style={{ color: "var(--kami-text)" }}>{description}</p>
 
               {(audience?.length || whenToUse?.length) && (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {audience?.length ? (
                     <div>
-                      <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                      <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                         Made for
                       </div>
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {audience.map((a) => (
                           <span
                             key={a}
-                            className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700"
+                            className="kami-tool-intro-chip px-2.5 py-0.5 text-xs font-medium"
+                            style={{
+                              background: "var(--kami-cta2-bg-hover, var(--kami-surface))",
+                              color: "var(--kami-text-muted)",
+                              border: "1px solid var(--kami-border)",
+                              borderRadius: "var(--kami-card-radius, 999px)",
+                            }}
                           >
                             {a}
                           </span>
@@ -105,13 +125,13 @@ export function ToolIntro({
                   ) : null}
                   {whenToUse?.length ? (
                     <div>
-                      <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                      <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
                         Reach for it when
                       </div>
-                      <ul className="mt-1.5 space-y-1 text-xs text-gray-600">
+                      <ul className="mt-1.5 space-y-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                         {whenToUse.map((w) => (
                           <li key={w} className="flex gap-1.5">
-                            <span className="text-gray-300">•</span>
+                            <span style={{ color: "var(--kami-text-dim)" }}>•</span>
                             <span>{w}</span>
                           </li>
                         ))}
@@ -127,7 +147,8 @@ export function ToolIntro({
                     <a
                       key={l.href}
                       href={l.href}
-                      className="font-medium text-gray-700 underline underline-offset-2 hover:text-gray-900"
+                      className="font-medium underline underline-offset-2"
+                      style={{ color: "var(--kami-text)" }}
                     >
                       {l.label} →
                     </a>
@@ -139,7 +160,8 @@ export function ToolIntro({
               <button
                 onClick={dismiss}
                 aria-label="Hide intro"
-                className="shrink-0 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+                className="kami-tool-intro-dismiss shrink-0 p-1"
+                style={{ color: "var(--kami-text-dim)" }}
               >
                 <svg
                   width="16"
@@ -160,11 +182,12 @@ export function ToolIntro({
         </div>
       )}
 
-      {dismissed && !alwaysShow && (
+      {dismissed && !alwaysShow && hydrated && (
         <div className="mt-3 text-center">
           <button
             onClick={reopen}
-            className="text-xs text-gray-400 underline underline-offset-2 hover:text-gray-600"
+            className="text-xs underline underline-offset-2"
+            style={{ color: "var(--kami-text-dim)" }}
           >
             Show intro
           </button>

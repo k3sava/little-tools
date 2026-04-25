@@ -17,7 +17,7 @@ export function CollectionPage({ collection, tools }: CollectionPageProps) {
         items={[
           { label: "home", href: "https://iamkesava.com" },
           { label: "apps", href: "https://apps.iamkesava.com" },
-          { label: "tools", href: "/tools" },
+          { label: "tools", href: "/" },
           { label: collection.title.toLowerCase() },
         ]}
       />

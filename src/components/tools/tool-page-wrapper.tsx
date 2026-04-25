@@ -97,7 +97,7 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
   const breadcrumbItems = [
     { label: "home", href: "https://iamkesava.com" },
     { label: "apps", href: "https://apps.iamkesava.com" },
-    { label: "tools", href: "/tools" },
+    { label: "tools", href: "/" },
     ...(collection ? [{ label: collection.title.toLowerCase(), href: collection.href }] : []),
     { label: tool?.name.toLowerCase() ?? "tool" },
   ];
