@@ -185,8 +185,29 @@ export default function WordFrequencyContent() {
 
   const tabLabel = activeTab === "words" ? "words" : "phrases";
 
+  const inputBg = "var(--kami-input-bg, var(--kami-surface-solid))";
+  const inputBorder = "1px solid var(--kami-border-strong)";
+  const inputRadius = "var(--kami-input-radius, 0.75rem)";
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const ghostBtnStyle = {
+    background: "var(--kami-surface-solid)",
+    color: "var(--kami-text-muted)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Word Frequency Counter"
@@ -207,7 +228,8 @@ export default function WordFrequencyContent() {
               type="checkbox"
               checked={excludeStopWords}
               onChange={(e) => setExcludeStopWords(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-200"
+              className="h-4 w-4"
+              style={{ accentColor: "var(--kami-text)" }}
             />
             Exclude common words
           </label>
@@ -216,7 +238,8 @@ export default function WordFrequencyContent() {
               type="checkbox"
               checked={caseSensitive}
               onChange={(e) => setCaseSensitive(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-200"
+              className="h-4 w-4"
+              style={{ accentColor: "var(--kami-text)" }}
             />
             Case sensitive
           </label>
@@ -229,7 +252,13 @@ export default function WordFrequencyContent() {
               onChange={(e) =>
                 setMinCount(Math.max(1, parseInt(e.target.value) || 1))
               }
-              className="w-16 rounded-lg border border-gray-200 px-2 py-1 text-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-16 px-2 py-1 text-sm focus:outline-none"
+              style={{
+                background: inputBg,
+                color: "var(--kami-text)",
+                border: inputBorder,
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             />
           </label>
         </div>
@@ -239,7 +268,8 @@ export default function WordFrequencyContent() {
           <div className="mb-4">
             <button
               onClick={() => setShowStopWords(!showStopWords)}
-              className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-1.5 text-sm transition-colors"
+              style={{ color: "var(--kami-text-muted)" }}
             >
               <svg
                 width="12"
@@ -261,7 +291,14 @@ export default function WordFrequencyContent() {
                 <textarea
                   value={stopWordsText}
                   onChange={(e) => setStopWordsText(e.target.value)}
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-mono text-gray-600 shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="w-full px-3 py-2 text-xs font-mono focus:outline-none"
+                  style={{
+                    background: inputBg,
+                    color: "var(--kami-text-muted)",
+                    border: inputBorder,
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
                   rows={4}
                   placeholder="Enter comma-separated stop words..."
                 />
@@ -269,7 +306,8 @@ export default function WordFrequencyContent() {
                   onClick={() =>
                     setStopWordsText(DEFAULT_STOP_WORDS.join(", "))
                   }
-                  className="mt-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                  className="mt-1 text-xs transition-colors"
+                  style={{ color: "var(--kami-text-dim)" }}
                 >
                   Reset to default
                 </button>
@@ -283,28 +321,39 @@ export default function WordFrequencyContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste your text here..."
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={{
+            background: inputBg,
+            color: "var(--kami-text)",
+            border: inputBorder,
+            borderRadius: inputRadius,
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={6}
           autoFocus
         />
 
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
           <span>
             {entries.length} unique {entries.length === 1 ? tabLabel.replace(/s$/, "") : tabLabel}
             {" "}found
           </span>
           {input && (
-            <button
-              onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setInput("")}>
               Clear
             </button>
           )}
         </div>
 
         {/* N-gram tabs */}
-        <div className="mt-6 flex gap-1 rounded-lg bg-gray-100 p-1">
+        <div
+          className="mt-6 flex gap-1 p-1"
+          style={{
+            background: "var(--kami-surface)",
+            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            border: "1px solid var(--kami-border)",
+          }}
+        >
           {([
             { key: "words" as NgramTab, label: "Words" },
             { key: "bigrams" as NgramTab, label: "2-word phrases" },
@@ -313,11 +362,20 @@ export default function WordFrequencyContent() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+              className="flex-1 px-3 py-1.5 text-sm font-medium transition-colors"
+              style={
                 activeTab === tab.key
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+                  ? {
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      boxShadow: "var(--kami-card-shadow, none)",
+                    }
+                  : {
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }
+              }
             >
               {tab.label}
             </button>
@@ -330,25 +388,28 @@ export default function WordFrequencyContent() {
             {/* Bar chart of top 20 */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-500">
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Top {Math.min(20, entries.length)} {tabLabel}
                 </span>
                 <div className="flex gap-2">
                   <button
                     onClick={handleCopy}
-                    className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                    style={ghostBtnStyle}
                   >
                     {copied ? "Copied!" : "Copy CSV"}
                   </button>
                   <button
                     onClick={handleExportCSV}
-                    className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                    style={ghostBtnStyle}
                   >
                     Export CSV
                   </button>
                   <button
                     onClick={handleExportJSON}
-                    className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                    style={ctaStyle}
                   >
                     Export JSON
                   </button>
@@ -357,21 +418,29 @@ export default function WordFrequencyContent() {
               <div className="space-y-1">
                 {top20.map((e) => (
                   <div key={e.word} className="flex items-center gap-3 text-sm">
-                    <span className="w-28 truncate text-right font-mono text-gray-600">
+                    <span className="w-28 truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
                       {e.word}
                     </span>
-                    <div className="flex-1 h-5 bg-gray-100 rounded overflow-hidden">
+                    <div
+                      className="flex-1 h-5 overflow-hidden"
+                      style={{
+                        background: "var(--kami-surface)",
+                        borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                      }}
+                    >
                       <div
-                        className="h-full bg-gray-700 rounded transition-all"
+                        className="h-full transition-all"
                         style={{
                           width: `${(e.count / maxCount) * 100}%`,
+                          background: "var(--kami-text-muted)",
+                          borderRadius: "var(--kami-cta-radius, 0.25rem)",
                         }}
                       />
                     </div>
-                    <span className="w-10 text-right font-mono text-gray-500">
+                    <span className="w-10 text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
                       {e.count}
                     </span>
-                    <span className="w-14 text-right text-xs text-gray-400">
+                    <span className="w-14 text-right text-xs" style={{ color: "var(--kami-text-dim)" }}>
                       {e.pct.toFixed(1)}%
                     </span>
                   </div>
@@ -380,17 +449,17 @@ export default function WordFrequencyContent() {
             </div>
 
             {/* Full table */}
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div className="overflow-hidden" style={cardStyle}>
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 ">
-                    <th className="px-4 py-2 text-left font-medium text-gray-500">
+                  <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       {activeTab === "words" ? "Word" : "Phrase"}
                     </th>
-                    <th className="px-4 py-2 text-right font-medium text-gray-500">
+                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Count
                     </th>
-                    <th className="px-4 py-2 text-right font-medium text-gray-500">
+                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Percentage
                     </th>
                   </tr>
@@ -399,13 +468,13 @@ export default function WordFrequencyContent() {
                   {entries.map((e) => (
                     <tr
                       key={e.word}
-                      className="border-b border-gray-50 last:border-0"
+                      style={{ borderBottom: "1px solid var(--kami-border)" }}
                     >
                       <td className="px-4 py-2 font-mono">{e.word}</td>
-                      <td className="px-4 py-2 text-right font-mono text-gray-600">
+                      <td className="px-4 py-2 text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
                         {e.count}
                       </td>
-                      <td className="px-4 py-2 text-right text-gray-500">
+                      <td className="px-4 py-2 text-right" style={{ color: "var(--kami-text-muted)" }}>
                         {e.pct.toFixed(2)}%
                       </td>
                     </tr>

@@ -411,7 +411,7 @@ export default function UuidGeneratorContent() {
   const inspection = inspectInput.trim() ? inspectId(inspectInput) : null;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Universal ID Generator"
@@ -434,11 +434,17 @@ export default function UuidGeneratorContent() {
               <button
                 key={type}
                 onClick={() => handleQuickGenerate(type)}
-                className="group relative rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-gray-300 hover:shadow-md active:scale-[0.98]"
+                className="group relative p-4 text-left transition-all active:scale-[0.98]"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-900">{gen.label}</span>
-                  <span className="text-xs text-gray-400 transition-colors group-hover:text-gray-600">
+                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{gen.label}</span>
+                  <span className="text-xs transition-colors" style={{ color: "var(--kami-text-dim)" }}>
                     {isQuickCopied ? (
                       <span className="flex items-center gap-1 text-green-600">
                         <CheckIcon /> Copied
@@ -450,26 +456,42 @@ export default function UuidGeneratorContent() {
                     )}
                   </span>
                 </div>
-                <p className="mt-1.5 text-xs leading-relaxed text-gray-500">{gen.description}</p>
+                <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>{gen.description}</p>
               </button>
             );
           })}
         </div>
 
         {/* Main Generator */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div
+          className="p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="mb-5 flex flex-wrap items-center gap-3">
             {/* Type selector */}
-            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 px-1 py-0.5">
+            <div
+              className="flex items-center gap-1 px-1 py-0.5"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
+            >
               {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
                 <button
                   key={type}
                   onClick={() => setActiveType(type)}
-                  className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                    activeType === type
-                      ? "bg-gray-900 text-white shadow-sm"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
+                  className="px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={{
+                    background: activeType === type ? "var(--kami-cta-bg, #111827)" : "transparent",
+                    color: activeType === type ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   {GENERATORS[type].shortLabel}
                 </button>
@@ -478,7 +500,7 @@ export default function UuidGeneratorContent() {
 
             {/* Count */}
             <div className="flex items-center gap-1.5">
-              <label htmlFor="count" className="text-sm text-gray-500">
+              <label htmlFor="count" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                 Count:
               </label>
               <input
@@ -489,28 +511,34 @@ export default function UuidGeneratorContent() {
                 max={1000}
                 value={count}
                 onChange={(e) => setCount(parseInt(e.target.value, 10) || 1)}
-                className="w-20 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-20 px-3 py-1.5 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
               />
             </div>
 
             {/* Format options (UUID types) */}
             {(activeType === "uuid-v4" || activeType === "uuid-v7") && (
               <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
                   <input
                     type="checkbox"
                     checked={hyphens}
                     onChange={(e) => setHyphens(e.target.checked)}
-                    className="rounded border-gray-300 accent-gray-900"
+                    className="rounded"
                   />
                   Hyphens
                 </label>
-                <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
                   <input
                     type="checkbox"
                     checked={uppercase}
                     onChange={(e) => setUppercase(e.target.checked)}
-                    className="rounded border-gray-300 accent-gray-900"
+                    className="rounded"
                   />
                   Uppercase
                 </label>
@@ -519,12 +547,12 @@ export default function UuidGeneratorContent() {
 
             {/* ULID case option */}
             {activeType === "ulid" && (
-              <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+              <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
                 <input
                   type="checkbox"
                   checked={uppercase}
                   onChange={(e) => setUppercase(e.target.checked)}
-                  className="rounded border-gray-300 accent-gray-900"
+                  className="rounded"
                 />
                 Uppercase
               </label>
@@ -533,7 +561,12 @@ export default function UuidGeneratorContent() {
             {/* Generate button */}
             <button
               onClick={generate}
-              className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 active:bg-gray-700"
+              className="px-5 py-2 text-sm font-medium transition-colors"
+              style={{
+                background: "var(--kami-cta-bg, #111827)",
+                color: "var(--kami-cta-text, #ffffff)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               Generate {count > 1 ? `(${count})` : ""}
             </button>
@@ -542,7 +575,13 @@ export default function UuidGeneratorContent() {
             {ids.length > 1 && (
               <button
                 onClick={handleCopyAll}
-                className="ml-auto flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied === "all" ? (
                   <>
@@ -559,9 +598,16 @@ export default function UuidGeneratorContent() {
 
           {/* NanoID options */}
           {activeType === "nanoid" && (
-            <div className="mb-5 flex flex-wrap items-center gap-4 rounded-lg border border-gray-100 bg-gray-50 p-3">
+            <div
+              className="mb-5 flex flex-wrap items-center gap-4 p-3"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
+            >
               <div className="flex items-center gap-1.5">
-                <label htmlFor="nano-length" className="text-sm text-gray-600">
+                <label htmlFor="nano-length" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                   Length:
                 </label>
                 <input
@@ -571,11 +617,17 @@ export default function UuidGeneratorContent() {
                   max={128}
                   value={nanoLength}
                   onChange={(e) => setNanoLength(Math.max(2, Math.min(128, parseInt(e.target.value, 10) || 21)))}
-                  className="w-20 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="w-20 px-3 py-1.5 text-sm focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  }}
                 />
               </div>
               <div className="flex flex-1 items-center gap-1.5">
-                <label htmlFor="nano-alphabet" className="text-sm text-gray-600 whitespace-nowrap">
+                <label htmlFor="nano-alphabet" className="text-sm whitespace-nowrap" style={{ color: "var(--kami-text-muted)" }}>
                   Alphabet:
                 </label>
                 <input
@@ -583,16 +635,28 @@ export default function UuidGeneratorContent() {
                   type="text"
                   value={nanoAlphabet}
                   onChange={(e) => setNanoAlphabet(e.target.value || DEFAULT_NANOID_ALPHABET)}
-                  className="w-full min-w-0 rounded-lg border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="w-full min-w-0 px-3 py-1.5 font-mono text-xs focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  }}
                 />
               </div>
               <button
                 onClick={() => setNanoAlphabet(DEFAULT_NANOID_ALPHABET)}
-                className="rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                className="px-2.5 py-1.5 text-xs font-medium"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 Reset
               </button>
-              <div className="w-full text-xs text-gray-400">
+              <div className="w-full text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 Entropy: ~{Math.floor(nanoLength * Math.log2(nanoAlphabet.length))} bits ({nanoAlphabet.length} chars in alphabet)
               </div>
             </div>
@@ -604,12 +668,22 @@ export default function UuidGeneratorContent() {
               {ids.map((id, i) => (
                 <div
                   key={`${id}-${i}`}
-                  className="group flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 px-4 py-2 transition-colors hover:border-gray-200 hover:bg-white"
+                  className="group flex items-center justify-between px-4 py-2 transition-colors"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    color: "var(--kami-text)",
+                  }}
                 >
                   <span className="font-mono text-sm select-all break-all">{id}</span>
                   <button
                     onClick={() => handleCopy(id, i)}
-                    className="ml-3 flex-shrink-0 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    className="ml-3 flex-shrink-0 p-1.5 transition-colors"
+                    style={{
+                      color: "var(--kami-text-dim)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
                     title="Copy"
                   >
                     {copied === i ? <CheckIcon /> : <CopyIcon />}
@@ -620,16 +694,31 @@ export default function UuidGeneratorContent() {
           )}
 
           {ids.length === 0 && (
-            <div className="flex items-center justify-center rounded-lg border border-dashed border-gray-200 py-12 text-sm text-gray-400">
+            <div
+              className="flex items-center justify-center py-12 text-sm"
+              style={{
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                color: "var(--kami-text-dim)",
+              }}
+            >
               Select a type and click Generate, or use the quick-copy cards above
             </div>
           )}
         </div>
 
         {/* ID Inspector */}
-        <div className="mt-10 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">ID Inspector</h2>
-          <p className="mb-3 text-sm text-gray-500">
+        <div
+          className="mt-10 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
+          <p className="mb-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
             Paste any ID to auto-detect its type, extract timestamps, and see the byte-level breakdown.
           </p>
           <input
@@ -637,7 +726,14 @@ export default function UuidGeneratorContent() {
             value={inspectInput}
             onChange={(e) => setInspectInput(e.target.value)}
             placeholder="Paste a UUID, ULID, NanoID, or CUID2 to inspect..."
-            className="w-full rounded-lg border border-gray-200 bg-white px-4 py-3 font-mono text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="w-full px-4 py-3 font-mono text-sm focus:outline-none"
+            style={{
+              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+              color: "var(--kami-text)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
           />
 
           {inspection && (
@@ -654,30 +750,30 @@ export default function UuidGeneratorContent() {
                   {inspection.valid ? inspection.type : "Invalid / Unknown"}
                 </span>
                 {inspection.bits && (
-                  <span className="text-xs text-gray-500">{inspection.bits} bits</span>
+                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.bits} bits</span>
                 )}
                 {inspection.encoding && (
-                  <span className="text-xs text-gray-500">{inspection.encoding}</span>
+                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.encoding}</span>
                 )}
               </div>
 
               {/* Breakdown table */}
               {inspection.breakdown && inspection.breakdown.length > 0 && (
-                <div className="rounded-lg border border-gray-100 overflow-hidden">
+                <div className="overflow-hidden" style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}>
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-gray-100 bg-gray-50">
-                        <th className="px-4 py-2 text-left font-medium text-gray-600">Field</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-600">Value</th>
-                        <th className="px-4 py-2 text-left font-medium text-gray-600">Description</th>
+                      <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
+                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
+                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
+                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Description</th>
                       </tr>
                     </thead>
                     <tbody>
                       {inspection.breakdown.map((row, i) => (
-                        <tr key={i} className="border-b border-gray-50 last:border-0">
-                          <td className="px-4 py-2 font-medium text-gray-700">{row.label}</td>
-                          <td className="px-4 py-2 font-mono text-gray-900">{row.value}</td>
-                          <td className="px-4 py-2 text-gray-500">{row.description}</td>
+                        <tr key={i} style={i < inspection.breakdown!.length - 1 ? { borderBottom: "1px solid var(--kami-border)" } : undefined}>
+                          <td className="px-4 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
+                          <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text)" }}>{row.value}</td>
+                          <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -689,17 +785,25 @@ export default function UuidGeneratorContent() {
         </div>
 
         {/* Quick Reference */}
-        <div className="mt-10 rounded-xl border border-gray-200 bg-white shadow-sm">
+        <div
+          className="mt-10"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <button
             onClick={() => setShowReference(!showReference)}
             className="flex w-full items-center justify-between px-5 py-4 text-left"
           >
-            <h2 className="text-lg font-semibold">When to use each type</h2>
+            <h2 className="text-lg font-semibold" style={{ color: "var(--kami-text)" }}>When to use each type</h2>
             <ChevronIcon open={showReference} />
           </button>
 
           {showReference && (
-            <div className="border-t border-gray-100 px-5 pb-5">
+            <div className="px-5 pb-5" style={{ borderTop: "1px solid var(--kami-border)" }}>
               <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <ReferenceCard
                   title="UUID v4"
@@ -749,19 +853,19 @@ export default function UuidGeneratorContent() {
               </div>
 
               {/* Comparison table */}
-              <div className="mt-6 overflow-x-auto rounded-lg border border-gray-100">
+              <div className="mt-6 overflow-x-auto" style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}>
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100 bg-gray-50">
-                      <th className="px-4 py-2.5 text-left font-medium text-gray-600">Feature</th>
-                      <th className="px-4 py-2.5 text-center font-medium text-gray-600">v4</th>
-                      <th className="px-4 py-2.5 text-center font-medium text-gray-600">v7</th>
-                      <th className="px-4 py-2.5 text-center font-medium text-gray-600">ULID</th>
-                      <th className="px-4 py-2.5 text-center font-medium text-gray-600">Nano</th>
-                      <th className="px-4 py-2.5 text-center font-medium text-gray-600">CUID2</th>
+                    <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
+                      <th className="px-4 py-2.5 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Feature</th>
+                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>v4</th>
+                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>v7</th>
+                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>ULID</th>
+                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>Nano</th>
+                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>CUID2</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody>
                     <ComparisonRow label="Length" values={["36", "36", "26", "21*", "24"]} />
                     <ComparisonRow label="Time-sortable" values={["No", "Yes", "Yes", "No", "No"]} highlights={[false, true, true, false, false]} />
                     <ComparisonRow label="Timestamp" values={["No", "48-bit ms", "48-bit ms", "No", "No (hashed)"]} />
@@ -771,7 +875,7 @@ export default function UuidGeneratorContent() {
                     <ComparisonRow label="URL-safe" values={["No", "No", "Yes", "Yes", "Yes"]} highlights={[false, false, true, true, true]} />
                   </tbody>
                 </table>
-                <div className="px-4 py-2 text-xs text-gray-400 border-t border-gray-50">
+                <div className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-dim)", borderTop: "1px solid var(--kami-border)" }}>
                   * NanoID values depend on configured alphabet and length (defaults shown)
                 </div>
               </div>
@@ -813,18 +917,25 @@ function ReferenceCard({
   };
 
   return (
-    <div className="rounded-lg border border-gray-100 p-4">
+    <div
+      className="p-4"
+      style={{
+        background: "var(--kami-surface)",
+        border: "1px solid var(--kami-border)",
+        borderRadius: "var(--kami-card-radius, 0.5rem)",
+      }}
+    >
       <div className="mb-2 flex items-center gap-2">
-        <h3 className="font-semibold text-gray-900">{title}</h3>
+        <h3 className="font-semibold" style={{ color: "var(--kami-text)" }}>{title}</h3>
         <span className={`rounded-md px-2 py-0.5 text-xs font-medium ring-1 ${colorMap[tagColor] || colorMap.blue}`}>
           {tag}
         </span>
       </div>
-      <p className="mb-3 font-mono text-xs text-gray-400 break-all">{format}</p>
+      <p className="mb-3 font-mono text-xs break-all" style={{ color: "var(--kami-text-dim)" }}>{format}</p>
       <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
         <div>
           <p className="mb-1 font-medium text-green-700">Pros</p>
-          <ul className="space-y-0.5 text-gray-600">
+          <ul className="space-y-0.5" style={{ color: "var(--kami-text-muted)" }}>
             {pros.map((p, i) => (
               <li key={i} className="flex gap-1">
                 <span className="text-green-500 flex-shrink-0">+</span> {p}
@@ -834,7 +945,7 @@ function ReferenceCard({
         </div>
         <div>
           <p className="mb-1 font-medium text-red-600">Cons</p>
-          <ul className="space-y-0.5 text-gray-600">
+          <ul className="space-y-0.5" style={{ color: "var(--kami-text-muted)" }}>
             {cons.map((c, i) => (
               <li key={i} className="flex gap-1">
                 <span className="text-red-400 flex-shrink-0">-</span> {c}
@@ -843,8 +954,8 @@ function ReferenceCard({
           </ul>
         </div>
       </div>
-      <p className="text-xs text-gray-500">
-        <span className="font-medium text-gray-700">Best for:</span> {bestFor}
+      <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {bestFor}
       </p>
     </div>
   );
@@ -860,14 +971,16 @@ function ComparisonRow({
   highlights?: boolean[];
 }) {
   return (
-    <tr>
-      <td className="px-4 py-2 font-medium text-gray-700">{label}</td>
+    <tr style={{ borderTop: "1px solid var(--kami-border)" }}>
+      <td className="px-4 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{label}</td>
       {values.map((v, i) => (
         <td
           key={i}
-          className={`px-4 py-2 text-center ${
-            highlights && highlights[i] ? "font-medium text-gray-900" : "text-gray-600"
-          }`}
+          className="px-4 py-2 text-center"
+          style={{
+            color: highlights && highlights[i] ? "var(--kami-text)" : "var(--kami-text-muted)",
+            fontWeight: highlights && highlights[i] ? 500 : undefined,
+          }}
         >
           {v}
         </td>

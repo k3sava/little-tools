@@ -272,12 +272,22 @@ function TreeNode({
     (typeof value === "number" && String(value).includes(searchQuery))
   );
 
-  const highlight = isMatch ? "bg-yellow-100 rounded px-0.5 -mx-0.5" : "";
+  const highlightStyle = isMatch
+    ? {
+        background: "color-mix(in srgb, var(--kami-accent, #eab308) 25%, transparent)",
+        borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        padding: "0 0.125rem",
+        margin: "0 -0.125rem",
+      }
+    : {};
+
+  const labelStyle = { color: "var(--kami-text-muted)" } as const;
 
   const pathBtn = (
     <button
       onClick={(e) => { e.stopPropagation(); onCopyPath(path); }}
-      className="ml-1 opacity-0 group-hover/node:opacity-100 text-gray-300 hover:text-gray-500 transition-opacity"
+      className="ml-1 opacity-0 group-hover/node:opacity-100 transition-opacity"
+      style={{ color: "var(--kami-text-dim)" }}
       title={`Copy path: ${path}`}
     >
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -286,9 +296,9 @@ function TreeNode({
 
   if (value === null) {
     return (
-      <div style={{ paddingLeft: depth * 16 }} className={`group/node flex items-center gap-1 py-0.5 font-mono text-sm ${highlight}`}>
-        {name !== null && <span className="text-gray-500">{name}:</span>}
-        <span className="text-orange-500">null</span>
+      <div style={{ paddingLeft: depth * 16, ...highlightStyle }} className="group/node flex items-center gap-1 py-0.5 font-mono text-sm">
+        {name !== null && <span style={labelStyle}>{name}:</span>}
+        <span style={{ color: "#f97316" }}>null</span>
         {pathBtn}
       </div>
     );
@@ -296,9 +306,9 @@ function TreeNode({
 
   if (typeof value === "boolean") {
     return (
-      <div style={{ paddingLeft: depth * 16 }} className={`group/node flex items-center gap-1 py-0.5 font-mono text-sm ${highlight}`}>
-        {name !== null && <span className="text-gray-500">{name}:</span>}
-        <span className="text-purple-600">{String(value)}</span>
+      <div style={{ paddingLeft: depth * 16, ...highlightStyle }} className="group/node flex items-center gap-1 py-0.5 font-mono text-sm">
+        {name !== null && <span style={labelStyle}>{name}:</span>}
+        <span style={{ color: "#9333ea" }}>{String(value)}</span>
         {pathBtn}
       </div>
     );
@@ -306,9 +316,9 @@ function TreeNode({
 
   if (typeof value === "number") {
     return (
-      <div style={{ paddingLeft: depth * 16 }} className={`group/node flex items-center gap-1 py-0.5 font-mono text-sm ${highlight}`}>
-        {name !== null && <span className="text-gray-500">{name}:</span>}
-        <span className="text-blue-600">{String(value)}</span>
+      <div style={{ paddingLeft: depth * 16, ...highlightStyle }} className="group/node flex items-center gap-1 py-0.5 font-mono text-sm">
+        {name !== null && <span style={labelStyle}>{name}:</span>}
+        <span style={{ color: "#2563eb" }}>{String(value)}</span>
         {pathBtn}
       </div>
     );
@@ -317,10 +327,10 @@ function TreeNode({
   if (typeof value === "string") {
     const truncated = value.length > 120 ? value.slice(0, 120) + "..." : value;
     return (
-      <div style={{ paddingLeft: depth * 16 }} className={`group/node flex items-center gap-1 py-0.5 font-mono text-sm ${highlight}`}>
-        {name !== null && <span className="text-gray-500">{name}:</span>}
-        <span className="text-green-700" title={value.length > 120 ? value : undefined}>&quot;{truncated}&quot;</span>
-        {value.length > 120 && <span className="text-gray-400 text-xs">({value.length})</span>}
+      <div style={{ paddingLeft: depth * 16, ...highlightStyle }} className="group/node flex items-center gap-1 py-0.5 font-mono text-sm">
+        {name !== null && <span style={labelStyle}>{name}:</span>}
+        <span style={{ color: "#15803d" }} title={value.length > 120 ? value : undefined}>&quot;{truncated}&quot;</span>
+        {value.length > 120 && <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>({value.length})</span>}
         {pathBtn}
       </div>
     );
@@ -331,11 +341,12 @@ function TreeNode({
       <div style={{ paddingLeft: depth * 16 }} className="py-0.5">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className={`case-preserve group/node flex items-center gap-1 font-mono text-sm hover:bg-gray-100 rounded px-1 -ml-1 ${highlight}`}
+          className="case-preserve group/node flex items-center gap-1 font-mono text-sm px-1 -ml-1"
+          style={highlightStyle}
         >
-          <span className="text-gray-400 w-3 text-center">{expanded ? "\u25BE" : "\u25B8"}</span>
-          {name !== null && <span className="text-gray-500">{name}:</span>}
-          <span className="text-gray-400">[{value.length}]</span>
+          <span className="w-3 text-center" style={{ color: "var(--kami-text-dim)" }}>{expanded ? "\u25BE" : "\u25B8"}</span>
+          {name !== null && <span style={labelStyle}>{name}:</span>}
+          <span style={{ color: "var(--kami-text-dim)" }}>[{value.length}]</span>
           {pathBtn}
         </button>
         {expanded && value.map((item, i) => (
@@ -351,11 +362,12 @@ function TreeNode({
       <div style={{ paddingLeft: depth * 16 }} className="py-0.5">
         <button
           onClick={() => setExpanded((v) => !v)}
-          className={`case-preserve group/node flex items-center gap-1 font-mono text-sm hover:bg-gray-100 rounded px-1 -ml-1 ${highlight}`}
+          className="case-preserve group/node flex items-center gap-1 font-mono text-sm px-1 -ml-1"
+          style={highlightStyle}
         >
-          <span className="text-gray-400 w-3 text-center">{expanded ? "\u25BE" : "\u25B8"}</span>
-          {name !== null && <span className="text-gray-500">{name}:</span>}
-          <span className="text-gray-400">{`{${entries.length}}`}</span>
+          <span className="w-3 text-center" style={{ color: "var(--kami-text-dim)" }}>{expanded ? "\u25BE" : "\u25B8"}</span>
+          {name !== null && <span style={labelStyle}>{name}:</span>}
+          <span style={{ color: "var(--kami-text-dim)" }}>{`{${entries.length}}`}</span>
           {pathBtn}
         </button>
         {expanded && entries.map(([key, val]) => (
@@ -457,8 +469,42 @@ export default function JsonFormatterContent() {
 
   const hasData = result.valid && result.parsed != null;
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const ghostBtnStyle = {
+    background: "var(--kami-surface-solid)",
+    color: "var(--kami-text-muted)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const tabActive = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+  } as const;
+  const tabInactive = {
+    color: "var(--kami-text-muted)",
+    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+  } as const;
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="JSON Formatter"
@@ -478,11 +524,16 @@ export default function JsonFormatterContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder='Paste your JSON here... e.g. {"key": "value"}'
-          className={`w-full rounded-xl border bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
-            input && !result.valid
-              ? "border-red-300 focus:border-red-300 focus:ring-red-100"
-              : "border-gray-200 focus:border-gray-300 focus:ring-gray-200"
-          }`}
+          className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: input && !result.valid
+              ? "1px solid #fca5a5"
+              : "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={8}
           autoFocus
           spellCheck={false}
@@ -492,12 +543,12 @@ export default function JsonFormatterContent() {
         <div className="mt-1.5 flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
             {input.trim() && (
-              <span className={result.valid ? "text-green-600" : "text-red-500"}>
+              <span style={{ color: result.valid ? "#16a34a" : "#ef4444" }}>
                 {result.valid ? "\u2713 Valid JSON" : "\u2717 Invalid JSON"}
               </span>
             )}
             {result.error && (
-              <span className="text-red-400">
+              <span style={{ color: "#f87171" }}>
                 {result.errorLine && result.errorColumn
                   ? `Line ${result.errorLine}, Col ${result.errorColumn}: `
                   : ""}
@@ -505,16 +556,13 @@ export default function JsonFormatterContent() {
               </span>
             )}
             {hasData && (
-              <span className="text-gray-400">
+              <span style={{ color: "var(--kami-text-dim)" }}>
                 {input.length.toLocaleString()} chars
               </span>
             )}
           </div>
           {input && (
-            <button
-              onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
               Clear
             </button>
           )}
@@ -523,17 +571,28 @@ export default function JsonFormatterContent() {
         {/* Stats bar */}
         {stats && (
           <div className="mt-4 flex flex-wrap items-center gap-3">
-            {[
-              ["Objects", stats.objects, "text-amber-600 bg-amber-50"],
-              ["Arrays", stats.arrays, "text-blue-600 bg-blue-50"],
-              ["Strings", stats.strings, "text-green-600 bg-green-50"],
-              ["Numbers", stats.numbers, "text-indigo-600 bg-indigo-50"],
-              ["Booleans", stats.booleans, "text-purple-600 bg-purple-50"],
-              ["Nulls", stats.nulls, "text-orange-600 bg-orange-50"],
-              ["Total Keys", stats.totalKeys, "text-gray-600 bg-gray-100"],
-              [`Depth ${stats.maxDepth}`, null, "text-gray-500 bg-gray-100"],
-            ].filter(([, count]) => count === null || (count as number) > 0).map(([label, count, cls]) => (
-              <span key={label as string} className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${cls}`}>
+            {([
+              ["Objects", stats.objects, "#d97706"],
+              ["Arrays", stats.arrays, "#2563eb"],
+              ["Strings", stats.strings, "#16a34a"],
+              ["Numbers", stats.numbers, "#4f46e5"],
+              ["Booleans", stats.booleans, "#9333ea"],
+              ["Nulls", stats.nulls, "#ea580c"],
+              ["Total Keys", stats.totalKeys, null],
+              [`Depth ${stats.maxDepth}`, null, null],
+            ] as Array<[string, number | null, string | null]>).filter(([, count]) => count === null || (count as number) > 0).map(([label, count, accent]) => (
+              <span
+                key={label}
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium"
+                style={{
+                  color: accent ?? "var(--kami-text-muted)",
+                  background: accent
+                    ? `color-mix(in srgb, ${accent} 12%, var(--kami-surface))`
+                    : "var(--kami-surface)",
+                  border: `1px solid ${accent ? `color-mix(in srgb, ${accent} 30%, transparent)` : "var(--kami-border)"}`,
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                }}
+              >
                 {count !== null ? `${count} ` : ""}{label}
               </span>
             ))}
@@ -542,7 +601,14 @@ export default function JsonFormatterContent() {
 
         {/* Tabs */}
         {hasData && (
-          <div className="mt-6 flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5 w-fit">
+          <div
+            className="mt-6 flex items-center gap-1 px-1 py-0.5 w-fit"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >
             {([
               ["format", "Format"],
               ["query", "Query"],
@@ -552,11 +618,8 @@ export default function JsonFormatterContent() {
               <button
                 key={id}
                 onClick={() => setActiveTab(id)}
-                className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${
-                  activeTab === id
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={activeTab === id ? tabActive : tabInactive}
               >
                 {label}
               </button>
@@ -569,27 +632,31 @@ export default function JsonFormatterContent() {
           <div className="mt-4">
             {/* Controls */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2 py-1">
-                <span className="text-xs text-gray-500">Indent:</span>
+              <div
+                className="flex items-center gap-1.5 px-2 py-1"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
+                <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Indent:</span>
                 {["2", "4", "tab"].map((v) => (
                   <button
                     key={v}
                     onClick={() => setIndent(v)}
-                    className={`rounded px-2 py-0.5 text-xs font-medium transition-colors ${
-                      indent === v
-                        ? "bg-gray-900 text-white"
-                        : "text-gray-600 hover:text-gray-900"
-                    }`}
+                    className="px-2 py-0.5 text-xs font-medium transition-colors"
+                    style={indent === v ? tabActive : tabInactive}
                   >
                     {v === "tab" ? "Tab" : `${v}sp`}
                   </button>
                 ))}
               </div>
 
-              <button onClick={handleFormat} className="rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800">
+              <button onClick={handleFormat} className="px-3 py-1.5 text-sm font-medium transition-colors" style={ctaStyle}>
                 Format
               </button>
-              <button onClick={handleMinify} className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 hover:border-gray-300">
+              <button onClick={handleMinify} className="px-3 py-1.5 text-sm font-medium transition-colors" style={ghostBtnStyle}>
                 Minify
               </button>
 
@@ -601,30 +668,36 @@ export default function JsonFormatterContent() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search keys/values..."
-                    className="w-48 rounded-lg border border-gray-200 bg-white px-3 py-1.5 pr-8 text-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-48 px-3 py-1.5 pr-8 text-sm focus:outline-none"
+                    style={inputStyle}
                   />
                   {searchQuery && (
-                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-gray-400">
+                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                       {searchResults.length}
                     </span>
                   )}
                 </div>
 
                 {/* View toggle */}
-                <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5">
+                <div
+                  className="flex items-center gap-1 px-1 py-0.5"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
                   <button
                     onClick={() => setViewMode("text")}
-                    className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                      viewMode === "text" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
-                    }`}
+                    className="px-2.5 py-1 text-xs font-medium transition-colors"
+                    style={viewMode === "text" ? tabActive : tabInactive}
                   >
                     Text
                   </button>
                   <button
                     onClick={() => setViewMode("tree")}
-                    className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-                      viewMode === "tree" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
-                    }`}
+                    className="px-2.5 py-1 text-xs font-medium transition-colors"
+                    style={viewMode === "tree" ? tabActive : tabInactive}
                   >
                     Tree
                   </button>
@@ -634,8 +707,15 @@ export default function JsonFormatterContent() {
 
             {/* Search results */}
             {searchQuery && searchResults.length > 0 && viewMode === "text" && (
-              <div className="mt-3 rounded-xl border border-yellow-200 bg-yellow-50 p-3">
-                <div className="text-xs font-medium text-yellow-700 mb-2">
+              <div
+                className="mt-3 p-3"
+                style={{
+                  background: "color-mix(in srgb, #eab308 12%, var(--kami-surface))",
+                  border: "1px solid color-mix(in srgb, #eab308 30%, transparent)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
+                <div className="text-xs font-medium mb-2" style={{ color: "#a16207" }}>
                   {searchResults.length} match{searchResults.length !== 1 ? "es" : ""} found
                 </div>
                 <div className="max-h-40 overflow-auto space-y-1">
@@ -643,18 +723,19 @@ export default function JsonFormatterContent() {
                     <div key={i} className="flex items-center gap-2 text-xs font-mono">
                       <button
                         onClick={() => handleCopyPath(m.path)}
-                        className="case-preserve text-yellow-600 hover:text-yellow-800 truncate max-w-xs"
+                        className="case-preserve truncate max-w-xs"
+                        style={{ color: "#ca8a04" }}
                         title={m.path}
                       >
                         {m.path}
                       </button>
-                      <span className="text-gray-400 truncate max-w-xs">
+                      <span className="truncate max-w-xs" style={{ color: "var(--kami-text-dim)" }}>
                         {JSON.stringify(m.value)?.slice(0, 60)}
                       </span>
                     </div>
                   ))}
                   {searchResults.length > 20 && (
-                    <div className="text-xs text-yellow-600">...and {searchResults.length - 20} more</div>
+                    <div className="text-xs" style={{ color: "#ca8a04" }}>...and {searchResults.length - 20} more</div>
                   )}
                 </div>
               </div>
@@ -662,7 +743,7 @@ export default function JsonFormatterContent() {
 
             {/* Copied path notification */}
             {copiedPath && (
-              <div className="mt-2 text-xs text-green-600">
+              <div className="mt-2 text-xs" style={{ color: "#16a34a" }}>
                 Copied: {copiedPath}
               </div>
             )}
@@ -670,21 +751,22 @@ export default function JsonFormatterContent() {
             {/* Output */}
             <div className="mt-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-500">Output</span>
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Output</span>
                 <button
                   onClick={() => handleCopy(formatted, "output")}
-                  className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={ctaStyle}
                 >
                   {copied === "output" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
                 </button>
               </div>
 
               {viewMode === "text" ? (
-                <pre className="overflow-auto whitespace-pre rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-mono shadow-sm max-h-[500px]">
+                <pre className="overflow-auto whitespace-pre px-4 py-3 text-sm font-mono max-h-[500px]" style={cardStyle}>
                   {formatted}
                 </pre>
               ) : (
-                <div className="overflow-auto rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm max-h-[500px]">
+                <div className="overflow-auto px-4 py-3 max-h-[500px]" style={cardStyle}>
                   <TreeNode name={null} value={result.parsed} depth={0} path="$" onCopyPath={handleCopyPath} searchQuery={searchQuery} />
                 </div>
               )}

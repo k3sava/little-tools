@@ -221,8 +221,37 @@ export default function TimestampContent() {
     return parseDateMath(dateMathInput, new Date());
   }, [dateMathInput]);
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const ghostBtnStyle = {
+    background: "var(--kami-surface-solid)",
+    color: "var(--kami-text-muted)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const rowStyle = {
+    border: "1px solid var(--kami-border)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Timestamp Converter"
@@ -237,25 +266,27 @@ export default function TimestampContent() {
         />
 
         {/* Live Clock */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="p-5" style={cardStyle}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
                 Current Unix Timestamp
               </p>
               <p className="mt-1 font-mono text-2xl font-bold tabular-nums">{now}</p>
-              <p className="mt-0.5 font-mono text-xs text-gray-400 tabular-nums">{now * 1000} ms</p>
+              <p className="mt-0.5 font-mono text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>{now * 1000} ms</p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setTsInput(String(now))}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+                className="px-3 py-2 text-sm font-medium transition-colors"
+                style={ghostBtnStyle}
               >
                 Use
               </button>
               <button
                 onClick={() => handleCopy(String(now), "now")}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
+                style={ctaStyle}
               >
                 {copied === "now" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
               </button>
@@ -267,7 +298,7 @@ export default function TimestampContent() {
           {/* Timestamp -> Date */}
           <div>
             <h2 className="mb-3 text-lg font-semibold">Timestamp &rarr; Date</h2>
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="p-5" style={cardStyle}>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -275,12 +306,14 @@ export default function TimestampContent() {
                   value={tsInput}
                   onChange={(e) => setTsInput(e.target.value)}
                   placeholder="e.g. 1700000000"
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="flex-1 px-3 py-2 text-sm font-mono focus:outline-none"
+                  style={inputStyle}
                 />
                 <select
                   value={timezone}
                   onChange={(e) => setTimezone(e.target.value)}
-                  className="rounded-lg border border-gray-200 bg-white px-2 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="px-2 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
                 >
                   {TIMEZONES.map((tz) => (
                     <option key={tz.tz} value={tz.tz}>{tz.label}</option>
@@ -289,7 +322,7 @@ export default function TimestampContent() {
               </div>
 
               {tsInput.trim() && !tsValid && (
-                <p className="mt-3 text-sm text-red-500">
+                <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
                   Invalid timestamp. Enter seconds or milliseconds.
                 </p>
               )}
@@ -297,14 +330,15 @@ export default function TimestampContent() {
               {allFormats.length > 0 && (
                 <div className="mt-4 space-y-1.5">
                   {allFormats.map(({ label, value, key }) => (
-                    <div key={key} className="group flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 hover:bg-gray-50">
+                    <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-400">{label}</p>
+                        <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                         <p className="font-mono text-sm truncate">{value}</p>
                       </div>
                       <button
                         onClick={() => handleCopy(value, key)}
-                        className="ml-2 flex-shrink-0 rounded-md p-1 text-gray-300 transition-colors hover:text-gray-600 group-hover:text-gray-400"
+                        className="ml-2 flex-shrink-0 p-1 transition-colors"
+                        style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
                         title="Copy"
                       >
                         {copied === key ? <CheckIcon /> : <CopyIcon />}
@@ -319,16 +353,24 @@ export default function TimestampContent() {
                 <div className="mt-3">
                   <button
                     onClick={() => setShowMultiTz(!showMultiTz)}
-                    className="text-xs text-gray-400 hover:text-gray-600"
+                    className="text-xs"
+                    style={{ color: "var(--kami-text-dim)" }}
                   >
                     {showMultiTz ? "Hide" : "Show"} all timezones
                   </button>
                   {showMultiTz && (
                     <div className="mt-2 grid grid-cols-2 gap-1">
                       {TIMEZONES.map((tz) => (
-                        <div key={tz.tz} className="flex items-center justify-between rounded-md bg-gray-50 px-2.5 py-1.5">
-                          <span className="text-xs text-gray-500 truncate">{tz.label}</span>
-                          <span className="font-mono text-xs text-gray-700">{formatInTimezone(tsDate, tz.tz, "short")}</span>
+                        <div
+                          key={tz.tz}
+                          className="flex items-center justify-between px-2.5 py-1.5"
+                          style={{
+                            background: "var(--kami-surface)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }}
+                        >
+                          <span className="text-xs truncate" style={{ color: "var(--kami-text-muted)" }}>{tz.label}</span>
+                          <span className="font-mono text-xs" style={{ color: "var(--kami-text)" }}>{formatInTimezone(tsDate, tz.tz, "short")}</span>
                         </div>
                       ))}
                     </div>
@@ -341,17 +383,19 @@ export default function TimestampContent() {
           {/* Date -> Timestamp */}
           <div>
             <h2 className="mb-3 text-lg font-semibold">Date &rarr; Timestamp</h2>
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="p-5" style={cardStyle}>
               <div className="flex gap-2">
                 <input
                   type="datetime-local"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="flex-1 px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
                 />
                 <button
                   onClick={setNowInputs}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+                  className="px-3 py-2 text-sm font-medium transition-colors"
+                  style={ghostBtnStyle}
                 >
                   Now
                 </button>
@@ -365,14 +409,15 @@ export default function TimestampContent() {
                     { label: "ISO 8601", value: new Date(dateTs! * 1000).toISOString(), key: "date-iso" },
                     { label: "Relative", value: relativeTime(dateTs! * 1000), key: "date-rel" },
                   ].map(({ label, value, key }) => (
-                    <div key={key} className="group flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 hover:bg-gray-50">
+                    <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-400">{label}</p>
+                        <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                         <p className="font-mono text-sm">{value}</p>
                       </div>
                       <button
                         onClick={() => handleCopy(value, key)}
-                        className="ml-2 flex-shrink-0 rounded-md p-1 text-gray-300 transition-colors hover:text-gray-600 group-hover:text-gray-400"
+                        className="ml-2 flex-shrink-0 p-1 transition-colors"
+                        style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
                       >
                         {copied === key ? <CheckIcon /> : <CopyIcon />}
                       </button>
@@ -387,20 +432,27 @@ export default function TimestampContent() {
         {/* Date Math */}
         <div className="mt-8">
           <h2 className="mb-3 text-lg font-semibold">Date Math</h2>
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="p-5" style={cardStyle}>
             <input
               type="text"
               value={dateMathInput}
               onChange={(e) => setDateMathInput(e.target.value)}
               placeholder="Try: +3 days, -2 hours, next monday, start of month, tomorrow..."
-              className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-2.5 text-sm font-mono focus:outline-none"
+              style={inputStyle}
             />
             <div className="mt-2 flex flex-wrap gap-1.5">
               {PRESETS.map((p) => (
                 <button
                   key={p.label}
                   onClick={() => setDateMathInput(p.math)}
-                  className="rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-500 hover:bg-gray-200 hover:text-gray-700"
+                  className="px-2 py-0.5 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
                 >
                   {p.label}
                 </button>
@@ -416,14 +468,15 @@ export default function TimestampContent() {
                   { label: "Relative", value: relativeTime(dateMathResult.getTime()), key: "math-rel" },
                   { label: "Locale", value: formatInTimezone(dateMathResult, timezone), key: "math-locale" },
                 ].map(({ label, value, key }) => (
-                  <div key={key} className="group flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 hover:bg-gray-50">
+                  <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs text-gray-400">{label}</p>
+                      <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                       <p className="font-mono text-sm">{value}</p>
                     </div>
                     <button
                       onClick={() => handleCopy(value, key)}
-                      className="ml-2 flex-shrink-0 rounded-md p-1 text-gray-300 transition-colors hover:text-gray-600 group-hover:text-gray-400"
+                      className="ml-2 flex-shrink-0 p-1 transition-colors"
+                      style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
                     >
                       {copied === key ? <CheckIcon /> : <CopyIcon />}
                     </button>
@@ -432,7 +485,7 @@ export default function TimestampContent() {
               </div>
             )}
             {dateMathInput.trim() && !dateMathResult && (
-              <p className="mt-3 text-xs text-gray-400">
+              <p className="mt-3 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 Examples: &quot;+3 days&quot;, &quot;-2 hours&quot;, &quot;next friday&quot;, &quot;start of month&quot;, &quot;end of year&quot;
               </p>
             )}

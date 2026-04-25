@@ -348,7 +348,7 @@ export default function HashGeneratorContent() {
   ];
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Hash Generator"
@@ -363,14 +363,24 @@ export default function HashGeneratorContent() {
         />
 
         {/* Tabs */}
-        <div className="mb-6 flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5 w-fit">
+        <div
+          className="mb-6 flex items-center gap-1 px-1 py-0.5 w-fit"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.5rem)",
+          }}
+        >
           {tabs.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`rounded px-4 py-1.5 text-sm font-medium transition-colors ${
-                tab === t.id ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
-              }`}
+              className="px-4 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                background: tab === t.id ? "var(--kami-cta-bg, #111827)" : "transparent",
+                color: tab === t.id ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
             >
               {t.label}
             </button>
@@ -382,24 +392,28 @@ export default function HashGeneratorContent() {
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
-          className={`rounded-xl border-2 border-dashed transition-colors ${
-            dragOver ? "border-gray-400 bg-gray-100" : "border-gray-200 bg-white"
-          }`}
+          className="transition-colors"
+          style={{
+            background: dragOver ? "var(--kami-surface)" : "var(--kami-input-bg, var(--kami-surface-solid))",
+            border: `2px dashed ${dragOver ? "var(--kami-text-dim)" : "var(--kami-border-strong)"}`,
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
         >
           {fileName ? (
             <div className="flex items-center justify-between px-4 py-6">
               <div>
-                <span className="text-sm font-medium text-gray-700">{fileName}</span>
-                <p className="text-xs text-gray-400 mt-0.5">{formatSize(fileSize)}</p>
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>{fileName}</span>
+                <p className="text-xs mt-0.5" style={{ color: "var(--kami-text-dim)" }}>{formatSize(fileSize)}</p>
               </div>
-              <button onClick={handleClear} className="text-sm text-gray-400 hover:text-gray-600">Remove</button>
+              <button onClick={handleClear} className="text-sm" style={{ color: "var(--kami-text-dim)" }}>Remove</button>
             </div>
           ) : (
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Enter text or drag & drop a file..."
-              className="w-full rounded-xl bg-transparent px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:outline-none resize-none font-mono"
+              className="w-full bg-transparent px-4 py-3 text-base focus:outline-none resize-none font-mono"
+              style={{ color: "var(--kami-text)", borderRadius: "var(--kami-card-radius, 0.75rem)" }}
               rows={4}
               autoFocus
               spellCheck={false}
@@ -409,7 +423,7 @@ export default function HashGeneratorContent() {
 
         <div className="mt-1.5 flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
-            <label className="cursor-pointer text-gray-400 hover:text-gray-600">
+            <label className="cursor-pointer" style={{ color: "var(--kami-text-dim)" }}>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -419,18 +433,18 @@ export default function HashGeneratorContent() {
               Or choose a file
             </label>
             {!fileName && input && (
-              <span className="text-gray-400">{new TextEncoder().encode(input).length} bytes</span>
+              <span style={{ color: "var(--kami-text-dim)" }}>{new TextEncoder().encode(input).length} bytes</span>
             )}
           </div>
           {(input || fileName) && !fileName && (
-            <button onClick={handleClear} className="text-gray-400 hover:text-gray-600">Clear</button>
+            <button onClick={handleClear} style={{ color: "var(--kami-text-dim)" }}>Clear</button>
           )}
         </div>
 
         {/* Output format selector */}
         {hashBytes && (
           <div className="mt-4 flex items-center gap-2">
-            <span className="text-xs text-gray-500">Format:</span>
+            <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Format:</span>
             {([
               { id: "hex-lower" as const, label: "hex" },
               { id: "hex-upper" as const, label: "HEX" },
@@ -439,9 +453,12 @@ export default function HashGeneratorContent() {
               <button
                 key={f.id}
                 onClick={() => setOutputFormat(f.id)}
-                className={`rounded-md px-2.5 py-0.5 text-xs font-medium transition-colors ${
-                  outputFormat === f.id ? "bg-gray-200 text-gray-900" : "text-gray-500 hover:text-gray-700"
-                }`}
+                className="px-2.5 py-0.5 text-xs font-medium transition-colors"
+                style={{
+                  background: outputFormat === f.id ? "var(--kami-surface)" : "transparent",
+                  color: outputFormat === f.id ? "var(--kami-text)" : "var(--kami-text-muted)",
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                }}
               >
                 {f.label}
               </button>
@@ -487,15 +504,29 @@ export default function HashGeneratorContent() {
         {/* HMAC tab */}
         {tab === "hmac" && (
           <div className="mt-6 space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-medium text-gray-500 mb-3">HMAC Configuration</h2>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="text-sm font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>HMAC Configuration</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Algorithm</label>
+                  <label className="text-xs mb-1 block" style={{ color: "var(--kami-text-muted)" }}>Algorithm</label>
                   <select
                     value={hmacAlgo}
                     onChange={(e) => setHmacAlgo(e.target.value as HashAlgo)}
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     {ALGO_LIST.map((a) => (
                       <option key={a} value={a}>{`HMAC-${a}`}</option>
@@ -503,13 +534,19 @@ export default function HashGeneratorContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Secret Key</label>
+                  <label className="text-xs mb-1 block" style={{ color: "var(--kami-text-muted)" }}>Secret Key</label>
                   <input
                     type="text"
                     value={hmacSecret}
                     onChange={(e) => setHmacSecret(e.target.value)}
                     placeholder="Enter secret key..."
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                     spellCheck={false}
                   />
                 </div>
@@ -517,27 +554,36 @@ export default function HashGeneratorContent() {
             </div>
 
             {hmacResult && hmacSecret && hashBytes && (
-              <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+              <div
+                className="px-4 py-3"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium text-gray-500">HMAC-{hmacAlgo}</span>
+                  <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>HMAC-{hmacAlgo}</span>
                   <button
                     onClick={() => handleCopy("hmac", formatHash(hmacResult, outputFormat))}
-                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    className="flex items-center gap-1 text-xs transition-colors"
+                    style={{ color: "var(--kami-text-dim)" }}
                   >
                     {copiedKey === "hmac" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
                   </button>
                 </div>
-                <p className="font-mono text-sm text-gray-900 break-all select-all">
+                <p className="font-mono text-sm break-all select-all" style={{ color: "var(--kami-text)" }}>
                   {formatHash(hmacResult, outputFormat)}
                 </p>
               </div>
             )}
 
             {!hashBytes && (
-              <p className="text-sm text-gray-400 text-center py-8">Enter text or drop a file above to compute HMAC</p>
+              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>Enter text or drop a file above to compute HMAC</p>
             )}
             {hashBytes && !hmacSecret && (
-              <p className="text-sm text-gray-400 text-center py-8">Enter a secret key to compute HMAC</p>
+              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>Enter a secret key to compute HMAC</p>
             )}
           </div>
         )}
@@ -545,28 +591,49 @@ export default function HashGeneratorContent() {
         {/* Verify tab */}
         {tab === "verify" && (
           <div className="mt-6 space-y-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-medium text-gray-500 mb-3">Verify Checksum</h2>
-              <p className="text-xs text-gray-400 mb-3">
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="text-sm font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>Verify Checksum</h2>
+              <p className="text-xs mb-3" style={{ color: "var(--kami-text-dim)" }}>
                 Paste an expected hash below. The algorithm is auto-detected from the hash length.
               </p>
               <input
                 value={verifyHash}
                 onChange={(e) => setVerifyHash(e.target.value)}
                 placeholder="Paste expected hash (hex or base64)..."
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                }}
                 spellCheck={false}
               />
 
               {verifyNormalized && (
                 <div className="mt-3 flex items-center gap-2 text-sm">
                   {detectedAlgo && (
-                    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                    <span
+                      className="px-2 py-0.5 text-xs font-medium"
+                      style={{
+                        background: "var(--kami-surface)",
+                        color: "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
+                    >
                       {detectedAlgo}
                     </span>
                   )}
                   {!hashBytes && (
-                    <span className="text-gray-400">Enter text or drop a file to verify against</span>
+                    <span style={{ color: "var(--kami-text-dim)" }}>Enter text or drop a file to verify against</span>
                   )}
                 </div>
               )}
@@ -574,11 +641,16 @@ export default function HashGeneratorContent() {
 
             {/* Match result */}
             {hashBytes && verifyNormalized && verifyMatch !== null && (
-              <div className={`rounded-xl border px-4 py-4 ${
-                verifyMatch
-                  ? "border-green-200 bg-green-50"
-                  : "border-red-200 bg-red-50"
-              }`}>
+              <div
+                className="px-4 py-4"
+                style={{
+                  background: verifyMatch
+                    ? "color-mix(in srgb, #16a34a 10%, var(--kami-surface))"
+                    : "color-mix(in srgb, #dc2626 10%, var(--kami-surface))",
+                  border: `1px solid ${verifyMatch ? "color-mix(in srgb, #16a34a 30%, transparent)" : "color-mix(in srgb, #dc2626 30%, transparent)"}`,
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
                     verifyMatch ? "bg-green-200" : "bg-red-200"
@@ -623,32 +695,40 @@ export default function HashGeneratorContent() {
         {/* Algorithm reference */}
         {hashBytes && tab === "hash" && (
           <details className="mt-6">
-            <summary className="cursor-pointer text-sm text-gray-400 hover:text-gray-600">
+            <summary className="cursor-pointer text-sm" style={{ color: "var(--kami-text-dim)" }}>
               Hash algorithm reference
             </summary>
-            <div className="mt-2 rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+            <div
+              className="mt-2 overflow-hidden"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="px-4 py-2 text-left font-medium text-gray-500">Algorithm</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500">Bits</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500">Hex Length</th>
-                    <th className="px-4 py-2 text-left font-medium text-gray-500 hidden sm:table-cell">Use Case</th>
+                  <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
+                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Algorithm</th>
+                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Bits</th>
+                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Hex Length</th>
+                    <th className="px-4 py-2 text-left font-medium hidden sm:table-cell" style={{ color: "var(--kami-text-muted)" }}>Use Case</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  <tr>
-                    <td className="px-4 py-2 font-mono text-gray-700">CRC32</td>
-                    <td className="px-4 py-2 text-gray-600">32</td>
-                    <td className="px-4 py-2 text-gray-600">8</td>
-                    <td className="px-4 py-2 text-gray-500 hidden sm:table-cell">Error detection, ZIP files</td>
+                <tbody>
+                  <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text)" }}>CRC32</td>
+                    <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>32</td>
+                    <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>8</td>
+                    <td className="px-4 py-2 hidden sm:table-cell" style={{ color: "var(--kami-text-muted)" }}>Error detection, ZIP files</td>
                   </tr>
-                  {ALGO_LIST.map((algo) => (
-                    <tr key={algo}>
-                      <td className="px-4 py-2 font-mono text-gray-700">{algo}</td>
-                      <td className="px-4 py-2 text-gray-600">{ALGO_INFO[algo].bits}</td>
-                      <td className="px-4 py-2 text-gray-600">{ALGO_INFO[algo].bits / 4}</td>
-                      <td className="px-4 py-2 text-gray-500 hidden sm:table-cell">{ALGO_INFO[algo].note}</td>
+                  {ALGO_LIST.map((algo, i) => (
+                    <tr key={algo} style={i < ALGO_LIST.length - 1 ? { borderBottom: "1px solid var(--kami-border)" } : undefined}>
+                      <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text)" }}>{algo}</td>
+                      <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>{ALGO_INFO[algo].bits}</td>
+                      <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>{ALGO_INFO[algo].bits / 4}</td>
+                      <td className="px-4 py-2 hidden sm:table-cell" style={{ color: "var(--kami-text-muted)" }}>{ALGO_INFO[algo].note}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -685,17 +765,27 @@ function HashRow({
   highlight?: boolean;
 }) {
   return (
-    <div className={`rounded-xl border bg-white shadow-sm transition-colors ${
-      highlight ? "border-gray-300" : "border-gray-200"
-    }`}>
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+    <div
+      className="transition-colors"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: `1px solid ${highlight ? "var(--kami-text-dim)" : "var(--kami-border-strong)"}`,
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
+      <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500">{label}</span>
-          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-gray-400">{bits}-bit</span>
+          <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+          <span
+            className="px-1.5 py-0.5 text-[10px] rounded"
+            style={{ background: "var(--kami-surface)", color: "var(--kami-text-dim)" }}
+          >{bits}-bit</span>
           {highlight && <span className="rounded bg-green-100 px-1.5 py-0.5 text-[10px] text-green-700">recommended</span>}
           <button
             onClick={onToggleInfo}
-            className="text-gray-300 hover:text-gray-500 transition-colors"
+            className="transition-colors"
+            style={{ color: "var(--kami-text-dim)" }}
             title="About this algorithm"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -705,17 +795,26 @@ function HashRow({
         </div>
         <button
           onClick={onCopy}
-          className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+          className="flex items-center gap-1 text-xs transition-colors"
+          style={{ color: "var(--kami-text-dim)" }}
         >
           {copied ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
         </button>
       </div>
       <div className="px-4 py-2.5">
-        <p className="font-mono text-sm text-gray-900 break-all select-all">{value}</p>
+        <p className="font-mono text-sm break-all select-all" style={{ color: "var(--kami-text)" }}>{value}</p>
       </div>
       {expanded && (
-        <div className="px-4 py-2 border-t border-gray-100 bg-gray-50 rounded-b-xl">
-          <p className="text-xs text-gray-500">{note}</p>
+        <div
+          className="px-4 py-2"
+          style={{
+            background: "var(--kami-surface)",
+            borderTop: "1px solid var(--kami-border)",
+            borderBottomLeftRadius: "var(--kami-card-radius, 0.75rem)",
+            borderBottomRightRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{note}</p>
         </div>
       )}
     </div>
@@ -733,7 +832,8 @@ function CharDiff({ expected, actual }: { expected: string; actual: string }) {
         {Array.from({ length: maxLen }).map((_, i) => (
           <span
             key={i}
-            className={expected[i] !== actual[i] ? "text-red-600 bg-red-100 rounded" : "text-gray-500"}
+            className={expected[i] !== actual[i] ? "text-red-600 bg-red-100 rounded" : ""}
+            style={expected[i] === actual[i] ? { color: "var(--kami-text-muted)" } : undefined}
           >
             {expected[i] || " "}
           </span>
@@ -744,7 +844,8 @@ function CharDiff({ expected, actual }: { expected: string; actual: string }) {
         {Array.from({ length: maxLen }).map((_, i) => (
           <span
             key={i}
-            className={expected[i] !== actual[i] ? "text-green-600 bg-green-100 rounded" : "text-gray-500"}
+            className={expected[i] !== actual[i] ? "text-green-600 bg-green-100 rounded" : ""}
+            style={expected[i] === actual[i] ? { color: "var(--kami-text-muted)" } : undefined}
           >
             {actual[i] || " "}
           </span>

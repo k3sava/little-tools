@@ -249,24 +249,32 @@ interface StatCardProps {
 
 function StatCard({ label, value, sub }: StatCardProps) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
-      <div className="text-2xl font-bold text-gray-900">{value}</div>
-      <div className="text-sm text-gray-500">{label}</div>
-      {sub && <div className="mt-0.5 text-xs text-gray-400">{sub}</div>}
+    <div
+      className="px-4 py-3"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
+      <div className="text-2xl font-bold" style={{ color: "var(--kami-text)" }}>{value}</div>
+      <div className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
+      {sub && <div className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>{sub}</div>}
     </div>
   );
 }
 
 function getProgressColor(ratio: number): string {
-  if (ratio <= 0.7) return "bg-green-500";
-  if (ratio <= 0.9) return "bg-yellow-500";
-  return "bg-red-500";
+  if (ratio <= 0.7) return "#22c55e";
+  if (ratio <= 0.9) return "#eab308";
+  return "#ef4444";
 }
 
 function getProgressTextColor(ratio: number): string {
-  if (ratio <= 0.7) return "text-green-600";
-  if (ratio <= 0.9) return "text-yellow-600";
-  return "text-red-600";
+  if (ratio <= 0.7) return "#16a34a";
+  if (ratio <= 0.9) return "#ca8a04";
+  return "#dc2626";
 }
 
 function SocialLimitBar({ name, limit, current }: { name: string; limit: number; current: number }) {
@@ -276,18 +284,25 @@ function SocialLimitBar({ name, limit, current }: { name: string; limit: number;
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-32 shrink-0 text-sm text-gray-600">{name}</div>
+      <div className="w-32 shrink-0 text-sm" style={{ color: "var(--kami-text-muted)" }}>{name}</div>
       <div className="flex-1">
-        <div className="h-2.5 w-full rounded-full bg-gray-100 overflow-hidden">
+        <div
+          className="h-2.5 w-full overflow-hidden"
+          style={{
+            background: "var(--kami-surface)",
+            borderRadius: "9999px",
+            border: "1px solid var(--kami-border)",
+          }}
+        >
           <div
-            className={`h-full rounded-full transition-all duration-200 ${getProgressColor(ratio)}`}
-            style={{ width: `${percent}%` }}
+            className="h-full transition-all duration-200"
+            style={{ width: `${percent}%`, background: getProgressColor(ratio), borderRadius: "9999px" }}
           />
         </div>
       </div>
-      <div className={`w-24 shrink-0 text-right text-sm font-medium tabular-nums ${getProgressTextColor(ratio)}`}>
+      <div className="w-24 shrink-0 text-right text-sm font-medium tabular-nums" style={{ color: getProgressTextColor(ratio) }}>
         {current} / {limit}
-        {over && <span className="ml-1 text-xs text-red-500">({current - limit} over)</span>}
+        {over && <span className="ml-1 text-xs" style={{ color: "#ef4444" }}>({current - limit} over)</span>}
       </div>
     </div>
   );
@@ -306,18 +321,26 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div
+      className="overflow-hidden"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
       <button
         onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-gray-50 transition-colors"
+        className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors"
       >
         <div className="flex items-center gap-2.5">
           {icon}
-          <span className="text-sm font-semibold text-gray-900">{title}</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{title}</span>
         </div>
         <ChevronIcon open={open} />
       </button>
-      {open && <div className="border-t border-gray-100 px-5 py-4">{children}</div>}
+      {open && <div className="px-5 py-4" style={{ borderTop: "1px solid var(--kami-border)" }}>{children}</div>}
     </div>
   );
 }
@@ -340,43 +363,68 @@ function GoalTracker({
   const percent = Math.min(ratio * 100, 100);
   const reached = current >= target && target > 0;
 
+  const tabBtnActive = {
+    background: "var(--kami-surface-solid)",
+    color: "var(--kami-text)",
+    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const tabBtnInactive = {
+    color: "var(--kami-text-muted)",
+    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+  } as const;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div
+      className="overflow-hidden"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
       <div className="px-5 py-4">
         <div className="flex items-center gap-2.5 mb-4">
           <TargetIcon />
-          <span className="text-sm font-semibold text-gray-900">Goal Setting</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Goal Setting</span>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500">Target:</label>
+            <label className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Target:</label>
             <input
               type="number"
               min="0"
               value={goalValue}
               onChange={(e) => setGoalValue(e.target.value)}
               placeholder="500"
-              className="w-24 rounded-lg border border-gray-200  px-3 py-1.5 text-sm text-gray-900 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-24 px-3 py-1.5 text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
             />
           </div>
-          <div className="flex items-center gap-1.5 rounded-lg border border-gray-200  p-0.5">
+          <div
+            className="flex items-center gap-1.5 p-0.5"
+            style={{
+              background: "var(--kami-surface)",
+              border: "1px solid var(--kami-border)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >
             <button
               onClick={() => setGoalType("words")}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                goalType === "words"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className="px-3 py-1 text-xs font-medium transition-colors"
+              style={goalType === "words" ? tabBtnActive : tabBtnInactive}
             >
               Words
             </button>
             <button
               onClick={() => setGoalType("characters")}
-              className={`rounded-md px-3 py-1 text-xs font-medium transition-colors ${
-                goalType === "characters"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className="px-3 py-1 text-xs font-medium transition-colors"
+              style={goalType === "characters" ? tabBtnActive : tabBtnInactive}
             >
               Characters
             </button>
@@ -385,29 +433,38 @@ function GoalTracker({
         {target > 0 && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                 {current} / {target} {goalType}
               </span>
-              <span className={`text-sm font-medium ${reached ? "text-green-600" : "text-gray-600"}`}>
+              <span className="text-sm font-medium" style={{ color: reached ? "#16a34a" : "var(--kami-text-muted)" }}>
                 {Math.round(percent)}%
               </span>
             </div>
-            <div className="h-3 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-3 w-full overflow-hidden"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border)",
+                borderRadius: "9999px",
+              }}
+            >
               <div
-                className={`h-full rounded-full transition-all duration-300 ${
-                  reached ? "bg-green-500" : "bg-blue-500"
-                }`}
-                style={{ width: `${percent}%` }}
+                className="h-full transition-all duration-300"
+                style={{
+                  width: `${percent}%`,
+                  background: reached ? "#22c55e" : "#3b82f6",
+                  borderRadius: "9999px",
+                }}
               />
             </div>
             {reached && (
-              <div className="mt-2 flex items-center gap-1.5 text-sm text-green-600">
+              <div className="mt-2 flex items-center gap-1.5 text-sm" style={{ color: "#16a34a" }}>
                 <CheckCircleIcon />
                 Goal reached!
               </div>
             )}
             {!reached && target > 0 && (
-              <div className="mt-2 text-xs text-gray-400">
+              <div className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 {target - current} {goalType} remaining
               </div>
             )}
@@ -457,7 +514,7 @@ export default function CharacterCounterContent() {
   }, [stats]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Character Counter"
@@ -476,18 +533,22 @@ export default function CharacterCounterContent() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Type or paste your text here..."
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={8}
           autoFocus
         />
 
         {/* Clear */}
-        <div className="mt-1.5 flex items-center justify-end text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-end text-xs" style={{ color: "var(--kami-text-dim)" }}>
           {input && (
-            <button
-              onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
-            >
+            <button onClick={() => setInput("")}>
               Clear
             </button>
           )}
@@ -531,7 +592,12 @@ export default function CharacterCounterContent() {
           <button
             onClick={handleCopyStats}
             disabled={!input}
-            className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: "var(--kami-cta-bg)",
+              color: "var(--kami-cta-text)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
           >
             {copiedStats ? (
               <>
@@ -577,29 +643,39 @@ export default function CharacterCounterContent() {
           {/* Keyword Density */}
           <CollapsibleSection title="Keyword Density" icon={<KeyIcon />} defaultOpen={true}>
             {keywords.length === 0 ? (
-              <p className="text-sm text-gray-400">Start typing to see keyword density analysis.</p>
+              <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>Start typing to see keyword density analysis.</p>
             ) : (
               <div className="overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-gray-100">
-                      <th className="pb-2 text-left font-medium text-gray-500">Keyword</th>
-                      <th className="pb-2 text-right font-medium text-gray-500">Count</th>
-                      <th className="pb-2 text-right font-medium text-gray-500">Density</th>
-                      <th className="pb-2 w-32 pl-4 font-medium text-gray-500"></th>
+                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <th className="pb-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Keyword</th>
+                      <th className="pb-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Count</th>
+                      <th className="pb-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Density</th>
+                      <th className="pb-2 w-32 pl-4 font-medium" style={{ color: "var(--kami-text-muted)" }}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {keywords.map((kw) => (
-                      <tr key={kw.word} className="border-b border-gray-50 last:border-0">
-                        <td className="py-1.5 text-gray-900 font-medium">{kw.word}</td>
-                        <td className="py-1.5 text-right text-gray-600 tabular-nums">{kw.count}</td>
-                        <td className="py-1.5 text-right text-gray-600 tabular-nums">{kw.percentage}%</td>
+                      <tr key={kw.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                        <td className="py-1.5 font-medium" style={{ color: "var(--kami-text)" }}>{kw.word}</td>
+                        <td className="py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.count}</td>
+                        <td className="py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.percentage}%</td>
                         <td className="py-1.5 pl-4">
-                          <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden">
+                          <div
+                            className="h-1.5 w-full overflow-hidden"
+                            style={{
+                              background: "var(--kami-surface)",
+                              borderRadius: "9999px",
+                            }}
+                          >
                             <div
-                              className="h-full rounded-full bg-blue-400 transition-all duration-200"
-                              style={{ width: `${Math.min(kw.percentage * 10, 100)}%` }}
+                              className="h-full transition-all duration-200"
+                              style={{
+                                width: `${Math.min(kw.percentage * 10, 100)}%`,
+                                background: "#60a5fa",
+                                borderRadius: "9999px",
+                              }}
                             />
                           </div>
                         </td>
@@ -614,32 +690,60 @@ export default function CharacterCounterContent() {
           {/* Sentence Analysis */}
           <CollapsibleSection title="Sentence Analysis" icon={<BarChartIcon />} defaultOpen={true}>
             {!sentenceStats ? (
-              <p className="text-sm text-gray-400">Start typing to see sentence-level analysis.</p>
+              <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>Start typing to see sentence-level analysis.</p>
             ) : (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-lg border border-gray-100  px-3 py-2.5">
-                  <div className="text-lg font-bold text-gray-900">{sentenceStats.longest}</div>
-                  <div className="text-xs text-gray-500">Longest (words)</div>
+                <div
+                  className="px-3 py-2.5"
+                  style={{
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.longest}</div>
+                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Longest (words)</div>
                 </div>
-                <div className="rounded-lg border border-gray-100  px-3 py-2.5">
-                  <div className="text-lg font-bold text-gray-900">{sentenceStats.shortest}</div>
-                  <div className="text-xs text-gray-500">Shortest (words)</div>
+                <div
+                  className="px-3 py-2.5"
+                  style={{
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.shortest}</div>
+                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Shortest (words)</div>
                 </div>
-                <div className="rounded-lg border border-gray-100  px-3 py-2.5">
-                  <div className="text-lg font-bold text-gray-900">{sentenceStats.average}</div>
-                  <div className="text-xs text-gray-500">Avg Length</div>
+                <div
+                  className="px-3 py-2.5"
+                  style={{
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.average}</div>
+                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Avg Length</div>
                 </div>
-                <div className="rounded-lg border border-gray-100  px-3 py-2.5">
-                  <div className={`text-lg font-bold ${
-                    sentenceStats.varietyLabel === "High"
-                      ? "text-green-600"
-                      : sentenceStats.varietyLabel === "Medium"
-                      ? "text-yellow-600"
-                      : "text-gray-600"
-                  }`}>
+                <div
+                  className="px-3 py-2.5"
+                  style={{
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  <div
+                    className="text-lg font-bold"
+                    style={{
+                      color:
+                        sentenceStats.varietyLabel === "High"
+                          ? "#16a34a"
+                          : sentenceStats.varietyLabel === "Medium"
+                          ? "#ca8a04"
+                          : "var(--kami-text-muted)",
+                    }}
+                  >
                     {sentenceStats.varietyLabel}
                   </div>
-                  <div className="text-xs text-gray-500">Variety</div>
+                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Variety</div>
                 </div>
               </div>
             )}
@@ -718,7 +822,8 @@ function ChevronIcon({ open }: { open: boolean }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`transition-transform duration-200 text-gray-400 ${open ? "rotate-180" : ""}`}
+      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+      style={{ color: "var(--kami-text-dim)" }}
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
@@ -736,7 +841,7 @@ function ShareIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-400"
+      style={{ color: "var(--kami-text-dim)" }}
     >
       <circle cx="18" cy="5" r="3" />
       <circle cx="6" cy="12" r="3" />
@@ -758,7 +863,7 @@ function KeyIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-400"
+      style={{ color: "var(--kami-text-dim)" }}
     >
       <path d="M15 3h6v6" />
       <path d="M10 14L21 3" />
@@ -778,7 +883,7 @@ function BarChartIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-400"
+      style={{ color: "var(--kami-text-dim)" }}
     >
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
@@ -798,7 +903,7 @@ function TargetIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="text-gray-400"
+      style={{ color: "var(--kami-text-dim)" }}
     >
       <circle cx="12" cy="12" r="10" />
       <circle cx="12" cy="12" r="6" />

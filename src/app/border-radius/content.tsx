@@ -441,7 +441,7 @@ export default function BorderRadiusContent() {
   const corners: CornerKey[] = ["tl", "tr", "br", "bl"];
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Border Radius Generator"
@@ -459,19 +459,28 @@ export default function BorderRadiusContent() {
           {/* ============ LEFT: Preview + Output ============ */}
           <div className="space-y-6">
             {/* Preview */}
-            <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+            <div
+              className="p-8"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="text-xs font-medium uppercase tracking-wider text-gray-400">Preview</span>
+                <span className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Preview</span>
                 <div className="flex gap-1">
                   {(Object.keys(SIZE_MAP) as SizePreset[]).map((s) => (
                     <button
                       key={s}
                       onClick={() => setSizePreset(s)}
-                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                        sizePreset === s
-                          ? "bg-gray-900 text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      className="px-2.5 py-1 text-xs font-medium transition"
+                      style={{
+                        background: sizePreset === s ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
+                        color: sizePreset === s ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                     >
                       {SIZE_LABELS[s]}
                     </button>
@@ -480,14 +489,26 @@ export default function BorderRadiusContent() {
                 <div className="ml-auto flex items-center gap-2">
                   <button
                     onClick={addToCompare}
-                    className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-200 transition"
+                    className="px-2.5 py-1 text-xs font-medium transition"
+                    style={{
+                      background: "var(--kami-surface)",
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
                   >
                     + Compare
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-center rounded-lg bg-gray-50 p-6" style={{ minHeight: 260 }}>
+              <div
+                className="flex items-center justify-center p-6"
+                style={{
+                  background: "var(--kami-surface)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  minHeight: 260,
+                }}
+              >
                 <div
                   ref={previewRef}
                   onMouseDown={handlePreviewMouseDown}
@@ -506,8 +527,10 @@ export default function BorderRadiusContent() {
                     return (
                       <div
                         key={key}
-                        className="absolute h-5 w-5 rounded-full border-2 border-white bg-gray-900 opacity-0 hover:opacity-80 transition-opacity shadow-md"
+                        className="absolute h-5 w-5 rounded-full border-2 opacity-0 hover:opacity-80 transition-opacity shadow-md"
                         style={{
+                          background: "var(--kami-text)",
+                          borderColor: "var(--kami-surface-solid)",
                           ...pos,
                           transform: "translate(-50%, -50%)",
                           ...(pos.top !== undefined && pos.left !== undefined && { transform: "translate(50%, 50%)" }),
@@ -526,8 +549,16 @@ export default function BorderRadiusContent() {
             </div>
 
             {/* Background options */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">Background</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Background</h3>
               <div className="flex flex-wrap items-center gap-3">
                 {(["solid", "gradient", "checkerboard", "image"] as BgPattern[]).map((p) => (
                   <button
@@ -536,11 +567,12 @@ export default function BorderRadiusContent() {
                       setBgPattern(p);
                       if (p === "image" && !bgImage) fileInputRef.current?.click();
                     }}
-                    className={`rounded-md px-2.5 py-1 text-xs font-medium capitalize transition ${
-                      bgPattern === p
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                    }`}
+                    className="px-2.5 py-1 text-xs font-medium capitalize transition"
+                    style={{
+                      background: bgPattern === p ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
+                      color: bgPattern === p ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
                   >
                     {p}
                   </button>
@@ -555,28 +587,35 @@ export default function BorderRadiusContent() {
                 />
 
                 <div className="ml-auto flex items-center gap-2">
-                  <label className="flex items-center gap-1.5 text-xs text-gray-500">
+                  <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                     <input
                       type="color"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="h-6 w-6 cursor-pointer rounded border border-gray-200"
+                      className="h-6 w-6 cursor-pointer rounded"
+                      style={{ border: "1px solid var(--kami-border-strong)" }}
                     />
                   </label>
                   {bgPattern === "gradient" && (
-                    <label className="flex items-center gap-1.5 text-xs text-gray-500">
+                    <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       <input
                         type="color"
                         value={gradientEnd}
                         onChange={(e) => setGradientEnd(e.target.value)}
-                        className="h-6 w-6 cursor-pointer rounded border border-gray-200"
+                        className="h-6 w-6 cursor-pointer rounded"
+                      style={{ border: "1px solid var(--kami-border-strong)" }}
                       />
                     </label>
                   )}
                   {bgPattern === "image" && (
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="rounded-md bg-gray-100 px-2 py-1 text-xs text-gray-600 hover:bg-gray-200"
+                      className="px-2 py-1 text-xs"
+                      style={{
+                        background: "var(--kami-surface)",
+                        color: "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                     >
                       Upload
                     </button>
@@ -586,18 +625,27 @@ export default function BorderRadiusContent() {
             </div>
 
             {/* Output */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
                 <div className="flex gap-1">
                   {(["css", "tailwind", "reactnative"] as OutputFormat[]).map((f) => (
                     <button
                       key={f}
                       onClick={() => setOutputFmt(f)}
-                      className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                        outputFmt === f
-                          ? "bg-gray-900 text-white"
-                          : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                      }`}
+                      className="px-2.5 py-1 text-xs font-medium transition"
+                      style={{
+                        background: outputFmt === f ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
+                        color: outputFmt === f ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                     >
                       {f === "reactnative" ? "React Native" : f === "css" ? "CSS" : "Tailwind"}
                     </button>
@@ -605,28 +653,42 @@ export default function BorderRadiusContent() {
                 </div>
                 <button
                   onClick={() => copy()}
-                  className="flex items-center gap-1.5 rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 transition"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition"
+                  style={{
+                    background: "var(--kami-cta-bg, #111827)",
+                    color: "var(--kami-cta-text, #ffffff)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
                 >
                   {copied === output ? <CheckIcon /> : <CopyIcon />}
                   {copied === output ? "Copied" : "Copy"}
                 </button>
               </div>
-              <pre className="overflow-x-auto rounded-lg bg-gray-950 p-4 text-sm leading-relaxed text-gray-100">
+              <pre className="overflow-x-auto p-4 text-sm leading-relaxed" style={{ background: "#0a0a0a", color: "#f3f4f6", borderRadius: "var(--kami-input-radius, 0.5rem)" }}>
                 <code>{output}</code>
               </pre>
             </div>
 
             {/* Comparison view */}
             {showCompare && compareItems.length > 0 && (
-              <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-xs font-medium uppercase tracking-wider text-gray-400">Comparison</h3>
+                  <h3 className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Comparison</h3>
                   <button
                     onClick={() => {
                       setCompareItems([]);
                       setShowCompare(false);
                     }}
-                    className="text-xs text-gray-400 hover:text-gray-600"
+                    className="text-xs"
+                    style={{ color: "var(--kami-text-dim)" }}
                   >
                     Clear all
                   </button>
@@ -641,18 +703,20 @@ export default function BorderRadiusContent() {
                           ...getBgStyle(),
                         }}
                       />
-                      <code className="text-[10px] text-gray-400 max-w-[120px] truncate">
+                      <code className="text-[10px] max-w-[120px] truncate" style={{ color: "var(--kami-text-dim)" }}>
                         {radiusToCSS(item.radius, item.advanced).replace("border-radius: ", "").replace(";", "")}
                       </code>
                       <button
                         onClick={() => removeCompare(idx)}
-                        className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full bg-gray-200 text-xs text-gray-500 group-hover:flex hover:bg-gray-300"
+                        className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full text-xs group-hover:flex"
+                        style={{ background: "var(--kami-border-strong)", color: "var(--kami-text-muted)" }}
                       >
                         x
                       </button>
                       <button
                         onClick={() => applyPreset(item)}
-                        className="text-[10px] text-gray-400 hover:text-gray-700"
+                        className="text-[10px]"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         Apply
                       </button>
@@ -666,24 +730,33 @@ export default function BorderRadiusContent() {
           {/* ============ RIGHT: Controls ============ */}
           <div className="space-y-5">
             {/* Mode + Link */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm text-gray-600">
+                <label className="flex items-center gap-2 text-sm" style={{ color: "var(--kami-text-muted)" }}>
                   <input
                     type="checkbox"
                     checked={linked}
                     onChange={(e) => setLinked(e.target.checked)}
-                    className="rounded accent-gray-900"
+                    className="rounded"
                   />
                   Link corners
                 </label>
                 <button
                   onClick={() => setAdvanced(!advanced)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                    advanced
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
+                  className="px-2.5 py-1 text-xs font-medium transition"
+                  style={{
+                    background: advanced ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
+                    color: advanced ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
                 >
                   {advanced ? "Advanced (8-value)" : "Simple (4-value)"}
                 </button>
@@ -691,21 +764,29 @@ export default function BorderRadiusContent() {
             </div>
 
             {/* Corner sliders */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-4 text-xs font-medium uppercase tracking-wider text-gray-400">Corners</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-4 text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Corners</h3>
               <div className="space-y-4">
                 {corners.map((key) => (
                   <div key={key}>
                     <div className="mb-1.5 flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-600">{CORNER_LABELS[key]}</span>
-                      <span className="font-mono text-xs text-gray-400">
+                      <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>{CORNER_LABELS[key]}</span>
+                      <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>
                         {radius[key].h}%{advanced ? ` / ${radius[key].v}%` : ""}
                       </span>
                     </div>
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
                         {advanced && (
-                          <span className="w-4 text-[10px] text-gray-400">H</span>
+                          <span className="w-4 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>H</span>
                         )}
                         <input
                           type="range"
@@ -717,7 +798,8 @@ export default function BorderRadiusContent() {
                             setCorner(key, "h", v);
                             if (!advanced) setCorner(key, "v", v);
                           }}
-                          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                          className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+                          style={{ background: "var(--kami-border-strong)" }}
                         />
                         <input
                           type="number"
@@ -729,19 +811,26 @@ export default function BorderRadiusContent() {
                             setCorner(key, "h", v);
                             if (!advanced) setCorner(key, "v", v);
                           }}
-                          className="w-14 rounded-md border border-gray-200 px-2 py-0.5 text-right font-mono text-xs text-gray-600 focus:border-gray-400 focus:outline-none"
+                          className="w-14 px-2 py-0.5 text-right font-mono text-xs focus:outline-none"
+                          style={{
+                            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }}
                         />
                       </div>
                       {advanced && (
                         <div className="flex items-center gap-2">
-                          <span className="w-4 text-[10px] text-gray-400">V</span>
+                          <span className="w-4 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>V</span>
                           <input
                             type="range"
                             min={0}
                             max={100}
                             value={radius[key].v}
                             onChange={(e) => setCorner(key, "v", Number(e.target.value))}
-                            className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+                            className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+                          style={{ background: "var(--kami-border-strong)" }}
                           />
                           <input
                             type="number"
@@ -752,7 +841,13 @@ export default function BorderRadiusContent() {
                               const v = Math.min(100, Math.max(0, Number(e.target.value)));
                               setCorner(key, "v", v);
                             }}
-                            className="w-14 rounded-md border border-gray-200 px-2 py-0.5 text-right font-mono text-xs text-gray-600 focus:border-gray-400 focus:outline-none"
+                            className="w-14 px-2 py-0.5 text-right font-mono text-xs focus:outline-none"
+                          style={{
+                            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }}
                           />
                         </div>
                       )}
@@ -763,18 +858,33 @@ export default function BorderRadiusContent() {
             </div>
 
             {/* Presets */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">Presets</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Presets</h3>
               <div className="flex flex-wrap gap-1.5">
                 {BUILT_IN_PRESETS.map((p) => (
                   <button
                     key={p.name}
                     onClick={() => applyPreset(p)}
-                    className="rounded-md bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition border border-gray-100"
+                    className="px-2.5 py-1.5 text-xs font-medium transition"
+                    style={{
+                      background: "var(--kami-surface)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
                   >
-                    <span className="mr-1.5 inline-block h-3 w-3 rounded-sm border border-gray-200" style={{
+                    <span className="mr-1.5 inline-block h-3 w-3 rounded-sm" style={{
                       borderRadius: radiusToStyle(p.radius, p.advanced),
                       backgroundColor: "#d1d5db",
+                      border: "1px solid var(--kami-border-strong)",
                       verticalAlign: "middle",
                     }} />
                     {p.name}
@@ -784,8 +894,8 @@ export default function BorderRadiusContent() {
 
               {/* Saved presets */}
               {savedPresets.length > 0 && (
-                <div className="mt-3 border-t border-gray-100 pt-3">
-                  <div className="mb-2 text-[10px] font-medium uppercase tracking-wider text-gray-400">Saved</div>
+                <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
+                  <div className="mb-2 text-[10px] font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Saved</div>
                   <div className="flex flex-wrap gap-1.5">
                     {savedPresets.map((p, idx) => (
                       <div key={idx} className="group relative">
@@ -797,7 +907,8 @@ export default function BorderRadiusContent() {
                         </button>
                         <button
                           onClick={() => deletePreset(idx)}
-                          className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-gray-300 text-[9px] text-gray-600 group-hover:flex hover:bg-red-400 hover:text-white"
+                          className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full text-[9px] group-hover:flex hover:bg-red-400 hover:text-white"
+                          style={{ background: "var(--kami-border-strong)", color: "var(--kami-text-muted)" }}
                         >
                           x
                         </button>
@@ -808,7 +919,7 @@ export default function BorderRadiusContent() {
               )}
 
               {/* Save new */}
-              <div className="mt-3 border-t border-gray-100 pt-3">
+              <div className="mt-3 pt-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
                 {showSaveInput ? (
                   <div className="flex gap-2">
                     <input
@@ -817,12 +928,23 @@ export default function BorderRadiusContent() {
                       onChange={(e) => setPresetName(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && savePreset()}
                       placeholder="Preset name"
-                      className="flex-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs focus:border-gray-400 focus:outline-none"
+                      className="flex-1 px-2.5 py-1.5 text-xs focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                       autoFocus
                     />
                     <button
                       onClick={savePreset}
-                      className="rounded-md bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800 transition"
+                      className="px-3 py-1.5 text-xs font-medium transition"
+                      style={{
+                        background: "var(--kami-cta-bg, #111827)",
+                        color: "var(--kami-cta-text, #ffffff)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                     >
                       Save
                     </button>
@@ -831,7 +953,12 @@ export default function BorderRadiusContent() {
                         setShowSaveInput(false);
                         setPresetName("");
                       }}
-                      className="rounded-md bg-gray-100 px-2.5 py-1.5 text-xs text-gray-500 hover:bg-gray-200 transition"
+                      className="px-2.5 py-1.5 text-xs transition"
+                      style={{
+                        background: "var(--kami-surface)",
+                        color: "var(--kami-text-muted)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
                     >
                       Cancel
                     </button>
@@ -839,7 +966,8 @@ export default function BorderRadiusContent() {
                 ) : (
                   <button
                     onClick={() => setShowSaveInput(true)}
-                    className="text-xs text-gray-400 hover:text-gray-600 transition"
+                    className="text-xs transition"
+                    style={{ color: "var(--kami-text-dim)" }}
                   >
                     + Save current as preset
                   </button>
@@ -848,18 +976,37 @@ export default function BorderRadiusContent() {
             </div>
 
             {/* Quick copy all formats */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">Quick Copy</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Quick Copy</h3>
               <div className="space-y-2">
                 {(["css", "tailwind", "reactnative"] as OutputFormat[]).map((f) => {
                   const val = getOutput(radius, advanced, f);
                   const label = f === "reactnative" ? "React Native" : f === "css" ? "CSS" : "Tailwind";
                   return (
-                    <div key={f} className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2">
-                      <code className="flex-1 truncate text-xs text-gray-600">{val}</code>
+                    <div
+                      key={f}
+                      className="flex items-center justify-between gap-2 px-3 py-2"
+                      style={{
+                        background: "var(--kami-surface)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
+                    >
+                      <code className="flex-1 truncate text-xs" style={{ color: "var(--kami-text-muted)" }}>{val}</code>
                       <button
                         onClick={() => copy(val)}
-                        className="flex-shrink-0 rounded-md px-2 py-1 text-xs text-gray-400 hover:bg-gray-200 hover:text-gray-700 transition"
+                        className="flex-shrink-0 px-2 py-1 text-xs transition"
+                        style={{
+                          color: "var(--kami-text-dim)",
+                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                        }}
                       >
                         {copied === val ? <CheckIcon /> : <CopyIcon />}
                       </button>

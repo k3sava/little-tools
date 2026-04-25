@@ -402,8 +402,32 @@ export default function QrCodeContent() {
     } catch {}
   }, [getPayload, fgColor, bgColor]);
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const ghostBtnStyle = {
+    background: "var(--kami-surface-solid)",
+    color: "var(--kami-text-muted)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  } as const;
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="QR Code Generator"
@@ -419,14 +443,14 @@ export default function QrCodeContent() {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Preview */}
-          <div className="flex flex-col items-center rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
+          <div className="flex flex-col items-center p-8" style={cardStyle}>
             <canvas ref={canvasRef} className="max-w-full" style={{ imageRendering: "pixelated" }} />
-            {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+            {error && <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>{error}</p>}
             <div className="mt-4 flex gap-2">
-              <button onClick={download} className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800">
+              <button onClick={download} className="px-4 py-2 text-sm font-medium" style={ctaStyle}>
                 Download PNG
               </button>
-              <button onClick={copySvg} className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600 hover:bg-gray-50">
+              <button onClick={copySvg} className="px-3 py-2 text-sm" style={ghostBtnStyle}>
                 Copy SVG
               </button>
             </div>
@@ -435,16 +459,28 @@ export default function QrCodeContent() {
           {/* Controls */}
           <div className="space-y-4">
             {/* Input type */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Type</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Type</h3>
               <div className="flex flex-wrap gap-1.5">
                 {(["url", "text", "wifi", "vcard"] as InputType[]).map((t) => (
                   <button
                     key={t}
                     onClick={() => setInputType(t)}
-                    className={`rounded-lg px-3 py-1.5 text-xs capitalize ${
-                      inputType === t ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
+                    className="px-3 py-1.5 text-xs capitalize"
+                    style={
+                      inputType === t
+                        ? {
+                            background: "var(--kami-cta-bg)",
+                            color: "var(--kami-cta-text)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            border: "1px solid var(--kami-border)",
+                          }
+                    }
                   >
                     {t === "vcard" ? "vCard" : t === "wifi" ? "WiFi" : t}
                   </button>
@@ -453,17 +489,18 @@ export default function QrCodeContent() {
             </div>
 
             {/* Input fields */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="p-4" style={cardStyle}>
               {(inputType === "url" || inputType === "text") && (
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
                     {inputType === "url" ? "URL" : "Text"}
                   </label>
                   <textarea
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     rows={3}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                     placeholder={inputType === "url" ? "https://example.com" : "Enter text..."}
                   />
                 </div>
@@ -471,16 +508,16 @@ export default function QrCodeContent() {
               {inputType === "wifi" && (
                 <div className="space-y-2">
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">SSID</label>
-                    <input type="text" value={wifiSsid} onChange={(e) => setWifiSsid(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none" />
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>SSID</label>
+                    <input type="text" value={wifiSsid} onChange={(e) => setWifiSsid(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">Password</label>
-                    <input type="text" value={wifiPass} onChange={(e) => setWifiPass(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none" />
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Password</label>
+                    <input type="text" value={wifiPass} onChange={(e) => setWifiPass(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">Encryption</label>
-                    <select value={wifiEnc} onChange={(e) => setWifiEnc(e.target.value)} className="rounded-lg border border-gray-200 px-3 py-2 text-sm">
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Encryption</label>
+                    <select value={wifiEnc} onChange={(e) => setWifiEnc(e.target.value)} className="px-3 py-2 text-sm" style={inputStyle}>
                       <option value="WPA">WPA/WPA2</option>
                       <option value="WEP">WEP</option>
                       <option value="nopass">None</option>
@@ -491,38 +528,38 @@ export default function QrCodeContent() {
               {inputType === "vcard" && (
                 <div className="space-y-2">
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">Name</label>
-                    <input type="text" value={vcardName} onChange={(e) => setVcardName(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none" />
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Name</label>
+                    <input type="text" value={vcardName} onChange={(e) => setVcardName(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">Phone</label>
-                    <input type="tel" value={vcardPhone} onChange={(e) => setVcardPhone(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none" />
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Phone</label>
+                    <input type="tel" value={vcardPhone} onChange={(e) => setVcardPhone(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
                   </div>
                   <div>
-                    <label className="mb-1 block text-xs text-gray-500">Email</label>
-                    <input type="email" value={vcardEmail} onChange={(e) => setVcardEmail(e.target.value)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none" />
+                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Email</label>
+                    <input type="email" value={vcardEmail} onChange={(e) => setVcardEmail(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
                   </div>
                 </div>
               )}
             </div>
 
             {/* Style */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Style</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Style</h3>
               <div className="mb-2 flex items-center gap-2">
-                <span className="w-12 text-xs text-gray-500">FG</span>
-                <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                <span className="text-xs font-mono text-gray-400">{fgColor}</span>
+                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>FG</span>
+                <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{fgColor}</span>
               </div>
               <div className="mb-2 flex items-center gap-2">
-                <span className="w-12 text-xs text-gray-500">BG</span>
-                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                <span className="text-xs font-mono text-gray-400">{bgColor}</span>
+                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>BG</span>
+                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{bgColor}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-12 text-xs text-gray-500">Size</span>
-                <input type="range" min={4} max={16} value={cellSize} onChange={(e) => setCellSize(Number(e.target.value))} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-                <span className="w-10 text-right text-xs font-mono text-gray-400">{cellSize}px</span>
+                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>Size</span>
+                <input type="range" min={4} max={16} value={cellSize} onChange={(e) => setCellSize(Number(e.target.value))} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
+                <span className="w-10 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{cellSize}px</span>
               </div>
             </div>
           </div>
