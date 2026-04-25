@@ -304,8 +304,28 @@ export default function FindReplaceContent() {
     return computeDiff(input, result.output);
   }, [input, result.output, hasChanges, showPreview]);
 
+  const inputStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+  const cardStyle: React.CSSProperties = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+  const ctaToggle = (active: boolean): React.CSSProperties => ({
+    background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+    border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  });
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Find &amp; Replace"
@@ -323,21 +343,15 @@ export default function FindReplaceContent() {
         <div className="mb-4 flex gap-2">
           <button
             onClick={() => setMode("single")}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "single"
-                ? "bg-gray-900 text-white"
-                : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={ctaToggle(mode === "single")}
           >
             Single
           </button>
           <button
             onClick={() => setMode("rules")}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              mode === "rules"
-                ? "bg-gray-900 text-white"
-                : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={ctaToggle(mode === "rules")}
           >
             Rules
           </button>
@@ -349,7 +363,8 @@ export default function FindReplaceContent() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Paste your text here..."
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="w-full px-4 py-3 text-base focus:outline-none"
+            style={inputStyle}
             rows={6}
             autoFocus
           />
@@ -357,10 +372,20 @@ export default function FindReplaceContent() {
 
         {/* Match highlighting display */}
         {highlightedSegments && matchCount > 0 && (
-          <div className="mt-2 whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm max-h-48 overflow-y-auto">
+          <div
+            className="mt-2 whitespace-pre-wrap px-4 py-3 text-base max-h-48 overflow-y-auto"
+            style={cardStyle}
+          >
             {highlightedSegments.map((seg, i) =>
               seg.highlighted ? (
-                <mark key={i} className="bg-yellow-200 rounded-sm px-0.5">
+                <mark
+                  key={i}
+                  className="rounded-sm px-0.5"
+                  style={{
+                    background: "color-mix(in srgb, #eab308 35%, var(--kami-surface-solid))",
+                    color: "color-mix(in srgb, #a16207 70%, var(--kami-text))",
+                  }}
+                >
                   {seg.text}
                 </mark>
               ) : (
@@ -371,14 +396,14 @@ export default function FindReplaceContent() {
         )}
 
         {/* Stats */}
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
           <span>
             {input.length} {input.length === 1 ? "character" : "characters"}
           </span>
           {input && (
             <button
               onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
+              style={{ color: "var(--kami-text-dim)" }}
             >
               Clear
             </button>
@@ -394,15 +419,23 @@ export default function FindReplaceContent() {
                 value={find}
                 onChange={(e) => setFind(e.target.value)}
                 placeholder="Find..."
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-4 py-3 text-base focus:outline-none"
+                style={inputStyle}
               />
               {find && matchCount > 0 && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                <span
+                  className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
+                >
                   {matchCount} {matchCount === 1 ? "match" : "matches"}
                 </span>
               )}
               {result.error && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-red-500">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "#ef4444" }}>
                   {result.error}
                 </span>
               )}
@@ -413,7 +446,8 @@ export default function FindReplaceContent() {
               value={replace}
               onChange={(e) => setReplace(e.target.value)}
               placeholder="Replace with..."
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={inputStyle}
             />
           </div>
         )}
@@ -429,19 +463,22 @@ export default function FindReplaceContent() {
                     value={rule.find}
                     onChange={(e) => updateRule(rule.id, "find", e.target.value)}
                     placeholder={`Find #${index + 1}...`}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-full px-4 py-2.5 text-sm focus:outline-none"
+                    style={inputStyle}
                   />
                   <input
                     type="text"
                     value={rule.replace}
                     onChange={(e) => updateRule(rule.id, "replace", e.target.value)}
                     placeholder="Replace with..."
-                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-full px-4 py-2.5 text-sm focus:outline-none"
+                    style={inputStyle}
                   />
                 </div>
                 <button
                   onClick={() => removeRule(rule.id)}
-                  className="mt-2 rounded-lg p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  className="mt-2 p-1.5 transition-colors"
+                  style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.5rem)" }}
                   title="Remove rule"
                 >
                   <TrashIcon />
@@ -450,15 +487,20 @@ export default function FindReplaceContent() {
             ))}
             <button
               onClick={addRule}
-              className="flex items-center gap-1.5 rounded-lg border border-dashed border-gray-300 px-3 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors w-full justify-center"
+              className="flex items-center gap-1.5 px-3 py-2 text-sm transition-colors w-full justify-center"
+              style={{
+                border: "1px dashed var(--kami-border-strong)",
+                color: "var(--kami-text-muted)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               <PlusIcon /> Add Rule
             </button>
             {result.error && (
-              <p className="text-xs text-red-500 mt-1">{result.error}</p>
+              <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{result.error}</p>
             )}
             {matchCount > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs mt-1" style={{ color: "var(--kami-text-muted)" }}>
                 {matchCount} total {matchCount === 1 ? "match" : "matches"} across all rules
               </p>
             )}
@@ -469,32 +511,23 @@ export default function FindReplaceContent() {
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={() => setIsRegex((v) => !v)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              isRegex
-                ? "bg-gray-900 text-white"
-                : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={ctaToggle(isRegex)}
           >
             .* Regex
           </button>
           <button
             onClick={() => setCaseSensitive((v) => !v)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-              caseSensitive
-                ? "bg-gray-900 text-white"
-                : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-            }`}
+            className="px-3 py-1.5 text-sm font-medium transition-colors"
+            style={ctaToggle(caseSensitive)}
           >
             Aa Case sensitive
           </button>
           {mode === "single" && (
             <button
               onClick={() => setReplaceAllMode((v) => !v)}
-              className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                replaceAllMode
-                  ? "bg-gray-900 text-white"
-                  : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={ctaToggle(replaceAllMode)}
             >
               Replace all
             </button>
@@ -505,7 +538,8 @@ export default function FindReplaceContent() {
         <div className="mt-4">
           <button
             onClick={() => setShowRegexLib((v) => !v)}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="flex items-center gap-1.5 text-sm transition-colors"
+            style={{ color: "var(--kami-text-muted)" }}
           >
             <ChevronIcon open={showRegexLib} />
             Common regex patterns
@@ -516,7 +550,13 @@ export default function FindReplaceContent() {
                 <button
                   key={item.label}
                   onClick={() => insertRegexPattern(item.pattern)}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:border-gray-300 hover:text-gray-900 transition-colors"
+                  className="px-3 py-1.5 text-xs font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                   title={item.pattern}
                 >
                   {item.label}
@@ -530,21 +570,29 @@ export default function FindReplaceContent() {
         {hasChanges && diffSegments && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">Preview</span>
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Preview</span>
               <button
                 onClick={() => setShowPreview((v) => !v)}
-                className="text-xs text-gray-400 hover:text-gray-600"
+                className="text-xs"
+                style={{ color: "var(--kami-text-dim)" }}
               >
                 {showPreview ? "Hide" : "Show"} preview
               </button>
             </div>
-            <div className="whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm max-h-64 overflow-y-auto">
+            <div
+              className="whitespace-pre-wrap px-4 py-3 text-base max-h-64 overflow-y-auto"
+              style={cardStyle}
+            >
               {diffSegments.map((seg, i) => {
                 if (seg.type === "removed") {
                   return (
                     <span
                       key={i}
-                      className="bg-red-100 text-red-700 line-through"
+                      className="line-through"
+                      style={{
+                        background: "color-mix(in srgb, #ef4444 22%, var(--kami-surface-solid))",
+                        color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+                      }}
                     >
                       {seg.text}
                     </span>
@@ -552,7 +600,13 @@ export default function FindReplaceContent() {
                 }
                 if (seg.type === "added") {
                   return (
-                    <span key={i} className="bg-green-100 text-green-700">
+                    <span
+                      key={i}
+                      style={{
+                        background: "color-mix(in srgb, #16a34a 22%, var(--kami-surface-solid))",
+                        color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+                      }}
+                    >
                       {seg.text}
                     </span>
                   );
@@ -567,15 +621,21 @@ export default function FindReplaceContent() {
         {hasChanges && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Result{" "}
-                <span className="text-gray-400 font-normal">
+                <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}>
                   - {mode === "rules" ? "all rules applied" : replaceAllMode ? "all" : "first"} replaced
                 </span>
               </span>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  boxShadow: "var(--kami-cta-shadow, none)",
+                }}
               >
                 {copied ? (
                   <>
@@ -590,7 +650,10 @@ export default function FindReplaceContent() {
                 )}
               </button>
             </div>
-            <div className="whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm">
+            <div
+              className="whitespace-pre-wrap px-4 py-3 text-base"
+              style={cardStyle}
+            >
               {result.output}
             </div>
           </div>

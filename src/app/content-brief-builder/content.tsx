@@ -302,12 +302,25 @@ export default function ContentBriefBuilderContent() {
     return Math.round((filled / total) * 100);
   }, [brief]);
 
-  const inputClass =
-    "w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200";
-  const labelClass = "mb-1 block text-xs font-medium text-gray-500";
+  const inputClass = "w-full px-3 py-2 text-sm focus:outline-none";
+  const inputStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+  const labelClass = "mb-1 block text-xs font-medium";
+  const labelStyle: React.CSSProperties = { color: "var(--kami-text-muted)" };
+  const cardStyle: React.CSSProperties = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Content Brief Builder"
@@ -325,13 +338,29 @@ export default function ContentBriefBuilderContent() {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium ${
-                completeness >= 80
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : completeness >= 50
-                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-gray-200 bg-gray-50 text-gray-600"
-              }`}
+              className="px-3 py-1.5 text-sm font-medium"
+              style={{
+                background:
+                  completeness >= 80
+                    ? "color-mix(in srgb, #10b981 12%, var(--kami-surface))"
+                    : completeness >= 50
+                      ? "color-mix(in srgb, #f59e0b 12%, var(--kami-surface))"
+                      : "var(--kami-surface)",
+                color:
+                  completeness >= 80
+                    ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
+                    : completeness >= 50
+                      ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
+                      : "var(--kami-text-muted)",
+                border: `1px solid ${
+                  completeness >= 80
+                    ? "color-mix(in srgb, #10b981 30%, transparent)"
+                    : completeness >= 50
+                      ? "color-mix(in srgb, #f59e0b 30%, transparent)"
+                      : "var(--kami-border-strong)"
+                }`,
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {completeness}% complete
             </div>
@@ -339,19 +368,37 @@ export default function ContentBriefBuilderContent() {
           <div className="flex gap-2">
             <button
               onClick={handleCopy}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              className="px-4 py-2 text-sm font-medium"
+              style={{
+                background: "var(--kami-cta-bg)",
+                color: "var(--kami-cta-text)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                boxShadow: "var(--kami-cta-shadow, none)",
+              }}
             >
               {copied ? "Copied!" : "Copy Markdown"}
             </button>
             <button
               onClick={handleDownload}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:border-gray-300"
+              className="px-4 py-2 text-sm"
+              style={{
+                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               Download
             </button>
             <button
               onClick={handleClear}
-              className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 hover:border-gray-300"
+              className="px-4 py-2 text-sm"
+              style={{
+                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               Clear
             </button>
@@ -362,24 +409,25 @@ export default function ContentBriefBuilderContent() {
           {/* Left column: form */}
           <div className="space-y-4 lg:col-span-2">
             {/* Core */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Content Spec
               </h2>
               <div className="space-y-3">
                 <div>
-                  <label className={labelClass}>Working Title</label>
+                  <label className={labelClass} style={labelStyle}>Working Title</label>
                   <input
                     type="text"
                     value={brief.title}
                     onChange={(e) => update("title", e.target.value)}
                     placeholder="How to Choose the Right Business Phone System"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Primary Keyword</label>
+                    <label className={labelClass} style={labelStyle}>Primary Keyword</label>
                     <input
                       type="text"
                       value={brief.primaryKeyword}
@@ -388,10 +436,11 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="business phone system"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>
+                    <label className={labelClass} style={labelStyle}>
                       Secondary Keywords (comma-separated)
                     </label>
                     <input
@@ -402,12 +451,13 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="VoIP for business, cloud phone"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   <div>
-                    <label className={labelClass}>Search Intent</label>
+                    <label className={labelClass} style={labelStyle}>Search Intent</label>
                     <select
                       value={brief.searchIntent}
                       onChange={(e) =>
@@ -417,6 +467,7 @@ export default function ContentBriefBuilderContent() {
                         )
                       }
                       className={inputClass}
+                      style={inputStyle}
                     >
                       {INTENTS.map((i) => (
                         <option key={i.value} value={i.value}>
@@ -426,7 +477,7 @@ export default function ContentBriefBuilderContent() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelClass}>Content Type</label>
+                    <label className={labelClass} style={labelStyle}>Content Type</label>
                     <select
                       value={brief.contentType}
                       onChange={(e) =>
@@ -436,6 +487,7 @@ export default function ContentBriefBuilderContent() {
                         )
                       }
                       className={inputClass}
+                      style={inputStyle}
                     >
                       {CONTENT_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>
@@ -445,11 +497,12 @@ export default function ContentBriefBuilderContent() {
                     </select>
                   </div>
                   <div>
-                    <label className={labelClass}>Tone</label>
+                    <label className={labelClass} style={labelStyle}>Tone</label>
                     <select
                       value={brief.tone}
                       onChange={(e) => update("tone", e.target.value)}
                       className={inputClass}
+                      style={inputStyle}
                     >
                       <option value="">Select tone</option>
                       {TONES.map((t) => (
@@ -462,7 +515,7 @@ export default function ContentBriefBuilderContent() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className={labelClass}>Min Words</label>
+                    <label className={labelClass} style={labelStyle}>Min Words</label>
                     <input
                       type="number"
                       value={brief.wordCountMin}
@@ -471,10 +524,11 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="1500"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>Max Words</label>
+                    <label className={labelClass} style={labelStyle}>Max Words</label>
                     <input
                       type="number"
                       value={brief.wordCountMax}
@@ -483,6 +537,7 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="2500"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                 </div>
@@ -490,13 +545,13 @@ export default function ContentBriefBuilderContent() {
             </div>
 
             {/* Audience */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Target Audience
               </h2>
               <div className="space-y-3">
                 <div>
-                  <label className={labelClass}>Who is this for?</label>
+                  <label className={labelClass} style={labelStyle}>Who is this for?</label>
                   <input
                     type="text"
                     value={brief.targetAudience}
@@ -505,10 +560,11 @@ export default function ContentBriefBuilderContent() {
                     }
                     placeholder="SMB ops managers evaluating phone systems"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>
+                  <label className={labelClass} style={labelStyle}>
                     Pain points / problems they have
                   </label>
                   <textarea
@@ -519,15 +575,16 @@ export default function ContentBriefBuilderContent() {
                     placeholder="Expensive legacy system, poor mobile experience, no CRM integration"
                     rows={2}
                     className={inputClass + " resize-none"}
+                    style={inputStyle}
                   />
                 </div>
               </div>
             </div>
 
             {/* Outline */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div className="p-5" style={cardStyle}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">
+                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Outline ({brief.sections.length} sections)
                 </h2>
               </div>
@@ -535,9 +592,13 @@ export default function ContentBriefBuilderContent() {
                 {brief.sections.map((s, i) => (
                   <div
                     key={s.id}
-                    className="group flex items-start gap-2 rounded-lg border border-gray-100 px-3 py-2 hover:border-gray-200"
+                    className="group flex items-start gap-2 px-3 py-2"
+                    style={{
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
-                    <span className="mt-2 flex-shrink-0 text-xs font-medium text-gray-400">
+                    <span className="mt-2 flex-shrink-0 text-xs font-medium" style={{ color: "var(--kami-text-dim)" }}>
                       H2
                     </span>
                     <div className="min-w-0 flex-1 space-y-1">
@@ -549,6 +610,7 @@ export default function ContentBriefBuilderContent() {
                         }
                         placeholder={`Section ${i + 1} heading`}
                         className="w-full border-0 bg-transparent px-0 py-0 text-sm font-medium focus:outline-none focus:ring-0"
+                        style={{ color: "var(--kami-text)" }}
                       />
                       <input
                         type="text"
@@ -557,27 +619,31 @@ export default function ContentBriefBuilderContent() {
                           updateSection(s.id, "notes", e.target.value)
                         }
                         placeholder="Notes for writer"
-                        className="w-full border-0 bg-transparent px-0 py-0 text-xs text-gray-500 focus:outline-none focus:ring-0"
+                        className="w-full border-0 bg-transparent px-0 py-0 text-xs focus:outline-none focus:ring-0"
+                        style={{ color: "var(--kami-text-muted)" }}
                       />
                     </div>
                     <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
                       <button
                         onClick={() => moveSection(s.id, -1)}
                         disabled={i === 0}
-                        className="rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         ↑
                       </button>
                       <button
                         onClick={() => moveSection(s.id, 1)}
                         disabled={i === brief.sections.length - 1}
-                        className="rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         ↓
                       </button>
                       <button
                         onClick={() => removeSection(s.id)}
-                        className="rounded px-1 py-0.5 text-xs text-gray-400 hover:text-gray-600"
+                        className="rounded px-1 py-0.5 text-xs"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         ✕
                       </button>
@@ -587,15 +653,20 @@ export default function ContentBriefBuilderContent() {
               </div>
               <button
                 onClick={addSection}
-                className="mt-2 w-full rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-700"
+                className="mt-2 w-full px-4 py-2 text-sm transition-colors"
+                style={{
+                  border: "1px dashed var(--kami-border-strong)",
+                  color: "var(--kami-text-muted)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 + Add Section
               </button>
             </div>
 
             {/* Key points */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Key Points &amp; Requirements
               </h2>
               <textarea
@@ -604,18 +675,19 @@ export default function ContentBriefBuilderContent() {
                 placeholder="Must-include facts, angles, or constraints for the writer"
                 rows={3}
                 className={inputClass + " resize-none"}
+                style={inputStyle}
               />
             </div>
 
             {/* SEO & Links */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 SEO &amp; Links
               </h2>
               <div className="space-y-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
-                    <label className={labelClass}>Internal Links</label>
+                    <label className={labelClass} style={labelStyle}>Internal Links</label>
                     <input
                       type="text"
                       value={brief.internalLinks}
@@ -624,10 +696,11 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="/features, /pricing"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                   <div>
-                    <label className={labelClass}>External Links</label>
+                    <label className={labelClass} style={labelStyle}>External Links</label>
                     <input
                       type="text"
                       value={brief.externalLinks}
@@ -636,21 +709,23 @@ export default function ContentBriefBuilderContent() {
                       }
                       placeholder="G2 reviews, industry reports"
                       className={inputClass}
+                      style={inputStyle}
                     />
                   </div>
                 </div>
                 <div>
-                  <label className={labelClass}>Meta Title (optional)</label>
+                  <label className={labelClass} style={labelStyle}>Meta Title (optional)</label>
                   <input
                     type="text"
                     value={brief.metaTitle}
                     onChange={(e) => update("metaTitle", e.target.value)}
                     placeholder="Leave blank to auto-derive from title"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>
+                  <label className={labelClass} style={labelStyle}>
                     Meta Description (optional)
                   </label>
                   <input
@@ -661,29 +736,31 @@ export default function ContentBriefBuilderContent() {
                     }
                     placeholder="150-160 characters"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
               </div>
             </div>
 
             {/* CTA */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Call to Action
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className={labelClass}>Primary CTA</label>
+                  <label className={labelClass} style={labelStyle}>Primary CTA</label>
                   <input
                     type="text"
                     value={brief.primaryCta}
                     onChange={(e) => update("primaryCta", e.target.value)}
                     placeholder="Start free trial"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Placement</label>
+                  <label className={labelClass} style={labelStyle}>Placement</label>
                   <input
                     type="text"
                     value={brief.ctaPlacement}
@@ -692,14 +769,15 @@ export default function ContentBriefBuilderContent() {
                     }
                     placeholder="After comparison table and at end"
                     className={inputClass}
+                    style={inputStyle}
                   />
                 </div>
               </div>
             </div>
 
             {/* Additional notes */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div className="p-5" style={cardStyle}>
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Additional Notes
               </h2>
               <textarea
@@ -710,20 +788,21 @@ export default function ContentBriefBuilderContent() {
                 placeholder="Anything else the writer should know"
                 rows={3}
                 className={inputClass + " resize-none"}
+                style={inputStyle}
               />
             </div>
           </div>
 
           {/* Right column: preview */}
           <div className="lg:col-span-1">
-            <div className="sticky top-4 rounded-xl border border-gray-200 bg-white shadow-sm">
-              <div className="border-b border-gray-100 px-5 py-3">
-                <h2 className="text-sm font-semibold text-gray-700">
+            <div className="sticky top-4" style={cardStyle}>
+              <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Preview
                 </h2>
               </div>
               <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-5">
-                <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed text-gray-700">
+                <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>
                   {formatted}
                 </pre>
               </div>

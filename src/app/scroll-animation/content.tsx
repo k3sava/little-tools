@@ -304,11 +304,18 @@ export default function ScrollAnimationContent() {
 
   /* ---- Render ---- */
 
-  const selectCls = "rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-300";
-  const labelCls = "block text-xs font-medium text-gray-500 mb-1";
+  const selectCls = "px-3 py-2 text-sm focus:outline-none";
+  const selectStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  };
+  const labelCls = "block text-xs font-medium mb-1";
+  const labelStyle: React.CSSProperties = { color: "var(--kami-text-muted)" };
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Scroll Animation Generator"
@@ -323,14 +330,22 @@ export default function ScrollAnimationContent() {
         />
 
         {/* Browser support badge */}
-        <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs text-blue-700">
+        <div
+          className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 text-xs"
+          style={{
+            background: "color-mix(in srgb, #2563eb 10%, var(--kami-surface))",
+            color: "color-mix(in srgb, #2563eb 70%, var(--kami-text))",
+            border: "1px solid color-mix(in srgb, #2563eb 30%, transparent)",
+            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+          }}
+        >
           <span className="font-medium">Browser support:</span>
           Chrome 115+, Edge 115+. Firefox behind flag.{" "}
           <a
             href="https://caniuse.com/css-animation-timeline"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-blue-900"
+            className="underline"
           >
             Can I Use
           </a>
@@ -338,22 +353,32 @@ export default function ScrollAnimationContent() {
 
         {/* ---- Presets ---- */}
         <section className="mt-8">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">Presets</h2>
+          <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {PRESETS.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => setSelectedPreset(p.id)}
-                className={`flex flex-col items-center justify-center gap-1 rounded-xl border px-4 py-4 text-sm font-medium transition-all ${
-                  selectedPreset === p.id
-                    ? "border-gray-900 bg-gray-900 text-white shadow-sm"
-                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50 shadow-sm"
-                }`}
-              >
-                <span className="text-lg">{p.icon}</span>
-                <span>{p.label}</span>
-              </button>
-            ))}
+            {PRESETS.map((p) => {
+              const active = selectedPreset === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => setSelectedPreset(p.id)}
+                  className="flex flex-col items-center justify-center gap-1 px-4 py-4 text-sm font-medium transition-all"
+                  style={{
+                    background: active
+                      ? "var(--kami-cta-bg)"
+                      : "var(--kami-surface-solid)",
+                    color: active
+                      ? "var(--kami-cta-text)"
+                      : "var(--kami-text-muted)",
+                    border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <span className="text-lg">{p.icon}</span>
+                  <span>{p.label}</span>
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -361,59 +386,78 @@ export default function ScrollAnimationContent() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[280px_1fr]">
           {/* Controls sidebar */}
           <div className="space-y-5">
-            <h2 className="text-sm font-semibold text-gray-700">Customize</h2>
+            <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Customize</h2>
 
             {/* Timeline type */}
             <div>
-              <span className={labelCls}>Timeline type</span>
+              <span className={labelCls} style={labelStyle}>Timeline type</span>
               <div className="flex gap-2">
-                {(["scroll", "view"] as TimelineType[]).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setTimelineType(t)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                      timelineType === t
-                        ? "bg-gray-900 text-white"
-                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
-                    }`}
-                  >
-                    {t}()
-                  </button>
-                ))}
+                {(["scroll", "view"] as TimelineType[]).map((t) => {
+                  const active = timelineType === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTimelineType(t)}
+                      className="px-3 py-1.5 text-sm font-medium transition-colors"
+                      style={{
+                        background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+                        color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                        border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }}
+                    >
+                      {t}()
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Timeline axis */}
             <div>
-              <span className={labelCls}>Axis</span>
+              <span className={labelCls} style={labelStyle}>Axis</span>
               <div className="flex gap-2">
-                {(["block", "inline"] as TimelineAxis[]).map((a) => (
-                  <button
-                    key={a}
-                    onClick={() => setTimelineAxis(a)}
-                    className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                      timelineAxis === a
-                        ? "bg-gray-900 text-white"
-                        : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-100"
-                    }`}
-                  >
-                    {a}
-                  </button>
-                ))}
+                {(["block", "inline"] as TimelineAxis[]).map((a) => {
+                  const active = timelineAxis === a;
+                  return (
+                    <button
+                      key={a}
+                      onClick={() => setTimelineAxis(a)}
+                      className="px-3 py-1.5 text-sm font-medium transition-colors"
+                      style={{
+                        background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+                        color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                        border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }}
+                    >
+                      {a}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Animation range (view timeline only) */}
             {timelineType === "view" && (
-              <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                <span className="text-xs font-semibold text-gray-600">Animation range</span>
+              <div
+                className="space-y-3 p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <span className="text-xs font-semibold" style={{ color: "var(--kami-text-muted)" }}>Animation range</span>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <span className={labelCls}>Start</span>
+                    <span className={labelCls} style={labelStyle}>Start</span>
                     <select
                       value={rangeStart}
                       onChange={(e) => setRangeStart(e.target.value as RangeName)}
                       className={selectCls + " w-full"}
+                      style={selectStyle}
                     >
                       {RANGE_NAMES.map((n) => (
                         <option key={n} value={n}>
@@ -423,7 +467,7 @@ export default function ScrollAnimationContent() {
                     </select>
                   </div>
                   <div>
-                    <span className={labelCls}>Start %</span>
+                    <span className={labelCls} style={labelStyle}>Start %</span>
                     <input
                       type="number"
                       min={0}
@@ -431,14 +475,16 @@ export default function ScrollAnimationContent() {
                       value={rangeStartPct}
                       onChange={(e) => setRangeStartPct(Number(e.target.value))}
                       className={selectCls + " w-full"}
+                      style={selectStyle}
                     />
                   </div>
                   <div>
-                    <span className={labelCls}>End</span>
+                    <span className={labelCls} style={labelStyle}>End</span>
                     <select
                       value={rangeEnd}
                       onChange={(e) => setRangeEnd(e.target.value as RangeName)}
                       className={selectCls + " w-full"}
+                      style={selectStyle}
                     >
                       {RANGE_NAMES.map((n) => (
                         <option key={n} value={n}>
@@ -448,7 +494,7 @@ export default function ScrollAnimationContent() {
                     </select>
                   </div>
                   <div>
-                    <span className={labelCls}>End %</span>
+                    <span className={labelCls} style={labelStyle}>End %</span>
                     <input
                       type="number"
                       min={0}
@@ -456,6 +502,7 @@ export default function ScrollAnimationContent() {
                       value={rangeEndPct}
                       onChange={(e) => setRangeEndPct(Number(e.target.value))}
                       className={selectCls + " w-full"}
+                      style={selectStyle}
                     />
                   </div>
                 </div>
@@ -464,14 +511,14 @@ export default function ScrollAnimationContent() {
 
             {/* Duration */}
             <div>
-              <span className={labelCls}>Duration</span>
+              <span className={labelCls} style={labelStyle}>Duration</span>
               <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+                <label className="flex items-center gap-1.5 text-sm cursor-pointer" style={{ color: "var(--kami-text-muted)" }}>
                   <input
                     type="checkbox"
                     checked={durationAuto}
                     onChange={(e) => setDurationAuto(e.target.checked)}
-                    className="rounded border-gray-300"
+                    style={{ accentColor: "var(--kami-text)" }}
                   />
                   auto
                 </label>
@@ -484,21 +531,23 @@ export default function ScrollAnimationContent() {
                     value={durationMs}
                     onChange={(e) => setDurationMs(Number(e.target.value))}
                     className={selectCls + " w-24"}
+                    style={selectStyle}
                   />
                 )}
                 {!durationAuto && (
-                  <span className="text-xs text-gray-400">ms</span>
+                  <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>ms</span>
                 )}
               </div>
             </div>
 
             {/* Direction */}
             <div>
-              <span className={labelCls}>Direction</span>
+              <span className={labelCls} style={labelStyle}>Direction</span>
               <select
                 value={direction}
                 onChange={(e) => setDirection(e.target.value as AnimationDirection)}
                 className={selectCls + " w-full"}
+                style={selectStyle}
               >
                 {(["normal", "reverse", "alternate"] as AnimationDirection[]).map((d) => (
                   <option key={d} value={d}>
@@ -510,11 +559,12 @@ export default function ScrollAnimationContent() {
 
             {/* Fill mode */}
             <div>
-              <span className={labelCls}>Fill mode</span>
+              <span className={labelCls} style={labelStyle}>Fill mode</span>
               <select
                 value={fillMode}
                 onChange={(e) => setFillMode(e.target.value as FillMode)}
                 className={selectCls + " w-full"}
+                style={selectStyle}
               >
                 {(["none", "forwards", "backwards", "both"] as FillMode[]).map((f) => (
                   <option key={f} value={f}>
@@ -527,37 +577,54 @@ export default function ScrollAnimationContent() {
 
           {/* ---- Live preview ---- */}
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 mb-3">
+            <h2 className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text-muted)" }}>
               Live Preview{" "}
-              <span className="text-xs font-normal text-gray-400">
+              <span className="text-xs font-normal" style={{ color: "var(--kami-text-dim)" }}>
                 scroll to see the animation
               </span>
             </h2>
             <div
               ref={scrollRef}
-              className="relative h-[400px] overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 shadow-sm"
+              className="relative h-[400px] overflow-y-auto"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
             >
               {/* Spacer top */}
               <div className="flex flex-col items-center gap-3 px-6 py-10">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={`top-${i}`}
-                    className="h-14 w-full rounded-lg bg-gray-200/70"
+                    className="h-14 w-full"
+                    style={{
+                      background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 ))}
-                <p className="text-xs text-gray-400 mt-2">\u2193 scroll down</p>
+                <p className="text-xs mt-2" style={{ color: "var(--kami-text-dim)" }}>\u2193 scroll down</p>
               </div>
 
               {/* Animated element */}
               <div className="flex justify-center px-6 py-8">
                 <div
                   ref={targetRef}
-                  className="w-full max-w-sm rounded-xl border border-gray-300 bg-white p-8 shadow-md text-center"
-                  style={buildPreviewStyle(preset, progress)}
+                  className="w-full max-w-sm p-8 text-center"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                    color: "var(--kami-text)",
+                    ...buildPreviewStyle(preset, progress),
+                  }}
                 >
                   <div className="text-3xl mb-2">{preset.icon}</div>
-                  <h3 className="font-semibold text-gray-800">{preset.label}</h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <h3 className="font-semibold" style={{ color: "var(--kami-text)" }}>{preset.label}</h3>
+                  <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
                     Animated with scroll-driven CSS
                   </p>
                 </div>
@@ -568,7 +635,11 @@ export default function ScrollAnimationContent() {
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={`bot-${i}`}
-                    className="h-14 w-full rounded-lg bg-gray-200/70"
+                    className="h-14 w-full"
+                    style={{
+                      background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 ))}
               </div>
@@ -576,13 +647,23 @@ export default function ScrollAnimationContent() {
 
             {/* Progress indicator */}
             <div className="mt-2 flex items-center gap-2">
-              <div className="h-1.5 flex-1 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-1.5 flex-1 overflow-hidden"
+                style={{
+                  background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
+                  borderRadius: "999px",
+                }}
+              >
                 <div
-                  className="h-full rounded-full bg-gray-900 transition-all duration-75"
-                  style={{ width: `${(progress * 100).toFixed(0)}%` }}
+                  className="h-full transition-all duration-75"
+                  style={{
+                    width: `${(progress * 100).toFixed(0)}%`,
+                    background: "var(--kami-text)",
+                    borderRadius: "999px",
+                  }}
                 />
               </div>
-              <span className="text-xs text-gray-400 tabular-nums w-10 text-right">
+              <span className="text-xs tabular-nums w-10 text-right" style={{ color: "var(--kami-text-dim)" }}>
                 {(progress * 100).toFixed(0)}%
               </span>
             </div>
@@ -591,27 +672,61 @@ export default function ScrollAnimationContent() {
 
         {/* ---- Generated CSS ---- */}
         <section className="mt-10 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-700">Generated CSS</h2>
-          <div className="relative rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <pre className="overflow-x-auto p-5 text-sm leading-relaxed font-mono text-gray-800 whitespace-pre">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Generated CSS</h2>
+          <div
+            className="relative overflow-hidden"
+            style={{
+              background: "var(--kami-overlay-bg, #111827)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <pre
+              className="overflow-x-auto p-5 text-sm leading-relaxed font-mono whitespace-pre"
+              style={{ color: "var(--kami-overlay-text, #f3f4f6)" }}
+            >
               {css}
             </pre>
             <button
               onClick={copyCSS}
-              className="absolute right-3 top-3 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+              className="absolute right-3 top-3 px-3 py-1.5 text-xs font-medium transition-colors"
+              style={{
+                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {copied ? "Copied!" : "Copy CSS"}
             </button>
           </div>
 
-          <h2 className="text-sm font-semibold text-gray-700">HTML</h2>
-          <div className="relative rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-            <pre className="overflow-x-auto p-5 text-sm leading-relaxed font-mono text-gray-800 whitespace-pre">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>HTML</h2>
+          <div
+            className="relative overflow-hidden"
+            style={{
+              background: "var(--kami-overlay-bg, #111827)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <pre
+              className="overflow-x-auto p-5 text-sm leading-relaxed font-mono whitespace-pre"
+              style={{ color: "var(--kami-overlay-text, #f3f4f6)" }}
+            >
               {html}
             </pre>
             <button
               onClick={copyHTML}
-              className="absolute right-3 top-3 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors shadow-sm"
+              className="absolute right-3 top-3 px-3 py-1.5 text-xs font-medium transition-colors"
+              style={{
+                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {copiedHTML ? "Copied!" : "Copy HTML"}
             </button>

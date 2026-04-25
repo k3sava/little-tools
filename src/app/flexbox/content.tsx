@@ -352,8 +352,15 @@ export default function FlexboxContent() {
   const axisLabel = isVertical ? "Main: vertical" : "Main: horizontal";
   const crossLabel = isVertical ? "Cross: horizontal" : "Cross: vertical";
 
+  const cardStyle: React.CSSProperties = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Flexbox Playground"
@@ -368,14 +375,20 @@ export default function FlexboxContent() {
         />
 
         {/* ─── Presets ─── */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-medium text-gray-700">Layout Presets</h3>
+        <div className="mt-6 p-4" style={cardStyle}>
+          <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Layout Presets</h3>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
               <button
                 key={p.name}
                 onClick={() => applyPreset(p)}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                className="px-3 py-1.5 text-xs transition-colors"
+                style={{
+                  background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                  border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
                 title={p.desc}
               >
                 {p.name}
@@ -386,23 +399,32 @@ export default function FlexboxContent() {
 
         {/* ─── Viewport toggle ─── */}
         <div className="mt-4 flex items-center gap-1">
-          <span className="mr-2 text-xs text-gray-500">Preview width:</span>
-          {VIEWPORTS.map((v) => (
-            <button
-              key={v.label}
-              onClick={() => setViewport(v.width)}
-              className={`rounded-md px-2.5 py-1 text-xs transition-colors ${viewport === v.width ? "bg-gray-900 text-white" : "border border-gray-200 text-gray-500 hover:bg-gray-100"}`}
-            >
-              {v.label}{v.width > 0 ? ` (${v.width}px)` : ""}
-            </button>
-          ))}
+          <span className="mr-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>Preview width:</span>
+          {VIEWPORTS.map((v) => {
+            const active = viewport === v.width;
+            return (
+              <button
+                key={v.label}
+                onClick={() => setViewport(v.width)}
+                className="px-2.5 py-1 text-xs transition-colors"
+                style={{
+                  background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+                  color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                  border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                }}
+              >
+                {v.label}{v.width > 0 ? ` (${v.width}px)` : ""}
+              </button>
+            );
+          })}
         </div>
 
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* ─── Preview ─── */}
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="p-5" style={cardStyle}>
             {/* Axis indicators */}
-            <div className="mb-3 flex items-center gap-4 text-xs text-gray-400">
+            <div className="mb-3 flex items-center gap-4 text-xs" style={{ color: "var(--kami-text-dim)" }}>
               <span className="flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
                   {isVertical ? <path d="M7 2v10M4 9l3 3 3-3" /> : <path d="M2 7h10M9 4l3 3-3 3" />}
@@ -418,10 +440,12 @@ export default function FlexboxContent() {
             </div>
 
             <div
-              className="mx-auto overflow-auto rounded-lg border-2 border-dashed border-gray-300 p-4 transition-all"
+              className="mx-auto overflow-auto p-4 transition-all"
               style={{
                 maxWidth: viewport > 0 ? viewport : "none",
                 minHeight: 300,
+                border: "2px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
                 display: "flex",
                 flexDirection: container.direction as React.CSSProperties["flexDirection"],
                 flexWrap: container.wrap as React.CSSProperties["flexWrap"],
@@ -436,7 +460,7 @@ export default function FlexboxContent() {
                 <div
                   key={child.id}
                   onClick={() => setSelected(child.id === selected ? null : child.id)}
-                  className={`flex min-h-[60px] min-w-[48px] cursor-pointer items-center justify-center rounded-lg text-white text-xs font-medium transition-all select-none ${child.id === selected ? "ring-2 ring-gray-900 ring-offset-2" : "hover:opacity-90"}`}
+                  className={`flex min-h-[60px] min-w-[48px] cursor-pointer items-center justify-center rounded-lg text-white text-xs font-medium transition-all select-none ${child.id === selected ? "ring-2 ring-offset-2" : "hover:opacity-90"}`}
                   style={{
                     backgroundColor: child.color,
                     order: child.order,
@@ -445,6 +469,9 @@ export default function FlexboxContent() {
                     flexBasis: child.flexBasis,
                     alignSelf: child.alignSelf as React.CSSProperties["alignSelf"],
                     padding: "12px 14px",
+                    ...(child.id === selected
+                      ? ({ "--tw-ring-color": "var(--kami-text)" } as React.CSSProperties)
+                      : {}),
                   }}
                 >
                   {child.label}
@@ -452,9 +479,31 @@ export default function FlexboxContent() {
               ))}
             </div>
             <div className="mt-3 flex gap-2">
-              <button onClick={addChild} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100">+ Add Item</button>
+              <button
+                onClick={addChild}
+                className="px-3 py-1.5 text-xs"
+                style={{
+                  background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                  border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
+                + Add Item
+              </button>
               {children.length > 0 && (
-                <button onClick={() => { nextId = 1; setChildren([makeChild(), makeChild(), makeChild()]); setSelected(null); }} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100">Reset</button>
+                <button
+                  onClick={() => { nextId = 1; setChildren([makeChild(), makeChild(), makeChild()]); setSelected(null); }}
+                  className="px-3 py-1.5 text-xs"
+                  style={{
+                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text-dim)",
+                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
+                >
+                  Reset
+                </button>
               )}
             </div>
           </div>
@@ -462,8 +511,8 @@ export default function FlexboxContent() {
           {/* ─── Controls Panel ─── */}
           <div className="space-y-4">
             {/* Container props */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Container</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Container</h3>
               <SelectControl label="Direction" value={container.direction} options={DIRECTION} onChange={(v) => setC({ direction: v })} />
               <SelectControl label="Wrap" value={container.wrap} options={WRAP} onChange={(v) => setC({ wrap: v })} />
               <SelectControl label="Justify" value={container.justify} options={JUSTIFY} onChange={(v) => setC({ justify: v })} />
@@ -477,18 +526,18 @@ export default function FlexboxContent() {
 
             {/* Child props */}
             {selectedChild && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="p-4" style={cardStyle}>
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-medium text-gray-700">Item {selectedIdx + 1}</h3>
+                  <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Item {selectedIdx + 1}</h3>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => moveChild(selectedChild.id, -1)} disabled={selectedIdx === 0} className="rounded p-0.5 text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move up">
+                    <button onClick={() => moveChild(selectedChild.id, -1)} disabled={selectedIdx === 0} className="rounded p-0.5 text-xs disabled:opacity-30" style={{ color: "var(--kami-text-dim)" }} title="Move up">
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 8l4-4 4 4" /></svg>
                     </button>
-                    <button onClick={() => moveChild(selectedChild.id, 1)} disabled={selectedIdx === children.length - 1} className="rounded p-0.5 text-xs text-gray-400 hover:text-gray-700 disabled:opacity-30" title="Move down">
+                    <button onClick={() => moveChild(selectedChild.id, 1)} disabled={selectedIdx === children.length - 1} className="rounded p-0.5 text-xs disabled:opacity-30" style={{ color: "var(--kami-text-dim)" }} title="Move down">
                       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6l4 4 4-4" /></svg>
                     </button>
                     {children.length > 1 && (
-                      <button onClick={() => removeChild(selectedChild.id)} className="ml-1 text-xs text-gray-400 hover:text-red-500">Remove</button>
+                      <button onClick={() => removeChild(selectedChild.id)} className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>Remove</button>
                     )}
                   </div>
                 </div>
@@ -497,13 +546,20 @@ export default function FlexboxContent() {
                 <NumControl label="Flex Shrink" value={selectedChild.flexShrink} min={0} max={10} onChange={(v) => updateChild(selectedChild.id, { flexShrink: v })} />
                 <SelectControl label="Flex Basis" value={selectedChild.flexBasis} options={BASIS_OPTIONS} onChange={(v) => updateChild(selectedChild.id, { flexBasis: v })} />
                 <SelectControl label="Align Self" value={selectedChild.alignSelf} options={ALIGN_SELF} onChange={(v) => updateChild(selectedChild.id, { alignSelf: v })} />
-                <div className="mt-2 rounded-md bg-gray-50 px-2.5 py-1.5 font-mono text-xs text-gray-500">
+                <div
+                  className="mt-2 px-2.5 py-1.5 font-mono text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-input-radius, 0.375rem)",
+                  }}
+                >
                   flex: {selectedChild.flexGrow} {selectedChild.flexShrink} {selectedChild.flexBasis}
                 </div>
               </div>
             )}
             {!selectedChild && (
-              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center text-sm text-gray-400">
+              <div className="p-4 text-center text-sm" style={{ ...cardStyle, color: "var(--kami-text-dim)" }}>
                 Click an item to edit its properties
               </div>
             )}
@@ -511,24 +567,50 @@ export default function FlexboxContent() {
         </div>
 
         {/* ─── Output ─── */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mt-6 p-4" style={cardStyle}>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-1">
-              {(["css", "tailwind", "react"] as OutputTab[]).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setOutputTab(tab)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${outputTab === tab ? "bg-gray-900 text-white" : "text-gray-500 hover:bg-gray-100"}`}
-                >
-                  {tab === "css" ? "CSS" : tab === "tailwind" ? "Tailwind" : "React"}
-                </button>
-              ))}
+              {(["css", "tailwind", "react"] as OutputTab[]).map((tab) => {
+                const active = outputTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setOutputTab(tab)}
+                    className="px-2.5 py-1 text-xs font-medium transition-colors"
+                    style={{
+                      background: active ? "var(--kami-cta-bg)" : "transparent",
+                      color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    }}
+                  >
+                    {tab === "css" ? "CSS" : tab === "tailwind" ? "Tailwind" : "React"}
+                  </button>
+                );
+              })}
             </div>
-            <button onClick={copy} className="flex items-center gap-1.5 rounded border border-gray-200 px-2 py-1 text-xs text-gray-500 hover:text-gray-700 transition-colors">
+            <button
+              onClick={copy}
+              className="flex items-center gap-1.5 px-2 py-1 text-xs transition-colors"
+              style={{
+                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+                color: "var(--kami-cta2-text, var(--kami-text-muted))",
+                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+                borderRadius: "var(--kami-cta-radius, 0.375rem)",
+              }}
+            >
               {copied ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
             </button>
           </div>
-          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm leading-relaxed text-gray-100"><code>{currentOutput}</code></pre>
+          <pre
+            className="overflow-x-auto p-4 text-sm leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #111827)",
+              color: "var(--kami-overlay-text, #f3f4f6)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          >
+            <code>{currentOutput}</code>
+          </pre>
         </div>
       </div>
     </div>
@@ -539,11 +621,17 @@ export default function FlexboxContent() {
 function SelectControl({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs text-gray-500">{label}</span>
+      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs focus:border-gray-400 focus:outline-none"
+        className="flex-1 px-2 py-1 text-xs focus:outline-none"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.25rem)",
+        }}
       >
         {options.map((o) => (
           <option key={o} value={o}>{o}</option>
@@ -556,13 +644,17 @@ function SelectControl({ label, value, options, onChange }: { label: string; val
 function NumControl({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs text-gray-500">{label}</span>
+      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
       <input
         type="range" min={min} max={max} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{
+          background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
+          accentColor: "var(--kami-text)",
+        }}
       />
-      <span className="w-8 text-right text-xs font-mono text-gray-400">{value}</span>
+      <span className="w-8 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}</span>
     </div>
   );
 }
@@ -570,13 +662,17 @@ function NumControl({ label, value, min, max, onChange }: { label: string; value
 function GapControl({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs text-gray-500">{label}</span>
+      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
       <input
         type="range" min={0} max={40} value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{
+          background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
+          accentColor: "var(--kami-text)",
+        }}
       />
-      <span className="w-10 text-right text-xs font-mono text-gray-400">{value}px</span>
+      <span className="w-10 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}px</span>
     </div>
   );
 }

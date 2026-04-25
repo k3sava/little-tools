@@ -650,24 +650,58 @@ export default function MarkdownEditorContent() {
   );
 
   const isDark = theme === "dark";
-  const bg = isDark ? "bg-[#1e1e1e]" : "bg-white";
-  const textColor = isDark ? "text-gray-200" : "text-gray-900";
-  const mutedColor = isDark ? "text-gray-400" : "text-gray-500";
-  const borderColor = isDark ? "border-gray-700" : "border-gray-200";
-  const editorBg = isDark ? "bg-[#1e1e1e]" : "bg-white";
-  const pageBg = isDark ? "bg-[#161616]" : "";
-  const btnClass = isDark
-    ? "border-gray-600 bg-gray-800 text-gray-200 hover:bg-gray-700"
-    : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50";
+  // Kami-bound styles for light mode; dark mode keeps editor-internal palette
+  const bgStyle: React.CSSProperties = isDark
+    ? { background: "#1e1e1e" }
+    : { background: "var(--kami-surface-solid)" };
+  const editorBgStyle: React.CSSProperties = isDark
+    ? { background: "#1e1e1e" }
+    : { background: "var(--kami-input-bg, var(--kami-surface-solid))" };
+  const pageBgStyle: React.CSSProperties = isDark
+    ? { background: "#161616", color: "#e5e7eb" }
+    : { color: "var(--kami-text)" };
+  const textStyle: React.CSSProperties = isDark
+    ? { color: "#e5e7eb" }
+    : { color: "var(--kami-text)" };
+  const mutedStyle: React.CSSProperties = isDark
+    ? { color: "#9ca3af" }
+    : { color: "var(--kami-text-muted)" };
+  const borderStyle: React.CSSProperties = isDark
+    ? { borderColor: "#374151" }
+    : { borderColor: "var(--kami-border-strong)" };
+  const btnStyle: React.CSSProperties = isDark
+    ? {
+        background: "#1f2937",
+        color: "#e5e7eb",
+        border: "1px solid #374151",
+        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+      }
+    : {
+        background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
+        color: "var(--kami-cta2-text, var(--kami-text-muted))",
+        border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+      };
   const toolbarBtnClass = isDark
     ? "text-gray-300 hover:bg-gray-700 hover:text-gray-100"
-    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
+    : "hover:bg-gray-100";
+  const toolbarBtnStyle: React.CSSProperties = isDark
+    ? { color: "#d1d5db" }
+    : { color: "var(--kami-text-muted)" };
   const toolbarBtnActive = isDark
     ? "bg-gray-700 text-gray-100"
     : "bg-gray-200 text-gray-900";
 
+  const syncActiveStyle: React.CSSProperties = isDark
+    ? { background: "#1e3a8a", borderColor: "#1e40af", color: "#bfdbfe" }
+    : {
+        background: "color-mix(in srgb, #2563eb 12%, var(--kami-surface))",
+        border: "1px solid color-mix(in srgb, #2563eb 30%, transparent)",
+        color: "color-mix(in srgb, #2563eb 70%, var(--kami-text))",
+      };
+
   return (
-    <div className={`min-h-screen ${pageBg} ${textColor}`}>
+    <div className="min-h-screen" style={pageBgStyle}>
       <input
         ref={fileInputRef}
         type="file"
@@ -678,17 +712,19 @@ export default function MarkdownEditorContent() {
 
       {/* Toolbar */}
       <div
-        className={`sticky top-0 z-10 border-b ${borderColor} ${bg} px-4 py-2`}
+        className="sticky top-0 z-10 border-b px-4 py-2"
+        style={{ ...bgStyle, ...borderStyle }}
       >
         <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-2">
           <div className="flex items-center gap-3">
             <Link
               href="/tools"
-              className={`text-sm ${mutedColor} hover:${textColor}`}
+              className="text-sm"
+              style={mutedStyle}
             >
               ← Tools
             </Link>
-            <span className={`text-sm font-semibold ${textColor}`}>
+            <span className="text-sm font-semibold" style={textStyle}>
               Markdown Editor
             </span>
           </div>
@@ -697,7 +733,8 @@ export default function MarkdownEditorContent() {
             {/* View toggle */}
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass}`}
+              className="px-3 py-1.5 text-xs font-medium transition"
+              style={btnStyle}
             >
               {showPreview ? "Editor Only" : "Split View"}
             </button>
@@ -705,7 +742,8 @@ export default function MarkdownEditorContent() {
             {/* Sync scroll toggle */}
             <button
               onClick={() => setSyncScroll(!syncScroll)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass} ${syncScroll ? (isDark ? "!bg-blue-900 !border-blue-700 !text-blue-200" : "!bg-blue-50 !border-blue-200 !text-blue-700") : ""}`}
+              className="px-3 py-1.5 text-xs font-medium transition"
+              style={syncScroll ? syncActiveStyle : btnStyle}
               title={syncScroll ? "Sync scroll: ON" : "Sync scroll: OFF"}
             >
               {syncScroll ? "Sync ↕ On" : "Sync ↕ Off"}
@@ -714,7 +752,8 @@ export default function MarkdownEditorContent() {
             {/* Import */}
             <button
               onClick={importFile}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass}`}
+              className="px-3 py-1.5 text-xs font-medium transition"
+              style={btnStyle}
             >
               Import
             </button>
@@ -722,29 +761,39 @@ export default function MarkdownEditorContent() {
             {/* Export dropdown */}
             <div className="relative group">
               <button
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass}`}
+                className="px-3 py-1.5 text-xs font-medium transition"
+                style={btnStyle}
               >
                 Export ▾
               </button>
               <div className="absolute right-0 top-full mt-1 hidden group-hover:block">
                 <div
-                  className={`rounded-lg border ${borderColor} ${bg} shadow-lg py-1 min-w-[140px]`}
+                  className="border shadow-lg py-1 min-w-[140px]"
+                  style={{
+                    ...bgStyle,
+                    ...borderStyle,
+                    borderRadius: "var(--kami-card-radius, 0.5rem)",
+                    boxShadow: "var(--kami-card-shadow, 0 4px 12px rgba(0,0,0,0.1))",
+                  }}
                 >
                   <button
                     onClick={exportHtml}
-                    className={`block w-full text-left px-3 py-1.5 text-xs ${mutedColor} hover:${isDark ? "bg-gray-700" : "bg-gray-50"}`}
+                    className="block w-full text-left px-3 py-1.5 text-xs"
+                    style={mutedStyle}
                   >
                     Download HTML
                   </button>
                   <button
                     onClick={exportPdf}
-                    className={`block w-full text-left px-3 py-1.5 text-xs ${mutedColor} hover:${isDark ? "bg-gray-700" : "bg-gray-50"}`}
+                    className="block w-full text-left px-3 py-1.5 text-xs"
+                    style={mutedStyle}
                   >
                     Print / Save PDF
                   </button>
                   <button
                     onClick={copyRichText}
-                    className={`block w-full text-left px-3 py-1.5 text-xs ${mutedColor} hover:${isDark ? "bg-gray-700" : "bg-gray-50"}`}
+                    className="block w-full text-left px-3 py-1.5 text-xs"
+                    style={mutedStyle}
                   >
                     Copy Rich Text
                   </button>
@@ -755,7 +804,8 @@ export default function MarkdownEditorContent() {
             {/* Clear */}
             <button
               onClick={clearEditor}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass}`}
+              className="px-3 py-1.5 text-xs font-medium transition"
+              style={btnStyle}
             >
               Clear
             </button>
@@ -763,7 +813,8 @@ export default function MarkdownEditorContent() {
             {/* Theme toggle */}
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition ${btnClass}`}
+              className="px-3 py-1.5 text-xs font-medium transition"
+              style={btnStyle}
             >
               {isDark ? "☀ Light" : "● Dark"}
             </button>
@@ -773,13 +824,15 @@ export default function MarkdownEditorContent() {
 
       {/* Formatting Toolbar */}
       <div
-        className={`sticky top-[41px] z-10 border-b ${borderColor} ${bg} px-4 py-1`}
+        className="sticky top-[41px] z-10 border-b px-4 py-1"
+        style={{ ...bgStyle, ...borderStyle }}
       >
         <div className="mx-auto flex max-w-[1600px] items-center gap-0.5 flex-wrap">
           {/* Bold */}
           <button
             onClick={() => insertAtCursor("**", "**", "bold text")}
             className={`rounded px-2 py-1 text-xs font-bold transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Bold (Ctrl+B)"
           >
             B
@@ -789,13 +842,15 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertAtCursor("*", "*", "italic text")}
             className={`rounded px-2 py-1 text-xs italic transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Italic (Ctrl+I)"
           >
             I
           </button>
 
           <div
-            className={`mx-1 h-4 w-px ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+            className="mx-1 h-4 w-px"
+            style={{ background: isDark ? "#4b5563" : "var(--kami-border-strong)" }}
           />
 
           {/* Heading dropdown */}
@@ -803,13 +858,20 @@ export default function MarkdownEditorContent() {
             <button
               onClick={() => setShowHeadingMenu(!showHeadingMenu)}
               className={`rounded px-2 py-1 text-xs font-semibold transition ${toolbarBtnClass} ${showHeadingMenu ? toolbarBtnActive : ""}`}
+              style={toolbarBtnStyle}
               title="Heading"
             >
               H ▾
             </button>
             {showHeadingMenu && (
               <div
-                className={`absolute left-0 top-full mt-1 z-50 rounded-lg border ${isDark ? "border-gray-600 bg-gray-800" : "border-gray-200 bg-white"} shadow-lg py-1 min-w-[100px]`}
+                className="absolute left-0 top-full mt-1 z-50 border shadow-lg py-1 min-w-[100px]"
+                style={{
+                  ...bgStyle,
+                  ...borderStyle,
+                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  boxShadow: "var(--kami-card-shadow, 0 4px 12px rgba(0,0,0,0.1))",
+                }}
               >
                 {[1, 2, 3].map((level) => (
                   <button
@@ -819,6 +881,7 @@ export default function MarkdownEditorContent() {
                       setShowHeadingMenu(false);
                     }}
                     className={`block w-full text-left px-3 py-1.5 text-xs transition ${toolbarBtnClass}`}
+                    style={toolbarBtnStyle}
                   >
                     <span
                       style={{
@@ -835,13 +898,15 @@ export default function MarkdownEditorContent() {
           </div>
 
           <div
-            className={`mx-1 h-4 w-px ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+            className="mx-1 h-4 w-px"
+            style={{ background: isDark ? "#4b5563" : "var(--kami-border-strong)" }}
           />
 
           {/* Link */}
           <button
             onClick={() => insertAtCursor("[", "](url)", "link text")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Link (Ctrl+K)"
           >
             🔗
@@ -851,19 +916,22 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertAtCursor("![", "](image-url)", "alt text")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Image"
           >
             🖼
           </button>
 
           <div
-            className={`mx-1 h-4 w-px ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+            className="mx-1 h-4 w-px"
+            style={{ background: isDark ? "#4b5563" : "var(--kami-border-strong)" }}
           />
 
           {/* Inline Code */}
           <button
             onClick={() => insertAtCursor("`", "`", "code")}
             className={`rounded px-2 py-1 text-xs font-mono transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Inline Code"
           >
             {"<>"}
@@ -878,19 +946,22 @@ export default function MarkdownEditorContent() {
               ) || "code here") + "\n```")
             }
             className={`rounded px-2 py-1 text-xs font-mono transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Code Block"
           >
             {"{ }"}
           </button>
 
           <div
-            className={`mx-1 h-4 w-px ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+            className="mx-1 h-4 w-px"
+            style={{ background: isDark ? "#4b5563" : "var(--kami-border-strong)" }}
           />
 
           {/* Blockquote */}
           <button
             onClick={() => insertAtLineStart("> ")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Blockquote"
           >
             ❝
@@ -900,6 +971,7 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertAtLineStart("- ")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Unordered List"
           >
             • List
@@ -909,6 +981,7 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertAtLineStart("1. ")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Ordered List"
           >
             1. List
@@ -918,13 +991,15 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertAtLineStart("- [ ] ")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Task List"
           >
             ☑ Task
           </button>
 
           <div
-            className={`mx-1 h-4 w-px ${isDark ? "bg-gray-600" : "bg-gray-300"}`}
+            className="mx-1 h-4 w-px"
+            style={{ background: isDark ? "#4b5563" : "var(--kami-border-strong)" }}
           />
 
           {/* Table */}
@@ -932,6 +1007,7 @@ export default function MarkdownEditorContent() {
             <button
               onClick={() => setShowTableGrid(!showTableGrid)}
               className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass} ${showTableGrid ? toolbarBtnActive : ""}`}
+              style={toolbarBtnStyle}
               title="Insert Table"
             >
               ⊞ Table
@@ -949,6 +1025,7 @@ export default function MarkdownEditorContent() {
           <button
             onClick={() => insertBlock("---")}
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="Horizontal Rule"
           >
             --
@@ -958,24 +1035,35 @@ export default function MarkdownEditorContent() {
 
       {/* Document Tabs */}
       <div
-        className={`sticky top-[73px] z-10 border-b ${borderColor} ${bg} px-4`}
+        className="sticky top-[73px] z-10 border-b px-4"
+        style={{ ...bgStyle, ...borderStyle }}
       >
         <div className="mx-auto flex max-w-[1600px] items-center gap-0 overflow-x-auto">
           {tabs.map((tab) => {
             const isActive = tab.id === activeTabId;
             const title = getTabTitle(tab.content);
+            const tabBg = isActive
+              ? bgStyle.background
+              : isDark
+                ? "#161616"
+                : "transparent";
+            const tabColor = isActive
+              ? isDark
+                ? "#e5e7eb"
+                : "var(--kami-text)"
+              : isDark
+                ? "#9ca3af"
+                : "var(--kami-text-muted)";
             return (
               <div
                 key={tab.id}
-                className={`group relative flex items-center gap-1 border-r ${isDark ? "border-gray-700" : "border-gray-200"} px-3 py-1.5 text-xs cursor-pointer select-none transition-colors ${
-                  isActive
-                    ? isDark
-                      ? "bg-[#1e1e1e] text-gray-100 border-b-2 border-b-blue-500"
-                      : "bg-white text-gray-900 border-b-2 border-b-blue-500"
-                    : isDark
-                      ? "bg-[#161616] text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-                      : " text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-                }`}
+                className="group relative flex items-center gap-1 border-r px-3 py-1.5 text-xs cursor-pointer select-none transition-colors"
+                style={{
+                  borderRightColor: isDark ? "#374151" : "var(--kami-border-strong)",
+                  background: tabBg,
+                  color: tabColor,
+                  borderBottom: isActive ? "2px solid #3b82f6" : "none",
+                }}
                 onClick={() => setActiveTabId(tab.id)}
                 onContextMenu={(e) => {
                   e.preventDefault();
@@ -989,11 +1077,8 @@ export default function MarkdownEditorContent() {
                       e.stopPropagation();
                       closeTab(tab.id);
                     }}
-                    className={`ml-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity ${
-                      isDark
-                        ? "hover:bg-gray-600 text-gray-400 hover:text-gray-200"
-                        : "hover:bg-gray-200 text-gray-400 hover:text-gray-700"
-                    }`}
+                    className="ml-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ color: isDark ? "#9ca3af" : "var(--kami-text-dim)" }}
                     title="Close tab"
                   >
                     <svg
@@ -1015,6 +1100,7 @@ export default function MarkdownEditorContent() {
           <button
             onClick={addTab}
             className={`px-3 py-1.5 text-xs font-medium transition ${toolbarBtnClass}`}
+            style={toolbarBtnStyle}
             title="New document"
           >
             +
@@ -1030,10 +1116,12 @@ export default function MarkdownEditorContent() {
         <div className="flex h-full">
           {/* Editor pane */}
           <div
-            className={`${showPreview ? "w-1/2" : "w-full"} flex flex-col border-r ${borderColor}`}
+            className={`${showPreview ? "w-1/2" : "w-full"} flex flex-col border-r`}
+            style={borderStyle}
           >
             <div
-              className={`px-4 py-1.5 text-xs ${mutedColor} border-b ${borderColor} ${bg} flex justify-between`}
+              className="px-4 py-1.5 text-xs border-b flex justify-between"
+              style={{ ...mutedStyle, ...bgStyle, borderColor: borderStyle.borderColor }}
             >
               <span>Markdown</span>
               <span suppressHydrationWarning>
@@ -1050,23 +1138,26 @@ export default function MarkdownEditorContent() {
               onDragOver={handleDragOver}
               onScroll={handleEditorScroll}
               spellCheck={false}
-              className={`flex-1 resize-none p-4 font-mono text-sm leading-relaxed outline-none ${editorBg} ${textColor} placeholder:${mutedColor}`}
+              className="flex-1 resize-none p-4 font-mono text-sm leading-relaxed outline-none"
+              style={{ ...editorBgStyle, ...textStyle }}
               placeholder="Start writing Markdown..."
             />
           </div>
 
           {/* Preview pane */}
           {showPreview && (
-            <div className={`w-1/2 flex flex-col`}>
+            <div className="w-1/2 flex flex-col">
               <div
-                className={`px-4 py-1.5 text-xs ${mutedColor} border-b ${borderColor} ${bg}`}
+                className="px-4 py-1.5 text-xs border-b"
+                style={{ ...mutedStyle, ...bgStyle, borderColor: borderStyle.borderColor }}
               >
                 Preview
               </div>
               <div
                 ref={previewRef}
                 onScroll={handlePreviewScroll}
-                className={`flex-1 overflow-auto p-6 ${bg}`}
+                className="flex-1 overflow-auto p-6"
+                style={bgStyle}
               >
                 <style suppressHydrationWarning>{getPreviewStyles(theme)}</style>
                 <div
