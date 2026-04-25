@@ -459,7 +459,7 @@ export default function CaseConverterContent() {
   }, [allConversions]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Case Converter"
@@ -486,8 +486,22 @@ export default function CaseConverterContent() {
         <div className="relative">
           {detected && input.trim() && (
             <div className="mb-2">
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <span
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                }}
+              >
+                <span
+                  className="h-1.5 w-1.5"
+                  style={{
+                    background: "var(--kami-accent, #16a34a)",
+                    borderRadius: "999px",
+                  }}
+                />
                 Detected: {detected}
               </span>
             </div>
@@ -496,13 +510,20 @@ export default function CaseConverterContent() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type or paste text here - conversions appear below as you type."
-            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="w-full px-4 py-3 text-base focus:outline-none"
+            style={{
+              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+              color: "var(--kami-text)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-input-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
             rows={5}
             autoFocus
           />
         </div>
 
-        <div className="mt-1.5 flex items-center justify-between text-xs text-gray-400">
+        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
           <span>
             {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount}{" "}
             {charCount === 1 ? "character" : "characters"}
@@ -510,7 +531,7 @@ export default function CaseConverterContent() {
           {input && (
             <button
               onClick={() => setInput("")}
-              className="text-gray-400 hover:text-gray-600"
+              style={{ color: "var(--kami-text-dim)" }}
             >
               Clear (⌘K)
             </button>
@@ -518,7 +539,15 @@ export default function CaseConverterContent() {
         </div>
 
         {allConversions.length === 0 && (
-          <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
+          <div
+            className="mt-6 p-8 text-center text-sm"
+            style={{
+              background: "var(--kami-surface)",
+              border: "1px dashed var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              color: "var(--kami-text-dim)",
+            }}
+          >
             Start typing above - or click an example - to see all 13 case
             conversions.
           </div>
@@ -532,36 +561,46 @@ export default function CaseConverterContent() {
               return (
                 <div key={g.id}>
                   <div className="mb-2 flex items-baseline justify-between">
-                    <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
                       {g.label}
                     </div>
-                    <div className="text-xs text-gray-400">{g.hint}</div>
+                    <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{g.hint}</div>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {items.map((c) => (
                       <button
                         key={c.value}
                         onClick={() => handleCardCopy(c.value, c.result)}
-                        className="case-preserve group relative rounded-xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:border-gray-400 hover:shadow-md"
+                        className="case-preserve group relative p-4 text-left transition-all"
+                        style={{
+                          background: "var(--kami-surface-solid)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-card-radius, 0.75rem)",
+                          boxShadow: "var(--kami-card-shadow, none)",
+                          color: "var(--kami-text)",
+                        }}
                       >
                         <div className="mb-1.5 flex items-center justify-between">
-                          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-gray-500">
+                          <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
                             {c.label}
                             <InfoTip label={`About ${c.label}`}>
-                              <div className="mb-1.5 font-semibold text-gray-900">
+                              <div className="mb-1.5 font-semibold" style={{ color: "var(--kami-text)" }}>
                                 {c.label}
                               </div>
                               <div className="mb-2">{c.description}</div>
-                              <div className="text-gray-500">
+                              <div style={{ color: "var(--kami-text-dim)" }}>
                                 <strong>Common use:</strong> {c.commonUse}
                               </div>
                             </InfoTip>
                           </span>
-                          <span className="flex items-center gap-1 text-xs text-gray-400 opacity-0 transition-opacity group-hover:opacity-100">
+                          <span
+                            className="flex items-center gap-1 text-xs opacity-0 transition-opacity group-hover:opacity-100"
+                            style={{ color: "var(--kami-text-dim)" }}
+                          >
                             {copiedCard === c.value ? (
                               <>
                                 <CheckIcon />
-                                <span className="font-medium text-gray-700">
+                                <span className="font-medium" style={{ color: "var(--kami-text)" }}>
                                   Copied
                                 </span>
                               </>
@@ -573,11 +612,17 @@ export default function CaseConverterContent() {
                             )}
                           </span>
                         </div>
-                        <div className="truncate font-mono text-sm text-gray-800">
+                        <div className="truncate font-mono text-sm" style={{ color: "var(--kami-text)" }}>
                           {c.result}
                         </div>
                         {copiedCard === c.value && (
-                          <div className="pointer-events-none absolute inset-0 rounded-[inherit] border-2 border-gray-900" />
+                          <div
+                            className="pointer-events-none absolute inset-0"
+                            style={{
+                              border: "2px solid var(--kami-text)",
+                              borderRadius: "inherit",
+                            }}
+                          />
                         )}
                       </button>
                     ))}
@@ -633,7 +678,15 @@ export default function CaseConverterContent() {
               ]}
               example="A Guide to the Habits of Highly Effective People"
             />
-            <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+            <div
+              className="p-3 text-xs"
+              style={{
+                background: "color-mix(in srgb, var(--kami-accent, #f59e0b) 10%, var(--kami-surface))",
+                color: "var(--kami-text)",
+                border: "1px solid color-mix(in srgb, var(--kami-accent, #f59e0b) 30%, transparent)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
               <strong>Heads up:</strong> no style guide handles every edge
               case identically. For brand names, hyphenated terms, or unusual
               acronyms, prefer your team's style guide over any automated
@@ -687,7 +740,7 @@ export default function CaseConverterContent() {
           </div>
         </ReferencePanel>
 
-        <div className="mt-6 text-center text-xs text-gray-400">
+        <div className="mt-6 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
           ⌘K clears the input · Click any card to copy · Runs entirely in your
           browser - nothing is uploaded.
         </div>
@@ -710,20 +763,35 @@ function StyleRuleCard({
   example: string;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-      <div className="flex items-baseline justify-between">
-        <div className="text-sm font-semibold text-gray-900">{name}</div>
-        <div className="text-xs text-gray-500">{tagline}</div>
+    <div
+      className="p-4"
+      style={{
+        background: "var(--kami-surface)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+      }}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{name}</div>
+        <div className="text-xs text-right" style={{ color: "var(--kami-text-dim)" }}>{tagline}</div>
       </div>
-      <ul className="mt-2 space-y-1 text-xs text-gray-700">
+      <ul className="mt-2 space-y-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
         {rules.map((r, i) => (
           <li key={i} className="flex gap-2">
-            <span className="text-gray-400">•</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>•</span>
             <span>{r}</span>
           </li>
         ))}
       </ul>
-      <div className="mt-3 rounded-md bg-white px-3 py-2 font-mono text-xs text-gray-800">
+      <div
+        className="mt-3 px-3 py-2 font-mono text-xs"
+        style={{
+          background: "var(--kami-surface-solid)",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border)",
+          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+        }}
+      >
         {example}
       </div>
     </div>
