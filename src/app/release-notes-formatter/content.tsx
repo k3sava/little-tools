@@ -79,7 +79,7 @@ function formatMarkdown(note: ReleaseNote): string {
     : `# ${note.version || "Release Notes"}`;
   lines.push(heading);
   if (note.version || note.date) {
-    const meta = [note.version, note.date].filter(Boolean).join(" — ");
+    const meta = [note.version, note.date].filter(Boolean).join(" - ");
     lines.push(`_${meta}_`);
   }
   lines.push("");
@@ -101,7 +101,7 @@ function formatHTML(note: ReleaseNote): string {
   const heading = note.title || note.version || "Release Notes";
   lines.push(`<h1>${esc(heading)}</h1>`);
   if (note.version || note.date) {
-    const meta = [note.version, note.date].filter(Boolean).join(" — ");
+    const meta = [note.version, note.date].filter(Boolean).join(" - ");
     lines.push(`<p><em>${esc(meta)}</em></p>`);
   }
 
@@ -123,7 +123,7 @@ function formatPlainText(note: ReleaseNote): string {
   const heading = note.title || note.version || "Release Notes";
   lines.push(heading.toUpperCase());
   if (note.version || note.date) {
-    lines.push([note.version, note.date].filter(Boolean).join(" — "));
+    lines.push([note.version, note.date].filter(Boolean).join(" - "));
   }
   lines.push("─".repeat(40));
   lines.push("");
@@ -272,8 +272,8 @@ export default function ReleaseNotesFormatterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Release Notes Formatter"
-          tagline="Paste raw changelog bullets — we auto-sort them into New, Improved, Fixed, and more, then export clean Markdown or HTML."
-          description="Drop unstructured bullets (like a git log summary) into the input. We infer category from keywords (&quot;fixed&quot; → Fixed, &quot;added&quot; → New), let you re-categorize with one click, and emit properly formatted release notes — Keep a Changelog style — ready for GitHub releases, your blog, or an email."
+          tagline="Paste raw changelog bullets - we auto-sort them into New, Improved, Fixed, and more, then export clean Markdown or HTML."
+          description="Drop unstructured bullets (like a git log summary) into the input. We infer category from keywords (&quot;fixed&quot; → Fixed, &quot;added&quot; → New), let you re-categorize with one click, and emit properly formatted release notes - Keep a Changelog style - ready for GitHub releases, your blog, or an email."
           audience={["Developers", "PMs", "DevRel"]}
           whenToUse={[
             "Shipping a release and need public-facing notes",
@@ -505,7 +505,7 @@ export default function ReleaseNotesFormatterContent() {
                     </h1>
                     {(version || date) && (
                       <p className="mt-0 text-sm text-gray-500">
-                        {[version, date].filter(Boolean).join(" — ")}
+                        {[version, date].filter(Boolean).join(" - ")}
                       </p>
                     )}
                     {grouped.map(([cat, catItems]) => {
@@ -551,16 +551,16 @@ export default function ReleaseNotesFormatterContent() {
         <ReferencePanel
           id="release-categories"
           title="What goes in each category (Keep a Changelog convention)"
-          summary="The six-category taxonomy used by keepachangelog.com — the de-facto standard."
+          summary="The six-category taxonomy used by keepachangelog.com - the de-facto standard."
           defaultOpen
         >
           <div className="space-y-1">
             <RuleRow rule="Added / New" explanation="Brand-new features or capabilities." example="Added bulk export" />
-            <RuleRow rule="Changed / Improved" explanation="Changes to existing features — performance, UX, behavior." example="Faster search results" />
+            <RuleRow rule="Changed / Improved" explanation="Changes to existing features - performance, UX, behavior." example="Faster search results" />
             <RuleRow rule="Fixed" explanation="Bug fixes." example="Fixed login redirect" />
             <RuleRow rule="Removed" explanation="Features that no longer exist." example="Removed legacy API v1" />
             <RuleRow rule="Deprecated" explanation="Features scheduled for removal but still available." example="Deprecated basic-auth" />
-            <RuleRow rule="Security" explanation="Vulnerability fixes — called out separately so ops teams can triage." example="Patched XSS in comments" />
+            <RuleRow rule="Security" explanation="Vulnerability fixes - called out separately so ops teams can triage." example="Patched XSS in comments" />
           </div>
           <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
             <strong>Writing tips:</strong> lead with the user-visible change, not the

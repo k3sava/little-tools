@@ -32,7 +32,7 @@ interface CMYK {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Color math — all from scratch, no libraries                        */
+/*  Color math - all from scratch, no libraries                        */
 /* ------------------------------------------------------------------ */
 
 function clamp(v: number, min: number, max: number) {
@@ -200,7 +200,7 @@ function contrastRatio(fg: RGB, bg: RGB): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
-// Palette helpers — rotate hue in HSL
+// Palette helpers - rotate hue in HSL
 function rotateHue(rgb: RGB, degrees: number): RGB {
   const hsl = rgbToHsl(rgb);
   hsl.h = (hsl.h + degrees + 360) % 360;
@@ -370,7 +370,7 @@ export default function ColorConverterContent() {
   const initialRgb = useMemo(() => hexToRgb(initialColor) ?? { r: 255, g: 102, b: 0 }, []);
   const [rgb, setRgb] = useState<RGB>(initialRgb);
 
-  // Text fields — kept as strings so user can type freely
+  // Text fields - kept as strings so user can type freely
   const [hexField, setHexField] = useState(fmtHex(initialRgb));
   const [rgbField, setRgbField] = useState(fmtRgb(initialRgb));
   const [hslField, setHslField] = useState(fmtHsl(initialRgb));
@@ -494,7 +494,7 @@ export default function ColorConverterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Color Converter"
-          tagline="Convert any color between HEX, RGB, HSL, HSB/HSV, OKLCH, and CMYK — with live picker and contrast check."
+          tagline="Convert any color between HEX, RGB, HSL, HSB/HSV, OKLCH, and CMYK - with live picker and contrast check."
           description="Type a color in any format (hex code, rgb(), hsl()) and see it converted to all others simultaneously. Drag the hue and saturation pickers to tweak it visually. Built-in WCAG contrast check against white and black tells you if the color is usable for text."
           audience={["Designers", "Front-end developers", "Brand teams"]}
           whenToUse={[
@@ -645,7 +645,7 @@ export default function ColorConverterContent() {
             }}
           >
             <p className="text-lg font-semibold">
-              Sample Text — {ratio.toFixed(2)}:1
+              Sample Text - {ratio.toFixed(2)}:1
             </p>
             <p className="text-sm">
               The quick brown fox jumps over the lazy dog.

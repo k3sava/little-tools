@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
  * A friendly introduction block that sits at the top of every tool.
  *
  * Unlike a minimalist <h1><p/> pair, this makes it obvious WHAT the tool does,
- * WHO it's for, and WHEN to use it — and optionally links to a deeper reference.
+ * WHO it's for, and WHEN to use it - and optionally links to a deeper reference.
  *
  * Users can dismiss it after their first successful use; dismissal is remembered
  * per tool via localStorage so it doesn't nag power users.

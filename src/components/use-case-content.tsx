@@ -350,7 +350,7 @@ function SolutionSection({ data }: { data: UseCaseData["solution"] }) {
                   )}
                 </div>
 
-                {/* Visual placeholder — gradient card */}
+                {/* Visual placeholder - gradient card */}
                 <div
                   className={`${i % 2 === 1 ? "lg:order-1" : ""}`}
                 >

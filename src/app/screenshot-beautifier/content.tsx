@@ -300,7 +300,7 @@ export default function ScreenshotBeautifierContent() {
       <div className="mx-auto w-[92%] max-w-[1400px] py-10 sm:py-14">
         <ToolIntro
           title="Screenshot Beautifier"
-          tagline="Turn a flat screenshot into a styled product shot — gradient background, device frame, padding, shadow, rounded corners."
+          tagline="Turn a flat screenshot into a styled product shot - gradient background, device frame, padding, shadow, rounded corners."
           description="Drop a screenshot or paste one with ⌘V. Pick a background (solid, gradient, mesh, image), optional device frame (browser, iPhone, Mac), padding, and corner radius. Export a high-resolution PNG ready for social posts, landing pages, or product launches. Nothing is uploaded."
           audience={["Content creators", "PMMs", "Support", "Designers"]}
           whenToUse={[
@@ -335,7 +335,7 @@ export default function ScreenshotBeautifierContent() {
               >
                 {/* Hidden canvas for rendering/export */}
                 <canvas ref={canvasRef} className="hidden" />
-                {/* Visible preview — drag to reposition */}
+                {/* Visible preview - drag to reposition */}
                 {previewUrl && (
                   <img
                     ref={previewImgRef}

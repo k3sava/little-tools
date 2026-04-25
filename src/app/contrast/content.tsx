@@ -186,10 +186,10 @@ export default function ContrastContent() {
               against the background.
             </p>
             <p className="text-sm">
-              Small text (14px) — harder to read with low contrast.
+              Small text (14px) - harder to read with low contrast.
             </p>
             <p className="mt-3 text-xs opacity-80">
-              Tiny text (12px) — requires excellent contrast for readability.
+              Tiny text (12px) - requires excellent contrast for readability.
             </p>
           </div>
         </div>
@@ -257,7 +257,7 @@ export default function ContrastContent() {
               <div className="mt-2 text-xs text-gray-500">Required for some government / medical / financial contexts. Not always achievable with brand colors.</div>
             </div>
             <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
-              <strong>Gotcha:</strong> WCAG contrast is based on luminance only — it doesn&apos;t
+              <strong>Gotcha:</strong> WCAG contrast is based on luminance only - it doesn&apos;t
               capture hue or saturation differences. Two very different-looking colors can fail.
               For body text, prefer AA (4.5:1) as a baseline; AAA is a nice-to-have.
             </div>
@@ -330,7 +330,7 @@ function SuggestionRow({
       <div className="flex-1">
         <span className="text-sm font-medium">{label}</span>
         <span className="ml-2 text-xs text-gray-400">
-          {color} — {ratio.toFixed(2)}:1
+          {color} - {ratio.toFixed(2)}:1
         </span>
       </div>
       <div

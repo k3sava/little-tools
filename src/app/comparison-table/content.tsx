@@ -464,11 +464,11 @@ export default function ComparisonTableContent() {
       };
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        showToast("PNG export failed — try HTML or Markdown instead");
+        showToast("PNG export failed - try HTML or Markdown instead");
       };
       img.src = url;
     } catch {
-      showToast("PNG export failed — try HTML or Markdown instead");
+      showToast("PNG export failed - try HTML or Markdown instead");
     }
   }, [table, showToast]);
 
@@ -487,8 +487,8 @@ export default function ComparisonTableContent() {
     <div className="mx-auto max-w-7xl px-4 py-10">
       <ToolIntro
         title="Comparison Table Builder"
-        tagline="Build the classic &quot;us vs. them&quot; feature table — or any comparison grid — and export it as HTML, Markdown, or CSV."
-        description="Start from a template (feature comparison, pricing tiers, integration matrix) or a blank grid. Cells support check / cross / partial / text — perfect for &quot;our product has X, theirs doesn't.&quot; Rearrange rows and columns, highlight your winning column, and export ready-to-paste Markdown or HTML."
+        tagline="Build the classic &quot;us vs. them&quot; feature table - or any comparison grid - and export it as HTML, Markdown, or CSV."
+        description="Start from a template (feature comparison, pricing tiers, integration matrix) or a blank grid. Cells support check / cross / partial / text - perfect for &quot;our product has X, theirs doesn't.&quot; Rearrange rows and columns, highlight your winning column, and export ready-to-paste Markdown or HTML."
         audience={["PMMs", "Sales", "Content marketers"]}
         whenToUse={[
           "Building a competitor comparison page",

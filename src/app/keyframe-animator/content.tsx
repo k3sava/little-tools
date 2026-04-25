@@ -219,7 +219,7 @@ export default function KeyframeAnimatorContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Keyframe Animator"
-          tagline="Build @keyframes animations visually — drag keyframes on a timeline, tweak properties, copy the generated CSS."
+          tagline="Build @keyframes animations visually - drag keyframes on a timeline, tweak properties, copy the generated CSS."
           description="Pick a preset (fadeIn, slideUp, pulse, shake…) or start blank. Drag keyframes on the timeline to time the motion; per-keyframe panels let you edit transform, opacity, color, and custom properties. Live preview loops continuously. Output is clean @keyframes + animation CSS you can paste directly."
           audience={["Designers", "Motion designers", "Front-end developers"]}
           whenToUse={[

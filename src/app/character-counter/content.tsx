@@ -461,7 +461,7 @@ export default function CharacterCounterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Character Counter"
-          tagline="Live character, word, sentence, and paragraph counts — with progress bars for Twitter, SMS, meta descriptions, and custom goals."
+          tagline="Live character, word, sentence, and paragraph counts - with progress bars for Twitter, SMS, meta descriptions, and custom goals."
           description="Type or paste into the box; we count everything in real time: characters (with and without spaces), words, sentences, paragraphs, reading time. Set a goal (280 chars for a tweet, 160 for SMS, 155 for a meta description) and watch the progress bar fill."
           audience={["Writers", "Marketers", "Students", "Developers"]}
           whenToUse={[

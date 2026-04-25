@@ -150,14 +150,14 @@ function createZip(files: { name: string; data: Uint8Array }[]): Blob {
 // --- Sizes ---
 
 const ICON_SIZES = [
-  { size: 16, label: "16×16 — Browser tab" },
-  { size: 32, label: "32×32 — Taskbar / shortcut" },
-  { size: 48, label: "48×48 — Desktop icon" },
-  { size: 64, label: "64×64 — Windows site" },
-  { size: 128, label: "128×128 — Chrome Web Store" },
-  { size: 180, label: "180×180 — Apple Touch Icon" },
-  { size: 192, label: "192×192 — Android Chrome" },
-  { size: 512, label: "512×512 — PWA / Splash" },
+  { size: 16, label: "16×16 - Browser tab" },
+  { size: 32, label: "32×32 - Taskbar / shortcut" },
+  { size: 48, label: "48×48 - Desktop icon" },
+  { size: 64, label: "64×64 - Windows site" },
+  { size: 128, label: "128×128 - Chrome Web Store" },
+  { size: 180, label: "180×180 - Apple Touch Icon" },
+  { size: 192, label: "192×192 - Android Chrome" },
+  { size: 512, label: "512×512 - PWA / Splash" },
 ];
 
 // --- Canvas helpers ---
@@ -370,7 +370,7 @@ export default function FaviconContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Favicon Generator"
-          tagline="Generate every favicon format and size your site needs — from a single PNG or an emoji."
+          tagline="Generate every favicon format and size your site needs - from a single PNG or an emoji."
           description="Upload an image or pick an emoji as the starting point. We output the full set: favicon.ico (legacy), 16/32/48/96/192/512 PNGs, Apple touch icon, Android manifest icons, Safari pinned-tab SVG, plus the <link> tags you drop into your <head>. Download as a zip."
           audience={["Developers", "Indie hackers", "Designers"]}
           whenToUse={[
@@ -434,7 +434,7 @@ export default function FaviconContent() {
                   accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
                   onFiles={handleFileDrop}
                   label="Drop an image here or click to upload"
-                  hint="SVG, PNG, JPG — square images work best"
+                  hint="SVG, PNG, JPG - square images work best"
                   multiple={false}
                 />
               )}
@@ -463,7 +463,7 @@ export default function FaviconContent() {
                     accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
                     onFiles={handleDarkFileDrop}
                     label="Drop dark variant here or click to upload"
-                    hint="Optional — used for dark mode favicon"
+                    hint="Optional - used for dark mode favicon"
                     multiple={false}
                   />
                 )}
@@ -619,7 +619,7 @@ export default function FaviconContent() {
                     {icon.size}×{icon.size}
                   </span>
                   <span className="text-[10px] text-gray-400 text-center">
-                    {icon.label.split("—")[1]?.trim()}
+                    {icon.label.split("-")[1]?.trim()}
                   </span>
                 </div>
               ))}

@@ -67,7 +67,7 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Glassmorphism / Neumorphism"
-          tagline="Generate the two trendiest surface styles — frosted glass (backdrop blur) and soft UI (neumorphic shadows) — with live CSS output."
+          tagline="Generate the two trendiest surface styles - frosted glass (backdrop blur) and soft UI (neumorphic shadows) - with live CSS output."
           description="Switch between modes and drag the sliders for blur, transparency, border, and shadow. Glass mode produces backdrop-filter-based frosted panels (perfect for overlays on photos). Neumorph mode generates the inner/outer shadow pair that creates the soft extruded look."
           audience={["Designers", "Front-end developers"]}
           whenToUse={[

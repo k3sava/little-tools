@@ -234,7 +234,7 @@ function formatNumber(n: number): string {
 export default function ABTestCalculatorContent() {
   const [tab, setTab] = useState<Tab>("results");
 
-  // Results Analyzer state — pre-filled with example data
+  // Results Analyzer state - pre-filled with example data
   const [resultsInput, setResultsInput] = useState<ResultsInput>({
     visitorsControl: "5000",
     conversionsControl: "150",
@@ -277,7 +277,7 @@ export default function ABTestCalculatorContent() {
     [],
   );
 
-  // Keyboard shortcut — Cmd+Enter to focus on calculate (results auto-calculate)
+  // Keyboard shortcut - Cmd+Enter to focus on calculate (results auto-calculate)
   useKeyboardShortcuts(
     useMemo(
       () => [
@@ -300,7 +300,7 @@ export default function ABTestCalculatorContent() {
         <ToolIntro
           title="A/B Test Calculator"
           tagline="Check if your experiment is statistically significant, or plan the sample size you'll need before you start."
-          description="Two modes: (1) Significance — paste visitor and conversion counts for control + variant, see if the difference is real or noise (p-value, confidence interval, and a plain-English verdict). (2) Sample size — set your baseline rate, target lift, and power, we tell you how many visitors you need."
+          description="Two modes: (1) Significance - paste visitor and conversion counts for control + variant, see if the difference is real or noise (p-value, confidence interval, and a plain-English verdict). (2) Sample size - set your baseline rate, target lift, and power, we tell you how many visitors you need."
           audience={["Growth", "PMMs", "PMs", "Marketers"]}
           whenToUse={[
             "Calling an experiment winner (or not)",
@@ -379,10 +379,10 @@ export default function ABTestCalculatorContent() {
           <ul className="space-y-3 text-xs">
             <li><strong>Peeking.</strong> Checking results early and stopping the moment you see significance inflates false positives. Decide sample size before you start, and wait.</li>
             <li><strong>Too-small samples.</strong> A 10% lift on 200 visitors is noise. Use the sample-size calculator to set a floor.</li>
-            <li><strong>Not accounting for weekly cycles.</strong> Run tests for at least a full week — ideally two — to cover weekday/weekend differences.</li>
+            <li><strong>Not accounting for weekly cycles.</strong> Run tests for at least a full week - ideally two - to cover weekday/weekend differences.</li>
             <li><strong>Testing too many metrics.</strong> Pick ONE primary metric. If you test 20 secondary metrics, one will look significant by chance.</li>
             <li><strong>Ignoring practical significance.</strong> A 0.1% lift can be statistically significant with enough data, but irrelevant to the business.</li>
-            <li><strong>SRM (Sample Ratio Mismatch).</strong> If your control and variant visitor counts differ much more than expected (say 48%/52% vs. 50%/50%), your test infrastructure is probably broken — results are untrustworthy.</li>
+            <li><strong>SRM (Sample Ratio Mismatch).</strong> If your control and variant visitor counts differ much more than expected (say 48%/52% vs. 50%/50%), your test infrastructure is probably broken - results are untrustworthy.</li>
           </ul>
         </ReferencePanel>
       </div>

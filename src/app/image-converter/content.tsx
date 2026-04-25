@@ -305,8 +305,8 @@ export default function ImageConverterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Image Converter"
-          tagline="Convert and batch-optimize images — PNG, JPG, WebP, AVIF — with resize and quality controls."
-          description="Drop one or many images. Pick output format (including AVIF for the smallest modern-web sizes), optionally resize, and set quality. Runs entirely in your browser — useful for private photos, client work, or anything you don't want to upload."
+          tagline="Convert and batch-optimize images - PNG, JPG, WebP, AVIF - with resize and quality controls."
+          description="Drop one or many images. Pick output format (including AVIF for the smallest modern-web sizes), optionally resize, and set quality. Runs entirely in your browser - useful for private photos, client work, or anything you don't want to upload."
           audience={["Everyone", "Designers", "Photographers"]}
           whenToUse={[
             "Converting iPhone HEIC photos for sharing",
@@ -507,7 +507,7 @@ export default function ImageConverterContent() {
             {selected && (
               <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-sm font-semibold text-gray-700">
-                  Preview — {selected.name}
+                  Preview - {selected.name}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>

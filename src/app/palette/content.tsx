@@ -327,7 +327,7 @@ export default function PaletteContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Color Palette Generator"
-          tagline="Generate 5-color palettes using color-harmony rules — analogous, complementary, triadic, tetradic, and more."
+          tagline="Generate 5-color palettes using color-harmony rules - analogous, complementary, triadic, tetradic, and more."
           description={`Press spacebar to shuffle a fresh palette. Lock the colors you want to keep and reshuffle the rest. Every palette is built from a harmony rule (not just random) so the colors actually work together. Export as CSS variables, SCSS, Tailwind config, or a Figma-ready JSON.`}
           audience={["Designers", "Brand teams", "Developers"]}
           whenToUse={[

@@ -294,7 +294,7 @@ export default function ClipboardManagerContent() {
             });
           }
         } catch {
-          // Invalid JSON — silently ignore
+          // Invalid JSON - silently ignore
         }
       };
       reader.readAsText(file);
@@ -382,7 +382,7 @@ export default function ClipboardManagerContent() {
       <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Clipboard Manager"
-          tagline="A local-only clipboard history — paste once, come back to it anytime. Search, pin, and reuse common snippets."
+          tagline="A local-only clipboard history - paste once, come back to it anytime. Search, pin, and reuse common snippets."
           description="Paste anything into the input to save it as a clip. Your history lives in your browser (nothing uploaded). Pin frequently-used snippets to the top, search across all saved clips, and one-click copy back into the system clipboard. Great for email templates, common support replies, or code snippets you keep typing."
           audience={["Support", "Writers", "Developers", "Sales"]}
           whenToUse={[

@@ -422,7 +422,7 @@ export default function LoremIpsumContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Lorem Ipsum Generator"
-          tagline="Placeholder text in multiple flavors — classic Latin, Bacon, Hipster, Corporate, Pirate — sized to words, sentences, or paragraphs."
+          tagline="Placeholder text in multiple flavors - classic Latin, Bacon, Hipster, Corporate, Pirate - sized to words, sentences, or paragraphs."
           description="Pick how many paragraphs / sentences / words you need, pick a flavor (boring Latin, Bacon Ipsum, tech jargon, etc.), and click to copy. Great for mocking up designs without leaving tabs; useful for stress-testing layouts with different word-length distributions."
           audience={["Designers", "Developers", "Writers"]}
           whenToUse={[
@@ -497,7 +497,7 @@ export default function LoremIpsumContent() {
                 className="w-24 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
               />
               <span className="text-xs text-gray-400">
-                ({LIMITS[mode].min}–{LIMITS[mode].max})
+                ({LIMITS[mode].min}-{LIMITS[mode].max})
               </span>
             </div>
 

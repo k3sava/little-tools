@@ -3,7 +3,7 @@ import { UseCaseData } from "./types";
 export const inboundResponse: UseCaseData = {
   slug: "inbound-response",
   meta: {
-    title: "Inbound Response — JustCall",
+    title: "Inbound Response - JustCall",
     description:
       "Be the first to respond, every single time. JustCall answers every call, handles overflow, and scales after-hours coverage without adding headcount.",
   },
@@ -13,7 +13,7 @@ export const inboundResponse: UseCaseData = {
     bodyLines: [
       "Before your customers call a competitor who does.",
       "Get JustCall to answer every call, handle overflow inquiries,",
-      "and scale after-hours coverage — without adding headcount.",
+      "and scale after-hours coverage - without adding headcount.",
     ],
     primaryCta: "Start Free Trial",
     secondaryCta: "Book a Demo",

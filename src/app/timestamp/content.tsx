@@ -226,7 +226,7 @@ export default function TimestampContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Timestamp Converter"
-          tagline="Convert between Unix timestamps, ISO 8601, and human dates — with timezone comparison and date math."
+          tagline="Convert between Unix timestamps, ISO 8601, and human dates - with timezone comparison and date math."
           description="Paste a Unix timestamp (seconds or milliseconds), an ISO date, or a human-readable date, and see all other formats at once. Compare the same moment across multiple timezones. Use the date-math mode to add / subtract days, hours, or weeks from any date."
           audience={["Developers", "SREs", "Data engineers"]}
           whenToUse={[

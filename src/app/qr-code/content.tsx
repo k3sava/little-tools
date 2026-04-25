@@ -407,9 +407,9 @@ export default function QrCodeContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="QR Code Generator"
-          tagline="Build QR codes for URLs, text, Wi-Fi, or vCard — customize colors and corner radius, export as PNG or SVG."
+          tagline="Build QR codes for URLs, text, Wi-Fi, or vCard - customize colors and corner radius, export as PNG or SVG."
           description="Pick content type (URL, plain text, Wi-Fi credentials, or contact vCard), fill in the fields, and we generate a QR code rendered live in your browser. Adjust color, error-correction level (higher = more resilient but denser), and corner style. Download as crisp SVG or high-resolution PNG."
-          audience={["Everyone — marketers, event organizers, small business owners"]}
+          audience={["Everyone - marketers, event organizers, small business owners"]}
           whenToUse={[
             "Putting a URL on a flyer or poster",
             "Sharing Wi-Fi credentials without typing",

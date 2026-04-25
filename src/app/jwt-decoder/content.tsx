@@ -27,37 +27,37 @@ interface SecurityIssue {
 // --- Constants ---
 
 const CLAIM_DESCRIPTIONS: Record<string, string> = {
-  iss: "Issuer — who created and signed this token",
-  sub: "Subject — the user or entity this token represents",
-  aud: "Audience — intended recipient(s) of this token",
-  exp: "Expiration Time — when this token expires",
-  nbf: "Not Before — token is not valid before this time",
-  iat: "Issued At — when this token was created",
-  jti: "JWT ID — unique identifier for this token",
-  scope: "Scope — OAuth 2.0 scopes granted to this token",
-  roles: "Roles — authorization roles assigned to the subject",
-  permissions: "Permissions — specific permissions granted",
-  email: "Email — email address of the subject",
-  name: "Name — display name of the subject",
-  picture: "Picture — URL of the subject's profile picture",
-  azp: "Authorized Party — the party to which the token was issued",
-  at_hash: "Access Token Hash — hash of the access token",
-  nonce: "Nonce — value used to associate a client session with a token",
-  auth_time: "Authentication Time — when the user last authenticated",
-  updated_at: "Updated At — when the subject's info was last updated",
-  email_verified: "Email Verified — whether the email has been verified",
-  phone_number: "Phone Number — phone number of the subject",
-  given_name: "Given Name — first name of the subject",
-  family_name: "Family Name — last name of the subject",
-  locale: "Locale — the subject's preferred locale",
-  zoneinfo: "Time Zone — the subject's time zone",
-  sid: "Session ID — identifier for the user's session",
-  acr: "Authentication Context Class — how the user authenticated",
-  amr: "Authentication Methods — methods used to authenticate",
-  typ: "Type — token type (e.g., JWT, at+jwt)",
-  client_id: "Client ID — OAuth 2.0 client identifier",
-  realm_access: "Realm Access — Keycloak realm-level roles",
-  resource_access: "Resource Access — Keycloak resource-level roles",
+  iss: "Issuer - who created and signed this token",
+  sub: "Subject - the user or entity this token represents",
+  aud: "Audience - intended recipient(s) of this token",
+  exp: "Expiration Time - when this token expires",
+  nbf: "Not Before - token is not valid before this time",
+  iat: "Issued At - when this token was created",
+  jti: "JWT ID - unique identifier for this token",
+  scope: "Scope - OAuth 2.0 scopes granted to this token",
+  roles: "Roles - authorization roles assigned to the subject",
+  permissions: "Permissions - specific permissions granted",
+  email: "Email - email address of the subject",
+  name: "Name - display name of the subject",
+  picture: "Picture - URL of the subject's profile picture",
+  azp: "Authorized Party - the party to which the token was issued",
+  at_hash: "Access Token Hash - hash of the access token",
+  nonce: "Nonce - value used to associate a client session with a token",
+  auth_time: "Authentication Time - when the user last authenticated",
+  updated_at: "Updated At - when the subject's info was last updated",
+  email_verified: "Email Verified - whether the email has been verified",
+  phone_number: "Phone Number - phone number of the subject",
+  given_name: "Given Name - first name of the subject",
+  family_name: "Family Name - last name of the subject",
+  locale: "Locale - the subject's preferred locale",
+  zoneinfo: "Time Zone - the subject's time zone",
+  sid: "Session ID - identifier for the user's session",
+  acr: "Authentication Context Class - how the user authenticated",
+  amr: "Authentication Methods - methods used to authenticate",
+  typ: "Type - token type (e.g., JWT, at+jwt)",
+  client_id: "Client ID - OAuth 2.0 client identifier",
+  realm_access: "Realm Access - Keycloak realm-level roles",
+  resource_access: "Resource Access - Keycloak resource-level roles",
 };
 
 const TIMESTAMP_CLAIMS = new Set([
@@ -1308,7 +1308,7 @@ export default function JwtDecoderContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="JWT Decoder"
-          tagline="Decode, inspect, build, and diff JSON Web Tokens — with claim explanations and expiry warnings."
+          tagline="Decode, inspect, build, and diff JSON Web Tokens - with claim explanations and expiry warnings."
           description="Paste a JWT to see its header, payload, and signature decoded. Every standard claim (iss, sub, exp, iat, nbf, aud, jti) is explained in plain English. Builder mode lets you assemble a token from scratch; diff mode shows exactly what changed between two tokens (useful for debugging refresh flows)."
           audience={["Developers", "Security engineers", "Support"]}
           whenToUse={[

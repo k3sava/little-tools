@@ -624,7 +624,7 @@ export default function OgImageContent() {
         <ToolIntro
           title="OG Image Generator"
           tagline="Design the 1200×630 social-share image that appears when your link is posted to Twitter, LinkedIn, Slack, or Facebook."
-          description="Pick a template, swap the title, add a subtitle or logo, tweak colors — we render a 1200×630 PNG ready to drop into your <meta property='og:image'> tag. Every template is designed to stay legible when the card is shrunk to a feed thumbnail."
+          description="Pick a template, swap the title, add a subtitle or logo, tweak colors - we render a 1200×630 PNG ready to drop into your <meta property='og:image'> tag. Every template is designed to stay legible when the card is shrunk to a feed thumbnail."
           audience={["Content marketers", "Writers", "Developers", "Designers"]}
           whenToUse={[
             "Publishing a blog post that needs a custom social preview",
@@ -892,7 +892,7 @@ export default function OgImageContent() {
                   <div>
                     <label className="flex cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300 px-4 py-6 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors">
                       {bgImageData
-                        ? "Image loaded — click to change"
+                        ? "Image loaded - click to change"
                         : "Click to upload background image"}
                       <input
                         type="file"

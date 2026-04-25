@@ -262,7 +262,7 @@ export default function TextCleanerContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Text Cleaner"
-          tagline="One-click fixes for messy pasted text — smart quotes, double spaces, zero-width characters, weird line endings."
+          tagline="One-click fixes for messy pasted text - smart quotes, double spaces, zero-width characters, weird line endings."
           description="Paste text from anywhere (a PDF, a Word doc, a chat log) and toggle the fixes you want: convert smart quotes to straight, collapse multiple spaces, remove zero-width characters, normalize line endings, strip markdown, and more. Preview updates live; copy the cleaned output with one click."
           audience={["Writers", "Editors", "Developers", "Support"]}
           whenToUse={[

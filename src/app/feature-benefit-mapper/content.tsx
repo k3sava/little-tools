@@ -91,7 +91,7 @@ function exportMarkdown(rows: FeatureRow[]): string {
     "| ------- | ------- | -------- |",
     ...rows
       .filter((r) => r.feature.trim())
-      .map((r) => `| ${r.feature} | ${r.benefit || "—"} | ${r.audience || "—"} |`),
+      .map((r) => `| ${r.feature} | ${r.benefit || "-"} | ${r.audience || "-"} |`),
   ];
   return lines.join("\n");
 }
@@ -199,8 +199,8 @@ export default function FeatureBenefitMapperContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Feature-Benefit Mapper"
-          tagline="Turn every feature into a customer benefit — and get warned when your copy is still 'feature-speak.'"
-          description="List your features in the left column. For each, write the benefit it delivers — what the customer gains, not what the product does. We flag rows that are still technical-sounding (&quot;API endpoint&quot;, &quot;integration&quot;) and suggest verbs that re-frame them as outcomes. Export the mapped table to use in your landing page copy."
+          tagline="Turn every feature into a customer benefit - and get warned when your copy is still 'feature-speak.'"
+          description="List your features in the left column. For each, write the benefit it delivers - what the customer gains, not what the product does. We flag rows that are still technical-sounding (&quot;API endpoint&quot;, &quot;integration&quot;) and suggest verbs that re-frame them as outcomes. Export the mapped table to use in your landing page copy."
           audience={["PMMs", "Copywriters", "Founders", "Growth"]}
           whenToUse={[
             "Rewriting a feature-dense landing page",
@@ -440,7 +440,7 @@ export default function FeatureBenefitMapperContent() {
 
         <ReferencePanel
           id="feat-vs-benefit"
-          title="Features vs benefits — the rewrite formula"
+          title="Features vs benefits - the rewrite formula"
           summary="A three-step translation that works on almost any feature."
           defaultOpen
         >
@@ -458,12 +458,12 @@ export default function FeatureBenefitMapperContent() {
             <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
               <div className="text-xs font-semibold uppercase tracking-wide text-gray-500">Step 3</div>
               <div className="mt-1 font-medium text-gray-900">Rewrite as what the customer gains</div>
-              <div className="mt-1 text-xs text-gray-600">&quot;Your customer data stays private — even if a backup is stolen.&quot;</div>
+              <div className="mt-1 text-xs text-gray-600">&quot;Your customer data stays private - even if a backup is stolen.&quot;</div>
             </div>
             <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
               <strong>Rule of thumb:</strong> if you can put &quot;so what?&quot; after your
               sentence and it still needs an answer, it&apos;s a feature. If the reader&apos;s
-              reaction is &quot;oh — I want that,&quot; it&apos;s a benefit.
+              reaction is &quot;oh - I want that,&quot; it&apos;s a benefit.
             </div>
           </div>
         </ReferencePanel>

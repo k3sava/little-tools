@@ -462,7 +462,7 @@ export default function JsonFormatterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="JSON Formatter"
-          tagline="Format, validate, query with JSONPath, and explore a JSON tree — with inline syntax errors and size stats."
+          tagline="Format, validate, query with JSONPath, and explore a JSON tree - with inline syntax errors and size stats."
           description="Paste any JSON and we validate it, pretty-print with the indentation you pick, and show the structure as a collapsible tree. Errors show the exact line and column. Use JSONPath expressions ($.data.items[*].id) to pull values out of large documents without a script."
           audience={["Developers", "API testers", "Data engineers"]}
           whenToUse={[

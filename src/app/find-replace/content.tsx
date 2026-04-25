@@ -309,7 +309,7 @@ export default function FindReplaceContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Find &amp; Replace"
-          tagline="Bulk find-and-replace across pasted text — with regex, case-insensitive matching, whole-word matching, and match counting."
+          tagline="Bulk find-and-replace across pasted text - with regex, case-insensitive matching, whole-word matching, and match counting."
           description="Paste your text, type what to find, type what to replace it with. Regex mode unlocks capture groups ($1, $2). Matches are highlighted live, and the result area shows the count before you commit. Works for renaming variables, cleaning up CSVs, swapping brand terms, or any bulk edit."
           audience={["Developers", "Writers", "Editors", "Data folks"]}
           whenToUse={[
@@ -385,7 +385,7 @@ export default function FindReplaceContent() {
           )}
         </div>
 
-        {/* Find / Replace fields — Single mode */}
+        {/* Find / Replace fields - Single mode */}
         {mode === "single" && (
           <div className="mt-5 space-y-3">
             <div className="relative">
@@ -570,7 +570,7 @@ export default function FindReplaceContent() {
               <span className="text-sm font-medium text-gray-500">
                 Result{" "}
                 <span className="text-gray-400 font-normal">
-                  — {mode === "rules" ? "all rules applied" : replaceAllMode ? "all" : "first"} replaced
+                  - {mode === "rules" ? "all rules applied" : replaceAllMode ? "all" : "first"} replaced
                 </span>
               </span>
               <button

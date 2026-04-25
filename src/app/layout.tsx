@@ -49,13 +49,13 @@ const notoSerifJP = Noto_Serif_JP({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tools.iamkesava.com"),
-  title: "little tools — fast, single-purpose web utilities by Kesava",
+  title: "little tools - fast, single-purpose web utilities by Kesava",
   description:
     "60 ad-free, privacy-first browser tools for text, design, and development. All processing happens in your browser. No accounts, no data collection.",
   authors: [{ name: "Kesava" }],
   alternates: { canonical: "https://tools.iamkesava.com" },
   openGraph: {
-    title: "little tools — fast, single-purpose web utilities by Kesava",
+    title: "little tools - fast, single-purpose web utilities by Kesava",
     description:
       "60 ad-free, privacy-first browser tools for text, design, and development. All processing happens in your browser.",
     url: "https://tools.iamkesava.com",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "little tools — fast, single-purpose web utilities by Kesava",
+    title: "little tools - fast, single-purpose web utilities by Kesava",
     description:
       "60 ad-free, privacy-first browser tools. All processing in your browser.",
   },

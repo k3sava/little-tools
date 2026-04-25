@@ -344,8 +344,8 @@ export default function VideoConverterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Video Converter"
-          tagline="Convert between MP4 and WebM without uploading — everything runs in your browser using WebCodecs."
-          description="Drop a video, pick output format (MP4 for compatibility or WebM for smaller web files), optionally resize resolution or tweak bitrate. Conversion happens entirely in-browser — your video never leaves your device, so it's safe for personal or confidential footage. Works best with modern browsers; very large files may run out of memory on low-end devices."
+          tagline="Convert between MP4 and WebM without uploading - everything runs in your browser using WebCodecs."
+          description="Drop a video, pick output format (MP4 for compatibility or WebM for smaller web files), optionally resize resolution or tweak bitrate. Conversion happens entirely in-browser - your video never leaves your device, so it's safe for personal or confidential footage. Works best with modern browsers; very large files may run out of memory on low-end devices."
           audience={["Everyone", "Content creators", "Developers"]}
           whenToUse={[
             "Converting a phone video for web embedding",
@@ -515,7 +515,7 @@ export default function VideoConverterContent() {
             {selected && (
               <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-sm font-semibold text-gray-700">
-                  Preview — {selected.name}
+                  Preview - {selected.name}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>

@@ -664,7 +664,7 @@ export default function SeoContentAnalyzerContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="SEO Content Analyzer"
-          tagline="Score an article for SEO before publishing — keyword density, heading structure, readability, meta length, internal links."
+          tagline="Score an article for SEO before publishing - keyword density, heading structure, readability, meta length, internal links."
           description="Paste your article and target keyword. We check keyword density, count H2s/H3s and flag missing heading hierarchy, compute reading grade, check word count against SEO norms, and identify meta title/description length issues. Every check links to a specific fix."
           audience={["SEOs", "Content marketers", "Bloggers"]}
           whenToUse={[
@@ -985,7 +985,7 @@ export default function SeoContentAnalyzerContent() {
               </Card>
             </div>
 
-            {/* Recommendations — full width */}
+            {/* Recommendations - full width */}
             <Card title="Recommendations" icon={<RecommendationIcon />}>
               <div className="space-y-2">
                 {analysis.recommendations.map((rec, i) => (

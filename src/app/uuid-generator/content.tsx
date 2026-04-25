@@ -415,7 +415,7 @@ export default function UuidGeneratorContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Universal ID Generator"
-          tagline="Generate UUIDv4, UUIDv7, ULID, NanoID, CUID2, KSUID, TSID, Snowflake — with format info and bulk generation."
+          tagline="Generate UUIDv4, UUIDv7, ULID, NanoID, CUID2, KSUID, TSID, Snowflake - with format info and bulk generation."
           description="Pick an ID format, see how it's structured (timestamp vs random, length, sortability), and generate one or a thousand. Decode any ID to reveal embedded timestamps. Use the format picker as a learning tool when choosing an ID scheme for a new database column or API."
           audience={["Developers", "Database engineers"]}
           whenToUse={[

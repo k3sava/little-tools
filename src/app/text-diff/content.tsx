@@ -651,8 +651,8 @@ export default function TextDiffContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Text Diff"
-          tagline="Paste two versions of anything — docs, emails, code — and see a line-by-line diff with word-level highlighting."
-          description="Side-by-side or unified view, word-level diffs (not just lines), case-insensitive and whitespace-insensitive toggles, and stats showing how many lines were added, removed, or changed. Works on any text — copy/pasted docs, SQL, JSON, email drafts, chapter revisions."
+          tagline="Paste two versions of anything - docs, emails, code - and see a line-by-line diff with word-level highlighting."
+          description="Side-by-side or unified view, word-level diffs (not just lines), case-insensitive and whitespace-insensitive toggles, and stats showing how many lines were added, removed, or changed. Works on any text - copy/pasted docs, SQL, JSON, email drafts, chapter revisions."
           audience={["Developers", "Writers", "Editors", "Lawyers"]}
           whenToUse={[
             "Reviewing edits to a document",

@@ -528,7 +528,7 @@ export default function InvoiceGeneratorContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Invoice Generator"
-          tagline="Create an invoice, quote, or credit note — fill in the fields, export as a clean PDF. No signup, nothing saved to a server."
+          tagline="Create an invoice, quote, or credit note - fill in the fields, export as a clean PDF. No signup, nothing saved to a server."
           description="Fill in your business info once (saved locally for next time), enter line items with quantities and rates, add tax and discount, pick a currency. Live preview updates as you type. Switch between invoice / quote / credit-note layouts. Export a print-ready PDF with a single click."
           audience={["Freelancers", "Small business owners", "Contractors"]}
           whenToUse={[
@@ -703,7 +703,7 @@ export default function InvoiceGeneratorContent() {
               >
                 {currencies.map((c) => (
                   <option key={c.code} value={c.code}>
-                    {c.symbol} {c.code} — {c.name}
+                    {c.symbol} {c.code} - {c.name}
                   </option>
                 ))}
               </select>

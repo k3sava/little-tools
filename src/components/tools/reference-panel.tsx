@@ -4,7 +4,7 @@ import { useState } from "react";
 
 /**
  * Collapsible reference section for embedding the "why" and the rules
- * alongside a tool — e.g. AP vs APA title case rules, WCAG contrast
+ * alongside a tool - e.g. AP vs APA title case rules, WCAG contrast
  * thresholds, regex flag meanings, framework comparisons.
  *
  * Default is open on first visit so users actually learn something.
@@ -27,7 +27,13 @@ export function ReferencePanel({
   return (
     <section
       id={id}
-      className="mt-8 rounded-2xl border border-gray-200 bg-white shadow-sm"
+      className="kami-reference-panel mt-8"
+      style={{
+        background: "var(--kami-surface)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 1rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
     >
       <button
         type="button"
@@ -36,15 +42,14 @@ export function ReferencePanel({
         aria-expanded={open}
       >
         <div className="flex-1">
-          <div className="text-sm font-semibold text-gray-900">{title}</div>
+          <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{title}</div>
           {summary && (
-            <p className="mt-0.5 text-xs text-gray-500">{summary}</p>
+            <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>{summary}</p>
           )}
         </div>
         <span
-          className={`mt-0.5 text-gray-400 transition-transform ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`mt-0.5 transition-transform ${open ? "rotate-180" : ""}`}
+          style={{ color: "var(--kami-text-dim)" }}
           aria-hidden="true"
         >
           <svg
@@ -62,7 +67,13 @@ export function ReferencePanel({
         </span>
       </button>
       {open && (
-        <div className="border-t border-gray-100 px-5 py-4 text-sm leading-relaxed text-gray-700">
+        <div
+          className="px-5 py-4 text-sm leading-relaxed"
+          style={{
+            borderTop: "1px solid var(--kami-border)",
+            color: "var(--kami-text-muted)",
+          }}
+        >
           {children}
         </div>
       )}

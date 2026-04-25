@@ -41,7 +41,7 @@ export default function PdfMergeContent() {
           size: file.size,
         });
       } catch {
-        setError(`Could not load "${file.name}" — it may be corrupted or password-protected.`);
+        setError(`Could not load "${file.name}" - it may be corrupted or password-protected.`);
       }
     }
 
@@ -116,8 +116,8 @@ export default function PdfMergeContent() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <ToolIntro
         title="Merge PDF"
-        tagline="Combine any number of PDFs into one — drag to reorder, remove pages you don't want, export in seconds."
-        description="Drop multiple PDFs (or add them one by one). Drag cards to reorder the final document. Everything runs in your browser — the files never leave your device, so it's safe to use with sensitive contracts or financials."
+        tagline="Combine any number of PDFs into one - drag to reorder, remove pages you don't want, export in seconds."
+        description="Drop multiple PDFs (or add them one by one). Drag cards to reorder the final document. Everything runs in your browser - the files never leave your device, so it's safe to use with sensitive contracts or financials."
         audience={["Everyone"]}
         whenToUse={[
           "Combining a scanned cover letter + resume",

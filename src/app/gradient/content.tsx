@@ -347,7 +347,7 @@ export default function GradientContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Gradient Generator"
-          tagline="Design linear, radial, or conic CSS gradients with multiple color stops and layered gradients — with copy-ready CSS."
+          tagline="Design linear, radial, or conic CSS gradients with multiple color stops and layered gradients - with copy-ready CSS."
           description="Drag color stops on a linear / radial / conic gradient preview. Add multiple layers for richer effects. Presets cover the popular &quot;mesh&quot; and &quot;aurora&quot; looks. Copy output as plain CSS (background-image) or Tailwind class. Fullscreen mode lets you eyeball the gradient at real size before shipping."
           audience={["Designers", "Front-end developers"]}
           whenToUse={[
@@ -433,7 +433,7 @@ export default function GradientContent() {
             </div>
           </div>
 
-          {/* Right column — Controls */}
+          {/* Right column - Controls */}
           <div className="space-y-4">
             {/* Layers */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">

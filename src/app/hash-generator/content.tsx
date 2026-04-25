@@ -352,8 +352,8 @@ export default function HashGeneratorContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Hash Generator"
-          tagline="Generate MD5, SHA-1, SHA-256/384/512, and CRC32 hashes of text or files — plus HMAC and checksum verification."
-          description="Paste text or drop a file; we compute every major hash at once. Three modes: (1) Hash — all algorithms in one click; (2) HMAC — keyed hash with a secret; (3) Verify — paste an expected hash and we tell you if it matches (with char-by-char diff when it doesn't)."
+          tagline="Generate MD5, SHA-1, SHA-256/384/512, and CRC32 hashes of text or files - plus HMAC and checksum verification."
+          description="Paste text or drop a file; we compute every major hash at once. Three modes: (1) Hash - all algorithms in one click; (2) HMAC - keyed hash with a secret; (3) Verify - paste an expected hash and we tell you if it matches (with char-by-char diff when it doesn't)."
           audience={["Developers", "Security engineers", "Ops"]}
           whenToUse={[
             "Verifying a download against a published checksum",
@@ -595,7 +595,7 @@ export default function HashGeneratorContent() {
                   </div>
                   <div>
                     <p className={`font-medium ${verifyMatch ? "text-green-800" : "text-red-800"}`}>
-                      {verifyMatch ? `Match — ${verifyMatch}` : "No match"}
+                      {verifyMatch ? `Match - ${verifyMatch}` : "No match"}
                     </p>
                     <p className={`text-xs mt-0.5 ${verifyMatch ? "text-green-600" : "text-red-600"}`}>
                       {verifyMatch

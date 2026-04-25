@@ -398,7 +398,7 @@ export default function GridContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="CSS Grid Generator"
-          tagline="Design a CSS grid visually — set columns and rows, define named areas, span cells by dragging."
+          tagline="Design a CSS grid visually - set columns and rows, define named areas, span cells by dragging."
           description="Drag to create cell spans, click a track handle to resize columns and rows (fr, px, %, minmax), and switch to area mode to assign named grid-areas for readable layouts. Presets cover 12-column holy-grail, image galleries, and magazine layouts. Output is clean grid-template-columns/rows/areas CSS."
           audience={["Front-end developers", "Designers"]}
           whenToUse={[

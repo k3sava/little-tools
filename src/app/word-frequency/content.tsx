@@ -190,7 +190,7 @@ export default function WordFrequencyContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Word Frequency Counter"
-          tagline="See which words, bigrams, and trigrams dominate your copy — with stop-word filtering and CSV export."
+          tagline="See which words, bigrams, and trigrams dominate your copy - with stop-word filtering and CSV export."
           description="Paste any text and we count how often each word (or 2-word / 3-word phrase) appears. Toggle stop-words (the, and, a…) to see what actually matters. Useful for SEO keyword density, content audits, or figuring out what a transcript is really about."
           audience={["SEOs", "Writers", "Content strategists", "Researchers"]}
           whenToUse={[

@@ -194,8 +194,8 @@ export default function Base64Content() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Base64 Encode / Decode"
-          tagline="Encode or decode text and files with Standard, URL-safe, or Data URL variants — with drag-and-drop file support."
-          description="Paste text (or drop a file) and toggle encode/decode. Supports three Base64 flavors: Standard (RFC 4648), URL-safe (replaces + and / with - and _), and Data URL (ready to embed in HTML or CSS). Handles binary files up to tens of megabytes — entirely in your browser."
+          tagline="Encode or decode text and files with Standard, URL-safe, or Data URL variants - with drag-and-drop file support."
+          description="Paste text (or drop a file) and toggle encode/decode. Supports three Base64 flavors: Standard (RFC 4648), URL-safe (replaces + and / with - and _), and Data URL (ready to embed in HTML or CSS). Handles binary files up to tens of megabytes - entirely in your browser."
           audience={["Developers", "API integrators", "Support engineers"]}
           whenToUse={[
             "Embedding a small image as a data URL",
@@ -273,7 +273,7 @@ export default function Base64Content() {
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium text-gray-500">
                 Base64{variant === "urlsafe" ? " (URL-safe)" : ""}
-                {fileName && <span className="text-gray-400 font-normal"> — {fileName}</span>}
+                {fileName && <span className="text-gray-400 font-normal"> - {fileName}</span>}
               </span>
               {b64Output && (
                 <button
@@ -346,7 +346,7 @@ export default function Base64Content() {
             accept={[]}
             onFiles={handleFileSelect}
             label="Drop a file here or click to browse"
-            hint="Any file type — converts to Base64 with auto-detected MIME type"
+            hint="Any file type - converts to Base64 with auto-detected MIME type"
             multiple={false}
           />
         </div>

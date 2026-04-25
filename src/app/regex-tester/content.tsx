@@ -633,24 +633,24 @@ export default function RegexTesterContent() {
 
         <ReferencePanel
           id="flag-reference"
-          title="Regex flags — what each letter does"
+          title="Regex flags - what each letter does"
           summary="The flags after the closing slash (e.g. /pattern/gi) change matching behavior."
           defaultOpen
         >
           <div className="space-y-1">
             <RuleRow rule="g (global)" explanation="Find all matches instead of stopping at the first." example="/cat/g" />
-            <RuleRow rule="i (insensitive)" explanation="Case-insensitive — 'Cat' matches 'CAT' and 'cat'." example="/cat/i" />
+            <RuleRow rule="i (insensitive)" explanation="Case-insensitive - 'Cat' matches 'CAT' and 'cat'." example="/cat/i" />
             <RuleRow rule="m (multiline)" explanation="^ and $ match the start/end of each line, not just the whole string." example="/^foo/m" />
             <RuleRow rule="s (dotAll)" explanation="'.' matches newlines too. Off by default." example="/a.b/s" />
-            <RuleRow rule="u (unicode)" explanation="Enables full Unicode support — needed for emoji and surrogate pairs." example="/\\p{Emoji}/u" />
-            <RuleRow rule="y (sticky)" explanation="Matches only from lastIndex — no &quot;scanning forward&quot; through the string." example="/foo/y" />
+            <RuleRow rule="u (unicode)" explanation="Enables full Unicode support - needed for emoji and surrogate pairs." example="/\\p{Emoji}/u" />
+            <RuleRow rule="y (sticky)" explanation="Matches only from lastIndex - no &quot;scanning forward&quot; through the string." example="/foo/y" />
           </div>
         </ReferencePanel>
 
         <ReferencePanel
           id="regex-cheatsheet"
           title="Regex cheat sheet"
-          summary="The building blocks — with examples."
+          summary="The building blocks - with examples."
           defaultOpen={false}
         >
           <div className="space-y-4 text-xs">

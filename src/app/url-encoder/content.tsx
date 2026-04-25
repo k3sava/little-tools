@@ -69,7 +69,7 @@ export default function UrlEncoderContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="URL Encode / Decode"
-          tagline="Encode, decode, and dissect URLs — component-by-component, with per-part encoding for tricky query params."
+          tagline="Encode, decode, and dissect URLs - component-by-component, with per-part encoding for tricky query params."
           description="Encode or decode an entire URL, or just a single component (like a query value with special characters). Parse mode splits a URL into protocol / host / path / query / fragment so you can edit a specific piece. Supports both %-encoding and + encoding for form-style query strings."
           audience={["Developers", "QA testers", "Marketers"]}
           whenToUse={[

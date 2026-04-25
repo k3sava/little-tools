@@ -29,7 +29,7 @@
     --destructive: #ef4444;
 
     /* ============================================================
-       Kami design tokens — theme-aware via html[data-theme] below.
+       Kami design tokens - theme-aware via html[data-theme] below.
        Every page/component reads from these instead of hardcoding.
        ============================================================ */
 
@@ -183,7 +183,7 @@
 
 /* ===== Tools Design System ===== */
 
-/* Light theme variables — used by command palette, copy toast */
+/* Light theme variables - used by command palette, copy toast */
 .tools-light {
   --tools-bg: #fafafa;
   --tools-surface: #ffffff;
@@ -233,7 +233,7 @@ html[data-theme] body * {
 }
 
 /* ============================================================
-   BRUTALIST — "Concrete Press"
+   BRUTALIST - "Concrete Press"
    School: Total Design + Mevis & Van Deursen + Berlin techno flyer
    Philosophy: monospace shouting on white paper. Magenta is the
    only non-black/white color. Zero radius. Offset-solid shadows.
@@ -322,7 +322,7 @@ html[data-theme="brutalist"] .kami-scope h3 {
   font-weight: 700;
   font-family: var(--kami-font-display);
 }
-/* Text-link anchors — underline magenta on hover */
+/* Text-link anchors - underline magenta on hover */
 html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
   color: #000;
   text-decoration: underline;
@@ -376,7 +376,7 @@ html[data-theme="brutalist"] .kami-scope button:not(.theme-switcher-pill):not(.t
 }
 
 /* ============================================================
-   EDITORIAL — "Supplement"
+   EDITORIAL - "Supplement"
    School: Vignelli Canon + Penguin/Tschichold + NYT Magazine
    Philosophy: cream paper, serif display, hairline rules, slow
    dignified hovers. Pressed into the page.
@@ -538,11 +538,11 @@ html[data-theme="editorial"] .kami-scope button.w-full {
 }
 
 /* ============================================================
-   TERMINAL — "Phosphor"
+   TERMINAL - "Phosphor"
    School: Hackers (1995) + Unix man pages + lazygit/btop
    Philosophy: deep dark bg, phosphor green, amber hover accents.
    Brackets on buttons. `> ` prefix on headings. Scanline overlay.
-   Terminals don't animate — motion is instant.
+   Terminals don't animate - motion is instant.
    ============================================================ */
 html[data-theme="terminal"] {
   --kami-bg: #0d1117;
@@ -716,10 +716,10 @@ html[data-theme="terminal"] .kami-scope [style*="color:#bbb"] {
 }
 
 /* ============================================================
-   ZEN — "Breath"
+   ZEN - "Breath"
    School: Kenya Hara / Muji / Ryoanji Ma
    Philosophy: rice paper, deliberate emptiness, wide tracking,
-   moss accent, no borders — soft washes. Meditative 500-600ms
+   moss accent, no borders - soft washes. Meditative 500-600ms
    hovers, dots instead of lines, ensō section marker.
    ============================================================ */
 html[data-theme="zen"] {
@@ -864,7 +864,7 @@ html[data-theme="zen"] .kami-scope button:not(.theme-switcher-pill):not(.theme-s
   color: #334155 !important;
   border-color: #7a8471 !important;
 }
-/* Zen layout — more breathing room */
+/* Zen layout - more breathing room */
 html[data-theme="zen"] .kami-scope .grid {
   gap: 1.5rem !important;
 }
@@ -1114,12 +1114,12 @@ html[data-theme="zen"] .theme-switcher-option.active {
 }
 
 /* ============================================================
-   Kami shared component skins — bind design tokens to the
+   Kami shared component skins - bind design tokens to the
    classes actually used across the site. These rules run for
    ALL themes (including classic/default) so every page responds.
    ============================================================ */
 
-/* --- Primary link-button (`bg-gray-900` CTAs) — themed only --- */
+/* --- Primary link-button (`bg-gray-900` CTAs) - themed only --- */
 html[data-theme] a[class*="bg-gray-900"] {
   background-color: var(--kami-cta-bg) !important;
   color: var(--kami-cta-text) !important;
@@ -1136,7 +1136,7 @@ html[data-theme] a[class*="bg-gray-900"] * {
   color: var(--kami-cta-text) !important;
 }
 
-/* --- Secondary link-button (`border-gray-200` CTAs) — themed only --- */
+/* --- Secondary link-button (`border-gray-200` CTAs) - themed only --- */
 html[data-theme] a[class*="border-gray-200"][class*="rounded"] {
   background-color: var(--kami-cta2-bg) !important;
   color: var(--kami-cta2-text) !important;
@@ -1149,7 +1149,7 @@ html[data-theme] a[class*="border-gray-200"][class*="rounded"]:hover {
   color: var(--kami-cta2-text) !important;
 }
 
-/* --- AppCard tile (.kami-tile) — uses design-language tokens --- */
+/* --- AppCard tile (.kami-tile) - uses design-language tokens --- */
 .kami-tile {
   background-color: var(--kami-surface-solid) !important;
   border: var(--kami-card-border) !important;
@@ -1353,7 +1353,7 @@ html[data-theme="terminal"] a[class*="bg-gray-900"] * {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
   filter: brightness(1.04);
 }
-/* Brutalist overlay CTA — flat white-on-black, magenta slam on tile hover */
+/* Brutalist overlay CTA - flat white-on-black, magenta slam on tile hover */
 html[data-theme="brutalist"] .kami-overlay-btn-primary,
 html[data-theme="brutalist"] a.kami-overlay-btn-primary {
   background: #fff !important;
@@ -1368,7 +1368,7 @@ html[data-theme="brutalist"] .kami-tile:hover .kami-overlay-btn-primary {
   box-shadow: 4px 4px 0 #d946ef !important;
   transform: translate(-2px, -2px);
 }
-/* Terminal overlay CTA — bracketed amber */
+/* Terminal overlay CTA - bracketed amber */
 html[data-theme="terminal"] .kami-overlay-btn-primary,
 html[data-theme="terminal"] a.kami-overlay-btn-primary {
   background: transparent !important;
@@ -1385,7 +1385,7 @@ html[data-theme="terminal"] .kami-tile:hover .kami-overlay-btn-primary {
   box-shadow: none !important;
   filter: none;
 }
-/* Editorial overlay CTA — cream on ink, italic */
+/* Editorial overlay CTA - cream on ink, italic */
 html[data-theme="editorial"] .kami-overlay-btn-primary,
 html[data-theme="editorial"] a.kami-overlay-btn-primary {
   background: #f8f3ea !important;
@@ -1402,7 +1402,7 @@ html[data-theme="editorial"] .kami-tile:hover .kami-overlay-btn-primary {
   box-shadow: none !important;
   filter: none;
 }
-/* Zen overlay CTA — thin pill */
+/* Zen overlay CTA - thin pill */
 html[data-theme="zen"] .kami-overlay-btn-primary,
 html[data-theme="zen"] a.kami-overlay-btn-primary {
   background: transparent !important;
@@ -1419,7 +1419,7 @@ html[data-theme="zen"] .kami-tile:hover .kami-overlay-btn-primary {
   filter: none;
 }
 
-/* --- Share button (fixed top-right) — per-theme treatment --- */
+/* --- Share button (fixed top-right) - per-theme treatment --- */
 .kami-share-btn {
   transition:
     background var(--kami-motion-base) var(--kami-motion-ease),
@@ -1540,10 +1540,13 @@ html[data-theme="zen"] .kami-share-btn:hover {
    ============================================================ */
 
 /* Surface / background */
-html[data-theme] .kami-scope .bg-white {
+html[data-theme] .kami-scope .bg-white,
+html[data-theme] .kami-scope [class*="bg-white/"] {
   background-color: var(--kami-surface-solid) !important;
+  background: var(--kami-surface-solid) !important;
 }
-html[data-theme] .kami-scope .bg-gray-50 {
+html[data-theme] .kami-scope .bg-gray-50,
+html[data-theme] .kami-scope [class*="bg-gray-50/"] {
   background-color: var(--kami-surface-solid) !important;
 }
 html[data-theme] .kami-scope .bg-gray-100 {
@@ -1745,7 +1748,7 @@ html[data-theme="zen"] .kami-scope .divide-gray-200 > :not([hidden]) ~ :not([hid
   border-color: rgba(122, 132, 113, 0.12) !important;
 }
 
-/* Panel radius — only on elements that are also surfaces, so pills
+/* Panel radius - only on elements that are also surfaces, so pills
    and status bars keep their own shape. */
 html[data-theme] .kami-scope .bg-white.rounded-lg,
 html[data-theme] .kami-scope .bg-white.rounded-xl,
@@ -1839,7 +1842,7 @@ html[data-theme] .kami-scope textarea:focus {
   border-color: var(--kami-accent) !important;
 }
 
-/* CTA buttons & links inside tool pages — the common pattern
+/* CTA buttons & links inside tool pages - the common pattern
    is bg-gray-900 text-white. Remap to brand CTA token. */
 html[data-theme] .kami-scope button.bg-gray-900,
 html[data-theme] .kami-scope a.bg-gray-900 {

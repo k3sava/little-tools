@@ -126,11 +126,11 @@ function toTitleCase(text: string, style: TitleStyle): string {
           const lower = token.toLowerCase();
 
           if (!isFirst && !isLast && !afterColon && minorWords.has(lower)) {
-            afterColon = token.endsWith(":") || token.endsWith("—");
+            afterColon = token.endsWith(":") || token.endsWith("-");
             return lower;
           }
 
-          afterColon = token.endsWith(":") || token.endsWith("—");
+          afterColon = token.endsWith(":") || token.endsWith("-");
 
           return lower.replace(/\b([a-z])/g, (_, c: string) => c.toUpperCase());
         })
@@ -382,7 +382,7 @@ const CASES: CaseInfo[] = [
     example: "HELLO_WORLD",
     group: "programming",
     description:
-      "SCREAMING_SNAKE_CASE — all uppercase, words joined with underscores.",
+      "SCREAMING_SNAKE_CASE - all uppercase, words joined with underscores.",
     commonUse: "Constants, environment variables.",
   },
   {
@@ -397,7 +397,7 @@ const CASES: CaseInfo[] = [
 
 const GROUPS: { id: CaseInfo["group"]; label: string; hint: string }[] = [
   { id: "writing", label: "Plain writing", hint: "Everyday prose and UI copy" },
-  { id: "title", label: "Title case styles", hint: "For headlines — three competing style guides" },
+  { id: "title", label: "Title case styles", hint: "For headlines - three competing style guides" },
   { id: "programming", label: "Programming", hint: "Identifiers, filenames, config keys" },
 ];
 
@@ -463,7 +463,7 @@ export default function CaseConverterContent() {
       <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Case Converter"
-          tagline="Convert text between 13 naming conventions — and learn the rules behind each one."
+          tagline="Convert text between 13 naming conventions - and learn the rules behind each one."
           description="Paste any text and see it converted every way at once: camelCase, snake_case, kebab-case, AP/APA/Chicago title case, and more. Click any card to copy. We detect what case your input is in, and the rules reference at the bottom explains exactly when to use each style."
           audience={["Writers", "Engineers", "Designers", "Editors"]}
           whenToUse={[
@@ -495,7 +495,7 @@ export default function CaseConverterContent() {
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type or paste text here — conversions appear below as you type."
+            placeholder="Type or paste text here - conversions appear below as you type."
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
             rows={5}
             autoFocus
@@ -519,7 +519,7 @@ export default function CaseConverterContent() {
 
         {allConversions.length === 0 && (
           <div className="mt-6 rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-sm text-gray-400">
-            Start typing above — or click an example — to see all 13 case
+            Start typing above - or click an example - to see all 13 case
             conversions.
           </div>
         )}
@@ -588,7 +588,7 @@ export default function CaseConverterContent() {
           </div>
         )}
 
-        {/* Rules reference — the titlecaseconverter.com feature */}
+        {/* Rules reference - the titlecaseconverter.com feature */}
         <ReferencePanel
           id="title-case-rules"
           title="Title-case rules, by style guide"
@@ -604,7 +604,7 @@ export default function CaseConverterContent() {
                 "Capitalize all nouns, verbs, adjectives, adverbs, and pronouns.",
                 "Capitalize prepositions and conjunctions of 4+ letters (e.g. About, After, With).",
                 "Lowercase short articles and conjunctions (a, an, the, and, but, or, for, nor).",
-                "Lowercase short prepositions (≤3 letters) — e.g. of, to, in, on, at, by.",
+                "Lowercase short prepositions (≤3 letters) - e.g. of, to, in, on, at, by.",
               ]}
               example="A Guide to the Habits of Highly Effective People"
             />
@@ -644,7 +644,7 @@ export default function CaseConverterContent() {
 
         <ReferencePanel
           id="programming-case-guide"
-          title="Programming case — which to use where"
+          title="Programming case - which to use where"
           summary="The conventions most ecosystems agree on."
           defaultOpen={false}
         >
@@ -681,7 +681,7 @@ export default function CaseConverterContent() {
             />
             <RuleRow
               rule="Title-Kebab"
-              explanation="HTTP headers — one of the few places this hybrid is idiomatic."
+              explanation="HTTP headers - one of the few places this hybrid is idiomatic."
               example="Content-Type"
             />
           </div>
@@ -689,7 +689,7 @@ export default function CaseConverterContent() {
 
         <div className="mt-6 text-center text-xs text-gray-400">
           ⌘K clears the input · Click any card to copy · Runs entirely in your
-          browser — nothing is uploaded.
+          browser - nothing is uploaded.
         </div>
       </div>
     </div>

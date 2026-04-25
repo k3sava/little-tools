@@ -3,7 +3,7 @@ import { UseCaseData } from "./types";
 export const repPerformance: UseCaseData = {
   slug: "rep-performance",
   meta: {
-    title: "Rep Performance — JustCall",
+    title: "Rep Performance - JustCall",
     description:
       "Sell better, with full context. JustCall captures, summarizes, and scores every conversation so your team sells better.",
   },

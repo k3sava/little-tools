@@ -56,8 +56,8 @@ You can close multiple conversations at once:
 - **Review closed conversations** periodically to ensure nothing was missed
 
 ## Related Features
-- [Using the Unresponded Filter](/help/articles/using-unresponded-filter) — Find conversations that need replies
-- [SMS Inbox Search](/help/articles/sms-inbox-search) — Search across all conversations`,
+- [Using the Unresponded Filter](/help/articles/using-unresponded-filter) - Find conversations that need replies
+- [SMS Inbox Search](/help/articles/sms-inbox-search) - Search across all conversations`,
   },
   {
     slug: "ai-sms-copilot",
@@ -87,9 +87,9 @@ For long threads, Copilot provides a brief summary at the top of the conversatio
 
 ### Tone Adjustment
 Select your draft text and use Copilot to adjust the tone:
-- **Professional** — formal business language
-- **Friendly** — warm and approachable
-- **Concise** — shortened to essentials
+- **Professional** - formal business language
+- **Friendly** - warm and approachable
+- **Concise** - shortened to essentials
 
 ## How to Enable SMS Copilot
 
@@ -107,7 +107,7 @@ Select your draft text and use Copilot to adjust the tone:
 | Enterprise | Unlimited |
 
 ## Tips for Best Results
-- Keep your conversation threads organized — Copilot works best with clear context
+- Keep your conversation threads organized - Copilot works best with clear context
 - Review and personalize AI suggestions before sending
 - Use tone adjustment for customer-facing messages`,
   },
@@ -127,20 +127,20 @@ SMS Automation lets you create rules that automatically send messages, assign co
 ## Trigger Types
 
 ### Event-Based Triggers
-- **New inbound message** — fires when any new SMS arrives
-- **Keyword match** — fires when a message contains specific words
-- **After-hours message** — fires when a message arrives outside business hours
-- **Missed call** — sends an automatic SMS when a call goes unanswered
+- **New inbound message** - fires when any new SMS arrives
+- **Keyword match** - fires when a message contains specific words
+- **After-hours message** - fires when a message arrives outside business hours
+- **Missed call** - sends an automatic SMS when a call goes unanswered
 
 ### Time-Based Triggers
-- **Follow-up reminder** — sends a message after X hours of no reply
-- **Scheduled message** — sends at a specific date and time
-- **Recurring message** — sends on a repeating schedule
+- **Follow-up reminder** - sends a message after X hours of no reply
+- **Scheduled message** - sends at a specific date and time
+- **Recurring message** - sends on a repeating schedule
 
 ### Status-Based Triggers
-- **Conversation closed** — fires when a conversation is marked closed
-- **Conversation reopened** — fires when a closed conversation gets a new message
-- **Assignment change** — fires when a conversation is reassigned
+- **Conversation closed** - fires when a conversation is marked closed
+- **Conversation reopened** - fires when a closed conversation gets a new message
+- **Assignment change** - fires when a conversation is reassigned
 
 ## Creating an Automation Rule
 
@@ -169,7 +169,7 @@ SMS Automation lets you create rules that automatically send messages, assign co
 
 ### Follow-Up Nudge
 - **Trigger:** No reply after 24 hours
-- **Action:** Send message: "Hi! Just checking in — did you need anything else?"
+- **Action:** Send message: "Hi! Just checking in - did you need anything else?"
 
 ## Limits
 - Maximum 50 active automation rules per account
@@ -178,7 +178,7 @@ SMS Automation lets you create rules that automatically send messages, assign co
   },
   {
     slug: "sms-bot-automate-replies",
-    title: "SMS Bot — Automate SMS Replies",
+    title: "SMS Bot - Automate SMS Replies",
     categorySlug: "messaging",
     sectionSlug: "sms-bot",
     excerpt:
@@ -208,11 +208,11 @@ Set up keyword triggers that activate the bot:
 
 ### Step 2: Build the Conversation Tree
 Each node in the tree can:
-- **Send a message** — text response to the customer
-- **Ask a question** — prompt for input with expected answer options
-- **Branch** — route based on customer's reply
-- **Collect data** — save customer input (name, email, etc.)
-- **Transfer** — hand off to a human agent
+- **Send a message** - text response to the customer
+- **Ask a question** - prompt for input with expected answer options
+- **Branch** - route based on customer's reply
+- **Collect data** - save customer input (name, email, etc.)
+- **Transfer** - hand off to a human agent
 
 ### Step 3: Set Fallback Behavior
 Configure what happens when the bot doesn't understand:
@@ -237,7 +237,7 @@ Track bot performance in **Analytics** > **SMS Bot**:
   },
   {
     slug: "bulk-sms-campaigns",
-    title: "Bulk SMS Campaigns — Bulk Texting",
+    title: "Bulk SMS Campaigns - Bulk Texting",
     categorySlug: "messaging",
     sectionSlug: "bulk-sms",
     excerpt:
@@ -277,24 +277,24 @@ Bulk SMS lets you send text messages to hundreds or thousands of contacts at onc
 ## Campaign Tracking
 
 After sending, track results in **Campaigns** > **SMS Campaigns**:
-- **Delivered** — successfully received
-- **Failed** — delivery failed (invalid number, carrier block)
-- **Opted Out** — recipient replied STOP
-- **Replied** — recipient sent a response
+- **Delivered** - successfully received
+- **Failed** - delivery failed (invalid number, carrier block)
+- **Opted Out** - recipient replied STOP
+- **Replied** - recipient sent a response
 
 ## Compliance
 
 - All campaigns automatically include opt-out instructions
 - DNC (Do Not Call) list contacts are automatically excluded
 - 10DLC registration required for US campaigns
-- TCPA compliance is your responsibility — ensure proper consent
+- TCPA compliance is your responsibility - ensure proper consent
 
 ## Pricing
 Bulk SMS is billed at your standard per-message rate. No additional campaign fees.`,
   },
   {
     slug: "bulk-mms-campaign-setup",
-    title: "Bulk MMS Campaign — Setup Guide",
+    title: "Bulk MMS Campaign - Setup Guide",
     categorySlug: "messaging",
     sectionSlug: "bulk-sms",
     excerpt:
@@ -303,7 +303,7 @@ Bulk SMS is billed at your standard per-message rate. No additional campaign fee
     lastUpdated: "2026-03-10",
     content: `## Overview
 
-Bulk MMS campaigns let you send multimedia messages — images, GIFs, and short videos — to your contact lists. MMS messages have higher engagement rates than plain SMS.
+Bulk MMS campaigns let you send multimedia messages - images, GIFs, and short videos - to your contact lists. MMS messages have higher engagement rates than plain SMS.
 
 ## Supported Media
 
@@ -333,14 +333,14 @@ Bulk MMS campaigns let you send multimedia messages — images, GIFs, and short 
 - MMS is typically 3x the cost of SMS per message
 
 ### Step 4: Send or Schedule
-Same options as Bulk SMS — send now, schedule, or set timezone-aware delivery.
+Same options as Bulk SMS - send now, schedule, or set timezone-aware delivery.
 
 ## Tips for MMS Campaigns
-- **Optimize images** — compress to under 500KB for fastest delivery
-- **Use square or portrait** images — they display best on mobile
-- **Keep text short** — the media is the star; text should complement
-- **Test first** — send to yourself before launching to the full list
-- **Track performance** — MMS campaigns show media view rates in analytics
+- **Optimize images** - compress to under 500KB for fastest delivery
+- **Use square or portrait** images - they display best on mobile
+- **Keep text short** - the media is the star; text should complement
+- **Test first** - send to yourself before launching to the full list
+- **Track performance** - MMS campaigns show media view rates in analytics
 
 ## Carrier Limitations
 - Some carriers may convert MMS to SMS with a link if media is too large
@@ -378,7 +378,7 @@ Group texting lets you send a single message to multiple contacts and manage the
 4. Compose your message
 5. Click **Send**
 
-Each recipient receives the message individually — they cannot see other recipients. Replies come back as individual 1:1 conversations.
+Each recipient receives the message individually - they cannot see other recipients. Replies come back as individual 1:1 conversations.
 
 ## Managing Group Text Replies
 
@@ -388,10 +388,10 @@ When recipients reply to a group text:
 - You can assign individual threads to different team members
 
 ## Use Cases
-- **Team announcements** — notify your team about schedule changes
-- **Event reminders** — remind attendees about upcoming events
-- **Customer follow-ups** — reach out to a small segment of customers
-- **Internal coordination** — quick updates to project stakeholders`,
+- **Team announcements** - notify your team about schedule changes
+- **Event reminders** - remind attendees about upcoming events
+- **Customer follow-ups** - reach out to a small segment of customers
+- **Internal coordination** - quick updates to project stakeholders`,
   },
   {
     slug: "internal-collaboration-sms",
@@ -418,7 +418,7 @@ Tag a team member in an internal note to get their attention:
 The mentioned team member receives a notification and can jump directly to the conversation.
 
 ### Internal Notes
-Internal notes are visible only to your team — customers never see them. Use notes to:
+Internal notes are visible only to your team - customers never see them. Use notes to:
 - Add context about a customer
 - Document decisions made
 - Flag issues for review
@@ -441,8 +441,8 @@ Assignments show in the assignee's **My Conversations** view.
 | @Mention | Request input | Bell notification |
 
 ## Best Practices
-- **Assign before closing** — make sure someone owns every conversation
-- **Use notes liberally** — future you will thank past you
+- **Assign before closing** - make sure someone owns every conversation
+- **Use notes liberally** - future you will thank past you
 - **@Mention don't assign** when you just need a quick answer
 - **Set up auto-assignment rules** to distribute workload evenly`,
   },
@@ -457,7 +457,7 @@ Assignments show in the assignee's **My Conversations** view.
     lastUpdated: "2026-03-10",
     content: `## Overview
 
-The Unresponded filter shows conversations where the last message is from the customer — meaning your team hasn't replied yet. This is the fastest way to find threads that need attention.
+The Unresponded filter shows conversations where the last message is from the customer - meaning your team hasn't replied yet. This is the fastest way to find threads that need attention.
 
 ## How to Use
 
@@ -481,9 +481,9 @@ A conversation is removed from the unresponded filter when:
 ## Combining Filters
 
 You can combine the unresponded filter with other filters:
-- **Unresponded + Assigned to me** — your personal action list
-- **Unresponded + Unassigned** — conversations nobody owns yet
-- **Unresponded + Older than 24h** — urgent attention needed
+- **Unresponded + Assigned to me** - your personal action list
+- **Unresponded + Unassigned** - conversations nobody owns yet
+- **Unresponded + Older than 24h** - urgent attention needed
 
 ## Setting Up Alerts
 
@@ -514,10 +514,10 @@ SMS Inbox Search lets you find any conversation or message across your entire SM
 Press \`Cmd+K\` (Mac) or \`Ctrl+K\` (Windows) to open quick search from anywhere in the inbox.
 
 Type your search query:
-- **Contact name** — "John Smith"
-- **Phone number** — "+1 555 0123"
-- **Message content** — "invoice #1234"
-- **Tag** — "vip" or "urgent"
+- **Contact name** - "John Smith"
+- **Phone number** - "+1 555 0123"
+- **Message content** - "invoice #1234"
+- **Tag** - "vip" or "urgent"
 
 Results appear instantly as you type. Click a result to jump to that conversation.
 
@@ -572,19 +572,19 @@ The SMS Analytics dashboard gives you a comprehensive view of your team's messag
 ## Dashboard Metrics
 
 ### Volume Metrics
-- **Total Messages** — inbound + outbound message count
-- **Conversations** — unique conversation threads
-- **Avg Messages per Conversation** — thread depth indicator
+- **Total Messages** - inbound + outbound message count
+- **Conversations** - unique conversation threads
+- **Avg Messages per Conversation** - thread depth indicator
 
 ### Response Metrics
-- **First Response Time** — average time to first reply
-- **Resolution Time** — average time from open to close
-- **Response Rate** — percentage of inbound messages that get a reply
+- **First Response Time** - average time to first reply
+- **Resolution Time** - average time from open to close
+- **Response Rate** - percentage of inbound messages that get a reply
 
 ### Team Metrics
-- **Messages by Agent** — individual team member activity
-- **Conversations Handled** — unique threads per agent
-- **Avg Response Time by Agent** — individual speed comparison
+- **Messages by Agent** - individual team member activity
+- **Conversations Handled** - unique threads per agent
+- **Avg Response Time by Agent** - individual speed comparison
 
 ## Date Range Selection
 
@@ -610,9 +610,9 @@ Ranked table of agents by conversations resolved, average response time, and cus
 ## Exporting Data
 
 Click **Export** in the top-right to download:
-- **PDF Report** — formatted dashboard snapshot
-- **CSV Data** — raw metrics for custom analysis
-- **Scheduled Reports** — set up weekly email delivery
+- **PDF Report** - formatted dashboard snapshot
+- **CSV Data** - raw metrics for custom analysis
+- **Scheduled Reports** - set up weekly email delivery
 
 ## Setting Goals
 

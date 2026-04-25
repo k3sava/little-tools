@@ -187,8 +187,8 @@ export default function PdfCompressContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Compress PDF"
-          tagline="Shrink PDF file size in your browser — nothing is uploaded, so your document stays private."
-          description="Drop a PDF, pick a quality preset (high / medium / low / aggressive), and we re-encode embedded images and streams locally. The output is a valid PDF with smaller file size. Best results come from PDFs with lots of images — text-heavy PDFs usually compress less."
+          tagline="Shrink PDF file size in your browser - nothing is uploaded, so your document stays private."
+          description="Drop a PDF, pick a quality preset (high / medium / low / aggressive), and we re-encode embedded images and streams locally. The output is a valid PDF with smaller file size. Best results come from PDFs with lots of images - text-heavy PDFs usually compress less."
           audience={["Everyone"]}
           whenToUse={[
             "Getting a PDF under an email attachment limit",

@@ -4,7 +4,7 @@ import * as path from "path";
 
 type CheerioAPI = ReturnType<typeof cheerio.load>;
 
-// Resolve demos directory — works locally and on Vercel
+// Resolve demos directory - works locally and on Vercel
 function getLocalDemosDir(): string | null {
   // Local dev: demos/ in repo root
   const local = path.resolve(process.cwd(), "../demos");

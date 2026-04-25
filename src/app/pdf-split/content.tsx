@@ -232,8 +232,8 @@ export default function PdfSplitContent() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <ToolIntro
         title="Split PDF"
-        tagline="Extract specific pages from a PDF — pick ranges, individual pages, or every-N-pages splits."
-        description="Drop a PDF, click to select pages, or type a range (1-5, 8, 10-12). Split modes: extract selected pages as a new PDF, split every page into its own file, or split at fixed intervals. Everything runs locally in your browser — safe for sensitive documents."
+        tagline="Extract specific pages from a PDF - pick ranges, individual pages, or every-N-pages splits."
+        description="Drop a PDF, click to select pages, or type a range (1-5, 8, 10-12). Split modes: extract selected pages as a new PDF, split every page into its own file, or split at fixed intervals. Everything runs locally in your browser - safe for sensitive documents."
         audience={["Everyone"]}
         whenToUse={[
           "Pulling one chapter out of an ebook",

@@ -24,8 +24,8 @@ export function ExampleGallery<T = string>({
   if (!examples.length) return null;
 
   return (
-    <div className="mb-4">
-      <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-400">
+    <div className="kami-example-gallery mb-4">
+      <div className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
         {title}
       </div>
       <div className="flex flex-wrap gap-2">
@@ -33,13 +33,18 @@ export function ExampleGallery<T = string>({
           <button
             key={i}
             onClick={() => onPick(ex.value)}
-            className="group rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-left text-xs shadow-sm transition-all hover:border-gray-400 hover:shadow"
+            className="kami-example-chip group px-3 py-1.5 text-left text-xs"
+            style={{
+              background: "var(--kami-cta2-bg, var(--kami-surface))",
+              color: "var(--kami-cta2-text, var(--kami-text-muted))",
+              border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
           >
-            <span className="font-medium text-gray-800 group-hover:text-gray-900">
-              {ex.label}
-            </span>
+            <span className="font-medium">{ex.label}</span>
             {ex.hint && (
-              <span className="ml-1.5 text-gray-400 group-hover:text-gray-600">
+              <span className="ml-1.5" style={{ color: "var(--kami-text-dim)" }}>
                 · {ex.hint}
               </span>
             )}

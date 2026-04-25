@@ -312,7 +312,7 @@ export default function ScrollAnimationContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Scroll Animation Generator"
-          tagline="Build modern scroll-driven animations (animation-timeline: scroll/view) with a live preview — no JavaScript required."
+          tagline="Build modern scroll-driven animations (animation-timeline: scroll/view) with a live preview - no JavaScript required."
           description="Pick a preset (parallax, reveal, progress bar, horizontal-on-scroll) or build your own. Choose between scroll() and view() timelines, set the range, tweak easing, and watch the effect trigger as you scroll the preview frame. Output is vanilla CSS using the new CSS Scroll-Driven Animations spec."
           audience={["Front-end developers", "Designers"]}
           whenToUse={[

@@ -744,8 +744,8 @@ export default function MetaTagGeneratorContent() {
           defaultOpen
         >
           <div className="space-y-1">
-            <RuleRow rule="Meta title" explanation="Google cuts off around 600 pixels (~55–60 chars)." example="50–60 chars is safe" />
-            <RuleRow rule="Meta description" explanation="Google shows ~155–160 chars on desktop, ~120 on mobile." example="Aim for <155" />
+            <RuleRow rule="Meta title" explanation="Google cuts off around 600 pixels (~55-60 chars)." example="50-60 chars is safe" />
+            <RuleRow rule="Meta description" explanation="Google shows ~155-160 chars on desktop, ~120 on mobile." example="Aim for <155" />
             <RuleRow rule="OG title" explanation="Facebook/LinkedIn show ~60 chars." example="<60 chars" />
             <RuleRow rule="OG description" explanation="Usually truncated around 200 chars on FB/LinkedIn cards." example="<200 chars" />
             <RuleRow rule="Twitter title" explanation="Twitter shows ~70 chars on large summary cards." example="<70 chars" />
@@ -754,20 +754,20 @@ export default function MetaTagGeneratorContent() {
           </div>
           <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
             <strong>Tip:</strong> Google rewrites titles ~60% of the time based on relevance
-            to the query — so treat your meta title as a hint, not a guarantee. The description
+            to the query - so treat your meta title as a hint, not a guarantee. The description
             is more reliably shown as-written.
           </div>
         </ReferencePanel>
 
         <ReferencePanel
           id="og-twitter-diff"
-          title="Open Graph vs Twitter Cards — do I need both?"
+          title="Open Graph vs Twitter Cards - do I need both?"
           summary="Twitter falls back to OG tags for most fields. You can often just set OG."
           defaultOpen={false}
         >
           <div className="space-y-2 text-xs">
             <p><strong>Open Graph (og:*)</strong> is the Facebook-invented standard adopted by almost everyone: LinkedIn, Slack, Discord, iMessage, WhatsApp, and Twitter.</p>
-            <p><strong>Twitter Cards (twitter:*)</strong> exist because Twitter wants a few extras — specifically card <code>type</code> (summary vs summary_large_image) and <code>site</code>/<code>creator</code> handles.</p>
+            <p><strong>Twitter Cards (twitter:*)</strong> exist because Twitter wants a few extras - specifically card <code>type</code> (summary vs summary_large_image) and <code>site</code>/<code>creator</code> handles.</p>
             <p>If you only set OG tags, Twitter will still render a card. Set <code>twitter:card</code> and <code>twitter:site</code> if you want control over which card layout shows up.</p>
             <p className="text-gray-500"><strong>Verdict:</strong> OG is the baseline. Add Twitter tags when you specifically care about card type or attribution.</p>
           </div>

@@ -1200,8 +1200,8 @@ export default function SchemaGeneratorContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Schema Markup Generator"
-          tagline="Build Google-ready JSON-LD for rich results — Article, FAQ, How-To, Product, Event, and more."
-          description="Pick a schema type, fill in the fields, and copy a valid JSON-LD block you can paste into your page's <head>. Each type is pre-configured with the exact properties Google uses to trigger rich results — we call out which fields are required vs recommended as you go."
+          tagline="Build Google-ready JSON-LD for rich results - Article, FAQ, How-To, Product, Event, and more."
+          description="Pick a schema type, fill in the fields, and copy a valid JSON-LD block you can paste into your page's <head>. Each type is pre-configured with the exact properties Google uses to trigger rich results - we call out which fields are required vs recommended as you go."
           audience={["SEOs", "Developers", "Content teams"]}
           whenToUse={[
             "Adding FAQ / How-To / Article schema to a page",
@@ -1366,10 +1366,10 @@ export default function SchemaGeneratorContent() {
             <RuleRow rule="FAQ" explanation="A list of Q&A pairs on a page. Can trigger the accordion rich result." />
             <RuleRow rule="HowTo" explanation="Step-by-step instructions with optional images/time/cost." />
             <RuleRow rule="Product" explanation="A product page with price, availability, and reviews. Drives price/rating stars." />
-            <RuleRow rule="LocalBusiness" explanation="A physical business location — address, hours, phone. Drives the map + hours panel." />
+            <RuleRow rule="LocalBusiness" explanation="A physical business location - address, hours, phone. Drives the map + hours panel." />
             <RuleRow rule="Organization" explanation="Your company / brand. Usually lives site-wide on the homepage." />
             <RuleRow rule="Breadcrumb" explanation="The navigation trail. Replaces the URL in Google results with a cleaner trail." />
-            <RuleRow rule="Event" explanation="A scheduled event — concert, webinar, etc. Required: name, startDate, location." />
+            <RuleRow rule="Event" explanation="A scheduled event - concert, webinar, etc. Required: name, startDate, location." />
           </div>
           <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
             <strong>Validating your output:</strong> paste the generated JSON-LD into Google&apos;s

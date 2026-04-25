@@ -445,7 +445,7 @@ export default function BorderRadiusContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Border Radius Generator"
-          tagline="Shape corners visually — drag handles on the preview or fine-tune with the 8-value elliptical syntax."
+          tagline="Shape corners visually - drag handles on the preview or fine-tune with the 8-value elliptical syntax."
           description="Start from a preset (pill, squircle, leaf, etc.) or drag the four corner handles on the preview box. Advanced mode exposes the full 8-value border-radius (horizontal + vertical radii per corner) for real elliptical shapes. Copy as CSS, Tailwind classes, or React Native style."
           audience={["Designers", "Front-end developers"]}
           whenToUse={[

@@ -3,7 +3,7 @@ import { UseCaseData } from "./types";
 export const outboundSpeed: UseCaseData = {
   slug: "outbound-speed",
   meta: {
-    title: "Outbound Speed — JustCall",
+    title: "Outbound Speed - JustCall",
     description:
       "Talk to more prospects, faster. JustCall runs outbound campaigns straight from your CRM so reps talk to more prospects each hour.",
   },

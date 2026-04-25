@@ -106,7 +106,7 @@ function exportMarkdown(brief: ContentBrief): string {
   if (brief.secondaryKeywords) lines.push(`**Secondary Keywords:** ${brief.secondaryKeywords}`);
   lines.push(`**Search Intent:** ${INTENTS.find((i) => i.value === brief.searchIntent)?.label || brief.searchIntent}`);
   lines.push(`**Content Type:** ${CONTENT_TYPES.find((t) => t.value === brief.contentType)?.label || brief.contentType}`);
-  lines.push(`**Word Count:** ${brief.wordCountMin}–${brief.wordCountMax}`);
+  lines.push(`**Word Count:** ${brief.wordCountMin}-${brief.wordCountMax}`);
   if (brief.tone) lines.push(`**Tone:** ${brief.tone}`);
   lines.push("");
 
@@ -311,7 +311,7 @@ export default function ContentBriefBuilderContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Content Brief Builder"
-          tagline="Produce a writer-ready content brief in minutes — target keyword, audience, intent, outline, links, and CTAs."
+          tagline="Produce a writer-ready content brief in minutes - target keyword, audience, intent, outline, links, and CTAs."
           description="Fill in the audience and intent fields, sketch a heading outline, link any reference articles, and we package it all into a single brief your writer (internal or freelance) can execute against. Export as Markdown, plain text, or copy-friendly HTML for Notion / Docs."
           audience={["Content marketers", "SEO managers", "Editors"]}
           whenToUse={[

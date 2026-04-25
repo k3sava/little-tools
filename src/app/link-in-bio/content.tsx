@@ -242,8 +242,8 @@ export default function LinkInBioContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Link-in-Bio Builder"
-          tagline="Build a simple, Linktree-style landing page — customize theme, add links, export a single HTML file you can host anywhere."
-          description="Add your photo, bio, and as many link buttons as you want. Pick a theme (solid, gradient, minimal) and see the mobile preview update live. Export a standalone HTML file — drop it onto GitHub Pages, Netlify, or any static host. No accounts, no subscription, no analytics tracking."
+          tagline="Build a simple, Linktree-style landing page - customize theme, add links, export a single HTML file you can host anywhere."
+          description="Add your photo, bio, and as many link buttons as you want. Pick a theme (solid, gradient, minimal) and see the mobile preview update live. Export a standalone HTML file - drop it onto GitHub Pages, Netlify, or any static host. No accounts, no subscription, no analytics tracking."
           audience={["Creators", "Freelancers", "Anyone with a bio link"]}
           whenToUse={[
             "Replacing a Linktree / Beacons subscription",
@@ -439,7 +439,7 @@ export default function LinkInBioContent() {
             </div>
           </div>
 
-          {/* Live Preview — Phone Frame */}
+          {/* Live Preview - Phone Frame */}
           <div className="lg:sticky lg:top-6 lg:self-start">
             <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
               <div className="mb-2 text-center text-xs text-gray-400">Preview</div>

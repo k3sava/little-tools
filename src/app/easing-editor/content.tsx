@@ -420,7 +420,7 @@ export default function EasingEditorContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Easing Curve Editor"
-          tagline="Design cubic-bezier() and linear() easing curves visually — drag handles, watch the animation preview, copy the CSS."
+          tagline="Design cubic-bezier() and linear() easing curves visually - drag handles, watch the animation preview, copy the CSS."
           description="Edit the bezier curve by dragging its control points. A sample ball animates in real time so you feel the motion, not just see the curve. linear() mode unlocks multi-stop easing for spring-like motion (supported in modern browsers). Presets mirror Apple, Material, and popular animation libraries."
           audience={["Designers", "Motion designers", "Front-end devs"]}
           whenToUse={[

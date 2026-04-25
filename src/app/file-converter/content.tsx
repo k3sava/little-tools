@@ -305,8 +305,8 @@ export default function FileConverterContent() {
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="File Converter"
-          tagline="Convert images between PNG, JPG, and WebP — resize and re-compress in a single pass."
-          description="Drop one or many images. Pick a target format (PNG for lossless / transparency, JPG for photos, WebP for modern web), optionally resize to a specific width or height, and choose a quality level. Everything runs in your browser — files are never uploaded."
+          tagline="Convert images between PNG, JPG, and WebP - resize and re-compress in a single pass."
+          description="Drop one or many images. Pick a target format (PNG for lossless / transparency, JPG for photos, WebP for modern web), optionally resize to a specific width or height, and choose a quality level. Everything runs in your browser - files are never uploaded."
           audience={["Everyone", "Designers", "Developers"]}
           whenToUse={[
             "Converting a batch of iPhone HEICs to JPG",
@@ -507,7 +507,7 @@ export default function FileConverterContent() {
             {selected && (
               <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-sm font-semibold text-gray-700">
-                  Preview — {selected.name}
+                  Preview - {selected.name}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>

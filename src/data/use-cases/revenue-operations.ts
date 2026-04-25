@@ -3,7 +3,7 @@ import { UseCaseData } from "./types";
 export const revenueOperations: UseCaseData = {
   slug: "revenue-operations",
   meta: {
-    title: "Revenue Operations — JustCall",
+    title: "Revenue Operations - JustCall",
     description:
       "Scale conversations without breaking. JustCall handles rising call volume, automates follow-ups, and maintains visibility across revenue operations.",
   },

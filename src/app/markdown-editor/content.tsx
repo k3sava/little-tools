@@ -20,11 +20,11 @@ A clean, **ad-free** Markdown editor with live preview.
 
 ## Features
 
-- **GitHub-Flavored Markdown** — tables, task lists, code blocks
-- **Live preview** — see changes as you type
-- **Auto-save** — your work is saved in the browser
-- **Export** — download as HTML or PDF
-- **Dark mode** — easy on the eyes
+- **GitHub-Flavored Markdown** - tables, task lists, code blocks
+- **Live preview** - see changes as you type
+- **Auto-save** - your work is saved in the browser
+- **Export** - download as HTML or PDF
+- **Dark mode** - easy on the eyes
 
 ## Try it out
 
@@ -55,7 +55,7 @@ function greet(name) {
 ### Blockquote
 
 > Markdown is intended to be as easy-to-read and easy-to-write as is feasible.
-> — John Gruber
+> - John Gruber
 
 ---
 
@@ -951,7 +951,7 @@ export default function MarkdownEditorContent() {
             className={`rounded px-2 py-1 text-xs transition ${toolbarBtnClass}`}
             title="Horizontal Rule"
           >
-            ——
+            --
           </button>
         </div>
       </div>

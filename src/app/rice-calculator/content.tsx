@@ -282,7 +282,7 @@ export default function RiceCalculatorContent() {
       <ToolIntro
         title="RICE Scoring Calculator"
         tagline="Prioritize a list of product ideas, features, or bugs using the RICE framework from Intercom."
-        description="Enter each candidate with four numbers — Reach (people affected per quarter), Impact (0.25 minimal → 3 massive), Confidence (50–100%), and Effort (person-months). We compute (R × I × C) / E for each, rank them, and let you export the table as CSV or Markdown."
+        description="Enter each candidate with four numbers - Reach (people affected per quarter), Impact (0.25 minimal → 3 massive), Confidence (50-100%), and Effort (person-months). We compute (R × I × C) / E for each, rank them, and let you export the table as CSV or Markdown."
         audience={["PMs", "Engineering managers", "Founders"]}
         whenToUse={[
           "Planning a roadmap with a long candidate list",

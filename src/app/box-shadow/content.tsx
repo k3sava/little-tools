@@ -218,8 +218,8 @@ export default function BoxShadowContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Box Shadow Generator"
-          tagline="Stack multiple shadow layers for realistic depth — with presets modeled on Material, iOS, and Tailwind conventions."
-          description="Drag the offset / blur / spread sliders on each layer. Stacking two shadows (a tight dark one and a loose soft one) is what makes UI shadows look real instead of cheap. Presets cover flat, Material 2–24, iOS, Tailwind sm–2xl, and inner shadow variants. Export as CSS, Tailwind, or React Native."
+          tagline="Stack multiple shadow layers for realistic depth - with presets modeled on Material, iOS, and Tailwind conventions."
+          description="Drag the offset / blur / spread sliders on each layer. Stacking two shadows (a tight dark one and a loose soft one) is what makes UI shadows look real instead of cheap. Presets cover flat, Material 2-24, iOS, Tailwind sm-2xl, and inner shadow variants. Export as CSS, Tailwind, or React Native."
           audience={["Designers", "Front-end developers"]}
           whenToUse={[
             "Matching a design-system shadow token",

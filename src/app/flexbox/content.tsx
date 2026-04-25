@@ -357,7 +357,7 @@ export default function FlexboxContent() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Flexbox Playground"
-          tagline="Learn and generate flexbox layouts interactively — every property labeled with what it actually does."
+          tagline="Learn and generate flexbox layouts interactively - every property labeled with what it actually does."
           description="Toggle direction, justify-content, align-items, wrap, and gap on a live preview. Hover any option to see a plain-English description (justify-content: space-between = pushes first and last items to the edges, equal gaps between). Add/remove child items to test how flex-grow and flex-shrink behave. Export as CSS, Tailwind, or an inline style object."
           audience={["Front-end developers", "Designers learning CSS"]}
           whenToUse={[

@@ -42,9 +42,9 @@ const FRAMEWORKS: Framework[] = [
     name: "Geoffrey Moore",
     author: "Crossing the Chasm",
     tagline: "The classic. Seven specific slots; fill them and a clear statement falls out.",
-    bestFor: "Crossing the chasm from early adopters to mainstream — when you need to spell out segment, category, and competitor explicitly.",
+    bestFor: "Crossing the chasm from early adopters to mainstream - when you need to spell out segment, category, and competitor explicitly.",
     sample: {
-      target_customer: "mid-market SaaS companies with 50–500 employees",
+      target_customer: "mid-market SaaS companies with 50-500 employees",
       statement_of_need: "struggle to predict and prevent customer churn",
       product_name: "RetentionIQ",
       product_category: "customer success platform",
@@ -479,7 +479,7 @@ export default function PositioningBuilderContent() {
         <ToolIntro
           title="Positioning Statement Builder"
           tagline="Draft a sharp positioning statement in five minutes using proven frameworks."
-          description="Pick a framework (Moore, Dunford, Blank, or a simple internal template), answer a guided set of questions, and watch a positioning statement assemble itself. Each framework forces you to think about a slightly different angle — pick the one that matches your situation, or fill in multiple and compare."
+          description="Pick a framework (Moore, Dunford, Blank, or a simple internal template), answer a guided set of questions, and watch a positioning statement assemble itself. Each framework forces you to think about a slightly different angle - pick the one that matches your situation, or fill in multiple and compare."
           audience={["PMMs", "Founders", "PMs", "Product marketers"]}
           whenToUse={[
             "Kicking off a launch or rebrand",
@@ -494,7 +494,7 @@ export default function PositioningBuilderContent() {
 
         <HowToSteps
           steps={[
-            { title: "Pick a framework below", body: "Not sure? Scroll to 'Which framework should I pick?' — we explain when each one fits." },
+            { title: "Pick a framework below", body: "Not sure? Scroll to 'Which framework should I pick?' - we explain when each one fits." },
             { title: "Answer each question in plain language", body: "Hints and examples sit under every field. Press 'Load sample' to see a fully-filled statement you can edit." },
             { title: "Watch the live preview assemble", body: "Filled answers appear bold; [bracketed placeholders] show what's still missing." },
             { title: "Copy or compare", body: "Copy as plain text or markdown. Fill in a second framework and click 'Compare all' to see which sounds sharpest." },
@@ -800,14 +800,14 @@ export default function PositioningBuilderContent() {
             <li>
               <div className="text-sm font-medium text-gray-900">Name your real alternatives.</div>
               <div className="text-xs text-gray-600">
-                The competitor field isn&apos;t just direct competitors — it&apos;s the spreadsheet,
+                The competitor field isn&apos;t just direct competitors - it&apos;s the spreadsheet,
                 the intern, or the status quo. If you skip this, your positioning has no edge.
               </div>
             </li>
             <li>
               <div className="text-sm font-medium text-gray-900">Differentiators must be defensible.</div>
               <div className="text-xs text-gray-600">
-                &quot;Easy to use&quot; and &quot;fast&quot; aren&apos;t differentiators — everyone claims them.
+                &quot;Easy to use&quot; and &quot;fast&quot; aren&apos;t differentiators - everyone claims them.
                 Look for something that requires specific data, tech, or expertise alternatives lack.
               </div>
             </li>
@@ -832,7 +832,7 @@ export default function PositioningBuilderContent() {
 
         <div className="mt-6 text-center text-xs text-gray-400">
           ⌘Enter copies the statement · ⌘K clears the form · Runs entirely in
-          your browser — nothing is saved to a server.
+          your browser - nothing is saved to a server.
         </div>
       </div>
     </div>

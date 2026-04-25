@@ -45,7 +45,7 @@ export function useKeyboardShortcuts(shortcuts: Shortcut[]) {
         registeredRef.current = null;
       }
     };
-    // Mount/unmount only — ctx and shortcuts accessed via refs
+    // Mount/unmount only - ctx and shortcuts accessed via refs
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
