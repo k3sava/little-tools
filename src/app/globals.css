@@ -1990,3 +1990,89 @@ html[data-theme="brutalist"] .kami-scope button.bg-white:hover {
   box-shadow: 4px 4px 0 #d946ef !important;
   transform: translate(-1px, -1px);
 }
+
+/* ============================================================
+   Semantic color callouts (info, warn, success, danger).
+   Light themes keep the original Tailwind hue at low saturation;
+   terminal/brutalist neutralize to surface so contrast holds.
+   ============================================================ */
+
+/* Terminal: dark phosphor green - flatten light callout backgrounds */
+html[data-theme="terminal"] .kami-scope .bg-amber-50,
+html[data-theme="terminal"] .kami-scope .bg-amber-100,
+html[data-theme="terminal"] .kami-scope .bg-yellow-50,
+html[data-theme="terminal"] .kami-scope .bg-yellow-200,
+html[data-theme="terminal"] .kami-scope .bg-blue-50,
+html[data-theme="terminal"] .kami-scope .bg-green-50,
+html[data-theme="terminal"] .kami-scope .bg-green-100,
+html[data-theme="terminal"] .kami-scope .bg-red-50,
+html[data-theme="terminal"] .kami-scope .bg-red-100,
+html[data-theme="terminal"] .kami-scope .bg-indigo-50,
+html[data-theme="terminal"] .kami-scope .bg-indigo-100,
+html[data-theme="terminal"] .kami-scope .bg-purple-50 {
+  background-color: rgba(138, 247, 167, 0.05) !important;
+  border-color: rgba(138, 247, 167, 0.30) !important;
+}
+html[data-theme="terminal"] .kami-scope [class*="text-amber-"],
+html[data-theme="terminal"] .kami-scope [class*="text-yellow-"],
+html[data-theme="terminal"] .kami-scope [class*="text-blue-"],
+html[data-theme="terminal"] .kami-scope [class*="text-green-"],
+html[data-theme="terminal"] .kami-scope [class*="text-red-"],
+html[data-theme="terminal"] .kami-scope [class*="text-indigo-"],
+html[data-theme="terminal"] .kami-scope [class*="text-purple-"] {
+  color: #8af7a7 !important;
+}
+html[data-theme="terminal"] .kami-scope [class*="border-amber-"],
+html[data-theme="terminal"] .kami-scope [class*="border-yellow-"],
+html[data-theme="terminal"] .kami-scope [class*="border-blue-"],
+html[data-theme="terminal"] .kami-scope [class*="border-green-"],
+html[data-theme="terminal"] .kami-scope [class*="border-red-"],
+html[data-theme="terminal"] .kami-scope [class*="border-indigo-"],
+html[data-theme="terminal"] .kami-scope [class*="border-purple-"] {
+  border-color: rgba(138, 247, 167, 0.30) !important;
+}
+
+/* Brutalist: keep saturated callouts but force sharp edges + flat shadow */
+html[data-theme="brutalist"] .kami-scope [class*="bg-amber-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-yellow-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-blue-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-green-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-red-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-indigo-"],
+html[data-theme="brutalist"] .kami-scope [class*="bg-purple-"] {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Editorial: soften to parchment tone */
+html[data-theme="editorial"] .kami-scope .bg-amber-50,
+html[data-theme="editorial"] .kami-scope .bg-yellow-50,
+html[data-theme="editorial"] .kami-scope .bg-blue-50,
+html[data-theme="editorial"] .kami-scope .bg-green-50,
+html[data-theme="editorial"] .kami-scope .bg-red-50,
+html[data-theme="editorial"] .kami-scope .bg-indigo-50,
+html[data-theme="editorial"] .kami-scope .bg-purple-50 {
+  background-color: rgba(0, 0, 0, 0.025) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Zen: ultra-soft, near-invisible callouts */
+html[data-theme="zen"] .kami-scope [class*="bg-amber-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-yellow-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-blue-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-green-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-red-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-indigo-50"],
+html[data-theme="zen"] .kami-scope [class*="bg-purple-50"] {
+  background-color: rgba(148, 163, 184, 0.04) !important;
+  border-color: rgba(148, 163, 184, 0.15) !important;
+}
+
+/* All themes: darker callout variants (-500/-900/-950) lose their punch
+   in non-default themes; keep them theme-appropriate */
+html[data-theme="terminal"] .kami-scope [class*="bg-blue-9"],
+html[data-theme="terminal"] .kami-scope [class*="bg-red-9"],
+html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
+  background-color: rgba(138, 247, 167, 0.08) !important;
+  color: #8af7a7 !important;
+}
