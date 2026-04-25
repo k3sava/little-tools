@@ -155,13 +155,24 @@ function highlightText(text: string, matches: MatchInfo[]): React.ReactNode[] {
   if (matches.length === 0) return [text];
   const parts: React.ReactNode[] = [];
   let lastEnd = 0;
-  const colors = ["bg-yellow-200", "bg-green-200", "bg-blue-200", "bg-pink-200", "bg-orange-200", "bg-purple-200"];
+  // Semantic hues blended with surface so they read in dark themes.
+  const hues = ["#fde047", "#86efac", "#93c5fd", "#f9a8d4", "#fdba74", "#d8b4fe"];
   matches.forEach((m, i) => {
     if (m.index > lastEnd) {
       parts.push(<span key={`t-${i}`}>{text.slice(lastEnd, m.index)}</span>);
     }
+    const hue = hues[i % hues.length];
     parts.push(
-      <mark key={`m-${i}`} className={`${colors[i % colors.length]} rounded px-0.5`} title={`Match ${i + 1} at index ${m.index}`}>
+      <mark
+        key={`m-${i}`}
+        className="px-0.5"
+        style={{
+          background: `color-mix(in srgb, ${hue} 55%, var(--kami-surface-solid))`,
+          color: "var(--kami-text)",
+          borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        }}
+        title={`Match ${i + 1} at index ${m.index}`}
+      >
         {m.fullMatch}
       </mark>
     );
@@ -343,7 +354,7 @@ export default function RegexTesterContent() {
   ], [matches, replaceResult, mode, handleCopy]));
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Regex Tester"
@@ -363,16 +374,33 @@ export default function RegexTesterContent() {
 
         {/* Mode toggle */}
         <div className="mb-4 flex items-center gap-2">
-          <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-1 py-0.5">
+          <div
+            className="flex items-center gap-1 px-1 py-0.5"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+            }}
+          >
             <button
               onClick={() => setMode("match")}
-              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${mode === "match" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"}`}
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                background: mode === "match" ? "var(--kami-cta-bg)" : "transparent",
+                color: mode === "match" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
             >
               Match
             </button>
             <button
               onClick={() => setMode("replace")}
-              className={`rounded px-3 py-1.5 text-sm font-medium transition-colors ${mode === "replace" ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"}`}
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                background: mode === "replace" ? "var(--kami-cta-bg)" : "transparent",
+                color: mode === "replace" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
             >
               Replace
             </button>
@@ -382,18 +410,25 @@ export default function RegexTesterContent() {
         {/* Pattern input */}
         <div className="mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-mono text-gray-400 select-none">/</span>
+            <span className="text-lg font-mono select-none" style={{ color: "var(--kami-text-dim)" }}>/</span>
             <input
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
               placeholder="Enter regex pattern..."
-              className="flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="flex-1 px-4 py-3 text-base font-mono focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
               autoFocus
               spellCheck={false}
             />
-            <span className="text-lg font-mono text-gray-400 select-none">/{flags}</span>
+            <span className="text-lg font-mono select-none" style={{ color: "var(--kami-text-dim)" }}>/{flags}</span>
           </div>
-          {error && <p className="mt-1.5 text-xs text-red-500">{error}</p>}
+          {error && <p className="mt-1.5 text-xs" style={{ color: "#ef4444" }}>{error}</p>}
         </div>
 
         {/* Replacement input */}
@@ -403,7 +438,14 @@ export default function RegexTesterContent() {
               value={replacement}
               onChange={(e) => setReplacement(e.target.value)}
               placeholder="Replacement string... ($1 for groups, $& for match)"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base font-mono shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
               spellCheck={false}
             />
             <div className="mt-1 flex gap-2">
@@ -411,7 +453,13 @@ export default function RegexTesterContent() {
                 <button
                   key={ref}
                   onClick={() => setReplacement((r) => r + ref)}
-                  className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-500 hover:bg-gray-200"
+                  className="px-1.5 py-0.5 text-xs font-mono"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   {ref}
                 </button>
@@ -422,7 +470,7 @@ export default function RegexTesterContent() {
 
         {/* Flags + toggles */}
         <div className="mb-6 flex flex-wrap items-center gap-2">
-          <span className="text-xs text-gray-500">Flags:</span>
+          <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Flags:</span>
           {([
             ["g", "Global", flagG, setFlagG],
             ["i", "Case-insensitive", flagI, setFlagI],
@@ -433,50 +481,91 @@ export default function RegexTesterContent() {
               key={flag}
               onClick={() => (setter as (v: boolean) => void)(!value)}
               title={label}
-              className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${
+              className="px-3 py-1 text-xs font-medium transition-colors"
+              style={
                 value
-                  ? "bg-gray-900 text-white"
-                  : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-              }`}
+                  ? {
+                      background: "var(--kami-cta-bg)",
+                      color: "var(--kami-cta-text)",
+                      border: "1px solid var(--kami-cta-bg)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }
+                  : {
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }
+              }
             >
               {flag}
             </button>
           ))}
           <div className="ml-auto flex items-center gap-1.5">
-            <button
-              onClick={() => { setShowExplain(!showExplain); setShowRef(false); setShowCheat(false); }}
-              className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${showExplain ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              Explain
-            </button>
-            <button
-              onClick={() => { setShowRef(!showRef); setShowExplain(false); setShowCheat(false); }}
-              className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${showRef ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              Patterns
-            </button>
-            <button
-              onClick={() => { setShowCheat(!showCheat); setShowExplain(false); setShowRef(false); }}
-              className={`rounded-lg border px-3 py-1 text-xs font-medium transition-colors ${showCheat ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"}`}
-            >
-              Cheat Sheet
-            </button>
+            {([
+              ["Explain", showExplain, () => { setShowExplain(!showExplain); setShowRef(false); setShowCheat(false); }],
+              ["Patterns", showRef, () => { setShowRef(!showRef); setShowExplain(false); setShowCheat(false); }],
+              ["Cheat Sheet", showCheat, () => { setShowCheat(!showCheat); setShowExplain(false); setShowRef(false); }],
+            ] as const).map(([label, active, onClick]) => (
+              <button
+                key={label}
+                onClick={onClick}
+                className="px-3 py-1 text-xs font-medium transition-colors"
+                style={
+                  active
+                    ? {
+                        background: "var(--kami-cta-bg)",
+                        color: "var(--kami-cta-text)",
+                        border: "1px solid var(--kami-cta-bg)",
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }
+                    : {
+                        background: "var(--kami-surface-solid)",
+                        color: "var(--kami-text-muted)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }
+                }
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Explain panel */}
         {showExplain && pattern && explanation.length > 0 && (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-medium text-gray-500">Pattern Breakdown</h3>
+          <div
+            className="mb-6 p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Pattern Breakdown</h3>
             <div className="flex flex-wrap gap-1">
               {explanation.map((tok, i) => (
                 <span
                   key={i}
-                  className="group relative inline-flex items-center rounded-md bg-gray-100 px-1.5 py-1 font-mono text-sm cursor-help"
+                  className="group relative inline-flex items-center px-1.5 py-1 font-mono text-sm cursor-help"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
                   title={tok.desc}
                 >
-                  <span className="text-gray-900">{tok.token}</span>
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 rounded bg-gray-900 px-2 py-1 text-xs text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                  <span style={{ color: "var(--kami-text)" }}>{tok.token}</span>
+                  <span
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10"
+                    style={{
+                      background: "var(--kami-overlay-bg)",
+                      color: "var(--kami-overlay-text)",
+                      borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                    }}
+                  >
                     {tok.desc}
                   </span>
                 </span>
@@ -487,17 +576,33 @@ export default function RegexTesterContent() {
 
         {/* Cheat sheet panel */}
         {showCheat && (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-medium text-gray-500">Quick Reference</h3>
+          <div
+            className="mb-6 p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Quick Reference</h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {CHEAT_SHEET.map((cat) => (
                 <div key={cat.cat}>
-                  <h4 className="mb-2 text-xs font-medium text-gray-400 uppercase tracking-wide">{cat.cat}</h4>
+                  <h4 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat.cat}</h4>
                   <div className="space-y-1">
                     {cat.items.map(([token, desc]) => (
                       <div key={token} className="flex items-baseline gap-2">
-                        <code className="w-16 shrink-0 rounded bg-gray-100 px-1.5 py-0.5 text-xs font-mono text-gray-900">{token}</code>
-                        <span className="text-xs text-gray-500">{desc}</span>
+                        <code
+                          className="w-16 shrink-0 px-1.5 py-0.5 text-xs font-mono"
+                          style={{
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text)",
+                            border: "1px solid var(--kami-border)",
+                            borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                          }}
+                        >{token}</code>
+                        <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{desc}</span>
                       </div>
                     ))}
                   </div>
@@ -509,20 +614,33 @@ export default function RegexTesterContent() {
 
         {/* Common patterns reference */}
         {showRef && (
-          <div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <h3 className="mb-3 text-sm font-medium text-gray-500">Common Patterns</h3>
+          <div
+            className="mb-6 p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Common Patterns</h3>
             {PATTERN_CATEGORIES.map((cat) => (
               <div key={cat.label} className="mb-3 last:mb-0">
-                <h4 className="mb-1.5 text-xs font-medium text-gray-400 uppercase tracking-wide">{cat.label}</h4>
+                <h4 className="mb-1.5 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat.label}</h4>
                 <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
                   {cat.patterns.map((p) => (
                     <button
                       key={p.label}
                       onClick={() => setPattern(p.pattern)}
-                      className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-left hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between px-3 py-2 text-left transition-colors"
+                      style={{
+                        background: "var(--kami-surface-solid)",
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }}
                     >
-                      <span className="text-sm text-gray-700">{p.label}</span>
-                      <span className="text-xs font-mono text-gray-400 truncate ml-2 max-w-[140px]">{p.pattern}</span>
+                      <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{p.label}</span>
+                      <span className="text-xs font-mono truncate ml-2 max-w-[140px]" style={{ color: "var(--kami-text-dim)" }}>{p.pattern}</span>
                     </button>
                   ))}
                 </div>
@@ -536,18 +654,25 @@ export default function RegexTesterContent() {
           value={testString}
           onChange={(e) => setTestString(e.target.value)}
           placeholder="Enter test string..."
-          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
           rows={6}
           spellCheck={false}
         />
 
         <div className="mt-1.5 flex items-center justify-between text-xs">
-          <span className="text-gray-400">
+          <span style={{ color: "var(--kami-text-dim)" }}>
             {matches.length} match{matches.length !== 1 ? "es" : ""}
             {testString && ` in ${testString.length} chars`}
           </span>
           {testString && (
-            <button onClick={() => setTestString("")} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setTestString("")} style={{ color: "var(--kami-text-dim)" }}>
               Clear
             </button>
           )}
@@ -556,8 +681,17 @@ export default function RegexTesterContent() {
         {/* Highlighted preview */}
         {testString && pattern && !error && (
           <div className="mt-6">
-            <span className="text-sm font-medium text-gray-500">Highlighted</span>
-            <div className="mt-2 whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 font-mono text-sm shadow-sm max-h-[300px] overflow-auto break-all">
+            <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Highlighted</span>
+            <div
+              className="mt-2 whitespace-pre-wrap px-4 py-3 font-mono text-sm max-h-[300px] overflow-auto break-all"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {highlighted}
             </div>
           </div>
@@ -567,15 +701,29 @@ export default function RegexTesterContent() {
         {mode === "replace" && replaceResult && testString && pattern && !error && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">Replace Result</span>
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Replace Result</span>
               <button
                 onClick={() => handleCopy(replaceResult, "result")}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied === "result" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
               </button>
             </div>
-            <div className="whitespace-pre-wrap rounded-xl border border-gray-200 bg-white px-4 py-3 font-mono text-sm shadow-sm max-h-[300px] overflow-auto break-all">
+            <div
+              className="whitespace-pre-wrap px-4 py-3 font-mono text-sm max-h-[300px] overflow-auto break-all"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {replaceResult}
             </div>
           </div>
@@ -585,27 +733,53 @@ export default function RegexTesterContent() {
         {matches.length > 0 && mode === "match" && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-500">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Matches ({matches.length})
               </span>
               <button
                 onClick={() => handleCopy(matches.map((m) => m.fullMatch).join("\n"), "matches")}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied === "matches" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy All</>}
               </button>
             </div>
-            <div className="rounded-xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-100 max-h-[300px] overflow-auto">
+            <div
+              className="max-h-[300px] overflow-auto"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               {matches.slice(0, 200).map((m, i) => (
-                <div key={i} className="px-4 py-2.5">
+                <div
+                  key={i}
+                  className="px-4 py-2.5"
+                  style={{ borderTop: i === 0 ? "none" : "1px solid var(--kami-border)" }}
+                >
                   <div className="flex items-baseline justify-between gap-4">
-                    <span className="font-mono text-sm text-gray-900 break-all">{m.fullMatch}</span>
-                    <span className="text-xs text-gray-400 shrink-0">index {m.index}</span>
+                    <span className="font-mono text-sm break-all" style={{ color: "var(--kami-text)" }}>{m.fullMatch}</span>
+                    <span className="text-xs shrink-0" style={{ color: "var(--kami-text-dim)" }}>index {m.index}</span>
                   </div>
                   {m.groups.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {m.groups.map((g, gi) => (
-                        <span key={gi} className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-600">
+                        <span
+                          key={gi}
+                          className="px-2 py-0.5 text-xs font-mono"
+                          style={{
+                            background: "var(--kami-surface)",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border)",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }}
+                        >
                           ${gi + 1}: {g ?? "undefined"}
                         </span>
                       ))}
@@ -614,7 +788,15 @@ export default function RegexTesterContent() {
                   {Object.keys(m.namedGroups).length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1.5">
                       {Object.entries(m.namedGroups).map(([name, val]) => (
-                        <span key={name} className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-mono text-blue-600">
+                        <span
+                          key={name}
+                          className="px-2 py-0.5 text-xs font-mono"
+                          style={{
+                            background: "color-mix(in srgb, #3b82f6 15%, var(--kami-surface-solid))",
+                            color: "color-mix(in srgb, #3b82f6 60%, var(--kami-text))",
+                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                          }}
+                        >
                           {name}: {val}
                         </span>
                       ))}
@@ -623,7 +805,7 @@ export default function RegexTesterContent() {
                 </div>
               ))}
               {matches.length > 200 && (
-                <div className="px-4 py-2 text-xs text-gray-400">
+                <div className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                   Showing 200 of {matches.length} matches
                 </div>
               )}
@@ -655,7 +837,7 @@ export default function RegexTesterContent() {
         >
           <div className="space-y-4 text-xs">
             <div>
-              <div className="mb-1 font-semibold text-gray-900">Character classes</div>
+              <div className="mb-1 font-semibold" style={{ color: "var(--kami-text)" }}>Character classes</div>
               <div className="space-y-1">
                 <RuleRow rule="." explanation="Any character except newline" example="a.c → abc, aXc" />
                 <RuleRow rule="\d \D" explanation="Digit / non-digit" example="\d{3}-\d{4}" />
@@ -666,7 +848,7 @@ export default function RegexTesterContent() {
               </div>
             </div>
             <div>
-              <div className="mb-1 font-semibold text-gray-900">Quantifiers</div>
+              <div className="mb-1 font-semibold" style={{ color: "var(--kami-text)" }}>Quantifiers</div>
               <div className="space-y-1">
                 <RuleRow rule="*" explanation="0 or more" example="a* → '', a, aaa" />
                 <RuleRow rule="+" explanation="1 or more" example="a+ → a, aaa" />
@@ -677,7 +859,7 @@ export default function RegexTesterContent() {
               </div>
             </div>
             <div>
-              <div className="mb-1 font-semibold text-gray-900">Anchors & groups</div>
+              <div className="mb-1 font-semibold" style={{ color: "var(--kami-text)" }}>Anchors & groups</div>
               <div className="space-y-1">
                 <RuleRow rule="^ $" explanation="Start / end of string (or line with /m)" example="^Hello" />
                 <RuleRow rule="\b" explanation="Word boundary" example="\bcat\b" />
@@ -687,7 +869,7 @@ export default function RegexTesterContent() {
               </div>
             </div>
             <div>
-              <div className="mb-1 font-semibold text-gray-900">Replace references</div>
+              <div className="mb-1 font-semibold" style={{ color: "var(--kami-text)" }}>Replace references</div>
               <div className="space-y-1">
                 <RuleRow rule="$1 $2" explanation="Nth capture group" example="($1) $2" />
                 <RuleRow rule="$&" explanation="The entire match" example="**$&**" />

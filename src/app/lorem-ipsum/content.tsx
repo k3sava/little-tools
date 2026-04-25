@@ -418,7 +418,7 @@ export default function LoremIpsumContent() {
   }, [output]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Lorem Ipsum Generator"
@@ -433,10 +433,18 @@ export default function LoremIpsumContent() {
         />
 
         {/* Controls */}
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div
+          className="p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           {/* Flavor selector */}
           <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
               Flavor
             </label>
             <div className="flex flex-wrap gap-2">
@@ -447,11 +455,22 @@ export default function LoremIpsumContent() {
                     setFlavor(f.value);
                     setSeed((s) => s + 1);
                   }}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className="px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={
                     flavor === f.value
-                      ? "bg-gray-900 text-white"
-                      : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                  }`}
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          border: "1px solid var(--kami-cta-bg)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                      : {
+                          background: "var(--kami-surface-solid)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                  }
                 >
                   {f.label}
                 </button>
@@ -461,7 +480,7 @@ export default function LoremIpsumContent() {
 
           {/* Mode selector */}
           <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
               Mode
             </label>
             <div className="flex gap-2">
@@ -469,11 +488,21 @@ export default function LoremIpsumContent() {
                 <button
                   key={m.value}
                   onClick={() => handleModeChange(m.value)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className="px-4 py-2 text-sm font-medium transition-colors"
+                  style={
                     mode === m.value && !activeTemplate
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                      : {
+                          background: "var(--kami-surface)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                  }
                 >
                   {m.label}
                 </button>
@@ -484,7 +513,7 @@ export default function LoremIpsumContent() {
           {/* Count + options row */}
           <div className="mt-4 flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2">
-              <label htmlFor="count" className="text-sm text-gray-500">
+              <label htmlFor="count" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
                 Count:
               </label>
               <input
@@ -494,19 +523,27 @@ export default function LoremIpsumContent() {
                 onChange={(e) => handleCountChange(e.target.value)}
                 min={LIMITS[mode].min}
                 max={LIMITS[mode].max}
-                className="w-24 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-24 px-3 py-1.5 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               />
-              <span className="text-xs text-gray-400">
+              <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 ({LIMITS[mode].min}-{LIMITS[mode].max})
               </span>
             </div>
 
-            <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--kami-text-muted)" }}>
               <input
                 type="checkbox"
                 checked={startClassic}
                 onChange={(e) => setStartClassic(e.target.checked)}
-                className="h-4 w-4 rounded border-gray-300 accent-gray-900"
+                className="h-4 w-4"
+                style={{ accentColor: "var(--kami-text)" }}
               />
               Start with &ldquo;Lorem ipsum...&rdquo;
             </label>
@@ -514,7 +551,7 @@ export default function LoremIpsumContent() {
 
           {/* HTML output mode */}
           <div className="mt-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
               HTML Output
             </label>
             <div className="flex gap-2">
@@ -522,11 +559,21 @@ export default function LoremIpsumContent() {
                 <button
                   key={t.value}
                   onClick={() => setHtmlTag(t.value)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className="px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={
                     htmlTag === t.value
-                      ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                      : {
+                          background: "var(--kami-surface)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                  }
                 >
                   {t.label}
                 </button>
@@ -536,7 +583,7 @@ export default function LoremIpsumContent() {
 
           {/* Content templates */}
           <div className="mt-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-gray-400">
+            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
               Templates
             </label>
             <div className="flex flex-wrap gap-2">
@@ -544,11 +591,22 @@ export default function LoremIpsumContent() {
                 <button
                   key={t.value}
                   onClick={() => handleTemplateClick(t.value)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
+                  className="px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={
                     activeTemplate === t.value
-                      ? "bg-gray-900 text-white"
-                      : "border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                  }`}
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          border: "1px solid var(--kami-cta-bg)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                      : {
+                          background: "var(--kami-surface-solid)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                  }
                   title={t.desc}
                 >
                   {t.label}
@@ -564,7 +622,12 @@ export default function LoremIpsumContent() {
           <div className="mt-4">
             <button
               onClick={handleGenerate}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+              className="px-4 py-2 text-sm font-medium transition-colors"
+              style={{
+                background: "var(--kami-cta-bg)",
+                color: "var(--kami-cta-text)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               Generate
             </button>
@@ -575,14 +638,20 @@ export default function LoremIpsumContent() {
         {output && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-xs text-gray-400">
+              <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 {wordCount.toLocaleString()} words &middot;{" "}
                 {charCount.toLocaleString()} characters
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={handleCopyMarkdown}
-                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   {copiedMd ? (
                     <>
@@ -598,7 +667,12 @@ export default function LoremIpsumContent() {
                 </button>
                 <button
                   onClick={handleCopy}
-                  className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   {copied ? (
                     <>
@@ -617,11 +691,29 @@ export default function LoremIpsumContent() {
 
             {/* Show HTML code if HTML mode is active */}
             {htmlTag !== "none" && htmlOutput ? (
-              <div className="rounded-xl border border-gray-200 bg-gray-900 px-4 py-3 shadow-sm text-sm leading-relaxed text-green-400 font-mono whitespace-pre-wrap max-h-96 overflow-y-auto">
+              <div
+                className="px-4 py-3 text-sm leading-relaxed font-mono whitespace-pre-wrap max-h-96 overflow-y-auto"
+                style={{
+                  background: "var(--kami-overlay-bg)",
+                  color: "color-mix(in srgb, #4ade80 75%, var(--kami-overlay-text))",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
                 {htmlOutput}
               </div>
             ) : (
-              <div className="rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm text-sm leading-relaxed text-gray-700 whitespace-pre-wrap max-h-96 overflow-y-auto">
+              <div
+                className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
                 {output}
               </div>
             )}

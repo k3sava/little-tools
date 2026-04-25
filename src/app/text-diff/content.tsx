@@ -158,9 +158,9 @@ function DiffStats({ diff }: { diff: DiffEntry[] }) {
 
   return (
     <div className="flex gap-4 text-sm">
-      <span className="text-green-600">+{added} added</span>
-      <span className="text-red-600">-{removed} removed</span>
-      <span className="text-gray-500">{unchanged} unchanged</span>
+      <span style={{ color: "#16a34a" }}>+{added} added</span>
+      <span style={{ color: "#ef4444" }}>-{removed} removed</span>
+      <span style={{ color: "var(--kami-text-muted)" }}>{unchanged} unchanged</span>
     </div>
   );
 }
@@ -186,20 +186,28 @@ function SimilarityStats({
   }, [original, modified, diff]);
 
   return (
-    <div className="flex flex-wrap gap-4 text-sm rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+    <div
+      className="flex flex-wrap gap-4 text-sm px-4 py-3"
+      style={{
+        background: "var(--kami-surface-solid)",
+        border: "1px solid var(--kami-border-strong)",
+        borderRadius: "var(--kami-card-radius, 0.75rem)",
+        boxShadow: "var(--kami-card-shadow, none)",
+      }}
+    >
       <div>
-        <span className="text-gray-500">Similarity: </span>
-        <span className="font-medium text-gray-900">{similarity}%</span>
-        <span className="text-gray-400 ml-1 text-xs">
+        <span style={{ color: "var(--kami-text-muted)" }}>Similarity: </span>
+        <span className="font-medium" style={{ color: "var(--kami-text)" }}>{similarity}%</span>
+        <span className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
           ({diffMode}-level)
         </span>
       </div>
-      <div className="border-l border-gray-200 pl-4">
-        <span className="text-gray-500">Levenshtein distance: </span>
-        <span className="font-medium text-gray-900">
+      <div className="pl-4" style={{ borderLeft: "1px solid var(--kami-border-strong)" }}>
+        <span style={{ color: "var(--kami-text-muted)" }}>Levenshtein distance: </span>
+        <span className="font-medium" style={{ color: "var(--kami-text)" }}>
           {levDist.toLocaleString()}
         </span>
-        <span className="text-gray-400 ml-1 text-xs">(char-level)</span>
+        <span className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>(char-level)</span>
       </div>
     </div>
   );
@@ -214,10 +222,33 @@ function InlineDiffView({
   diffMode: DiffMode;
   changeRefs: React.MutableRefObject<(HTMLElement | null)[]>;
 }) {
+  const containerStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const addStyle = {
+    background: "color-mix(in srgb, #16a34a 22%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+  } as const;
+  const addStrongStyle = {
+    background: "color-mix(in srgb, #16a34a 35%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+  } as const;
+  const removeStyle = {
+    background: "color-mix(in srgb, #ef4444 22%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+  } as const;
+  const removeStrongStyle = {
+    background: "color-mix(in srgb, #ef4444 35%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+  } as const;
+
   if (diffMode === "char") {
     let changeIdx = -1;
     return (
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+      <div className="overflow-hidden" style={containerStyle}>
         <div className="overflow-x-auto">
           <pre className="px-4 py-3 text-sm font-mono leading-relaxed whitespace-pre-wrap break-all">
             {diff.map((entry, i) => {
@@ -226,7 +257,7 @@ function InlineDiffView({
               const ci = changeIdx;
               if (entry.op === "equal") {
                 return (
-                  <span key={i} className="text-gray-700">
+                  <span key={i} style={{ color: "var(--kami-text-muted)" }}>
                     {entry.value}
                   </span>
                 );
@@ -238,7 +269,7 @@ function InlineDiffView({
                     ref={(el) => {
                       changeRefs.current[ci] = el;
                     }}
-                    className="bg-green-100 text-green-800"
+                    style={addStrongStyle}
                   >
                     {entry.value}
                   </span>
@@ -250,7 +281,8 @@ function InlineDiffView({
                   ref={(el) => {
                     changeRefs.current[ci] = el;
                   }}
-                  className="bg-red-100 text-red-800 line-through"
+                  className="line-through"
+                  style={removeStrongStyle}
                 >
                   {entry.value}
                 </span>
@@ -264,7 +296,7 @@ function InlineDiffView({
 
   let changeIdx = -1;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+    <div className="overflow-hidden" style={containerStyle}>
       <div className="overflow-x-auto">
         <pre className="px-4 py-3 text-sm font-mono leading-relaxed">
           {diff.map((entry, i) => {
@@ -273,7 +305,7 @@ function InlineDiffView({
             const ci = changeIdx;
             if (entry.op === "equal") {
               return (
-                <div key={i} className="text-gray-700">
+                <div key={i} style={{ color: "var(--kami-text-muted)" }}>
                   {"  "}
                   {entry.value}
                 </div>
@@ -286,7 +318,7 @@ function InlineDiffView({
                   ref={(el) => {
                     changeRefs.current[ci] = el;
                   }}
-                  className="bg-green-50 text-green-800"
+                  style={addStyle}
                 >
                   + {entry.value}
                 </div>
@@ -298,7 +330,7 @@ function InlineDiffView({
                 ref={(el) => {
                   changeRefs.current[ci] = el;
                 }}
-                className="bg-red-50 text-red-800"
+                style={removeStyle}
               >
                 - {entry.value}
               </div>
@@ -367,15 +399,41 @@ function SideBySideDiffView({
     rightChangeIndices.push(null);
   }
 
+  const panelStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const headerStyle = {
+    borderBottom: "1px solid var(--kami-border)",
+    color: "var(--kami-text-muted)",
+  } as const;
+  const addRow = {
+    background: "color-mix(in srgb, #16a34a 22%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+  } as const;
+  const removeRow = {
+    background: "color-mix(in srgb, #ef4444 22%, var(--kami-surface-solid))",
+    color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+  } as const;
+
   return (
     <div className="grid grid-cols-2 gap-2">
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-3 py-2  border-b border-gray-100 text-xs font-medium text-gray-500">
+      <div className="overflow-hidden" style={panelStyle}>
+        <div className="px-3 py-2 text-xs font-medium" style={headerStyle}>
           Original
         </div>
         <pre className="px-4 py-3 text-sm font-mono leading-relaxed overflow-x-auto">
           {left.map((line, i) => {
             const ci = leftChangeIndices[i];
+            const isEmpty = line.value === "";
+            const lineStyle =
+              line.op === "remove"
+                ? removeRow
+                : isEmpty
+                  ? { color: "transparent" }
+                  : { color: "var(--kami-text-muted)" };
             return (
               <div
                 key={i}
@@ -386,13 +444,8 @@ function SideBySideDiffView({
                       }
                     : undefined
                 }
-                className={
-                  line.op === "remove"
-                    ? "bg-red-50 text-red-800"
-                    : line.value === ""
-                      ? "text-transparent select-none"
-                      : "text-gray-700"
-                }
+                className={isEmpty && line.op !== "remove" ? "select-none" : ""}
+                style={lineStyle}
               >
                 {line.value || "\u00A0"}
               </div>
@@ -400,13 +453,20 @@ function SideBySideDiffView({
           })}
         </pre>
       </div>
-      <div className="rounded-xl border border-gray-200 bg-white shadow-sm overflow-hidden">
-        <div className="px-3 py-2  border-b border-gray-100 text-xs font-medium text-gray-500">
+      <div className="overflow-hidden" style={panelStyle}>
+        <div className="px-3 py-2 text-xs font-medium" style={headerStyle}>
           Modified
         </div>
         <pre className="px-4 py-3 text-sm font-mono leading-relaxed overflow-x-auto">
           {right.map((line, i) => {
             const ci = rightChangeIndices[i];
+            const isEmpty = line.value === "";
+            const lineStyle =
+              line.op === "add"
+                ? addRow
+                : isEmpty
+                  ? { color: "transparent" }
+                  : { color: "var(--kami-text-muted)" };
             return (
               <div
                 key={i}
@@ -417,13 +477,8 @@ function SideBySideDiffView({
                       }
                     : undefined
                 }
-                className={
-                  line.op === "add"
-                    ? "bg-green-50 text-green-800"
-                    : line.value === ""
-                      ? "text-transparent select-none"
-                      : "text-gray-700"
-                }
+                className={isEmpty && line.op !== "add" ? "select-none" : ""}
+                style={lineStyle}
               >
                 {line.value || "\u00A0"}
               </div>
@@ -490,13 +545,18 @@ function DragDropTextarea({
   return (
     <div>
       <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-sm font-medium text-gray-500">
+        <label className="block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
           {label}
         </label>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-0.5 rounded border border-gray-200 hover:border-gray-300"
+          className="text-xs transition-colors px-2 py-0.5"
+          style={{
+            color: "var(--kami-text-dim)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-cta-radius, 0.375rem)",
+          }}
         >
           Upload
         </button>
@@ -513,11 +573,15 @@ function DragDropTextarea({
         />
       </div>
       <div
-        className={`relative rounded-xl border ${
-          dragging
-            ? "border-gray-400 bg-gray-100 ring-2 ring-gray-300"
-            : "border-gray-200 bg-white"
-        } shadow-sm transition-all`}
+        className="relative transition-all"
+        style={{
+          background: dragging ? "var(--kami-surface)" : "var(--kami-surface-solid)",
+          border: dragging
+            ? "1px solid var(--kami-text-muted)"
+            : "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.75rem)",
+          boxShadow: "var(--kami-card-shadow, none)",
+        }}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -526,13 +590,23 @@ function DragDropTextarea({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full rounded-xl bg-transparent px-4 py-3 text-base placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200 font-mono text-sm resize-y"
+          className="w-full bg-transparent px-4 py-3 text-base focus:outline-none font-mono text-sm resize-y"
+          style={{
+            color: "var(--kami-text)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+          }}
           rows={8}
           autoFocus={autoFocus}
         />
         {dragging && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-gray-100/80 pointer-events-none">
-            <span className="text-sm text-gray-500 font-medium">
+          <div
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{
+              background: "color-mix(in srgb, var(--kami-surface) 80%, transparent)",
+              borderRadius: "var(--kami-input-radius, 0.75rem)",
+            }}
+          >
+            <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
               Drop file here
             </span>
           </div>
@@ -603,7 +677,7 @@ export default function TextDiffContent() {
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
         // Brief highlight flash
-        el.style.outline = "2px solid #6b7280";
+        el.style.outline = "2px solid var(--kami-text)";
         el.style.outlineOffset = "1px";
         setTimeout(() => {
           el.style.outline = "";
@@ -647,7 +721,7 @@ export default function TextDiffContent() {
   ], [handleCopy]));
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Text Diff"
@@ -680,31 +754,34 @@ export default function TextDiffContent() {
 
         {/* Ignore options */}
         <div className="flex flex-wrap items-center gap-4 mb-4">
-          <span className="text-xs font-medium text-gray-500">Ignore:</span>
-          <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+          <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Ignore:</span>
+          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
             <input
               type="checkbox"
               checked={ignoreWhitespace}
               onChange={(e) => setIgnoreWhitespace(e.target.checked)}
-              className="rounded border-gray-300 text-gray-900 focus:ring-gray-300 h-3.5 w-3.5"
+              className="h-3.5 w-3.5"
+              style={{ accentColor: "var(--kami-text)" }}
             />
             Whitespace
           </label>
-          <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
             <input
               type="checkbox"
               checked={ignoreCase}
               onChange={(e) => setIgnoreCase(e.target.checked)}
-              className="rounded border-gray-300 text-gray-900 focus:ring-gray-300 h-3.5 w-3.5"
+              className="h-3.5 w-3.5"
+              style={{ accentColor: "var(--kami-text)" }}
             />
             Case
           </label>
-          <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
             <input
               type="checkbox"
               checked={ignoreBlankLines}
               onChange={(e) => setIgnoreBlankLines(e.target.checked)}
-              className="rounded border-gray-300 text-gray-900 focus:ring-gray-300 h-3.5 w-3.5"
+              className="h-3.5 w-3.5"
+              style={{ accentColor: "var(--kami-text)" }}
             />
             Blank lines
           </label>
@@ -714,58 +791,77 @@ export default function TextDiffContent() {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             {/* View mode toggle */}
-            <div className="flex rounded-lg border border-gray-200 bg-white overflow-hidden">
+            <div
+              className="flex overflow-hidden"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
+            >
               <button
                 onClick={() => setViewMode("inline")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   viewMode === "inline"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
-                }`}
+                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
+                    : { color: "var(--kami-text-muted)" }
+                }
               >
                 Inline
               </button>
               <button
                 onClick={() => setViewMode("side-by-side")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   viewMode === "side-by-side"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
-                }`}
+                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
+                    : { color: "var(--kami-text-muted)" }
+                }
               >
                 Side by side
               </button>
             </div>
 
             {/* Diff mode toggle */}
-            <div className="flex rounded-lg border border-gray-200 bg-white overflow-hidden">
+            <div
+              className="flex overflow-hidden"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
+            >
               <button
                 onClick={() => setDiffMode("line")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   diffMode === "line"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
-                }`}
+                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
+                    : { color: "var(--kami-text-muted)" }
+                }
               >
                 Line
               </button>
               <button
                 onClick={() => setDiffMode("word")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   diffMode === "word"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
-                }`}
+                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
+                    : { color: "var(--kami-text-muted)" }
+                }
               >
                 Word
               </button>
               <button
                 onClick={() => setDiffMode("char")}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                className="px-3 py-1.5 text-sm font-medium transition-colors"
+                style={
                   diffMode === "char"
-                    ? "bg-gray-900 text-white"
-                    : "text-gray-600 hover:bg-gray-200"
-                }`}
+                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
+                    : { color: "var(--kami-text-muted)" }
+                }
               >
                 Char
               </button>
@@ -777,7 +873,12 @@ export default function TextDiffContent() {
             {diff.length > 0 && (
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied ? "Copied!" : "Copy diff"}
               </button>
@@ -802,16 +903,28 @@ export default function TextDiffContent() {
           <div className="flex items-center gap-3 mb-4">
             <button
               onClick={handlePrevChange}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               &larr; Prev
             </button>
-            <span className="text-sm text-gray-500">
+            <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
               Change {currentChangeIdx + 1} of {totalChanges}
             </span>
             <button
               onClick={handleNextChange}
-              className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="px-3 py-1.5 text-sm font-medium transition-colors"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               Next &rarr;
             </button>
@@ -831,7 +944,7 @@ export default function TextDiffContent() {
           ))}
 
         {(original || modified) && diff.length === 0 && (
-          <div className="text-center py-8 text-gray-400 text-sm">
+          <div className="text-center py-8 text-sm" style={{ color: "var(--kami-text-dim)" }}>
             Texts are identical.
           </div>
         )}

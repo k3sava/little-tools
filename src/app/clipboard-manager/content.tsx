@@ -378,7 +378,7 @@ export default function ClipboardManagerContent() {
   }, [clips, search, tagFilter]);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-2xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Clipboard Manager"
@@ -393,24 +393,43 @@ export default function ClipboardManagerContent() {
         />
 
         {/* Tab switcher */}
-        <div className="mb-6 flex gap-1 rounded-lg bg-gray-100 p-1">
+        <div
+          className="mb-6 flex gap-1 p-1"
+          style={{
+            background: "var(--kami-surface)",
+            border: "1px solid var(--kami-border)",
+            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+          }}
+        >
           <button
             onClick={() => setActiveTab("clips")}
-            className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className="flex-1 px-3 py-1.5 text-sm font-medium transition-colors"
+            style={
               activeTab === "clips"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+                ? {
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }
+                : { color: "var(--kami-text-muted)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }
+            }
           >
             Clips
           </button>
           <button
             onClick={() => setActiveTab("templates")}
-            className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+            className="flex-1 px-3 py-1.5 text-sm font-medium transition-colors"
+            style={
               activeTab === "templates"
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
+                ? {
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }
+                : { color: "var(--kami-text-muted)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }
+            }
           >
             Templates
           </button>
@@ -427,7 +446,14 @@ export default function ClipboardManagerContent() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Paste or type text to save..."
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-base shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-4 py-3 text-base focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
                 rows={3}
                 autoFocus
               />
@@ -437,18 +463,30 @@ export default function ClipboardManagerContent() {
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
                   placeholder="Tags (comma-separated)"
-                  className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="flex-1 px-3 py-2 text-sm focus:outline-none"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
                 />
                 <button
                   onClick={addClip}
                   disabled={!input.trim()}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Save Clip
                 </button>
               </div>
               <div className="mt-1">
-                <span className="text-xs text-gray-400">
+                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                   {input.trim() ? `${input.trim().length} chars` : ""}
                 </span>
               </div>
@@ -459,20 +497,39 @@ export default function ClipboardManagerContent() {
               <div className="mt-8 space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
-                    <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <span
+                      className="absolute left-3 top-1/2 -translate-y-1/2"
+                      style={{ color: "var(--kami-text-dim)" }}
+                    >
+                      <SearchIcon />
+                    </span>
                     <input
                       type="text"
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder="Search clips..."
-                      className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="w-full py-2 pl-9 pr-3 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        boxShadow: "var(--kami-card-shadow, none)",
+                      }}
                     />
                   </div>
                   {allTags.length > 0 && (
                     <select
                       value={tagFilter}
                       onChange={(e) => setTagFilter(e.target.value)}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        boxShadow: "var(--kami-card-shadow, none)",
+                      }}
                     >
                       <option value="">All tags</option>
                       {allTags.map((tag) => (
@@ -484,7 +541,14 @@ export default function ClipboardManagerContent() {
                   )}
                   <button
                     onClick={clearAll}
-                    className="whitespace-nowrap rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-500 shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    className="whitespace-nowrap px-3 py-2 text-sm transition-colors"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      boxShadow: "var(--kami-card-shadow, none)",
+                    }}
                   >
                     Clear Unpinned
                   </button>
@@ -492,13 +556,27 @@ export default function ClipboardManagerContent() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleExportAll}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-500 shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    className="px-3 py-1.5 text-xs transition-colors"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      boxShadow: "var(--kami-card-shadow, none)",
+                    }}
                   >
                     Export All
                   </button>
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-500 shadow-sm transition-colors hover:bg-gray-100 hover:text-gray-700"
+                    className="px-3 py-1.5 text-xs transition-colors"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      boxShadow: "var(--kami-card-shadow, none)",
+                    }}
                   >
                     Import
                   </button>
@@ -517,12 +595,12 @@ export default function ClipboardManagerContent() {
             {mounted && (
               <div className="mt-6 space-y-2">
                 {filteredClips.length === 0 && clips.length > 0 && (search || tagFilter) && (
-                  <p className="py-8 text-center text-sm text-gray-400">
+                  <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
                     No clips match your search
                   </p>
                 )}
                 {filteredClips.length === 0 && clips.length === 0 && (
-                  <p className="py-8 text-center text-sm text-gray-400">
+                  <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
                     No clips yet. Paste or type text above to save your first
                     clip.
                   </p>
@@ -530,14 +608,25 @@ export default function ClipboardManagerContent() {
                 {filteredClips.map((clip) => (
                   <div
                     key={clip.id}
-                    className={`group flex items-start gap-3 rounded-xl border bg-white px-4 py-3 shadow-sm transition-colors ${
+                    className="group flex items-start gap-3 px-4 py-3 transition-colors"
+                    style={
                       clip.pinned
-                        ? "border-amber-200 bg-amber-50/50"
-                        : "border-gray-200"
-                    }`}
+                        ? {
+                            background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface-solid))",
+                            border: "1px solid color-mix(in srgb, #f59e0b 35%, var(--kami-border-strong))",
+                            borderRadius: "var(--kami-card-radius, 0.75rem)",
+                            boxShadow: "var(--kami-card-shadow, none)",
+                          }
+                        : {
+                            background: "var(--kami-surface-solid)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-card-radius, 0.75rem)",
+                            boxShadow: "var(--kami-card-shadow, none)",
+                          }
+                    }
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="whitespace-pre-wrap break-words text-sm text-gray-800">
+                      <p className="whitespace-pre-wrap break-words text-sm" style={{ color: "var(--kami-text)" }}>
                         {truncate(clip.text, 500)}
                       </p>
                       {clip.tags.length > 0 && (
@@ -545,14 +634,20 @@ export default function ClipboardManagerContent() {
                           {clip.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500"
+                              className="inline-flex px-2 py-0.5 text-[10px] font-medium"
+                              style={{
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                border: "1px solid var(--kami-border)",
+                                borderRadius: "999px",
+                              }}
                             >
                               {tag}
                             </span>
                           ))}
                         </div>
                       )}
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                         {timeAgo(clip.createdAt)}
                         {clip.text.length > 500 &&
                           ` · ${clip.text.length} chars`}
@@ -562,18 +657,22 @@ export default function ClipboardManagerContent() {
                       <button
                         onClick={() => togglePin(clip.id)}
                         title={clip.pinned ? "Unpin" : "Pin"}
-                        className={`rounded-md p-1.5 transition-colors ${
-                          clip.pinned
-                            ? "text-amber-500 hover:bg-amber-100"
-                            : "text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-                        }`}
+                        className="p-1.5 transition-colors"
+                        style={{
+                          color: clip.pinned ? "#f59e0b" : "var(--kami-text-dim)",
+                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                        }}
                       >
                         <PinIcon filled={clip.pinned} />
                       </button>
                       <button
                         onClick={() => copyToClipboard(clip.text, clip.id)}
                         title="Copy"
-                        className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                        className="p-1.5 transition-colors"
+                        style={{
+                          color: "var(--kami-text-dim)",
+                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                        }}
                       >
                         {copiedId === clip.id ? (
                           <CheckIcon />
@@ -584,7 +683,11 @@ export default function ClipboardManagerContent() {
                       <button
                         onClick={() => deleteClip(clip.id)}
                         title="Delete"
-                        className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                        className="p-1.5 transition-colors"
+                        style={{
+                          color: "var(--kami-text-dim)",
+                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                        }}
                       >
                         <TrashIcon />
                       </button>
@@ -596,13 +699,29 @@ export default function ClipboardManagerContent() {
 
             {/* Keyboard shortcut hint */}
             {clips.length > 0 && (
-              <p className="mt-4 text-center text-xs text-gray-400">
+              <p className="mt-4 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 Tip: Press{" "}
-                <kbd className="rounded border border-gray-300 bg-gray-100 px-1 py-0.5 font-mono text-[10px]">
+                <kbd
+                  className="px-1 py-0.5 font-mono text-[10px]"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
+                >
                   Cmd
                 </kbd>
                 +
-                <kbd className="rounded border border-gray-300 bg-gray-100 px-1 py-0.5 font-mono text-[10px]">
+                <kbd
+                  className="px-1 py-0.5 font-mono text-[10px]"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
+                >
                   Enter
                 </kbd>{" "}
                 to save quickly
@@ -615,26 +734,53 @@ export default function ClipboardManagerContent() {
         {activeTab === "templates" && (
           <>
             {/* Template creation form */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div
+              className="p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <input
                 type="text"
                 value={templateName}
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder="Template name"
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
               />
               <textarea
                 value={templateBody}
                 onChange={(e) => setTemplateBody(e.target.value)}
                 placeholder={"Template body. Use {{variableName}} for placeholders.\n\nExample: Hi {{name}}, your order #{{orderId}} is ready."}
-                className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                className="mt-2 w-full px-3 py-2 text-sm focus:outline-none"
+                style={{
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                  color: "var(--kami-text)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
                 rows={4}
               />
               <div className="mt-2 flex justify-end">
                 <button
                   onClick={addTemplate}
                   disabled={!templateName.trim() || !templateBody.trim()}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                  style={{
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Save Template
                 </button>
@@ -645,7 +791,7 @@ export default function ClipboardManagerContent() {
             {mounted && (
               <div className="mt-6 space-y-2">
                 {templates.length === 0 && (
-                  <p className="py-8 text-center text-sm text-gray-400">
+                  <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
                     No templates yet. Create one above with {"{{variables}}"} to
                     get started.
                   </p>
@@ -655,14 +801,20 @@ export default function ClipboardManagerContent() {
                   return (
                     <div
                       key={tmpl.id}
-                      className="group rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm"
+                      className="group px-4 py-3"
+                      style={{
+                        background: "var(--kami-surface-solid)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-card-radius, 0.75rem)",
+                        boxShadow: "var(--kami-card-shadow, none)",
+                      }}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-sm font-medium text-gray-900">
+                          <h3 className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
                             {tmpl.name}
                           </h3>
-                          <p className="mt-1 whitespace-pre-wrap break-words text-sm text-gray-500">
+                          <p className="mt-1 whitespace-pre-wrap break-words text-sm" style={{ color: "var(--kami-text-muted)" }}>
                             {truncate(tmpl.body, 300)}
                           </p>
                           {vars.length > 0 && (
@@ -670,14 +822,19 @@ export default function ClipboardManagerContent() {
                               {vars.map((v) => (
                                 <span
                                   key={v}
-                                  className="inline-flex rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600"
+                                  className="inline-flex px-2 py-0.5 text-[10px] font-medium"
+                                  style={{
+                                    background: "color-mix(in srgb, #3b82f6 12%, var(--kami-surface-solid))",
+                                    color: "color-mix(in srgb, #3b82f6 65%, var(--kami-text))",
+                                    borderRadius: "999px",
+                                  }}
                                 >
                                   {`{{${v}}}`}
                                 </span>
                               ))}
                             </div>
                           )}
-                          <p className="mt-1 text-xs text-gray-400">
+                          <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                             {timeAgo(tmpl.createdAt)}
                           </p>
                         </div>
@@ -685,14 +842,22 @@ export default function ClipboardManagerContent() {
                           <button
                             onClick={() => openFillModal(tmpl)}
                             title="Use template"
-                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+                            className="p-1.5 transition-colors"
+                            style={{
+                              color: "var(--kami-text-dim)",
+                              borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                            }}
                           >
                             <CopyIcon />
                           </button>
                           <button
                             onClick={() => deleteTemplate(tmpl.id)}
                             title="Delete"
-                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-500"
+                            className="p-1.5 transition-colors"
+                            style={{
+                              color: "var(--kami-text-dim)",
+                              borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                            }}
                           >
                             <TrashIcon />
                           </button>
@@ -709,17 +874,26 @@ export default function ClipboardManagerContent() {
         {/* Template fill modal */}
         {fillingTemplate && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-            <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl">
-              <h3 className="text-lg font-semibold text-gray-900">
+            <div
+              className="w-full max-w-md p-6"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 1rem)",
+                boxShadow: "var(--kami-card-shadow, 0 10px 25px rgba(0,0,0,0.15))",
+              }}
+            >
+              <h3 className="text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
                 {fillingTemplate.name}
               </h3>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
                 Fill in the variables below, then copy.
               </p>
               <div className="mt-4 space-y-3">
                 {extractVariables(fillingTemplate.body).map((varName) => (
                   <div key={varName}>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       {varName}
                     </label>
                     <input
@@ -731,31 +905,55 @@ export default function ClipboardManagerContent() {
                           [varName]: e.target.value,
                         }))
                       }
-                      className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                      className="mt-1 w-full px-3 py-2 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                        color: "var(--kami-text)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
                       placeholder={`Enter ${varName}...`}
                     />
                   </div>
                 ))}
               </div>
               {/* Preview */}
-              <div className="mt-4 rounded-lg  p-3">
-                <p className="text-xs font-medium text-gray-500 mb-1">
+              <div
+                className="mt-4 p-3"
+                style={{
+                  background: "var(--kami-surface)",
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
+                <p className="text-xs font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>
                   Preview
                 </p>
-                <p className="whitespace-pre-wrap break-words text-sm text-gray-700">
+                <p className="whitespace-pre-wrap break-words text-sm" style={{ color: "var(--kami-text-muted)" }}>
                   {fillTemplate(fillingTemplate.body, templateValues)}
                 </p>
               </div>
               <div className="mt-4 flex justify-end gap-2">
                 <button
                   onClick={() => setFillingTemplate(null)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                  className="px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleFillAndCopy}
-                  className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                  className="px-4 py-2 text-sm font-medium transition-colors"
+                  style={{
+                    background: "var(--kami-cta-bg)",
+                    color: "var(--kami-cta-text)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  }}
                 >
                   {templateCopied ? "Copied!" : "Copy"}
                 </button>

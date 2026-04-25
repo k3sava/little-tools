@@ -384,6 +384,20 @@ export default function GridContent() {
 
   useKeyboardShortcuts(useMemo(() => [{ key: "Enter", meta: true, action: copy, label: "Copy output" }], [copy]));
 
+  /* --- Shared inline styles --- */
+  const cardStyle: React.CSSProperties = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  };
+  const selectStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+  };
+
   /* --- Build preview cells --- */
   const cells: { r: number; c: number; occupied: boolean }[] = [];
   for (let r = 0; r < rows; r++) {
@@ -394,7 +408,7 @@ export default function GridContent() {
   }
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="CSS Grid Generator"
@@ -407,15 +421,33 @@ export default function GridContent() {
             "Learning grid-area and named lines",
           ]}
         />
-        {placing && <p className="mt-2 text-sm font-medium text-indigo-600">Click second cell to set span...</p>}
-        {areaMode && <p className="mt-2 text-sm font-medium text-amber-600">Area mode: click cells to assign &quot;{areaName}&quot;</p>}
+        {placing && <p className="mt-2 text-sm font-medium" style={{ color: "#4f46e5" }}>Click second cell to set span...</p>}
+        {areaMode && <p className="mt-2 text-sm font-medium" style={{ color: "#d97706" }}>Area mode: click cells to assign &quot;{areaName}&quot;</p>}
 
         {/* Presets */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-          <h3 className="mb-3 text-sm font-medium text-gray-700">Layout Presets</h3>
+        <div
+          className="mt-6 p-4"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Layout Presets</h3>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((p) => (
-              <button key={p.label} onClick={() => applyPreset(p)} className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 transition-colors hover:border-gray-900 hover:bg-gray-900 hover:text-white">
+              <button
+                key={p.label}
+                onClick={() => applyPreset(p)}
+                className="px-3 py-1.5 text-xs font-medium transition-colors"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
                 {p.label}
               </button>
             ))}
@@ -424,9 +456,28 @@ export default function GridContent() {
 
         {/* Responsive preview toggle */}
         <div className="mt-4 flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500">Preview:</span>
+          <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Preview:</span>
           {(["mobile", "tablet", "desktop"] as PreviewWidth[]).map((w) => (
-            <button key={w} onClick={() => setPreviewWidth(w)} className={`rounded border px-2.5 py-1 text-xs font-medium transition-colors ${previewWidth === w ? "border-gray-900 bg-gray-900 text-white" : "border-gray-200 text-gray-500 hover:text-gray-700"}`}>
+            <button
+              key={w}
+              onClick={() => setPreviewWidth(w)}
+              className="px-2.5 py-1 text-xs font-medium transition-colors"
+              style={
+                previewWidth === w
+                  ? {
+                      background: "var(--kami-cta-bg)",
+                      color: "var(--kami-cta-text)",
+                      border: "1px solid var(--kami-cta-bg)",
+                      borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                    }
+                  : {
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                    }
+              }
+            >
               {w === "mobile" ? "320px" : w === "tablet" ? "768px" : "Full"}
             </button>
           ))}
@@ -434,7 +485,15 @@ export default function GridContent() {
 
         <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_300px]">
           {/* Grid Preview */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <div
+            className="p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="mx-auto overflow-auto" style={{ maxWidth: PREVIEW_WIDTHS[previewWidth] }}>
               <div
                 className="min-h-[300px]"
@@ -454,22 +513,57 @@ export default function GridContent() {
               >
                 {cells.map(({ r, c, occupied }) => {
                   const an = areaNameForCell(r, c);
+                  const isPlaceStart = !!(placeStart && r === placeStart.r && c === placeStart.c);
+                  let cellStyle: React.CSSProperties = {
+                    gridRow: r + 1,
+                    gridColumn: c + 1,
+                    minHeight: 60,
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  };
+                  if (occupied) {
+                    cellStyle = { ...cellStyle, border: "2px dashed transparent" };
+                  } else if (areaMode && an) {
+                    cellStyle = {
+                      ...cellStyle,
+                      border: "2px dashed color-mix(in srgb, #f59e0b 50%, var(--kami-border-strong))",
+                      background: "color-mix(in srgb, #f59e0b 12%, var(--kami-surface-solid))",
+                      cursor: "pointer",
+                    };
+                  } else if (areaMode) {
+                    cellStyle = {
+                      ...cellStyle,
+                      border: "2px dashed var(--kami-border-strong)",
+                      cursor: "pointer",
+                    };
+                  } else if (isPlaceStart) {
+                    cellStyle = {
+                      ...cellStyle,
+                      border: "2px dashed color-mix(in srgb, #6366f1 60%, var(--kami-border-strong))",
+                      background: "color-mix(in srgb, #6366f1 12%, var(--kami-surface-solid))",
+                      cursor: "pointer",
+                    };
+                  } else {
+                    cellStyle = {
+                      ...cellStyle,
+                      border: "2px dashed var(--kami-border-strong)",
+                      cursor: "pointer",
+                    };
+                  }
                   return (
                     <div
                       key={`${r}-${c}`}
                       onClick={() => !occupied && handleCellClick(r, c)}
-                      className={`relative rounded border-2 border-dashed transition-colors ${
-                        occupied
-                          ? "pointer-events-none border-transparent"
-                          : areaMode
-                            ? an ? "border-amber-300 bg-amber-50 cursor-pointer" : "border-gray-200 hover:border-amber-300 cursor-pointer"
-                            : placeStart && r === placeStart.r && c === placeStart.c
-                              ? "border-indigo-400 bg-indigo-50 cursor-pointer"
-                              : "border-gray-200 hover:border-gray-400 hover:bg-gray-50 cursor-pointer"
-                      }`}
-                      style={{ gridRow: r + 1, gridColumn: c + 1, minHeight: 60 }}
+                      className={`relative transition-colors ${occupied ? "pointer-events-none" : ""}`}
+                      style={cellStyle}
                     >
-                      {an && <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono text-amber-600/70">{an}</span>}
+                      {an && (
+                        <span
+                          className="absolute inset-0 flex items-center justify-center text-[10px] font-mono"
+                          style={{ color: "color-mix(in srgb, #d97706 70%, var(--kami-text-muted))" }}
+                        >
+                          {an}
+                        </span>
+                      )}
                     </div>
                   );
                 })}
@@ -495,43 +589,43 @@ export default function GridContent() {
           {/* Controls sidebar */}
           <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "80vh" }}>
             {/* Grid dimensions */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Grid</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Grid</h3>
               <SliderControl label="Rows" value={rows} min={1} max={12} onChange={updateRows} />
               <SliderControl label="Columns" value={cols} min={1} max={12} onChange={updateCols} />
               <SliderControl label="Gap" value={gap} min={0} max={40} suffix="px" onChange={setGap} />
             </div>
 
             {/* Per-track sizing */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Row Sizes</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Row Sizes</h3>
               {rowSizes.slice(0, rows).map((size, i) => (
                 <div key={`r${i}`} className="mb-1.5 flex items-center gap-2">
-                  <span className="w-8 text-right text-[10px] font-mono text-gray-400">R{i + 1}</span>
-                  <select value={size} onChange={(e) => { const next = [...rowSizes]; next[i] = e.target.value; setRowSizes(next); }} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                  <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>R{i + 1}</span>
+                  <select value={size} onChange={(e) => { const next = [...rowSizes]; next[i] = e.target.value; setRowSizes(next); }} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                     {TRACK_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
               ))}
-              <h3 className="mb-3 mt-4 text-sm font-medium text-gray-700">Column Sizes</h3>
+              <h3 className="mb-3 mt-4 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Column Sizes</h3>
               <div className="mb-2 flex items-center gap-2">
-                <label className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <input type="checkbox" checked={useAutoFill} onChange={(e) => setUseAutoFill(e.target.checked)} className="rounded accent-gray-700" />
+                <label className="flex items-center gap-1.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  <input type="checkbox" checked={useAutoFill} onChange={(e) => setUseAutoFill(e.target.checked)} style={{ accentColor: "var(--kami-text)" }} />
                   Use repeat()
                 </label>
               </div>
               {useAutoFill ? (
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="w-8 text-right text-[10px] font-mono text-gray-400">Mode</span>
-                    <select value={autoFillMode} onChange={(e) => setAutoFillMode(e.target.value as "auto-fill" | "auto-fit")} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                    <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>Mode</span>
+                    <select value={autoFillMode} onChange={(e) => setAutoFillMode(e.target.value as "auto-fill" | "auto-fit")} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                       <option value="auto-fill">auto-fill</option>
                       <option value="auto-fit">auto-fit</option>
                     </select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-8 text-right text-[10px] font-mono text-gray-400">Min</span>
-                    <select value={autoFillMin} onChange={(e) => setAutoFillMin(e.target.value)} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                    <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>Min</span>
+                    <select value={autoFillMin} onChange={(e) => setAutoFillMin(e.target.value)} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                       {["100px", "150px", "200px", "250px", "300px"].map((o) => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </div>
@@ -539,8 +633,8 @@ export default function GridContent() {
               ) : (
                 colSizes.slice(0, cols).map((size, i) => (
                   <div key={`c${i}`} className="mb-1.5 flex items-center gap-2">
-                    <span className="w-8 text-right text-[10px] font-mono text-gray-400">C{i + 1}</span>
-                    <select value={size} onChange={(e) => { const next = [...colSizes]; next[i] = e.target.value; setColSizes(next); }} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                    <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>C{i + 1}</span>
+                    <select value={size} onChange={(e) => { const next = [...colSizes]; next[i] = e.target.value; setColSizes(next); }} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                       {TRACK_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
                     </select>
                   </div>
@@ -549,22 +643,35 @@ export default function GridContent() {
             </div>
 
             {/* Named Areas */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Named Areas</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Named Areas</h3>
               <div className="flex items-center gap-2">
-                <input value={areaName} onChange={(e) => setAreaName(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))} placeholder="area name" className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs" />
-                <button onClick={() => setAreaMode(!areaMode)} className={`rounded px-2.5 py-1 text-xs font-medium transition-colors ${areaMode ? "bg-amber-500 text-white" : "border border-gray-200 text-gray-600 hover:text-gray-900"}`}>
+                <input value={areaName} onChange={(e) => setAreaName(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ""))} placeholder="area name" className="flex-1 px-2 py-1 text-xs" style={selectStyle} />
+                <button
+                  onClick={() => setAreaMode(!areaMode)}
+                  className="px-2.5 py-1 text-xs font-medium transition-colors"
+                  style={
+                    areaMode
+                      ? { background: "#f59e0b", color: "#ffffff", borderRadius: "var(--kami-cta-radius, 0.25rem)" }
+                      : {
+                          background: "var(--kami-surface-solid)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                        }
+                  }
+                >
                   {areaMode ? "Done" : "Paint"}
                 </button>
               </div>
               {hasAreas && (
-                <button onClick={() => setAreas([])} className="mt-2 text-xs text-gray-400 hover:text-gray-600">Clear all areas</button>
+                <button onClick={() => setAreas([])} className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>Clear all areas</button>
               )}
             </div>
 
             {/* Advanced properties */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Alignment</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Alignment</h3>
               <SelectRow label="justify-items" value={justifyItems} options={ALIGN_OPTIONS} onChange={(v) => setJustifyItems(v as AlignValue)} />
               <SelectRow label="align-items" value={alignItems} options={ALIGN_OPTIONS} onChange={(v) => setAlignItems(v as AlignValue)} />
               <SelectRow label="justify-content" value={justifyContent} options={CONTENT_OPTIONS} onChange={(v) => setJustifyContent(v as ContentValue)} />
@@ -572,18 +679,18 @@ export default function GridContent() {
             </div>
 
             {/* Implicit grid */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Implicit Grid</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Implicit Grid</h3>
               <div className="mb-1.5 flex items-center gap-2">
-                <span className="w-20 text-[10px] text-gray-500">auto-rows</span>
-                <select value={autoRows} onChange={(e) => setAutoRows(e.target.value)} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                <span className="w-20 text-[10px]" style={{ color: "var(--kami-text-muted)" }}>auto-rows</span>
+                <select value={autoRows} onChange={(e) => setAutoRows(e.target.value)} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                   <option value="">none</option>
                   {["auto", "1fr", "min-content", "max-content", "100px", "200px", "minmax(100px, auto)"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-20 text-[10px] text-gray-500">auto-cols</span>
-                <select value={autoCols} onChange={(e) => setAutoCols(e.target.value)} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+                <span className="w-20 text-[10px]" style={{ color: "var(--kami-text-muted)" }}>auto-cols</span>
+                <select value={autoCols} onChange={(e) => setAutoCols(e.target.value)} className="flex-1 px-2 py-1 text-xs" style={selectStyle}>
                   <option value="">none</option>
                   {["auto", "1fr", "min-content", "max-content", "100px", "200px", "minmax(100px, auto)"].map((o) => <option key={o} value={o}>{o}</option>)}
                 </select>
@@ -591,41 +698,69 @@ export default function GridContent() {
             </div>
 
             {/* Items list */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-              <h3 className="mb-2 text-sm font-medium text-gray-700">Items ({items.length})</h3>
+            <div className="p-4" style={cardStyle}>
+              <h3 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text)" }}>Items ({items.length})</h3>
               {items.length === 0 ? (
-                <p className="text-xs text-gray-400">Click cells to place items</p>
+                <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Click cells to place items</p>
               ) : (
                 <div className="space-y-1">
                   {items.map((item, i) => (
-                    <div key={item.id} className="flex items-center gap-2 text-xs text-gray-500">
-                      <div className="h-3 w-3 rounded" style={{ backgroundColor: item.color }} />
+                    <div key={item.id} className="flex items-center gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <div className="h-3 w-3" style={{ backgroundColor: item.color, borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
                       <span className="truncate">{item.area || `Item ${i + 1}`}: r{item.rowStart + 1}-{item.rowStart + item.rowSpan} c{item.colStart + 1}-{item.colStart + item.colSpan}</span>
-                      <button onClick={() => removeItem(item.id)} className="ml-auto text-gray-400 hover:text-red-500">&times;</button>
+                      <button onClick={() => removeItem(item.id)} className="ml-auto" style={{ color: "var(--kami-text-dim)" }}>&times;</button>
                     </div>
                   ))}
                 </div>
               )}
-              <button onClick={() => { setItems([]); nextId = 1; }} className="mt-2 text-xs text-gray-400 hover:text-gray-600">Clear all</button>
+              <button onClick={() => { setItems([]); nextId = 1; }} className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>Clear all</button>
             </div>
           </div>
         </div>
 
         {/* Output */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mt-6 p-5" style={cardStyle}>
           <div className="mb-3 flex items-center justify-between">
             <div className="flex gap-1">
               {(["css", "tailwind", "react"] as OutputFormat[]).map((f) => (
-                <button key={f} onClick={() => setOutputFormat(f)} className={`rounded-lg px-3 py-1 text-xs font-medium transition-colors ${outputFormat === f ? "bg-gray-900 text-white" : "text-gray-500 hover:text-gray-700"}`}>
+                <button
+                  key={f}
+                  onClick={() => setOutputFormat(f)}
+                  className="px-3 py-1 text-xs font-medium transition-colors"
+                  style={
+                    outputFormat === f
+                      ? {
+                          background: "var(--kami-cta-bg)",
+                          color: "var(--kami-cta-text)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        }
+                      : { color: "var(--kami-text-muted)", borderRadius: "var(--kami-cta-radius, 0.5rem)" }
+                  }
+                >
                   {f === "css" ? "CSS" : f === "tailwind" ? "Tailwind" : "React"}
                 </button>
               ))}
             </div>
-            <button onClick={copy} className="flex items-center gap-1.5 rounded border border-gray-200 px-2.5 py-1 text-xs text-gray-500 transition-colors hover:text-gray-700">
+            <button
+              onClick={copy}
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs transition-colors"
+              style={{
+                color: "var(--kami-text-muted)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
+            >
               {copied ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
             </button>
           </div>
-          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm leading-relaxed text-gray-100"><code>{currentOutput}</code></pre>
+          <pre
+            className="overflow-x-auto p-4 text-sm leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg)",
+              color: "var(--kami-overlay-text)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          ><code>{currentOutput}</code></pre>
         </div>
       </div>
     </div>
@@ -639,9 +774,17 @@ export default function GridContent() {
 function SliderControl({ label, value, min, max, suffix, onChange }: { label: string; value: number; min: number; max: number; suffix?: string; onChange: (v: number) => void }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-16 text-xs text-gray-500">{label}</span>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-      <span className="w-10 text-right font-mono text-xs text-gray-400">{value}{suffix || ""}</span>
+      <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }}
+      />
+      <span className="w-10 text-right font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{value}{suffix || ""}</span>
     </div>
   );
 }
@@ -649,8 +792,18 @@ function SliderControl({ label, value, min, max, suffix, onChange }: { label: st
 function SelectRow({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
   return (
     <div className="mb-1.5 flex items-center gap-2">
-      <span className="w-28 text-[10px] font-mono text-gray-500">{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 rounded border border-gray-200 px-2 py-1 text-xs">
+      <span className="w-28 text-[10px] font-mono" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="flex-1 px-2 py-1 text-xs"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-cta-radius, 0.25rem)",
+        }}
+      >
         {options.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
