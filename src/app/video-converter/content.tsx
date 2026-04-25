@@ -340,7 +340,7 @@ export default function VideoConverterContent() {
   const doneCount = files.filter((f) => f.status === "done").length;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Video Converter"
@@ -356,7 +356,15 @@ export default function VideoConverterContent() {
 
         {/* Browser support notice */}
         {!hasWebCodecs && (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-800">
+          <div
+            className="mb-4 px-5 py-3 text-sm"
+            style={{
+              background: "color-mix(in srgb, #f59e0b 12%, var(--kami-surface-solid))",
+              color: "color-mix(in srgb, #92400e 70%, var(--kami-text))",
+              border: "1px solid color-mix(in srgb, #f59e0b 30%, var(--kami-border-strong))",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
             Your browser uses Canvas-based conversion (slower). For best
             performance, use Chrome 94+ or Edge 94+.
           </div>
@@ -374,12 +382,20 @@ export default function VideoConverterContent() {
         {files.length > 0 && (
           <>
             {/* Settings */}
-            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div
+              className="mt-6 p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Conversion Settings
               </h2>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-500">
+                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Output Format
                 </label>
                 <div className="flex gap-2">
@@ -387,11 +403,21 @@ export default function VideoConverterContent() {
                     <button
                       key={fmt}
                       onClick={() => setOutputFormat(fmt)}
-                      className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      className="px-4 py-2 text-sm font-medium transition-colors"
+                      style={
                         outputFormat === fmt
-                          ? "bg-gray-900 text-white"
-                          : "border border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                      }`}
+                          ? {
+                              background: "var(--kami-cta-bg)",
+                              color: "var(--kami-cta-text)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                          : {
+                              background: "var(--kami-surface-solid)",
+                              color: "var(--kami-text-muted)",
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }
+                      }
                     >
                       {fmt.toUpperCase()}
                     </button>
@@ -401,23 +427,43 @@ export default function VideoConverterContent() {
             </div>
 
             {/* File Queue */}
-            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div
+              className="mt-6 p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">
+                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Files ({files.length})
                 </h2>
                 <div className="flex gap-2">
                   {doneCount > 0 && (
                     <button
                       onClick={downloadAll}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
+                      className="px-3 py-1.5 text-sm"
+                      style={{
+                        background: "var(--kami-surface-solid)",
+                        color: "var(--kami-text-muted)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }}
                     >
                       Download All ({doneCount})
                     </button>
                   )}
                   <button
                     onClick={clearAll}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
+                    className="px-3 py-1.5 text-sm"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
                   >
                     Clear
                   </button>
@@ -429,17 +475,20 @@ export default function VideoConverterContent() {
                   <div
                     key={f.id}
                     onClick={() => setSelectedIndex(i)}
-                    className={`relative cursor-pointer overflow-hidden rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                      i === selectedIndex
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-50"
-                    }`}
+                    className="relative cursor-pointer overflow-hidden px-3 py-2.5 text-sm transition-colors"
+                    style={{
+                      background: i === selectedIndex ? "var(--kami-surface)" : "transparent",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     {/* Progress bar background */}
                     {f.status === "converting" && (
                       <div
-                        className="absolute inset-0 bg-blue-50 transition-all duration-300"
-                        style={{ width: `${f.progress}%` }}
+                        className="absolute inset-0 transition-all duration-300"
+                        style={{
+                          width: `${f.progress}%`,
+                          background: "color-mix(in srgb, var(--kami-accent, #2563eb) 14%, transparent)",
+                        }}
                       />
                     )}
                     <div className="relative flex items-center justify-between">
@@ -451,18 +500,18 @@ export default function VideoConverterContent() {
                           {f.status === "error" && "❌"}
                         </span>
                         <span className="truncate font-medium">{f.name}</span>
-                        <span className="flex-shrink-0 text-xs text-gray-400">
+                        <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                           {formatSize(f.originalSize)}
                           {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
                           {f.width > 0 && ` · ${f.width}×${f.height}`}
                         </span>
                         {f.status === "converting" && (
-                          <span className="flex-shrink-0 text-xs font-medium text-blue-600">
+                          <span className="flex-shrink-0 text-xs font-medium" style={{ color: "var(--kami-accent, #2563eb)" }}>
                             {f.progress}%
                           </span>
                         )}
                         {f.status === "done" && (
-                          <span className="flex-shrink-0 text-xs text-gray-400">
+                          <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                             → {formatSize(f.convertedSize)}
                           </span>
                         )}
@@ -474,7 +523,13 @@ export default function VideoConverterContent() {
                               e.stopPropagation();
                               downloadFile(f);
                             }}
-                            className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs text-gray-600 hover:border-gray-300"
+                            className="px-3 py-1 text-xs"
+                            style={{
+                              background: "var(--kami-surface-solid)",
+                              color: "var(--kami-text-muted)",
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                            }}
                           >
                             Save
                           </button>
@@ -484,14 +539,15 @@ export default function VideoConverterContent() {
                             e.stopPropagation();
                             removeFile(f.id);
                           }}
-                          className="rounded px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-600"
+                          className="rounded px-1.5 py-0.5 text-xs"
+                          style={{ color: "var(--kami-text-dim)" }}
                         >
                           ✕
                         </button>
                       </div>
                     </div>
                     {f.status === "error" && (
-                      <p className="relative mt-1 text-xs text-red-500">
+                      <p className="relative mt-1 text-xs" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                         {f.error}
                       </p>
                     )}
@@ -503,7 +559,12 @@ export default function VideoConverterContent() {
               <button
                 onClick={convertAll}
                 disabled={isConverting || files.length === 0}
-                className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="mt-4 w-full px-4 py-2.5 text-sm font-medium disabled:opacity-50"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {isConverting
                   ? "Converting..."
@@ -513,16 +574,31 @@ export default function VideoConverterContent() {
 
             {/* Preview */}
             {selected && (
-              <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+              <div
+                className="mt-6 p-5"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Preview - {selected.name}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="mb-1 text-xs font-medium text-gray-500">
+                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Original ({formatSize(selected.originalSize)})
                     </p>
-                    <div className="flex items-center justify-center rounded-lg border border-gray-100 bg-gray-50 p-2">
+                    <div
+                      className="flex items-center justify-center p-2"
+                      style={{
+                        background: "var(--kami-surface)",
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
+                    >
                       <video
                         src={selected.previewUrl}
                         controls
@@ -532,13 +608,20 @@ export default function VideoConverterContent() {
                     </div>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-medium text-gray-500">
+                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Converted
                       {selected.status === "done"
                         ? ` (${formatSize(selected.convertedSize)})`
                         : ""}
                     </p>
-                    <div className="flex items-center justify-center rounded-lg border border-gray-100 bg-gray-50 p-2">
+                    <div
+                      className="flex items-center justify-center p-2"
+                      style={{
+                        background: "var(--kami-surface)",
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
+                    >
                       {selected.status === "done" && selected.convertedUrl ? (
                         <video
                           src={selected.convertedUrl}
@@ -548,22 +631,28 @@ export default function VideoConverterContent() {
                         />
                       ) : selected.status === "converting" ? (
                         <div className="py-16 text-center">
-                          <p className="text-sm text-gray-400">
+                          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
                             Converting... {selected.progress}%
                           </p>
-                          <div className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full bg-gray-200">
+                          <div
+                            className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full"
+                            style={{ background: "var(--kami-border)" }}
+                          >
                             <div
-                              className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                              style={{ width: `${selected.progress}%` }}
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${selected.progress}%`,
+                                background: "var(--kami-accent, #2563eb)",
+                              }}
                             />
                           </div>
                         </div>
                       ) : selected.status === "error" ? (
-                        <p className="py-16 text-sm text-red-400">
+                        <p className="py-16 text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                           {selected.error}
                         </p>
                       ) : (
-                        <p className="py-16 text-sm text-gray-400">
+                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
                           Click &quot;Convert All&quot; to see result
                         </p>
                       )}
@@ -576,27 +665,35 @@ export default function VideoConverterContent() {
         )}
 
         {/* Info */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold text-gray-700">
+        <div
+          className="mt-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
             How it works
           </h2>
-          <div className="grid grid-cols-1 gap-4 text-sm text-gray-600 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3" style={{ color: "var(--kami-text-muted)" }}>
             <div>
-              <p className="mb-1 font-medium text-gray-900">100% Private</p>
+              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>100% Private</p>
               <p>
                 Your videos are processed entirely in your browser. Nothing is
                 uploaded to any server.
               </p>
             </div>
             <div>
-              <p className="mb-1 font-medium text-gray-900">No Limits</p>
+              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>No Limits</p>
               <p>
                 No file size limits, no watermarks, no signup. Convert as many
                 videos as you need.
               </p>
             </div>
             <div>
-              <p className="mb-1 font-medium text-gray-900">Fast</p>
+              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>Fast</p>
               <p>
                 Uses hardware-accelerated WebCodecs when available for near-native
                 conversion speed.

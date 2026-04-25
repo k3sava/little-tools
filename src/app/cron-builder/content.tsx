@@ -418,13 +418,19 @@ function FieldSelector({
   // If it's a complex expression, show it in a custom option
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+      <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
         {label}
       </label>
       <select
         value={selectValue}
         onChange={(e) => onChange(e.target.value)}
-        className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+        className="px-3 py-2 text-sm focus:outline-none"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.5rem)",
+        }}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -557,7 +563,7 @@ export default function CronBuilderContent() {
   ], [handleCopy]));
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Cron Expression Builder"
@@ -577,7 +583,7 @@ export default function CronBuilderContent() {
 
         {/* Presets */}
         <div className="mb-6">
-          <h2 className="mb-3 text-sm font-medium text-gray-500 uppercase tracking-wide">
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Common Presets
           </h2>
           <div className="flex flex-wrap gap-2">
@@ -585,7 +591,13 @@ export default function CronBuilderContent() {
               <button
                 key={preset.label}
                 onClick={() => applyPreset(preset)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300 hover:text-gray-900"
+                className="px-3 py-1.5 text-sm"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {preset.label}
               </button>
@@ -594,17 +606,25 @@ export default function CronBuilderContent() {
         </div>
 
         {/* Manual input + copy */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div
+          className="mb-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
+            <h2 className="text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
               Cron Expression
             </h2>
-            <label className="flex items-center gap-2 text-sm text-gray-600">
+            <label className="flex items-center gap-2 text-sm" style={{ color: "var(--kami-text-muted)" }}>
               <input
                 type="checkbox"
                 checked={useSixField}
                 onChange={handleToggleSixField}
-                className="rounded border-gray-300"
+                style={{ accentColor: "var(--kami-text)" }}
               />
               6-field (with seconds)
             </label>
@@ -615,27 +635,36 @@ export default function CronBuilderContent() {
               value={manualInput}
               onChange={(e) => handleManualChange(e.target.value)}
               placeholder={useSixField ? "* * * * * *" : "* * * * *"}
-              className={`flex-1 rounded-lg border bg-white px-3 py-2 font-mono text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200 ${
-                manualInput.trim() && !valid
-                  ? "border-red-300 focus:border-red-300"
-                  : "border-gray-200 focus:border-gray-300"
-              }`}
+              className="flex-1 px-3 py-2 font-mono text-sm focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: manualInput.trim() && !valid
+                  ? "1px solid color-mix(in srgb, #ef4444 40%, var(--kami-border-strong))"
+                  : "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
             />
             <button
               onClick={handleCopy}
-              className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 flex items-center gap-1.5"
+              className="px-4 py-2 text-sm font-medium flex items-center gap-1.5"
+              style={{
+                background: "var(--kami-cta-bg)",
+                color: "var(--kami-cta-text)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               {copied ? <CheckIcon /> : <CopyIcon />}
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
           {manualInput.trim() && !valid && (
-            <p className="mt-2 text-xs text-red-500">
+            <p className="mt-2 text-xs" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
               Invalid cron expression. Expected{" "}
               {useSixField ? "6" : "5"} space-separated fields.
             </p>
           )}
-          <p className="mt-2 text-xs text-gray-400 font-mono">
+          <p className="mt-2 text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>
             {useSixField
               ? "second  minute  hour  day(month)  month  day(week)"
               : "minute  hour  day(month)  month  day(week)"}
@@ -643,8 +672,16 @@ export default function CronBuilderContent() {
         </div>
 
         {/* Visual builder */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-4 text-sm font-medium text-gray-500 uppercase tracking-wide">
+        <div
+          className="mb-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Visual Builder
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -698,16 +735,32 @@ export default function CronBuilderContent() {
         </div>
 
         {/* Description */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-2 text-sm font-medium text-gray-500 uppercase tracking-wide">
+        <div
+          className="mb-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-2 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Description
           </h2>
-          <p className="text-base text-gray-900">{description}</p>
+          <p className="text-base" style={{ color: "var(--kami-text)" }}>{description}</p>
         </div>
 
         {/* Next execution times */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-medium text-gray-500 uppercase tracking-wide">
+        <div
+          className="mb-6 p-5"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <h2 className="mb-3 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
             Next Execution Times
           </h2>
           {nextTimes.length > 0 ? (
@@ -717,10 +770,10 @@ export default function CronBuilderContent() {
                   key={i}
                   className="flex items-center gap-3 text-sm"
                 >
-                  <span className="text-xs text-gray-400 w-5 text-right">
+                  <span className="text-xs w-5 text-right" style={{ color: "var(--kami-text-dim)" }}>
                     {i + 1}.
                   </span>
-                  <span className="font-mono text-gray-700">
+                  <span className="font-mono" style={{ color: "var(--kami-text-muted)" }}>
                     {d.toLocaleString(undefined, {
                       weekday: "short",
                       year: "numeric",
@@ -736,7 +789,7 @@ export default function CronBuilderContent() {
               ))}
             </ol>
           ) : (
-            <p className="text-sm text-gray-400">
+            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
               No upcoming execution times found.
             </p>
           )}
@@ -756,7 +809,14 @@ export default function CronBuilderContent() {
             <RuleRow rule="Day of week (DOW)" explanation="0-6, where 0 = Sunday (or SUN-SAT)" example="1 = Monday" />
             <RuleRow rule="Seconds (Quartz only)" explanation="0-59 - goes at the very start" example="30 = 30s past minute" />
           </div>
-          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
+          <div
+            className="mt-3 p-3 text-xs"
+            style={{
+              background: "color-mix(in srgb, #f59e0b 12%, var(--kami-surface-solid))",
+              color: "color-mix(in srgb, #92400e 70%, var(--kami-text))",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+            }}
+          >
             <strong>Classic gotcha:</strong> if both day-of-month and day-of-week are set
             (both non-&quot;*&quot;), most cron daemons run the job on EITHER match - not both.
             Cloud schedulers sometimes differ; check your runtime&apos;s docs.

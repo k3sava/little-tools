@@ -301,7 +301,7 @@ export default function ImageConverterContent() {
   const doneCount = files.filter((f) => f.status === "done").length;
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
         <ToolIntro
           title="Image Converter"
@@ -327,15 +327,23 @@ export default function ImageConverterContent() {
         {files.length > 0 && (
           <>
             {/* Settings */}
-            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-4 text-sm font-semibold text-gray-700">
+            <div
+              className="mt-6 p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 Conversion Settings
               </h2>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Output Format */}
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-500">
+                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                     Output Format
                   </label>
                   <select
@@ -343,7 +351,13 @@ export default function ImageConverterContent() {
                     onChange={(e) =>
                       setOutputFormat(e.target.value as OutputFormat)
                     }
-                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     <option value="image/png">PNG</option>
                     <option value="image/jpeg">JPG</option>
@@ -353,14 +367,14 @@ export default function ImageConverterContent() {
 
                 {/* Quality */}
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-500">
+                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                     Quality{" "}
                     {supportsQuality ? (
-                      <span className="text-gray-400">
+                      <span style={{ color: "var(--kami-text-dim)" }}>
                         ({Math.round(quality * 100)}%)
                       </span>
                     ) : (
-                      <span className="text-gray-400">(N/A for PNG)</span>
+                      <span style={{ color: "var(--kami-text-dim)" }}>(N/A for PNG)</span>
                     )}
                   </label>
                   <input
@@ -371,14 +385,15 @@ export default function ImageConverterContent() {
                     value={quality}
                     onChange={(e) => setQuality(parseFloat(e.target.value))}
                     disabled={!supportsQuality}
-                    className="mt-1 w-full accent-gray-900"
+                    className="mt-1 w-full"
+                    style={{ accentColor: "var(--kami-text)" }}
                   />
                 </div>
               </div>
 
               {/* Resize */}
               <div className="mt-4">
-                <label className="mb-1 block text-xs font-medium text-gray-500">
+                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                   Resize (optional)
                 </label>
                 <div className="flex items-center gap-2">
@@ -387,23 +402,46 @@ export default function ImageConverterContent() {
                     placeholder="Width"
                     value={resizeWidth}
                     onChange={(e) => handleWidthChange(e.target.value)}
-                    className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-28 px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
-                  <span className="text-xs text-gray-400">×</span>
+                  <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>×</span>
                   <input
                     type="number"
                     placeholder="Height"
                     value={resizeHeight}
                     onChange={(e) => handleHeightChange(e.target.value)}
-                    className="w-28 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-200"
+                    className="w-28 px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                   <button
                     onClick={() => setLockAspect((prev) => !prev)}
-                    className={`rounded-lg border px-3 py-1.5 text-sm ${
+                    className="px-3 py-1.5 text-sm"
+                    style={
                       lockAspect
-                        ? "border-gray-900 bg-gray-900 text-white"
-                        : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
-                    }`}
+                        ? {
+                            background: "var(--kami-cta-bg)",
+                            color: "var(--kami-cta-text)",
+                            border: "1px solid var(--kami-cta-bg)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                        : {
+                            background: "var(--kami-surface-solid)",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }
+                    }
                     title={
                       lockAspect
                         ? "Aspect ratio locked"
@@ -417,23 +455,43 @@ export default function ImageConverterContent() {
             </div>
 
             {/* File Queue */}
-            <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div
+              className="mt-6 p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">
+                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Files ({files.length})
                 </h2>
                 <div className="flex gap-2">
                   {doneCount > 0 && (
                     <button
                       onClick={downloadAll}
-                      className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
+                      className="px-3 py-1.5 text-sm"
+                      style={{
+                        background: "var(--kami-surface-solid)",
+                        color: "var(--kami-text-muted)",
+                        border: "1px solid var(--kami-border-strong)",
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      }}
                     >
                       Download All ({doneCount})
                     </button>
                   )}
                   <button
                     onClick={clearAll}
-                    className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
+                    className="px-3 py-1.5 text-sm"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
                   >
                     Clear
                   </button>
@@ -445,11 +503,11 @@ export default function ImageConverterContent() {
                   <div
                     key={f.id}
                     onClick={() => setSelectedIndex(i)}
-                    className={`flex cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
-                      i === selectedIndex
-                        ? "bg-gray-100"
-                        : "hover:"
-                    }`}
+                    className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors"
+                    style={{
+                      background: i === selectedIndex ? "var(--kami-surface)" : "transparent",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     <div className="flex min-w-0 items-center gap-2">
                       <span className="flex-shrink-0 text-xs">
@@ -459,7 +517,7 @@ export default function ImageConverterContent() {
                         {f.status === "error" && "❌"}
                       </span>
                       <span className="truncate">{f.name}</span>
-                      <span className="flex-shrink-0 text-xs text-gray-400">
+                      <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
                         {formatSize(f.originalSize)}
                         {f.status === "done" &&
                           ` → ${formatSize(f.convertedSize)}`}
@@ -472,7 +530,13 @@ export default function ImageConverterContent() {
                             e.stopPropagation();
                             downloadFile(f);
                           }}
-                          className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:border-gray-300"
+                          className="px-3 py-1.5 text-sm"
+                          style={{
+                            background: "var(--kami-surface-solid)",
+                            color: "var(--kami-text-muted)",
+                            border: "1px solid var(--kami-border-strong)",
+                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          }}
                         >
                           Save
                         </button>
@@ -482,7 +546,8 @@ export default function ImageConverterContent() {
                           e.stopPropagation();
                           removeFile(f.id);
                         }}
-                        className="rounded px-1.5 py-0.5 text-xs text-gray-400 hover:text-gray-600"
+                        className="rounded px-1.5 py-0.5 text-xs"
+                        style={{ color: "var(--kami-text-dim)" }}
                       >
                         ✕
                       </button>
@@ -495,7 +560,12 @@ export default function ImageConverterContent() {
               <button
                 onClick={convertAll}
                 disabled={isConverting || files.length === 0}
-                className="mt-4 w-full rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="mt-4 w-full px-4 py-2 text-sm font-medium disabled:opacity-50"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {isConverting
                   ? "Converting..."
@@ -505,16 +575,30 @@ export default function ImageConverterContent() {
 
             {/* Preview */}
             {selected && (
-              <div className="mt-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-4 text-sm font-semibold text-gray-700">
+              <div
+                className="mt-6 p-5"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
+              >
+                <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                   Preview - {selected.name}
                 </h2>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="mb-1 text-xs font-medium text-gray-500">
+                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Original ({formatSize(selected.originalSize)})
                     </p>
-                    <div className="flex items-center justify-center rounded-lg border border-gray-100  p-2">
+                    <div
+                      className="flex items-center justify-center p-2"
+                      style={{
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
+                    >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={selected.previewUrl}
@@ -524,13 +608,19 @@ export default function ImageConverterContent() {
                     </div>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs font-medium text-gray-500">
+                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                       Converted
                       {selected.status === "done"
                         ? ` (${formatSize(selected.convertedSize)})`
                         : ""}
                     </p>
-                    <div className="flex items-center justify-center rounded-lg border border-gray-100  p-2">
+                    <div
+                      className="flex items-center justify-center p-2"
+                      style={{
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                      }}
+                    >
                       {selected.status === "done" && selected.convertedUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -539,15 +629,15 @@ export default function ImageConverterContent() {
                           className="max-h-64 max-w-full object-contain"
                         />
                       ) : selected.status === "converting" ? (
-                        <p className="py-16 text-sm text-gray-400">
+                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
                           Converting...
                         </p>
                       ) : selected.status === "error" ? (
-                        <p className="py-16 text-sm text-red-400">
+                        <p className="py-16 text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
                           {selected.error}
                         </p>
                       ) : (
-                        <p className="py-16 text-sm text-gray-400">
+                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
                           Click &quot;Convert All&quot; to see result
                         </p>
                       )}

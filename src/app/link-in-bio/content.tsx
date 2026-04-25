@@ -238,7 +238,7 @@ export default function LinkInBioContent() {
   const isGradient = t.bg.startsWith("linear");
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Link-in-Bio Builder"
@@ -256,40 +256,62 @@ export default function LinkInBioContent() {
           {/* Editor */}
           <div className="space-y-4">
             {/* Profile */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">Profile</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Profile</h3>
               <div className="space-y-3">
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Name</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Name</label>
                   <input
                     type="text"
                     value={profile.name}
                     onChange={(e) => update({ name: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Bio</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Bio</label>
                   <input
                     type="text"
                     value={profile.bio}
                     onChange={(e) => update({ bio: e.target.value })}
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                      color: "var(--kami-text)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs text-gray-500">Avatar (optional, &lt;500KB)</label>
+                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Avatar (optional, &lt;500KB)</label>
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleAvatarUpload}
-                      className="text-xs text-gray-500 file:mr-2 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1.5 file:text-xs file:text-gray-600 hover:file:bg-gray-200"
+                      className="text-xs file:mr-2 file:rounded-lg file:border-0 file:px-3 file:py-1.5 file:text-xs"
+                      style={{ color: "var(--kami-text-muted)" }}
                     />
                     {profile.avatar && (
                       <button
                         onClick={() => update({ avatar: "" })}
-                        className="text-xs text-red-400 hover:text-red-600"
+                        className="text-xs"
+                        style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
                       >
                         Remove
                       </button>
@@ -300,23 +322,33 @@ export default function LinkInBioContent() {
             </div>
 
             {/* Links */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">Links & Sections</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Links & Sections</h3>
               <div className="space-y-2">
                 {profile.links.map((link, idx) => (
                   <div
                     key={link.id}
-                    className={`flex items-start gap-2 rounded-lg border p-3 ${
-                      link.type === "header"
-                        ? "border-gray-300 bg-gray-100"
-                        : "border-gray-100 "
-                    }`}
+                    className="flex items-start gap-2 p-3"
+                    style={{
+                      background: link.type === "header" ? "var(--kami-surface)" : "transparent",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    }}
                   >
                     <div className="flex flex-col gap-0.5 pt-1">
                       <button
                         onClick={() => moveLink(link.id, -1)}
                         disabled={idx === 0}
-                        className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="text-xs disabled:opacity-30"
+                        style={{ color: "var(--kami-text-dim)" }}
                         title="Move up"
                       >
                         &uarr;
@@ -324,7 +356,8 @@ export default function LinkInBioContent() {
                       <button
                         onClick={() => moveLink(link.id, 1)}
                         disabled={idx === profile.links.length - 1}
-                        className="text-xs text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                        className="text-xs disabled:opacity-30"
+                        style={{ color: "var(--kami-text-dim)" }}
                         title="Move down"
                       >
                         &darr;
@@ -333,13 +366,19 @@ export default function LinkInBioContent() {
                     <div className="flex-1 space-y-1.5">
                       {link.type === "header" ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold uppercase text-gray-400 tracking-wider">Header</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Header</span>
                           <input
                             type="text"
                             value={link.label}
                             onChange={(e) => updateLink(link.id, { label: e.target.value })}
                             placeholder="Section title"
-                            className="flex-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-sm font-semibold focus:border-gray-400 focus:outline-none"
+                            className="flex-1 px-2.5 py-1.5 text-sm font-semibold focus:outline-none"
+                            style={{
+                              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                              color: "var(--kami-text)",
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-input-radius, 0.375rem)",
+                            }}
                           />
                         </div>
                       ) : (
@@ -349,7 +388,13 @@ export default function LinkInBioContent() {
                             value={link.label}
                             onChange={(e) => updateLink(link.id, { label: e.target.value })}
                             placeholder="Label"
-                            className="w-full rounded-md border border-gray-200 px-2.5 py-1.5 text-sm focus:border-gray-400 focus:outline-none"
+                            className="w-full px-2.5 py-1.5 text-sm focus:outline-none"
+                            style={{
+                              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                              color: "var(--kami-text)",
+                              border: "1px solid var(--kami-border-strong)",
+                              borderRadius: "var(--kami-input-radius, 0.375rem)",
+                            }}
                           />
                           <div className="flex items-center gap-1.5">
                             <input
@@ -357,10 +402,22 @@ export default function LinkInBioContent() {
                               value={link.url}
                               onChange={(e) => updateLink(link.id, { url: e.target.value })}
                               placeholder="https://..."
-                              className="flex-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-sm focus:border-gray-400 focus:outline-none"
+                              className="flex-1 px-2.5 py-1.5 text-sm focus:outline-none"
+                              style={{
+                                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                                color: "var(--kami-text)",
+                                border: "1px solid var(--kami-border-strong)",
+                                borderRadius: "var(--kami-input-radius, 0.375rem)",
+                              }}
                             />
                             {link.url && detectPlatform(link.url) && (
-                              <span className="whitespace-nowrap rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+                              <span
+                                className="whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium"
+                                style={{
+                                  background: "var(--kami-surface)",
+                                  color: "var(--kami-text-muted)",
+                                }}
+                              >
                                 {detectPlatform(link.url)}
                               </span>
                             )}
@@ -370,7 +427,8 @@ export default function LinkInBioContent() {
                     </div>
                     <button
                       onClick={() => removeLink(link.id)}
-                      className="mt-1 text-xs text-gray-400 hover:text-red-500"
+                      className="mt-1 text-xs"
+                      style={{ color: "var(--kami-text-dim)" }}
                       title="Remove"
                     >
                       &times;
@@ -381,13 +439,25 @@ export default function LinkInBioContent() {
               <div className="mt-3 flex gap-2">
                 <button
                   onClick={addLink}
-                  className="flex-1 rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
+                  className="flex-1 px-4 py-2 text-sm"
+                  style={{
+                    border: "1px dashed var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                    background: "transparent",
+                  }}
                 >
                   + Add Link
                 </button>
                 <button
                   onClick={addHeader}
-                  className="rounded-lg border border-dashed border-gray-300 px-4 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
+                  className="px-4 py-2 text-sm"
+                  style={{
+                    border: "1px dashed var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                    background: "transparent",
+                  }}
                 >
                   + Add Header
                 </button>
@@ -395,25 +465,40 @@ export default function LinkInBioContent() {
             </div>
 
             {/* Theme */}
-            <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-              <h3 className="mb-3 text-sm font-semibold text-gray-700">Theme</h3>
+            <div
+              className="p-5"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Theme</h3>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(THEMES) as Theme[]).map((key) => {
                   const th = THEMES[key];
                   const isGrad = th.bg.startsWith("linear");
+                  const isActive = profile.theme === key;
                   return (
                     <button
                       key={key}
                       onClick={() => update({ theme: key })}
-                      className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs capitalize transition-all ${
-                        profile.theme === key
-                          ? "ring-2 ring-gray-900 ring-offset-1"
-                          : "border border-gray-200 hover:border-gray-300"
-                      }`}
+                      className="flex items-center gap-2 px-3 py-2 text-xs capitalize transition-all"
+                      style={{
+                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                        border: "1px solid var(--kami-border-strong)",
+                        boxShadow: isActive ? "0 0 0 2px var(--kami-text)" : "none",
+                        color: "var(--kami-text)",
+                        background: "var(--kami-surface-solid)",
+                      }}
                     >
                       <span
-                        className="h-4 w-4 rounded-full border border-gray-200"
-                        style={{ background: isGrad ? th.bg : th.bg }}
+                        className="h-4 w-4 rounded-full"
+                        style={{
+                          background: isGrad ? th.bg : th.bg,
+                          border: "1px solid var(--kami-border-strong)",
+                        }}
                       />
                       {key}
                     </button>
@@ -426,13 +511,24 @@ export default function LinkInBioContent() {
             <div className="flex gap-2">
               <button
                 onClick={exportHTML}
-                className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+                className="px-5 py-2.5 text-sm font-medium"
+                style={{
+                  background: "var(--kami-cta-bg)",
+                  color: "var(--kami-cta-text)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 Download HTML
               </button>
               <button
                 onClick={copyHTML}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50"
+                className="px-4 py-2.5 text-sm"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
               >
                 {copied ? "Copied!" : "Copy HTML"}
               </button>
@@ -441,8 +537,16 @@ export default function LinkInBioContent() {
 
           {/* Live Preview - Phone Frame */}
           <div className="lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-              <div className="mb-2 text-center text-xs text-gray-400">Preview</div>
+            <div
+              className="p-3"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <div className="mb-2 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>Preview</div>
               {/* Phone frame */}
               <div
                 className="mx-auto"

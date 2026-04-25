@@ -296,7 +296,7 @@ export default function ScreenshotBeautifierContent() {
   }, []);
 
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto w-[92%] max-w-[1400px] py-10 sm:py-14">
         <ToolIntro
           title="Screenshot Beautifier"
@@ -325,8 +325,13 @@ export default function ScreenshotBeautifierContent() {
             <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
               {/* Canvas Preview */}
               <div
-                className="overflow-hidden rounded-xl border border-gray-200 p-4 shadow-sm select-none"
-                style={{ backgroundColor: "#f3f4f6" }}
+                className="overflow-hidden p-4 select-none"
+                style={{
+                  backgroundColor: "var(--kami-surface)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                }}
                 onMouseMove={handleDragMove}
                 onMouseUp={handleDragEnd}
                 onMouseLeave={handleDragEnd}
@@ -350,12 +355,13 @@ export default function ScreenshotBeautifierContent() {
                 )}
                 {(offsetX !== 0 || offsetY !== 0) && (
                   <div className="mt-2 flex items-center justify-center gap-2">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                       Offset: {Math.round(offsetX)}, {Math.round(offsetY)}
                     </span>
                     <button
                       onClick={resetPosition}
-                      className="text-xs text-gray-500 underline hover:text-gray-700"
+                      className="text-xs underline"
+                      style={{ color: "var(--kami-text-muted)" }}
                     >
                       Reset
                     </button>
@@ -366,8 +372,16 @@ export default function ScreenshotBeautifierContent() {
               {/* Controls */}
               <div className="space-y-4">
                 {/* Frame */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Device Frame</h3>
+                <div
+                  className="overflow-hidden p-4"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Device Frame</h3>
                   <div className="grid grid-cols-3 gap-1.5">
                     {(
                       [
@@ -382,11 +396,20 @@ export default function ScreenshotBeautifierContent() {
                       <button
                         key={f}
                         onClick={() => setFrame(f)}
-                        className={`rounded-lg py-1.5 text-xs font-medium ${
+                        className="py-1.5 text-xs font-medium"
+                        style={
                           frame === f
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                            ? {
+                                background: "var(--kami-cta-bg)",
+                                color: "var(--kami-cta-text)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                        }
                       >
                         {label}
                       </button>
@@ -395,16 +418,35 @@ export default function ScreenshotBeautifierContent() {
                 </div>
 
                 {/* Background */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Background</h3>
+                <div
+                  className="overflow-hidden p-4"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Background</h3>
                   <div className="mb-3 grid grid-cols-3 gap-1.5">
                     {(["solid", "gradient", "transparent"] as BgMode[]).map((m) => (
                       <button
                         key={m}
                         onClick={() => setBgMode(m)}
-                        className={`rounded-lg py-1.5 text-xs font-medium capitalize ${
-                          bgMode === m ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className="py-1.5 text-xs font-medium capitalize"
+                        style={
+                          bgMode === m
+                            ? {
+                                background: "var(--kami-cta-bg)",
+                                color: "var(--kami-cta-text)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                        }
                       >
                         {m}
                       </button>
@@ -412,8 +454,14 @@ export default function ScreenshotBeautifierContent() {
                   </div>
                   {bgMode === "solid" && (
                     <div className="flex items-center gap-2">
-                      <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-8 w-8 cursor-pointer rounded border border-gray-200" />
-                      <span className="text-xs font-mono text-gray-400">{bgColor}</span>
+                      <input
+                        type="color"
+                        value={bgColor}
+                        onChange={(e) => setBgColor(e.target.value)}
+                        className="h-8 w-8 cursor-pointer rounded"
+                        style={{ border: "1px solid var(--kami-border-strong)" }}
+                      />
+                      <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{bgColor}</span>
                     </div>
                   )}
                   {bgMode === "gradient" && (
@@ -426,29 +474,61 @@ export default function ScreenshotBeautifierContent() {
                             tabIndex={0}
                             onClick={() => setGradColors([...g])}
                             onKeyDown={(e) => { if (e.key === "Enter") setGradColors([...g]); }}
-                            className={`h-7 cursor-pointer rounded border-2 ${
-                              gradColors[0] === g[0] && gradColors[1] === g[1]
-                                ? "border-gray-900"
-                                : "border-transparent hover:border-gray-300"
-                            }`}
-                            style={{ background: `linear-gradient(135deg, ${g[0]}, ${g[1]})` }}
+                            className="h-7 cursor-pointer rounded border-2"
+                            style={{
+                              background: `linear-gradient(135deg, ${g[0]}, ${g[1]})`,
+                              borderColor:
+                                gradColors[0] === g[0] && gradColors[1] === g[1]
+                                  ? "var(--kami-text)"
+                                  : "transparent",
+                            }}
                             title={`${g[0]} → ${g[1]}`}
                           />
                         ))}
                       </div>
                       <div className="flex items-center gap-2">
-                        <input type="color" value={gradColors[0]} onChange={(e) => setGradColors([e.target.value, gradColors[1]])} className="h-7 w-7 shrink-0 cursor-pointer rounded border border-gray-200" title="Start color" />
-                        <input type="color" value={gradColors[1]} onChange={(e) => setGradColors([gradColors[0], e.target.value])} className="h-7 w-7 shrink-0 cursor-pointer rounded border border-gray-200" title="End color" />
-                        <input type="range" min={0} max={360} value={gradAngle} onChange={(e) => setGradAngle(Number(e.target.value))} className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
-                        <span className="w-8 shrink-0 text-right text-xs font-mono text-gray-400">{gradAngle}°</span>
+                        <input
+                          type="color"
+                          value={gradColors[0]}
+                          onChange={(e) => setGradColors([e.target.value, gradColors[1]])}
+                          className="h-7 w-7 shrink-0 cursor-pointer rounded"
+                          style={{ border: "1px solid var(--kami-border-strong)" }}
+                          title="Start color"
+                        />
+                        <input
+                          type="color"
+                          value={gradColors[1]}
+                          onChange={(e) => setGradColors([gradColors[0], e.target.value])}
+                          className="h-7 w-7 shrink-0 cursor-pointer rounded"
+                          style={{ border: "1px solid var(--kami-border-strong)" }}
+                          title="End color"
+                        />
+                        <input
+                          type="range"
+                          min={0}
+                          max={360}
+                          value={gradAngle}
+                          onChange={(e) => setGradAngle(Number(e.target.value))}
+                          className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full"
+                          style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
+                        />
+                        <span className="w-8 shrink-0 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{gradAngle}°</span>
                       </div>
                     </>
                   )}
                 </div>
 
                 {/* Style */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Style</h3>
+                <div
+                  className="overflow-hidden p-4"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Style</h3>
                   <SliderRow label="Shadow" value={shadow} min={0} max={60} suffix="px" onChange={setShadow} />
                   <SliderRow label="Radius" value={radius} min={0} max={40} suffix="px" onChange={setRadius} />
                   <SliderRow label="Padding" value={padding} min={0} max={120} suffix="px" onChange={setPadding} />
@@ -456,16 +536,35 @@ export default function ScreenshotBeautifierContent() {
                 </div>
 
                 {/* Preset Sizes */}
-                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">Size Preset</h3>
+                <div
+                  className="overflow-hidden p-4"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                  }}
+                >
+                  <h3 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Size Preset</h3>
                   <div className="grid grid-cols-2 gap-1.5">
                     {PRESETS.map((p) => (
                       <button
                         key={p.name}
                         onClick={() => setPreset(p)}
-                        className={`rounded-lg py-1.5 text-xs font-medium ${
-                          preset.name === p.name ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
+                        className="py-1.5 text-xs font-medium"
+                        style={
+                          preset.name === p.name
+                            ? {
+                                background: "var(--kami-cta-bg)",
+                                color: "var(--kami-cta-text)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                            : {
+                                background: "var(--kami-surface)",
+                                color: "var(--kami-text-muted)",
+                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                              }
+                        }
                         title={p.w > 0 ? `${p.w}×${p.h || "auto"}` : "Custom size"}
                       >
                         {p.name}
@@ -476,13 +575,39 @@ export default function ScreenshotBeautifierContent() {
 
                 {/* Export */}
                 <div className="flex flex-col gap-2">
-                  <button onClick={() => download("png")} className="w-full rounded-lg bg-gray-900 py-2 text-sm font-medium text-white hover:bg-gray-800">
+                  <button
+                    onClick={() => download("png")}
+                    className="w-full py-2 text-sm font-medium"
+                    style={{
+                      background: "var(--kami-cta-bg)",
+                      color: "var(--kami-cta-text)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
+                  >
                     Download PNG
                   </button>
-                  <button onClick={() => download("jpeg")} className="w-full rounded-lg border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  <button
+                    onClick={() => download("jpeg")}
+                    className="w-full py-2 text-sm font-medium"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
+                  >
                     Download JPEG
                   </button>
-                  <button onClick={copyToClipboard} className="w-full rounded-lg border border-gray-200 bg-white py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  <button
+                    onClick={copyToClipboard}
+                    className="w-full py-2 text-sm font-medium"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      color: "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    }}
+                  >
                     Copy to Clipboard
                   </button>
                 </div>
@@ -490,7 +615,8 @@ export default function ScreenshotBeautifierContent() {
                 {/* Replace image */}
                 <button
                   onClick={() => setImage(null)}
-                  className="w-full text-center text-xs text-gray-400 hover:text-gray-600"
+                  className="w-full text-center text-xs"
+                  style={{ color: "var(--kami-text-dim)" }}
                 >
                   Replace image
                 </button>
@@ -543,16 +669,17 @@ function SliderRow({
 }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-14 shrink-0 text-xs text-gray-500">{label}</span>
+      <span className="w-14 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
       <input
         type="range"
         min={min}
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+        className="h-1.5 min-w-0 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
       />
-      <span className="w-10 shrink-0 text-right text-xs font-mono text-gray-400">
+      <span className="w-10 shrink-0 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>
         {value}{suffix}
       </span>
     </div>
