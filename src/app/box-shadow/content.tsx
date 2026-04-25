@@ -213,8 +213,20 @@ export default function BoxShadowContent() {
     { key: "Enter", meta: true, action: copy, label: "Copy" },
   ], [copy]));
 
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const ctaStyle = {
+    background: "var(--kami-cta-bg)",
+    color: "var(--kami-cta-text)",
+    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+  };
+
   return (
-    <div className="min-h-screen text-gray-900">
+    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <ToolIntro
           title="Box Shadow Generator"
@@ -230,19 +242,30 @@ export default function BoxShadowContent() {
 
         {/* Presets */}
         <div className="mb-6">
-          <span className="text-xs font-medium text-gray-500 mb-2 block">Presets</span>
+          <span className="text-xs font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Presets</span>
           <div className="flex flex-wrap gap-2">
             {PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 onClick={() => applyPreset(preset)}
-                className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm hover:border-gray-300 hover:shadow-sm transition"
+                className="group flex items-center gap-2 px-3 py-2 text-sm transition"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                  color: "var(--kami-text-muted)",
+                }}
               >
                 <div
-                  className="h-6 w-6 rounded bg-white border border-gray-100"
-                  style={{ boxShadow: preset.layers.map(layerToCSS).join(", ") }}
+                  className="h-6 w-6"
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                    boxShadow: preset.layers.map(layerToCSS).join(", "),
+                  }}
                 />
-                <span className="text-gray-600 group-hover:text-gray-900">{preset.name}</span>
+                <span>{preset.name}</span>
               </button>
             ))}
           </div>
@@ -250,7 +273,15 @@ export default function BoxShadowContent() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           {/* Preview */}
-          <div className="rounded-xl border border-gray-200 p-8 shadow-sm" style={{ backgroundColor: bgColor }}>
+          <div
+            className="p-8"
+            style={{
+              backgroundColor: bgColor,
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
             <div className="flex min-h-[300px] items-center justify-center">
               <div
                 style={{
@@ -262,7 +293,7 @@ export default function BoxShadowContent() {
                 }}
               />
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-gray-500">
+            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
               <label className="flex items-center gap-1.5">
                 BG:
                 <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-6 w-6 cursor-pointer rounded" />
@@ -273,12 +304,12 @@ export default function BoxShadowContent() {
               </label>
               <label className="flex items-center gap-1.5">
                 Size:
-                <input type="range" min={80} max={320} value={cardSize} onChange={(e) => setCardSize(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
+                <input type="range" min={80} max={320} value={cardSize} onChange={(e) => setCardSize(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
                 <span className="font-mono w-8">{cardSize}</span>
               </label>
               <label className="flex items-center gap-1.5">
                 Radius:
-                <input type="range" min={0} max={100} value={cardRadius} onChange={(e) => setCardRadius(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700" />
+                <input type="range" min={0} max={100} value={cardRadius} onChange={(e) => setCardRadius(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
                 <span className="font-mono w-8">{cardRadius}</span>
               </label>
             </div>
@@ -287,28 +318,28 @@ export default function BoxShadowContent() {
           {/* Controls */}
           <div className="space-y-3 max-h-[600px] overflow-y-auto">
             {layers.map((layer, i) => (
-              <div key={i} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div key={i} className="p-4" style={cardStyle}>
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Layer {i + 1}</span>
+                  <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Layer {i + 1}</span>
                   <div className="flex items-center gap-1.5">
-                    <label className="flex items-center gap-1 text-xs text-gray-500">
+                    <label className="flex items-center gap-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
                       <input
                         type="checkbox"
                         checked={layer.inset}
                         onChange={(e) => updateLayer(i, { inset: e.target.checked })}
-                        className="rounded"
+                        style={{ accentColor: "var(--kami-text)" }}
                       />
                       Inset
                     </label>
                     {layers.length > 1 && (
                       <>
-                        <button onClick={() => moveLayer(i, -1)} className="text-xs text-gray-400 hover:text-gray-600 px-1" title="Move up">↑</button>
-                        <button onClick={() => moveLayer(i, 1)} className="text-xs text-gray-400 hover:text-gray-600 px-1" title="Move down">↓</button>
+                        <button onClick={() => moveLayer(i, -1)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Move up">↑</button>
+                        <button onClick={() => moveLayer(i, 1)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Move down">↓</button>
                       </>
                     )}
-                    <button onClick={() => duplicateLayer(i)} className="text-xs text-gray-400 hover:text-gray-600 px-1" title="Duplicate">⧉</button>
+                    <button onClick={() => duplicateLayer(i)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Duplicate">⧉</button>
                     {layers.length > 1 && (
-                      <button onClick={() => removeLayer(i)} className="text-xs text-gray-400 hover:text-red-500 px-1" title="Remove">×</button>
+                      <button onClick={() => removeLayer(i)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Remove">×</button>
                     )}
                   </div>
                 </div>
@@ -318,15 +349,21 @@ export default function BoxShadowContent() {
                 <Slider label="Spread" value={layer.spread} min={-50} max={50} onChange={(v) => updateLayer(i, { spread: v })} />
                 <Slider label="Opacity" value={layer.opacity} min={0} max={100} suffix="%" onChange={(v) => updateLayer(i, { opacity: v })} />
                 <div className="mt-2 flex items-center gap-2">
-                  <label className="text-xs text-gray-500">Color</label>
-                  <input type="color" value={layer.color} onChange={(e) => updateLayer(i, { color: e.target.value })} className="h-7 w-7 cursor-pointer rounded border border-gray-200" />
-                  <span className="text-xs font-mono text-gray-400">{layer.color}</span>
+                  <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Color</label>
+                  <input type="color" value={layer.color} onChange={(e) => updateLayer(i, { color: e.target.value })} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
+                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{layer.color}</span>
                 </div>
               </div>
             ))}
             <button
               onClick={addLayer}
-              className="w-full rounded-lg border border-dashed border-gray-300 bg-white py-2 text-sm text-gray-500 hover:border-gray-400 hover:bg-gray-50"
+              className="w-full py-2 text-sm"
+              style={{
+                background: "var(--kami-surface-solid)",
+                color: "var(--kami-text-muted)",
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
             >
               + Add Shadow Layer
             </button>
@@ -334,16 +371,25 @@ export default function BoxShadowContent() {
         </div>
 
         {/* Output */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="mt-6 p-4" style={cardStyle}>
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-1 rounded-lg border border-gray-200 px-1 py-0.5">
+            <div
+              className="flex items-center gap-1 px-1 py-0.5"
+              style={{
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              }}
+            >
               {(["css", "tailwind", "react-native"] as const).map((fmt) => (
                 <button
                   key={fmt}
                   onClick={() => setOutputFormat(fmt)}
-                  className={`rounded px-3 py-1 text-xs font-medium transition-colors ${
-                    outputFormat === fmt ? "bg-gray-900 text-white" : "text-gray-600 hover:text-gray-900"
-                  }`}
+                  className="px-3 py-1 text-xs font-medium transition-colors"
+                  style={{
+                    background: outputFormat === fmt ? "var(--kami-cta-bg)" : "transparent",
+                    color: outputFormat === fmt ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                  }}
                 >
                   {fmt === "css" ? "CSS" : fmt === "tailwind" ? "Tailwind" : "React Native"}
                 </button>
@@ -351,7 +397,8 @@ export default function BoxShadowContent() {
             </div>
             <button
               onClick={copy}
-              className="flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-800"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
+              style={ctaStyle}
             >
               {copied ? (
                 <><CheckIcon /> Copied</>
@@ -360,7 +407,14 @@ export default function BoxShadowContent() {
               )}
             </button>
           </div>
-          <pre className="overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm text-gray-100"><code>{outputCode}</code></pre>
+          <pre
+            className="overflow-x-auto p-4 text-sm"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          ><code>{outputCode}</code></pre>
         </div>
       </div>
     </div>
@@ -386,16 +440,17 @@ function Slider({
 }) {
   return (
     <div className="mb-2 flex items-center gap-2">
-      <span className="w-14 text-xs text-gray-500">{label}</span>
+      <span className="w-14 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
       <input
         type="range"
         min={min}
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-gray-700"
+        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
+        style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }}
       />
-      <span className="w-12 text-right text-xs font-mono text-gray-400">
+      <span className="w-12 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>
         {value}{suffix || "px"}
       </span>
     </div>
