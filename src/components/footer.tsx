@@ -21,6 +21,18 @@ export function Footer() {
         textAlign: "center",
       }}
     >
+      <div
+        style={{
+          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
+          fontSize: ".72rem",
+          color: "var(--kami-text-muted, #4a4a4a)",
+          marginBottom: "0.6rem",
+        }}
+      >
+        <a href="/llms.txt" style={{ color: "inherit" }}>llms.txt</a>
+        {" · "}
+        <a href="/sitemap.xml" style={{ color: "inherit" }}>sitemap</a>
+      </div>
       <nav
         aria-label="Sister sites"
         style={{
