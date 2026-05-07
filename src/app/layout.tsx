@@ -108,6 +108,9 @@ export default function RootLayout({
           title="little tools, what's new"
           href="https://tools.iamkesava.com/feed.xml"
         />
+        <link rel="service-doc" href="https://tools.iamkesava.com/llms.txt" />
+        <link rel="api-catalog" href="https://tools.iamkesava.com/.well-known/api-catalog" />
+        <link rel="describedby" href="https://tools.iamkesava.com/.well-known/agent-permissions.json" />
         <JsonLd data={rootLd()} />
       </head>
       <body className="font-sans antialiased">
