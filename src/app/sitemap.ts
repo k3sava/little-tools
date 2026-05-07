@@ -1,17 +1,22 @@
 import type { MetadataRoute } from "next";
-import { allTools } from "@/data/tools";
+import { allTools, collections } from "@/data/tools";
 
 const BASE = "https://tools.iamkesava.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const staticRoutes = ["", "/textkit", "/designkit", "/devkit", "/pdfkit"];
   return [
-    ...staticRoutes.map((route) => ({
-      url: `${BASE}${route}/`,
+    {
+      url: `${BASE}/`,
       lastModified: now,
       changeFrequency: "weekly" as const,
-      priority: route === "" ? 1.0 : 0.7,
+      priority: 1.0,
+    },
+    ...collections.map((c) => ({
+      url: `${BASE}${c.href}/`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
     })),
     ...allTools.map((tool) => ({
       url: `${BASE}${tool.href}/`,

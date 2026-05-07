@@ -11,6 +11,7 @@ import { ShareButton } from "@/components/share-button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { CommandPalette } from "@/components/tools/command-palette";
 import { CopyToastContainer } from "@/components/tools/copy-toast";
+import { JsonLd, rootLd } from "@/lib/json-ld";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -61,13 +62,16 @@ export const metadata: Metadata = {
     url: "https://tools.iamkesava.com",
     siteName: "little tools",
     type: "website",
+    images: [{ url: "https://tools.iamkesava.com/og/default.svg", width: 1200, height: 630 }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "little tools - fast, single-purpose web utilities by Kesava",
     description:
       "60 ad-free, privacy-first browser tools. All processing in your browser.",
+    images: ["https://tools.iamkesava.com/og/default.svg"],
   },
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -87,6 +91,7 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme");if(!t){t="brutalist";localStorage.setItem("theme",t)}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme")}catch(e){}})()`,
           }}
         />
+        <JsonLd data={rootLd()} />
       </head>
       <body className="font-sans antialiased">
         <div className="kami-mobile-bar" aria-hidden="true" />
