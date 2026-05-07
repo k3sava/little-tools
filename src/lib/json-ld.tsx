@@ -5,6 +5,38 @@
 import type { ReactNode } from "react";
 
 export const SITE = "https://tools.iamkesava.com";
+export const REPO = "https://github.com/k3sava/little-tools";
+
+// Canonical Person + Organization referenced by every page on every site.
+// Beefed up with sameAs (LinkedIn, GitHub), jobTitle, knowsAbout. Identical
+// shape across tools / apps / toys / ab-codex so AI agents recognise this
+// is the same author across all four.
+export const PERSON_KESAVA = {
+  "@type": "Person",
+  "@id": "https://iamkesava.com/#kesava",
+  name: "Kesava",
+  givenName: "Kesava",
+  alternateName: "Kesava Mandiga",
+  url: "https://iamkesava.com/",
+  jobTitle: "Product marketing operator and indie builder",
+  knowsAbout: [
+    "Product marketing",
+    "Go-to-market",
+    "AI-native product design",
+    "Web tools and utilities",
+    "Generative art",
+    "CSS",
+    "Open source",
+  ],
+  sameAs: [
+    "https://github.com/k3sava",
+    "https://www.linkedin.com/in/k3sava",
+    "https://apps.iamkesava.com/",
+    "https://tools.iamkesava.com/",
+    "https://toys.iamkesava.com/",
+    "https://codex.iamkesava.com/",
+  ],
+};
 
 export function JsonLd({ data }: { data: object | object[] }) {
   return (
@@ -166,6 +198,7 @@ export function rootLd() {
         sameAs: [
           "https://apps.iamkesava.com/",
           "https://toys.iamkesava.com/",
+          "https://codex.iamkesava.com/",
           "https://iamkesava.com/",
         ],
         potentialAction: {

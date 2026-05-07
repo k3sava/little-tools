@@ -7,6 +7,7 @@ const links = [
   { label: "tools", href: "https://tools.iamkesava.com/", self: true },
   { label: "apps", href: "https://apps.iamkesava.com/" },
   { label: "toys", href: "https://toys.iamkesava.com/" },
+  { label: "codex", href: "https://codex.iamkesava.com/" },
   { label: "iamkesava", href: "https://iamkesava.com/" },
 ];
 
@@ -30,22 +31,22 @@ export function Footer() {
         style={{
           fontFamily: "'JetBrains Mono', ui-monospace, monospace",
           fontSize: ".72rem",
-          opacity: 0.75,
           display: "flex",
           gap: "0.5rem",
           justifyContent: "center",
           flexWrap: "wrap",
+          color: "var(--kami-text-muted, #4a4a4a)",
         }}
       >
         {links.map((l, i) => (
           <span key={l.href}>
             {l.self ? (
-              <span aria-current="page" style={{ fontWeight: 600 }}>{l.label}</span>
+              <span aria-current="page" style={{ fontWeight: 600, color: "var(--kami-text, #0a0a0a)" }}>{l.label}</span>
             ) : (
-              <a href={l.href}>{l.label}</a>
+              <a href={l.href} style={{ color: "inherit" }}>{l.label}</a>
             )}
             {i < links.length - 1 && (
-              <span aria-hidden="true" style={{ marginLeft: "0.5rem", opacity: 0.4 }}>·</span>
+              <span aria-hidden="true" style={{ marginLeft: "0.5rem" }}>·</span>
             )}
           </span>
         ))}
