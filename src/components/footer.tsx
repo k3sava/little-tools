@@ -21,10 +21,6 @@ export function Footer() {
         textAlign: "center",
       }}
     >
-      <div style={{ marginBottom: "0.6rem" }}>
-        Built by Claude &{" "}
-        <a href="https://iamkesava.com" rel="author">Kesava</a>
-      </div>
       <nav
         aria-label="Sister sites"
         style={{
@@ -35,6 +31,7 @@ export function Footer() {
           justifyContent: "center",
           flexWrap: "wrap",
           color: "var(--kami-text-muted, #4a4a4a)",
+          marginBottom: "0.6rem",
         }}
       >
         {links.map((l, i) => (
@@ -50,6 +47,9 @@ export function Footer() {
           </span>
         ))}
       </nav>
+      <div>
+        Made by <a href="https://iamkesava.com" rel="author">Kesava</a>
+      </div>
     </footer>
   );
 }
