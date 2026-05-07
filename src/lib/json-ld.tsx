@@ -113,6 +113,11 @@ export function rootLd() {
         alternateName: "Kami Studios little tools",
         url: SITE + "/",
         publisher: { "@id": SITE + "/#org" },
+        sameAs: [
+          "https://apps.iamkesava.com/",
+          "https://toys.iamkesava.com/",
+          "https://iamkesava.com/",
+        ],
         potentialAction: {
           "@type": "SearchAction",
           target: { "@type": "EntryPoint", urlTemplate: `${SITE}/?q={search_term_string}` },

@@ -26,6 +26,11 @@
     "tool_url_template": "https://tools.iamkesava.com/{slug}/",
     "collection_url_template": "https://tools.iamkesava.com/for/{slug}/"
   },
+  "related_sites": {
+    "apps": "https://apps.iamkesava.com",
+    "toys": "https://toys.iamkesava.com",
+    "apex": "https://iamkesava.com"
+  },
   "contact": "https://github.com/k3sava/little-tools/issues",
   "counts": {
     "tools": 54

@@ -9,6 +9,12 @@ Counts: 54 tools across 8 collections.
 - [Sitemap](https://tools.iamkesava.com/sitemap.xml): every canonical URL.
 - [Home](https://tools.iamkesava.com/): all tools by collection.
 
+## Sister sites
+
+- [apps.iamkesava.com](https://apps.iamkesava.com/): Kami Studios apps and AI playgrounds.
+- [toys.iamkesava.com](https://toys.iamkesava.com/): creative experiments (audio, visual, generative).
+- [iamkesava.com](https://iamkesava.com/): Kesava's blog and writing.
+
 ## Collections
 
 - [Developers](https://tools.iamkesava.com/for/developers/): Encoding, hashing, formatting, and debugging utilities.
