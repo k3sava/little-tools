@@ -48,7 +48,9 @@ export function Footer() {
         ))}
       </nav>
       <div>
-        Made by <a href="https://iamkesava.com" rel="author">Kesava</a>
+        made by <a href="https://iamkesava.com" rel="author">kesava</a>
+        {" · "}
+        <a href="https://github.com/k3sava/little-tools" rel="noopener">github</a>
       </div>
     </footer>
   );
