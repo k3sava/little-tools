@@ -111,6 +111,10 @@ export default function RootLayout({
         <link rel="service-doc" href="https://tools.iamkesava.com/llms.txt" />
         <link rel="api-catalog" href="https://tools.iamkesava.com/.well-known/api-catalog" />
         <link rel="describedby" href="https://tools.iamkesava.com/.well-known/agent-permissions.json" />
+        <link rel="me" href="https://github.com/k3sava" />
+        <link rel="me" href="https://www.linkedin.com/in/k3sava" />
+        <link rel="me" href="https://iamkesava.com/" />
+        <link rel="author" href="https://iamkesava.com/" />
         <JsonLd data={rootLd()} />
       </head>
       <body className="font-sans antialiased">
