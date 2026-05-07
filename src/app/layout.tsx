@@ -91,6 +91,12 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("theme");if(!t){t="brutalist";localStorage.setItem("theme",t)}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme")}catch(e){}})()`,
           }}
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="little tools, what's new"
+          href="https://tools.iamkesava.com/feed.xml"
+        />
         <JsonLd data={rootLd()} />
       </head>
       <body className="font-sans antialiased">
