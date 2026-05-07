@@ -1,0 +1,932 @@
+{
+  "$schema": "https://tools.iamkesava.com/tools.schema.json",
+  "site": "https://tools.iamkesava.com",
+  "license": "MIT",
+  "last_updated": "2026-05-07",
+  "counts": {
+    "tools": 54,
+    "collections": 8
+  },
+  "collections": [
+    {
+      "slug": "developers",
+      "title": "Developers",
+      "url": "https://tools.iamkesava.com/for/developers/",
+      "description": "Encoding, hashing, formatting, and debugging utilities."
+    },
+    {
+      "slug": "designers",
+      "title": "Designers",
+      "url": "https://tools.iamkesava.com/for/designers/",
+      "description": "Color, layout, animation, and visual design tools."
+    },
+    {
+      "slug": "writers",
+      "title": "Writers",
+      "url": "https://tools.iamkesava.com/for/writers/",
+      "description": "Headline testing, readability scoring, and text editing."
+    },
+    {
+      "slug": "pmm",
+      "title": "PMM",
+      "url": "https://tools.iamkesava.com/for/pmm/",
+      "description": "Positioning, competitive analysis, and go-to-market tools."
+    },
+    {
+      "slug": "ads",
+      "title": "Ads",
+      "url": "https://tools.iamkesava.com/for/ads/",
+      "description": "Campaign tracking, copy testing, and creative utilities."
+    },
+    {
+      "slug": "pm",
+      "title": "PM",
+      "url": "https://tools.iamkesava.com/for/pm/",
+      "description": "Specs, competitive research, and stakeholder communication."
+    },
+    {
+      "slug": "seo",
+      "title": "SEO",
+      "url": "https://tools.iamkesava.com/for/seo/",
+      "description": "Meta tags, structured data, and content optimization."
+    },
+    {
+      "slug": "everyone",
+      "title": "Everyone",
+      "url": "https://tools.iamkesava.com/for/everyone/",
+      "description": "PDF tools, file conversion, and everyday utilities."
+    }
+  ],
+  "tools": [
+    {
+      "slug": "case-converter",
+      "name": "Case Converter",
+      "url": "https://tools.iamkesava.com/case-converter",
+      "description": "Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.",
+      "collections": [
+        "writers",
+        "pmm",
+        "ads"
+      ],
+      "keywords": [
+        "title",
+        "camel",
+        "snake",
+        "kebab",
+        "pascal",
+        "uppercase",
+        "lowercase"
+      ]
+    },
+    {
+      "slug": "character-counter",
+      "name": "Character Counter",
+      "url": "https://tools.iamkesava.com/character-counter",
+      "description": "Count characters, words, sentences, paragraphs, and estimate reading time.",
+      "collections": [
+        "writers",
+        "seo",
+        "ads",
+        "everyone"
+      ],
+      "keywords": [
+        "word count",
+        "character count",
+        "reading time"
+      ]
+    },
+    {
+      "slug": "lorem-ipsum",
+      "name": "Lorem Ipsum Generator",
+      "url": "https://tools.iamkesava.com/lorem-ipsum",
+      "description": "Generate placeholder text by paragraphs, sentences, or words.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "placeholder",
+        "dummy text",
+        "filler"
+      ]
+    },
+    {
+      "slug": "text-cleaner",
+      "name": "Text Cleaner",
+      "url": "https://tools.iamkesava.com/text-cleaner",
+      "description": "Remove extra whitespace, line breaks, special characters, duplicate lines.",
+      "collections": [
+        "writers",
+        "everyone"
+      ],
+      "keywords": [
+        "whitespace",
+        "clean",
+        "strip",
+        "remove"
+      ]
+    },
+    {
+      "slug": "find-replace",
+      "name": "Find & Replace",
+      "url": "https://tools.iamkesava.com/find-replace",
+      "description": "Search and replace text with regex support and case sensitivity toggle.",
+      "collections": [
+        "developers",
+        "writers"
+      ],
+      "keywords": [
+        "search",
+        "replace",
+        "regex",
+        "find"
+      ]
+    },
+    {
+      "slug": "word-frequency",
+      "name": "Word Frequency",
+      "url": "https://tools.iamkesava.com/word-frequency",
+      "description": "Analyze word frequency with bar charts, filtering, and CSV export.",
+      "collections": [
+        "writers",
+        "seo"
+      ],
+      "keywords": [
+        "frequency",
+        "count",
+        "analyze",
+        "keyword density"
+      ]
+    },
+    {
+      "slug": "headline-analyzer",
+      "name": "Headline Analyzer",
+      "url": "https://tools.iamkesava.com/headline-analyzer",
+      "description": "Score headlines for emotional value, power words, readability, and click potential.",
+      "collections": [
+        "writers",
+        "seo",
+        "pmm",
+        "ads"
+      ],
+      "keywords": [
+        "headline",
+        "title",
+        "score",
+        "emotional",
+        "power words",
+        "ctr",
+        "click"
+      ]
+    },
+    {
+      "slug": "text-diff",
+      "name": "Text Diff",
+      "url": "https://tools.iamkesava.com/text-diff",
+      "description": "Compare two texts side-by-side or inline with line-by-line diff.",
+      "collections": [
+        "developers",
+        "pm"
+      ],
+      "keywords": [
+        "compare",
+        "diff",
+        "difference"
+      ]
+    },
+    {
+      "slug": "clipboard-manager",
+      "name": "Clipboard Manager",
+      "url": "https://tools.iamkesava.com/clipboard-manager",
+      "description": "Save, search, and organize text clips in your browser.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "clipboard",
+        "copy",
+        "paste",
+        "save"
+      ]
+    },
+    {
+      "slug": "markdown-editor",
+      "name": "Markdown Editor",
+      "url": "https://tools.iamkesava.com/markdown-editor",
+      "description": "Write and preview Markdown with live rendering and export.",
+      "collections": [
+        "developers",
+        "writers",
+        "pm"
+      ],
+      "keywords": [
+        "markdown",
+        "editor",
+        "preview",
+        "md"
+      ]
+    },
+    {
+      "slug": "invoice-generator",
+      "name": "Invoice Generator",
+      "url": "https://tools.iamkesava.com/invoice-generator",
+      "description": "Create professional invoices with PDF export and local storage.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "invoice",
+        "pdf",
+        "billing"
+      ]
+    },
+    {
+      "slug": "link-in-bio",
+      "name": "Link-in-Bio Builder",
+      "url": "https://tools.iamkesava.com/link-in-bio",
+      "description": "Create a link-in-bio page with custom links and themes.",
+      "collections": [
+        "ads",
+        "everyone"
+      ],
+      "keywords": [
+        "bio",
+        "links",
+        "profile"
+      ]
+    },
+    {
+      "slug": "palette",
+      "name": "Color Palette",
+      "url": "https://tools.iamkesava.com/palette",
+      "description": "Generate harmonious color palettes with multiple harmony rules.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "palette",
+        "color",
+        "harmony",
+        "scheme"
+      ]
+    },
+    {
+      "slug": "color-converter",
+      "name": "Color Converter",
+      "url": "https://tools.iamkesava.com/color-converter",
+      "description": "Convert between HEX, RGB, HSL, and other color formats.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "hex",
+        "rgb",
+        "hsl",
+        "color",
+        "convert"
+      ]
+    },
+    {
+      "slug": "contrast",
+      "name": "Contrast Checker",
+      "url": "https://tools.iamkesava.com/contrast",
+      "description": "Check WCAG contrast ratios for accessibility compliance.",
+      "collections": [
+        "designers",
+        "developers"
+      ],
+      "keywords": [
+        "wcag",
+        "contrast",
+        "accessibility",
+        "a11y"
+      ]
+    },
+    {
+      "slug": "gradient",
+      "name": "Gradient Generator",
+      "url": "https://tools.iamkesava.com/gradient",
+      "description": "Create CSS gradients with visual editor and code export.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "gradient",
+        "css",
+        "linear",
+        "radial"
+      ]
+    },
+    {
+      "slug": "box-shadow",
+      "name": "Box Shadow",
+      "url": "https://tools.iamkesava.com/box-shadow",
+      "description": "Design CSS box shadows with visual controls.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "shadow",
+        "css",
+        "box-shadow"
+      ]
+    },
+    {
+      "slug": "border-radius",
+      "name": "Border Radius",
+      "url": "https://tools.iamkesava.com/border-radius",
+      "description": "Visualize and generate CSS border-radius values.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "border",
+        "radius",
+        "rounded",
+        "css"
+      ]
+    },
+    {
+      "slug": "glassmorphism",
+      "name": "Glassmorphism",
+      "url": "https://tools.iamkesava.com/glassmorphism",
+      "description": "Generate glass and soft-UI effects with CSS output.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "glass",
+        "neumorphism",
+        "blur",
+        "frosted"
+      ]
+    },
+    {
+      "slug": "flexbox",
+      "name": "Flexbox Playground",
+      "url": "https://tools.iamkesava.com/flexbox",
+      "description": "Learn and experiment with CSS Flexbox interactively.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "flexbox",
+        "css",
+        "layout",
+        "flex"
+      ]
+    },
+    {
+      "slug": "grid",
+      "name": "CSS Grid",
+      "url": "https://tools.iamkesava.com/grid",
+      "description": "Build CSS Grid layouts visually with template controls.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "grid",
+        "css",
+        "layout",
+        "template"
+      ]
+    },
+    {
+      "slug": "og-image",
+      "name": "OG Image Generator",
+      "url": "https://tools.iamkesava.com/og-image",
+      "description": "Create Open Graph images for social sharing.",
+      "collections": [
+        "designers",
+        "ads"
+      ],
+      "keywords": [
+        "og",
+        "opengraph",
+        "social",
+        "meta"
+      ]
+    },
+    {
+      "slug": "favicon",
+      "name": "Favicon Generator",
+      "url": "https://tools.iamkesava.com/favicon",
+      "description": "Generate favicons from text, emoji, or images.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "favicon",
+        "icon",
+        "ico"
+      ]
+    },
+    {
+      "slug": "screenshot-beautifier",
+      "name": "Screenshot Beautifier",
+      "url": "https://tools.iamkesava.com/screenshot-beautifier",
+      "description": "Add backgrounds, shadows, and frames to screenshots.",
+      "collections": [
+        "designers",
+        "pm"
+      ],
+      "keywords": [
+        "screenshot",
+        "mockup",
+        "frame"
+      ]
+    },
+    {
+      "slug": "qr-code",
+      "name": "QR Code Generator",
+      "url": "https://tools.iamkesava.com/qr-code",
+      "description": "Generate QR codes with custom colors and sizes.",
+      "collections": [
+        "ads",
+        "everyone"
+      ],
+      "keywords": [
+        "qr",
+        "barcode",
+        "scan"
+      ]
+    },
+    {
+      "slug": "keyframe-animator",
+      "name": "Keyframe Animator",
+      "url": "https://tools.iamkesava.com/keyframe-animator",
+      "description": "Build CSS @keyframes animations visually with timeline editor.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "keyframes",
+        "animation",
+        "css",
+        "timeline",
+        "motion"
+      ]
+    },
+    {
+      "slug": "easing-editor",
+      "name": "Easing Editor",
+      "url": "https://tools.iamkesava.com/easing-editor",
+      "description": "Design cubic-bezier, spring, and linear() easing curves.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "easing",
+        "cubic-bezier",
+        "spring",
+        "timing",
+        "curve"
+      ]
+    },
+    {
+      "slug": "scroll-animation",
+      "name": "Scroll Animation",
+      "url": "https://tools.iamkesava.com/scroll-animation",
+      "description": "Generate scroll-driven CSS animations with live preview.",
+      "collections": [
+        "designers"
+      ],
+      "keywords": [
+        "scroll",
+        "animation",
+        "scroll-driven",
+        "timeline",
+        "css"
+      ]
+    },
+    {
+      "slug": "json-formatter",
+      "name": "JSON Formatter",
+      "url": "https://tools.iamkesava.com/json-formatter",
+      "description": "Format, beautify, minify, and validate JSON.",
+      "collections": [
+        "developers",
+        "pm"
+      ],
+      "keywords": [
+        "json",
+        "format",
+        "beautify",
+        "validate"
+      ]
+    },
+    {
+      "slug": "regex-tester",
+      "name": "Regex Tester",
+      "url": "https://tools.iamkesava.com/regex-tester",
+      "description": "Test regex patterns with real-time match highlighting.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "regex",
+        "regexp",
+        "pattern",
+        "match"
+      ]
+    },
+    {
+      "slug": "base64",
+      "name": "Base64 Encode/Decode",
+      "url": "https://tools.iamkesava.com/base64",
+      "description": "Encode and decode Base64 text and files.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "base64",
+        "encode",
+        "decode"
+      ]
+    },
+    {
+      "slug": "url-encoder",
+      "name": "URL Encode/Decode",
+      "url": "https://tools.iamkesava.com/url-encoder",
+      "description": "Encode and decode URLs, parse query parameters.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "url",
+        "encode",
+        "decode",
+        "query"
+      ]
+    },
+    {
+      "slug": "hash-generator",
+      "name": "Hash Generator",
+      "url": "https://tools.iamkesava.com/hash-generator",
+      "description": "Generate MD5, SHA-1, SHA-256, SHA-512 hashes.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "hash",
+        "md5",
+        "sha",
+        "checksum"
+      ]
+    },
+    {
+      "slug": "jwt-decoder",
+      "name": "JWT Decoder",
+      "url": "https://tools.iamkesava.com/jwt-decoder",
+      "description": "Decode JSON Web Tokens with color-coded output.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "jwt",
+        "token",
+        "decode",
+        "auth"
+      ]
+    },
+    {
+      "slug": "uuid-generator",
+      "name": "UUID / ULID Generator",
+      "url": "https://tools.iamkesava.com/uuid-generator",
+      "description": "Generate UUID v4 and ULID identifiers in bulk.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "uuid",
+        "ulid",
+        "guid",
+        "identifier"
+      ]
+    },
+    {
+      "slug": "timestamp",
+      "name": "Timestamp Converter",
+      "url": "https://tools.iamkesava.com/timestamp",
+      "description": "Convert between Unix timestamps and dates.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "timestamp",
+        "unix",
+        "epoch",
+        "date"
+      ]
+    },
+    {
+      "slug": "cron-builder",
+      "name": "Cron Builder",
+      "url": "https://tools.iamkesava.com/cron-builder",
+      "description": "Build and validate cron expressions visually.",
+      "collections": [
+        "developers"
+      ],
+      "keywords": [
+        "cron",
+        "schedule",
+        "expression"
+      ]
+    },
+    {
+      "slug": "image-converter",
+      "name": "Image Converter",
+      "url": "https://tools.iamkesava.com/image-converter",
+      "description": "Convert images between formats in your browser.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "convert",
+        "image",
+        "format",
+        "png",
+        "jpg",
+        "webp"
+      ]
+    },
+    {
+      "slug": "pdf-merge",
+      "name": "PDF Merge",
+      "url": "https://tools.iamkesava.com/pdf-merge",
+      "description": "Combine multiple PDF files into one. Files never leave your browser.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "merge",
+        "combine",
+        "join",
+        "pdf"
+      ]
+    },
+    {
+      "slug": "pdf-compress",
+      "name": "PDF Compress",
+      "url": "https://tools.iamkesava.com/pdf-compress",
+      "description": "Reduce PDF file size without uploading. 100% client-side.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "compress",
+        "reduce",
+        "shrink",
+        "size",
+        "pdf"
+      ]
+    },
+    {
+      "slug": "pdf-split",
+      "name": "PDF Split",
+      "url": "https://tools.iamkesava.com/pdf-split",
+      "description": "Extract specific pages from a PDF. 100% client-side.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "split",
+        "extract",
+        "pages",
+        "separate",
+        "pdf"
+      ]
+    },
+    {
+      "slug": "meta-tag-generator",
+      "name": "Meta Tag Generator",
+      "url": "https://tools.iamkesava.com/meta-tag-generator",
+      "description": "Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.",
+      "collections": [
+        "seo"
+      ],
+      "keywords": [
+        "meta",
+        "og",
+        "opengraph",
+        "twitter card",
+        "serp",
+        "preview"
+      ]
+    },
+    {
+      "slug": "schema-generator",
+      "name": "Schema Generator",
+      "url": "https://tools.iamkesava.com/schema-generator",
+      "description": "Build JSON-LD structured data for Articles, FAQs, Products, and more.",
+      "collections": [
+        "seo"
+      ],
+      "keywords": [
+        "schema",
+        "json-ld",
+        "structured data",
+        "rich results",
+        "faq"
+      ]
+    },
+    {
+      "slug": "seo-content-analyzer",
+      "name": "SEO Content Analyzer",
+      "url": "https://tools.iamkesava.com/seo-content-analyzer",
+      "description": "Analyze content for keyword density, heading structure, readability, and SEO score.",
+      "collections": [
+        "seo"
+      ],
+      "keywords": [
+        "keyword density",
+        "heading",
+        "seo score",
+        "content optimization"
+      ]
+    },
+    {
+      "slug": "readability-scorer",
+      "name": "Readability Scorer",
+      "url": "https://tools.iamkesava.com/readability-scorer",
+      "description": "Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.",
+      "collections": [
+        "writers",
+        "pmm",
+        "pm",
+        "seo"
+      ],
+      "keywords": [
+        "readability",
+        "flesch",
+        "gunning fog",
+        "grade level",
+        "reading level"
+      ]
+    },
+    {
+      "slug": "utm-builder",
+      "name": "UTM Builder",
+      "url": "https://tools.iamkesava.com/utm-builder",
+      "description": "Build campaign URLs with UTM parameters, presets, and bulk generation.",
+      "collections": [
+        "seo",
+        "pmm",
+        "ads"
+      ],
+      "keywords": [
+        "utm",
+        "campaign",
+        "tracking",
+        "url builder"
+      ]
+    },
+    {
+      "slug": "comparison-table",
+      "name": "Comparison Table Builder",
+      "url": "https://tools.iamkesava.com/comparison-table",
+      "description": "Create feature comparison tables with export to HTML, PNG, and Markdown.",
+      "collections": [
+        "pmm",
+        "pm"
+      ],
+      "keywords": [
+        "comparison",
+        "feature",
+        "competitor",
+        "table",
+        "versus"
+      ]
+    },
+    {
+      "slug": "positioning-builder",
+      "name": "Positioning Statement Builder",
+      "url": "https://tools.iamkesava.com/positioning-builder",
+      "description": "Build positioning statements with guided frameworks from Dunford, Moore, and more.",
+      "collections": [
+        "pmm",
+        "pm"
+      ],
+      "keywords": [
+        "positioning",
+        "statement",
+        "framework",
+        "dunford",
+        "moore"
+      ]
+    },
+    {
+      "slug": "rice-calculator",
+      "name": "RICE Scoring Calculator",
+      "url": "https://tools.iamkesava.com/rice-calculator",
+      "description": "Prioritize features with the RICE framework. Score initiatives by Reach, Impact, Confidence, and Effort.",
+      "collections": [
+        "pm",
+        "pmm"
+      ],
+      "keywords": [
+        "rice",
+        "prioritization",
+        "scoring",
+        "reach",
+        "impact",
+        "confidence",
+        "effort",
+        "backlog",
+        "feature"
+      ]
+    },
+    {
+      "slug": "ab-test-calculator",
+      "name": "A/B Test Calculator",
+      "url": "https://tools.iamkesava.com/ab-test-calculator",
+      "description": "Statistical significance calculator for A/B tests. Sample size planner and results analyzer.",
+      "collections": [
+        "pmm",
+        "pm",
+        "seo"
+      ],
+      "keywords": [
+        "ab test",
+        "split test",
+        "significance",
+        "sample size",
+        "p-value",
+        "conversion",
+        "experiment",
+        "hypothesis"
+      ]
+    },
+    {
+      "slug": "release-notes-formatter",
+      "name": "Release Notes Formatter",
+      "url": "https://tools.iamkesava.com/release-notes-formatter",
+      "description": "Turn raw changelog bullets into polished, categorized release notes. Export as Markdown, HTML, or plain text.",
+      "collections": [
+        "pm",
+        "pmm"
+      ],
+      "keywords": [
+        "release notes",
+        "changelog",
+        "update",
+        "version",
+        "ship",
+        "announcement"
+      ]
+    },
+    {
+      "slug": "feature-benefit-mapper",
+      "name": "Feature-Benefit Mapper",
+      "url": "https://tools.iamkesava.com/feature-benefit-mapper",
+      "description": "Map product features to customer benefits. Catch feature-speak before it reaches your landing page.",
+      "collections": [
+        "pmm",
+        "pm"
+      ],
+      "keywords": [
+        "feature",
+        "benefit",
+        "value proposition",
+        "messaging",
+        "copy",
+        "positioning"
+      ]
+    },
+    {
+      "slug": "content-brief-builder",
+      "name": "Content Brief Builder",
+      "url": "https://tools.iamkesava.com/content-brief-builder",
+      "description": "Build structured content briefs for writers and SEO teams. Define keywords, audience, intent, and outline.",
+      "collections": [
+        "seo",
+        "pmm",
+        "writers"
+      ],
+      "keywords": [
+        "content brief",
+        "seo brief",
+        "outline",
+        "keyword",
+        "writer",
+        "assignment"
+      ]
+    },
+    {
+      "slug": "video-converter",
+      "name": "Video Converter",
+      "url": "https://tools.iamkesava.com/video-converter",
+      "description": "Convert videos between MP4 and WebM. 100% client-side, no uploads, no limits.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "video",
+        "convert",
+        "mp4",
+        "webm",
+        "mov",
+        "transcode"
+      ]
+    }
+  ]
+}

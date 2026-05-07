@@ -11,6 +11,7 @@ Counts: 54 tools across 8 collections.
 
 ## Agent discovery
 
+- [tools.json](https://tools.iamkesava.com/tools.json): machine-readable catalog of all 60 tools and 8 collections.
 - [Agent permissions](https://tools.iamkesava.com/.well-known/agent-permissions.json): use rights, attribution, license.
 - [API catalog](https://tools.iamkesava.com/.well-known/api-catalog): RFC 9727 linkset to discoverable resources.
 - [Agent skills](https://tools.iamkesava.com/.well-known/agent-skills/index.json): Agent Skills Discovery v0.2 index.

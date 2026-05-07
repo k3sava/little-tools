@@ -91,6 +91,7 @@ async function writeLlms(tools, collections) {
     "",
     "## Agent discovery",
     "",
+    `- [tools.json](${SITE}/tools.json): machine-readable catalog of all 60 tools and 8 collections.`,
     `- [Agent permissions](${SITE}/.well-known/agent-permissions.json): use rights, attribution, license.`,
     `- [API catalog](${SITE}/.well-known/api-catalog): RFC 9727 linkset to discoverable resources.`,
     `- [Agent skills](${SITE}/.well-known/agent-skills/index.json): Agent Skills Discovery v0.2 index.`,
@@ -129,6 +130,33 @@ async function writeLlms(tools, collections) {
   lines.push("MIT. Cite freely with attribution to Kesava and a link to the canonical URL.");
   lines.push("");
   await writeFile(join(PUB, "llms.txt"), lines.join("\n"));
+}
+
+// ── tools.json — machine-readable catalog ──────────────────────────────────
+async function writeToolsJson(tools, collections) {
+  const today = new Date().toISOString().slice(0, 10);
+  const out = {
+    $schema: `${SITE}/tools.schema.json`,
+    site: SITE,
+    license: "MIT",
+    last_updated: today,
+    counts: { tools: tools.length, collections: collections.length },
+    collections: collections.map((c) => ({
+      slug: c.href.replace(/^\/for\//, "").replace(/\/$/, ""),
+      title: c.title,
+      url: `${SITE}${c.href}/`,
+      description: c.description,
+    })),
+    tools: tools.map((t) => ({
+      slug: t.href.replace(/^\//, "").replace(/\/$/, ""),
+      name: t.name,
+      url: `${SITE}${t.href}`,
+      description: t.description,
+      collections: t.collections || [],
+      keywords: t.keywords || [],
+    })),
+  };
+  await writeFile(join(PUB, "tools.json"), JSON.stringify(out, null, 2));
 }
 
 // ── agent-permissions.json (Osmani Layer 1) ────────────────────────────────
@@ -268,8 +296,9 @@ async function main() {
   const collections = await parseCollections();
   console.log(`prebuild-aeo: ${tools.length} tools, ${collections.length} collections`);
   await writeLlms(tools, collections);
+  await writeToolsJson(tools, collections);
   await writeAgentPermissions(tools);
   await writeOg(tools, collections);
-  console.log(`prebuild-aeo: wrote llms.txt, agent-permissions.json, ${tools.length + collections.length + 1} OG cards`);
+  console.log(`prebuild-aeo: wrote llms.txt, tools.json, agent-permissions.json, ${tools.length + collections.length + 1} OG cards`);
 }
 main().catch((e) => { console.error(e); process.exit(1); });

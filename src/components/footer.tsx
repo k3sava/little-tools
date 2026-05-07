@@ -32,6 +32,10 @@ export function Footer() {
         <a href="/llms.txt" style={{ color: "inherit" }}>llms.txt</a>
         {" · "}
         <a href="/sitemap.xml" style={{ color: "inherit" }}>sitemap</a>
+        {" · "}
+        <a href="/feed.xml" style={{ color: "inherit" }}>rss</a>
+        {" · "}
+        <a href="/tools.json" style={{ color: "inherit" }}>tools.json</a>
       </div>
       <nav
         aria-label="Sister sites"
