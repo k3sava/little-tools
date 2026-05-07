@@ -9,6 +9,12 @@ Counts: 54 tools across 8 collections.
 - [Sitemap](https://tools.iamkesava.com/sitemap.xml): every canonical URL.
 - [Home](https://tools.iamkesava.com/): all tools by collection.
 
+## Agent discovery
+
+- [Agent permissions](https://tools.iamkesava.com/.well-known/agent-permissions.json): use rights, attribution, license.
+- [API catalog](https://tools.iamkesava.com/.well-known/api-catalog): RFC 9727 linkset to discoverable resources.
+- [Agent skills](https://tools.iamkesava.com/.well-known/agent-skills/index.json): Agent Skills Discovery v0.2 index.
+
 ## Sister sites
 
 - [apps.iamkesava.com](https://apps.iamkesava.com/): Kami Studios apps and AI playgrounds.

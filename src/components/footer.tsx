@@ -4,11 +4,10 @@
 // triangulates and a stranger landing on one finds the others.
 
 const links = [
-  { label: "tools", href: "https://tools.iamkesava.com/", self: true },
   { label: "apps", href: "https://apps.iamkesava.com/" },
+  { label: "tools", href: "https://tools.iamkesava.com/", self: true },
   { label: "toys", href: "https://toys.iamkesava.com/" },
   { label: "codex", href: "https://codex.iamkesava.com/" },
-  { label: "iamkesava", href: "https://iamkesava.com/" },
 ];
 
 export function Footer() {
