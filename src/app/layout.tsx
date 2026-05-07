@@ -71,6 +71,17 @@ export const metadata: Metadata = {
       "60 ad-free, privacy-first browser tools. All processing in your browser.",
     images: ["https://tools.iamkesava.com/og/default.svg"],
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-snippet": -1,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+    },
+  },
   themeColor: "#0a0a0a",
 };
 
