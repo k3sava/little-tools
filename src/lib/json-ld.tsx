@@ -59,6 +59,56 @@ export function softwareLd({ slug, name, description, collection, collectionHref
           { "@type": "ListItem", position: collection ? 3 : 2, name, item: url },
         ],
       },
+      // Boilerplate FAQ that applies to every tool. AI search agents pull
+      // this for "is it free?", "do you upload my data?" type queries.
+      {
+        "@type": "FAQPage",
+        "@id": url + "#faq",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: `What is ${name}?`,
+            acceptedAnswer: { "@type": "Answer", text: description },
+          },
+          {
+            "@type": "Question",
+            name: `Is ${name} free?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Yes. Free, no signup, no ads, no data collection. Runs entirely in your browser.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Does ${name} upload my data?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "No. All processing happens client-side in your browser. Nothing is uploaded to a server.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: `Who built ${name}?`,
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Kesava (https://iamkesava.com), part of the Kami Studios little tools collection at https://tools.iamkesava.com.",
+            },
+          },
+        ],
+      },
+      // Speakable selectors mark which page elements an AI assistant should
+      // read aloud. h1 + the first paragraph after it cover the claim+context
+      // every tool page renders.
+      {
+        "@type": "WebPage",
+        "@id": url + "#page",
+        url,
+        name,
+        speakable: {
+          "@type": "SpeakableSpecification",
+          cssSelector: ["h1", "main p:first-of-type"],
+        },
+      },
     ],
   };
 }
