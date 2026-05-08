@@ -153,6 +153,7 @@ export const allTools: Tool[] = [
   { name: "Meta Tag Generator", description: "Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.", href: "/meta-tag-generator", icon: "⟨⟩", collections: ["seo"], keywords: ["meta", "og", "opengraph", "twitter card", "serp", "preview"] },
   { name: "Schema Generator", description: "Build JSON-LD structured data for Articles, FAQs, Products, and more.", href: "/schema-generator", icon: "{}+", collections: ["seo"], keywords: ["schema", "json-ld", "structured data", "rich results", "faq"] },
   { name: "SEO Content Analyzer", description: "Analyze content for keyword density, heading structure, readability, and SEO score.", href: "/seo-content-analyzer", icon: "📊", collections: ["seo"], keywords: ["keyword density", "heading", "seo score", "content optimization"] },
+  { name: "AEO Readiness Scorer", description: "Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.", href: "/aeo-readiness-scorer", icon: "🤖", collections: ["seo"], keywords: ["aeo", "answer engine", "ai search", "citation", "schema", "json-ld", "llms.txt", "readiness", "aleyda solis"] },
 
   // Marketing tools
   { name: "Readability Scorer", description: "Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.", href: "/readability-scorer", icon: "Rz", collections: ["writers", "pmm", "pm", "seo"], keywords: ["readability", "flesch", "gunning fog", "grade level", "reading level"] },
