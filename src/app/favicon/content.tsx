@@ -3,12 +3,18 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, SwatchGrid } from "@/components/tools/controls";
 
-// --- Types ---
-
-type InputMode = "upload" | "emoji";
+type InputMode = "upload" | "emoji" | "text";
 type ThemeMode = "light" | "dark";
+type ShapeMode = "square" | "rounded" | "circle";
+
+const ACCENT = "#8b5cf6";
 
 interface GeneratedIcon {
   size: number;
@@ -32,24 +38,21 @@ function createICO(images: { size: number; data: Uint8Array }[]): Blob {
   const totalSize = dataOffset;
   const buf = new ArrayBuffer(totalSize);
   const view = new DataView(buf);
-  // ICO header
-  view.setUint16(0, 0, true); // reserved
-  view.setUint16(2, 1, true); // type: icon
-  view.setUint16(4, images.length, true); // count
-  // Directory entries
+  view.setUint16(0, 0, true);
+  view.setUint16(2, 1, true);
+  view.setUint16(4, images.length, true);
   for (let i = 0; i < entries.length; i++) {
     const off = headerSize + i * dirEntrySize;
     const s = entries[i].size;
-    view.setUint8(off, s >= 256 ? 0 : s); // width
-    view.setUint8(off + 1, s >= 256 ? 0 : s); // height
-    view.setUint8(off + 2, 0); // color palette
-    view.setUint8(off + 3, 0); // reserved
-    view.setUint16(off + 4, 1, true); // color planes
-    view.setUint16(off + 6, 32, true); // bits per pixel
-    view.setUint32(off + 8, entries[i].data.length, true); // size
-    view.setUint32(off + 12, entries[i].offset, true); // offset
+    view.setUint8(off, s >= 256 ? 0 : s);
+    view.setUint8(off + 1, s >= 256 ? 0 : s);
+    view.setUint8(off + 2, 0);
+    view.setUint8(off + 3, 0);
+    view.setUint16(off + 4, 1, true);
+    view.setUint16(off + 6, 32, true);
+    view.setUint32(off + 8, entries[i].data.length, true);
+    view.setUint32(off + 12, entries[i].offset, true);
   }
-  // Image data (PNG)
   const uint8 = new Uint8Array(buf);
   for (const entry of entries) {
     uint8.set(entry.data, entry.offset);
@@ -78,24 +81,22 @@ function createZip(files: { name: string; data: Uint8Array }[]): Blob {
   for (const file of files) {
     const nameBytes = new TextEncoder().encode(file.name);
     const crc = crc32(file.data);
-    // Local file header
     const local = new ArrayBuffer(30 + nameBytes.length);
     const lv = new DataView(local);
-    lv.setUint32(0, 0x04034b50, true); // signature
-    lv.setUint16(4, 20, true); // version needed
-    lv.setUint16(6, 0, true); // flags
-    lv.setUint16(8, 0, true); // compression: store
-    lv.setUint16(10, 0, true); // mod time
-    lv.setUint16(12, 0, true); // mod date
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0, true);
+    lv.setUint16(8, 0, true);
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0, true);
     lv.setUint32(14, crc, true);
-    lv.setUint32(18, file.data.length, true); // compressed size
-    lv.setUint32(22, file.data.length, true); // uncompressed size
+    lv.setUint32(18, file.data.length, true);
+    lv.setUint32(22, file.data.length, true);
     lv.setUint16(26, nameBytes.length, true);
-    lv.setUint16(28, 0, true); // extra length
+    lv.setUint16(28, 0, true);
     new Uint8Array(local).set(nameBytes, 30);
     localHeaders.push(new Uint8Array(local));
 
-    // Central directory header
     const central = new ArrayBuffer(46 + nameBytes.length);
     const cv = new DataView(central);
     cv.setUint32(0, 0x02014b50, true);
@@ -125,7 +126,6 @@ function createZip(files: { name: string; data: Uint8Array }[]): Blob {
   let centralSize = 0;
   for (const c of centralHeaders) centralSize += c.length;
 
-  // End of central directory
   const eocd = new ArrayBuffer(22);
   const ev = new DataView(eocd);
   ev.setUint32(0, 0x06054b50, true);
@@ -147,57 +147,88 @@ function createZip(files: { name: string; data: Uint8Array }[]): Blob {
   return new Blob(parts, { type: "application/zip" });
 }
 
-// --- Sizes ---
-
 const ICON_SIZES = [
-  { size: 16, label: "16×16 - Browser tab" },
-  { size: 32, label: "32×32 - Taskbar / shortcut" },
-  { size: 48, label: "48×48 - Desktop icon" },
-  { size: 64, label: "64×64 - Windows site" },
-  { size: 128, label: "128×128 - Chrome Web Store" },
-  { size: 180, label: "180×180 - Apple Touch Icon" },
-  { size: 192, label: "192×192 - Android Chrome" },
-  { size: 512, label: "512×512 - PWA / Splash" },
+  { size: 16, label: "Browser tab" },
+  { size: 32, label: "Taskbar / shortcut" },
+  { size: 48, label: "Desktop icon" },
+  { size: 64, label: "Windows site" },
+  { size: 128, label: "Chrome Web Store" },
+  { size: 180, label: "Apple Touch" },
+  { size: 192, label: "Android Chrome" },
+  { size: 512, label: "PWA / Splash" },
 ];
 
-// --- Canvas helpers ---
+const PREVIEW_SIZES = [16, 32, 48, 180, 512];
+
+function clipShape(ctx: CanvasRenderingContext2D, size: number, shape: ShapeMode) {
+  if (shape === "square") return;
+  ctx.beginPath();
+  if (shape === "circle") {
+    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  } else {
+    const r = size * 0.22;
+    ctx.moveTo(r, 0);
+    ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size);
+    ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+  }
+  ctx.clip();
+}
 
 function drawImageToCanvas(
   img: HTMLImageElement,
   size: number,
+  shape: ShapeMode
 ): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d")!;
+  ctx.save();
+  clipShape(ctx, size, shape);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, size, size);
+  ctx.restore();
   return canvas;
 }
 
-function drawEmojiToCanvas(emoji: string, size: number, bg: string): HTMLCanvasElement {
+function drawTextToCanvas(
+  text: string,
+  size: number,
+  bg: string,
+  fg: string,
+  shape: ShapeMode
+): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d")!;
+  ctx.save();
+  clipShape(ctx, size, shape);
   if (bg !== "transparent") {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, size, size);
   }
+  ctx.fillStyle = fg;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.font = `${Math.floor(size * 0.75)}px serif`;
-  ctx.fillText(emoji, size / 2, size / 2 + size * 0.05);
+  const fontSize = text.length <= 2 ? Math.floor(size * 0.6) : Math.floor(size * 0.4);
+  ctx.font = `bold ${fontSize}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+  ctx.fillText(text, size / 2, size / 2 + size * 0.04);
+  ctx.restore();
   return canvas;
 }
 
 async function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   return new Promise((resolve) => {
-    canvas.toBlob(
-      (b) => resolve(b || new Blob()),
-      "image/png",
-    );
+    canvas.toBlob((b) => resolve(b || new Blob()), "image/png");
   });
 }
 
@@ -206,12 +237,13 @@ async function canvasToUint8(canvas: HTMLCanvasElement): Promise<Uint8Array> {
   return new Uint8Array(await blob.arrayBuffer());
 }
 
-// --- Component ---
-
 export default function FaviconContent() {
   const [mode, setMode] = useState<InputMode>("upload");
   const [emoji, setEmoji] = useState("⚡");
-  const [emojiBg, setEmojiBg] = useState("#6366f1");
+  const [text, setText] = useState("K");
+  const [bgColor, setBgColor] = useState("#6366f1");
+  const [fgColor, setFgColor] = useState("#ffffff");
+  const [shape, setShape] = useState<ShapeMode>("rounded");
   const [uploadedImage, setUploadedImage] = useState<HTMLImageElement | null>(null);
   const [uploadedName, setUploadedName] = useState("");
   const [darkImage, setDarkImage] = useState<HTMLImageElement | null>(null);
@@ -220,7 +252,7 @@ export default function FaviconContent() {
   const [icons, setIcons] = useState<GeneratedIcon[]>([]);
   const [generating, setGenerating] = useState(false);
   const [previewTitle, setPreviewTitle] = useState("My Website");
-  const [showCode, setShowCode] = useState(false);
+
   const loadImage = useCallback(
     (file: File): Promise<HTMLImageElement> =>
       new Promise((resolve, reject) => {
@@ -260,37 +292,66 @@ export default function FaviconContent() {
     for (const { size, label } of ICON_SIZES) {
       let canvas: HTMLCanvasElement;
       if (mode === "emoji") {
-        canvas = drawEmojiToCanvas(emoji, size, emojiBg);
+        canvas = drawTextToCanvas(emoji, size, bgColor, fgColor, shape);
+      } else if (mode === "text") {
+        canvas = drawTextToCanvas(text, size, bgColor, fgColor, shape);
       } else {
-        const img =
-          activeTheme === "dark" && darkImage ? darkImage : uploadedImage;
+        const img = activeTheme === "dark" && darkImage ? darkImage : uploadedImage;
         if (!img) continue;
-        canvas = drawImageToCanvas(img, size);
+        canvas = drawImageToCanvas(img, size, shape);
       }
       const blob = await canvasToBlob(canvas);
       results.push({ size, label, canvas, blob });
     }
     setIcons(results);
     setGenerating(false);
-  }, [mode, emoji, emojiBg, uploadedImage, darkImage, activeTheme]);
+  }, [mode, emoji, text, bgColor, fgColor, shape, uploadedImage, darkImage, activeTheme]);
 
-  // Auto-generate on input change
   useEffect(() => {
-    if (mode === "emoji" && emoji) {
-      generateIcons();
-    } else if (mode === "upload" && uploadedImage) {
-      generateIcons();
-    }
-  }, [mode, emoji, emojiBg, uploadedImage, darkImage, activeTheme, generateIcons]);
+    if (mode === "emoji" && emoji) generateIcons();
+    else if (mode === "text" && text) generateIcons();
+    else if (mode === "upload" && uploadedImage) generateIcons();
+  }, [mode, emoji, text, bgColor, fgColor, shape, uploadedImage, darkImage, activeTheme, generateIcons]);
+
+  const generateManifest = useCallback(() => {
+    return JSON.stringify(
+      {
+        name: previewTitle,
+        short_name: previewTitle,
+        icons: [
+          { src: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+          { src: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+        ],
+        theme_color: bgColor,
+        background_color: "#ffffff",
+        display: "standalone",
+      },
+      null,
+      2,
+    );
+  }, [previewTitle, bgColor]);
+
+  const generateMetaTags = useCallback(() => {
+    return `<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">`;
+  }, []);
+
+  const downloadBlob = (blob: Blob, name: string) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const downloadICO = useCallback(async () => {
     const small = icons.filter((i) => i.size <= 64);
     if (!small.length) return;
     const images = await Promise.all(
-      small.map(async (i) => ({
-        size: i.size,
-        data: await canvasToUint8(i.canvas),
-      })),
+      small.map(async (i) => ({ size: i.size, data: await canvasToUint8(i.canvas) })),
     );
     const blob = createICO(images);
     downloadBlob(blob, "favicon.ico");
@@ -302,537 +363,358 @@ export default function FaviconContent() {
     for (const icon of icons) {
       const data = await canvasToUint8(icon.canvas);
       const name =
-        icon.size === 180
-          ? "apple-touch-icon.png"
-          : `icon-${icon.size}x${icon.size}.png`;
+        icon.size === 180 ? "apple-touch-icon.png" : `icon-${icon.size}x${icon.size}.png`;
       files.push({ name, data });
     }
-    // Add ICO
     const small = icons.filter((i) => i.size <= 64);
     const icoImages = await Promise.all(
-      small.map(async (i) => ({
-        size: i.size,
-        data: await canvasToUint8(i.canvas),
-      })),
+      small.map(async (i) => ({ size: i.size, data: await canvasToUint8(i.canvas) })),
     );
     const icoBlob = createICO(icoImages);
     files.push({
       name: "favicon.ico",
       data: new Uint8Array(await icoBlob.arrayBuffer()),
     });
-    // manifest.json
     files.push({
       name: "site.webmanifest",
       data: new TextEncoder().encode(generateManifest()),
     });
-    // meta tags
     files.push({
       name: "favicon-tags.html",
       data: new TextEncoder().encode(generateMetaTags()),
     });
     const zip = createZip(files);
     downloadBlob(zip, "favicons.zip");
-  }, [icons]);
+  }, [icons, generateManifest, generateMetaTags]);
 
-  const generateManifest = useCallback(() => {
-    return JSON.stringify(
-      {
-        name: previewTitle,
-        short_name: previewTitle,
-        icons: [
-          { src: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
-        ],
-        theme_color: "#ffffff",
-        background_color: "#ffffff",
-        display: "standalone",
-      },
-      null,
-      2,
-    );
-  }, [previewTitle]);
+  useKeyboardShortcuts(
+    useMemo(
+      () => [{ key: "Enter", meta: true, action: () => downloadZip(), label: "Download" }],
+      [downloadZip]
+    )
+  );
 
-  const generateMetaTags = useCallback(() => {
-    return `<link rel="icon" href="/favicon.ico" sizes="48x48">
-<link rel="icon" href="/icon-32x32.png" sizes="32x32" type="image/png">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<link rel="manifest" href="/site.webmanifest">`;
-  }, []);
+  const actions = (
+    <>
+      <ToolActionButton variant="ghost" onClick={downloadICO} disabled={icons.length === 0}>
+        .ico
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={downloadZip} disabled={icons.length === 0}>
+        Download zip
+      </ToolActionButton>
+    </>
+  );
 
-  useKeyboardShortcuts(useMemo(() => [
-    { key: "Enter", meta: true, action: () => downloadZip(), label: "Download" },
-  ], [downloadZip]));
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    minHeight: 40,
+    padding: "8px 12px",
+    borderRadius: 10,
+    border: "1px solid var(--kami-border-strong)",
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    outline: "none",
+    fontSize: 14,
+  };
 
-  const hasInput = mode === "emoji" || uploadedImage;
+  const controls = (
+    <>
+      <ControlGroup label="Source">
+        <Segment<InputMode>
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "upload", label: "Image" },
+            { value: "emoji", label: "Emoji" },
+            { value: "text", label: "Text" },
+          ]}
+          full
+        />
+      </ControlGroup>
+
+      {mode === "upload" && (
+        <ControlGroup label="Image">
+          {uploadedImage ? (
+            <div
+              className="flex items-center gap-3 rounded-lg border p-2"
+              style={{ borderColor: "var(--kami-border)" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={uploadedImage.src} alt={uploadedName} className="h-12 w-12 rounded" />
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs">{uploadedName}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setUploadedImage(null);
+                  setUploadedName("");
+                }}
+                className="tool-shell-icon-btn"
+                aria-label="Remove image"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <FileDropZone
+              accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
+              onFiles={handleFileDrop}
+              label="Drop image"
+              hint="Square works best"
+              multiple={false}
+            />
+          )}
+        </ControlGroup>
+      )}
+
+      {mode === "emoji" && (
+        <ControlGroup label="Emoji">
+          <input
+            type="text"
+            value={emoji}
+            onChange={(e) => setEmoji(e.target.value)}
+            maxLength={4}
+            style={{ ...inputStyle, fontSize: 24, textAlign: "center" }}
+          />
+        </ControlGroup>
+      )}
+
+      {mode === "text" && (
+        <ControlGroup label="Text">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            maxLength={4}
+            style={{ ...inputStyle, fontSize: 18, fontWeight: 600, textAlign: "center" }}
+          />
+        </ControlGroup>
+      )}
+
+      {(mode === "emoji" || mode === "text") && (
+        <>
+          <ControlGroup label="Background">
+            <SwatchGrid
+              value={bgColor}
+              onChange={setBgColor}
+              colors={["#6366f1", "#3b82f6", "#10b981", "#f43f5e", "#f59e0b", "#000000", "#ffffff"]}
+            />
+          </ControlGroup>
+          <ControlGroup label="Foreground">
+            <SwatchGrid
+              value={fgColor}
+              onChange={setFgColor}
+              colors={["#ffffff", "#000000", "#fbbf24", "#34d399"]}
+            />
+          </ControlGroup>
+        </>
+      )}
+
+      <ControlGroup label="Shape">
+        <Segment<ShapeMode>
+          value={shape}
+          onChange={setShape}
+          options={[
+            { value: "square", label: "Square" },
+            { value: "rounded", label: "Squircle" },
+            { value: "circle", label: "Circle" },
+          ]}
+          full
+        />
+      </ControlGroup>
+
+      <ControlGroup label="Site name">
+        <input
+          type="text"
+          value={previewTitle}
+          onChange={(e) => setPreviewTitle(e.target.value)}
+          style={inputStyle}
+          placeholder="My Website"
+        />
+      </ControlGroup>
+
+      {mode === "upload" && (
+        <ControlGroup label="Dark variant (optional)">
+          {darkImage ? (
+            <div className="flex items-center gap-2 text-xs">
+              <span className="truncate">{darkName}</span>
+              <button
+                onClick={() => {
+                  setDarkImage(null);
+                  setDarkName("");
+                }}
+                className="tool-shell-icon-btn"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <FileDropZone
+              accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
+              onFiles={handleDarkFileDrop}
+              label="Drop dark variant"
+              multiple={false}
+            />
+          )}
+          {darkImage && (
+            <Segment<ThemeMode>
+              value={activeTheme}
+              onChange={setActiveTheme}
+              options={[
+                { value: "light", label: "Light" },
+                { value: "dark", label: "Dark" },
+              ]}
+              full
+            />
+          )}
+        </ControlGroup>
+      )}
+    </>
+  );
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Favicon Generator"
-          tagline="Generate every favicon format and size your site needs - from a single PNG or an emoji."
-          description="Upload an image or pick an emoji as the starting point. We output the full set: favicon.ico (legacy), 16/32/48/96/192/512 PNGs, Apple touch icon, Android manifest icons, Safari pinned-tab SVG, plus the <link> tags you drop into your <head>. Download as a zip."
-          audience={["Developers", "Indie hackers", "Designers"]}
-          whenToUse={[
-            "Shipping a new site that needs proper tab icons",
-            "Fixing blurry favicons on high-DPI displays",
-            "Generating a quick icon from an emoji for a prototype",
-          ]}
-        />
+    <ToolShell
+      title="Favicon Generator"
+      tagline="Every favicon size + .ico + manifest, generated locally."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Design"
+    >
+      <div className="flex flex-col gap-4">
+        {generating && (
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            Generating...
+          </p>
+        )}
 
-        {/* Input Mode Tabs */}
-        <div className="mt-8 flex gap-2">
-          <button
-            onClick={() => setMode("upload")}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={
-              mode === "upload"
-                ? {
-                    background: "var(--kami-cta-bg)",
-                    color: "var(--kami-cta-text)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }
-                : {
-                    background: "var(--kami-surface-solid)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }
-            }
-          >
-            Upload Image
-          </button>
-          <button
-            onClick={() => setMode("emoji")}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={
-              mode === "emoji"
-                ? {
-                    background: "var(--kami-cta-bg)",
-                    color: "var(--kami-cta-text)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }
-                : {
-                    background: "var(--kami-surface-solid)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }
-            }
-          >
-            Emoji / Text
-          </button>
-        </div>
+        {icons.length > 0 ? (
+          <>
+            <section
+              className="rounded-xl border p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                borderColor: "var(--kami-border-strong)",
+              }}
+            >
+              <h2 className="mb-3 text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+                Live preview
+              </h2>
+              <div className="flex flex-wrap items-end gap-4">
+                {PREVIEW_SIZES.map((s) => {
+                  const icon = icons.find((i) => i.size === s);
+                  if (!icon) return null;
+                  return (
+                    <div key={s} className="flex flex-col items-center gap-1">
+                      <CanvasPreview canvas={icon.canvas} displaySize={Math.min(s, 96)} />
+                      <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                        {s}px
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
 
-        {/* Input Area */}
-        <div
-          className="mt-4 p-6"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          {mode === "upload" ? (
-            <div className="space-y-4">
-              {/* Drop zone */}
-              {uploadedImage ? (
-                <div
-                  onClick={() => {
-                    setUploadedImage(null);
-                    setUploadedName("");
-                  }}
-                  className="flex min-h-[140px] cursor-pointer flex-col items-center justify-center transition-colors"
-                  style={{
-                    border: "2px dashed var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  }}
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <img
-                      src={uploadedImage.src}
-                      alt="Uploaded"
-                      className="h-16 w-16 rounded object-contain"
-                    />
-                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{uploadedName}</span>
-                    <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                      Click to replace
+              <div className="mt-4 inline-flex flex-col overflow-hidden rounded-lg" style={{ border: "1px solid #d1d5db" }}>
+                <div className="flex items-center gap-2 px-3 py-2" style={{ background: "#f3f4f6" }}>
+                  <div className="flex gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="flex items-center gap-2 px-3 py-1.5 max-w-[220px]" style={{ background: "#ffffff" }}>
+                    <FaviconPreview canvas={icons.find((i) => i.size === 16)?.canvas} />
+                    <span className="truncate text-xs" style={{ color: "#374151" }}>
+                      {previewTitle}
                     </span>
                   </div>
                 </div>
-              ) : (
-                <FileDropZone
-                  accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
-                  onFiles={handleFileDrop}
-                  label="Drop an image here or click to upload"
-                  hint="SVG, PNG, JPG - square images work best"
-                  multiple={false}
-                />
-              )}
-
-              {/* Dark mode variant */}
-              <div>
-                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Dark Mode Variant{" "}
-                  <span style={{ color: "var(--kami-text-dim)" }}>(optional)</span>
-                </label>
-                {darkImage ? (
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{darkName}</span>
-                    <button
-                      onClick={() => {
-                        setDarkImage(null);
-                        setDarkName("");
-                      }}
-                      className="text-sm"
-                      style={{ color: "var(--kami-text-dim)" }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <FileDropZone
-                    accept={[".png", ".jpg", ".jpeg", ".svg", ".webp"]}
-                    onFiles={handleDarkFileDrop}
-                    label="Drop dark variant here or click to upload"
-                    hint="Optional - used for dark mode favicon"
-                    multiple={false}
-                  />
-                )}
               </div>
+            </section>
 
-              {/* Theme toggle (when dark variant exists) */}
-              {darkImage && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Preview:</span>
-                  <button
-                    onClick={() => setActiveTheme("light")}
-                    className="px-3 py-1 text-sm"
-                    style={
-                      activeTheme === "light"
-                        ? {
-                            background: "var(--kami-cta-bg)",
-                            color: "var(--kami-cta-text)",
-                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface)",
-                            color: "var(--kami-text-muted)",
-                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                          }
-                    }
-                  >
-                    Light
-                  </button>
-                  <button
-                    onClick={() => setActiveTheme("dark")}
-                    className="px-3 py-1 text-sm"
-                    style={
-                      activeTheme === "dark"
-                        ? {
-                            background: "var(--kami-cta-bg)",
-                            color: "var(--kami-cta-text)",
-                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface)",
-                            color: "var(--kami-text-muted)",
-                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                          }
-                    }
-                  >
-                    Dark
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Emoji or Character
-                </label>
-                <input
-                  type="text"
-                  value={emoji}
-                  onChange={(e) => setEmoji(e.target.value)}
-                  maxLength={4}
-                  className="w-24 px-3 py-2 text-center text-2xl focus:outline-none"
-                  style={{
-                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-text)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  }}
-                />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Background Color
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={emojiBg}
-                    onChange={(e) => setEmojiBg(e.target.value)}
-                    className="h-10 w-10 cursor-pointer"
-                    style={{
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.375rem)",
-                    }}
-                  />
-                  <input
-                    type="text"
-                    value={emojiBg}
-                    onChange={(e) => setEmojiBg(e.target.value)}
-                    className="w-28 px-3 py-2 text-sm font-mono focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                  <button
-                    onClick={() => setEmojiBg("transparent")}
-                    className="px-3 py-2 text-sm"
-                    style={
-                      emojiBg === "transparent"
-                        ? {
-                            background: "var(--kami-surface)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            color: "var(--kami-text)",
-                          }
-                        : {
-                            background: "var(--kami-surface-solid)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            color: "var(--kami-text-muted)",
-                          }
-                    }
-                  >
-                    Transparent
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Browser Tab Preview */}
-        {icons.length > 0 && (
-          <div
-            className="mt-6 p-6"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <h2 className="mb-4 text-lg font-semibold">Browser Preview</h2>
-            <div className="flex items-center gap-3 mb-3">
-              <label className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Page title:</label>
-              <input
-                type="text"
-                value={previewTitle}
-                onChange={(e) => setPreviewTitle(e.target.value)}
-                className="px-2 py-1 text-sm focus:outline-none"
-                style={{
-                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.375rem)",
-                }}
-              />
-            </div>
-            {/* Mock browser tab - keep theme-neutral, this is a UI mock */}
-            <div
-              className="inline-flex flex-col overflow-hidden"
+            <section
+              className="rounded-xl border p-4"
               style={{
-                border: "1px solid #d1d5db",
-                borderRadius: "0.5rem",
+                background: "var(--kami-surface-solid)",
+                borderColor: "var(--kami-border-strong)",
               }}
             >
-              <div className="flex items-center gap-2 px-3 py-2" style={{ background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
-                <div className="flex gap-1.5">
-                  <div className="h-3 w-3 rounded-full bg-red-400" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-400" />
-                  <div className="h-3 w-3 rounded-full bg-green-400" />
-                </div>
-              </div>
-              <div className="flex items-center" style={{ borderBottom: "1px solid #e5e7eb" }}>
-                <div className="flex items-center gap-2 px-3 py-1.5 max-w-[200px]" style={{ background: "#ffffff", borderRight: "1px solid #e5e7eb" }}>
-                  <FaviconPreview canvas={icons.find((i) => i.size === 16)?.canvas} />
-                  <span className="truncate text-xs" style={{ color: "#374151" }}>
-                    {previewTitle}
-                  </span>
-                </div>
-                <div className="px-3 py-1.5 text-xs" style={{ color: "#9ca3af" }}>+</div>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5" style={{ background: "#ffffff" }}>
-                <span className="text-xs" style={{ color: "#9ca3af" }}>
-                  🔒 example.com
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Generated Icons */}
-        {icons.length > 0 && (
-          <div
-            className="mt-6 p-6"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Generated Icons</h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={downloadICO}
-                  className="px-3 py-2 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  Download .ico
-                </button>
-                <button
-                  onClick={downloadZip}
-                  className="px-4 py-2 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta-bg)",
-                    color: "var(--kami-cta-text)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  Download All (.zip)
-                </button>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {icons.map((icon) => (
-                <div
-                  key={icon.size}
-                  className="flex flex-col items-center p-3"
-                  style={{
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-card-radius, 0.5rem)",
-                  }}
-                >
-                  <div className="flex h-20 w-20 items-center justify-center">
-                    <CanvasPreview
-                      canvas={icon.canvas}
-                      displaySize={Math.min(icon.size, 64)}
-                    />
+              <h2 className="mb-3 text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+                Generated icons
+              </h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {icons.map((icon) => (
+                  <div
+                    key={icon.size}
+                    className="flex flex-col items-center rounded-lg border p-3"
+                    style={{ borderColor: "var(--kami-border)" }}
+                  >
+                    <div className="flex h-20 w-20 items-center justify-center">
+                      <CanvasPreview
+                        canvas={icon.canvas}
+                        displaySize={Math.min(icon.size, 64)}
+                      />
+                    </div>
+                    <span
+                      className="mt-2 text-xs font-medium"
+                      style={{ color: "var(--kami-text-muted)" }}
+                    >
+                      {icon.size}×{icon.size}
+                    </span>
+                    <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                      {icon.label}
+                    </span>
                   </div>
-                  <span className="mt-2 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    {icon.size}×{icon.size}
-                  </span>
-                  <span className="text-[10px] text-center" style={{ color: "var(--kami-text-dim)" }}>
-                    {icon.label.split("-")[1]?.trim()}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                ))}
+              </div>
+            </section>
 
-        {/* Code Snippets */}
-        {icons.length > 0 && (
-          <div
-            className="mt-6 p-6"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <button
-              onClick={() => setShowCode(!showCode)}
-              className="flex w-full items-center justify-between"
+            <section
+              className="rounded-xl border p-4 text-xs"
+              style={{
+                background: "var(--kami-surface-solid)",
+                borderColor: "var(--kami-border-strong)",
+              }}
             >
-              <h2 className="text-lg font-semibold">Code Snippets</h2>
-              <span className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                {showCode ? "▲ Hide" : "▼ Show"}
-              </span>
-            </button>
-            {showCode && (
-              <div className="mt-4 space-y-4">
-                {/* HTML Meta Tags */}
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      HTML Meta Tags
-                    </h3>
-                    <CopyButton text={generateMetaTags()} />
-                  </div>
-                  <pre
-                    className="overflow-x-auto p-4 text-sm"
-                    style={{
-                      background: "var(--kami-overlay-bg)",
-                      color: "var(--kami-overlay-text)",
-                      borderRadius: "var(--kami-card-radius, 0.5rem)",
-                    }}
-                  >
-                    <code>{generateMetaTags()}</code>
-                  </pre>
-                </div>
-                {/* manifest.json */}
-                <div>
-                  <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      site.webmanifest
-                    </h3>
-                    <CopyButton text={generateManifest()} />
-                  </div>
-                  <pre
-                    className="overflow-x-auto p-4 text-sm"
-                    style={{
-                      background: "var(--kami-overlay-bg)",
-                      color: "var(--kami-overlay-text)",
-                      borderRadius: "var(--kami-card-radius, 0.5rem)",
-                    }}
-                  >
-                    <code>{generateManifest()}</code>
-                  </pre>
-                </div>
-              </div>
-            )}
+              <h2 className="mb-2 text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+                HTML meta tags
+              </h2>
+              <pre
+                className="overflow-x-auto rounded-md p-3 text-[11px]"
+                style={{ background: "var(--kami-overlay-bg)", color: "var(--kami-overlay-text)" }}
+              >
+                <code>{generateMetaTags()}</code>
+              </pre>
+
+              <h2 className="mb-2 mt-4 text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+                site.webmanifest
+              </h2>
+              <pre
+                className="overflow-x-auto rounded-md p-3 text-[11px]"
+                style={{ background: "var(--kami-overlay-bg)", color: "var(--kami-overlay-text)" }}
+              >
+                <code>{generateManifest()}</code>
+              </pre>
+            </section>
+          </>
+        ) : (
+          <div
+            className="rounded-xl border p-6 text-center text-sm"
+            style={{
+              background: "var(--kami-surface-solid)",
+              borderColor: "var(--kami-border-strong)",
+              color: "var(--kami-text-muted)",
+            }}
+          >
+            Pick a source in the panel to start generating icons.
           </div>
         )}
-
-        {/* Empty state */}
-        {!hasInput && icons.length === 0 && (
-          <div className="mt-8 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            Upload an image or pick an emoji to get started.
-          </div>
-        )}
-
-        {generating && (
-          <div className="mt-4 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            Generating...
-          </div>
-        )}
-
-        {/* Footer */}
       </div>
-    </div>
+    </ToolShell>
   );
 }
-
-// --- Sub-components ---
 
 function FaviconPreview({ canvas }: { canvas?: HTMLCanvasElement }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -869,34 +751,4 @@ function CanvasPreview({
       style={{ width: displaySize, height: displaySize }}
     />
   );
-}
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
-      }}
-      className="px-2 py-1 text-xs transition-colors"
-      style={{
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-cta-radius, 0.25rem)",
-        color: "var(--kami-text-muted)",
-      }}
-    >
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
-
-function downloadBlob(blob: Blob, name: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
 }

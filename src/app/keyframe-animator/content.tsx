@@ -2,7 +2,13 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+  ToolIconButton,
+} from "@/components/tools/tool-shell";
+import { Slider, Segment, Select, SwatchGrid } from "@/components/tools/controls";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -132,11 +138,12 @@ export default function KeyframeAnimatorContent() {
     defaultStop(100),
   ]);
   const [selected, setSelected] = useState(0);
+  const [playing, setPlaying] = useState(true);
   const [config, setConfig] = useState<AnimationConfig>({
     name: "my-animation",
     duration: 1,
     timing: "ease",
-    iterations: "1",
+    iterations: "infinite",
     direction: "normal",
     fillMode: "forwards",
   });
@@ -151,8 +158,6 @@ export default function KeyframeAnimatorContent() {
     setAnimKey((k) => k + 1);
   }, [css]);
 
-  /* -- Actions -- */
-
   const copyCSS = useCallback(() => {
     navigator.clipboard.writeText(css);
     setCopied(true);
@@ -164,11 +169,9 @@ export default function KeyframeAnimatorContent() {
   );
 
   const addStop = () => {
-    // Pick a midpoint between existing stops
     const sorted = [...stops].sort((a, b) => a.percent - b.percent);
     let newPercent = 50;
     if (sorted.length >= 2) {
-      // Find the widest gap
       let maxGap = 0;
       let gapMid = 50;
       for (let i = 0; i < sorted.length - 1; i++) {
@@ -200,7 +203,20 @@ export default function KeyframeAnimatorContent() {
     setSelected(0);
   };
 
-  const replay = () => setAnimKey((k) => k + 1);
+  const replay = () => {
+    setPlaying(true);
+    setAnimKey((k) => k + 1);
+  };
+
+  const togglePlay = () => {
+    setPlaying((p) => !p);
+    setAnimKey((k) => k + 1);
+  };
+
+  const stop = () => {
+    setPlaying(false);
+    setAnimKey((k) => k + 1);
+  };
 
   const sorted = useMemo(() => [...stops].map((s, i) => ({ ...s, _i: i })).sort((a, b) => a.percent - b.percent), [stops]);
   const current = stops[selected] ?? stops[0];
@@ -215,542 +231,264 @@ export default function KeyframeAnimatorContent() {
   }, [stops]);
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Keyframe Animator"
-          tagline="Build @keyframes animations visually - drag keyframes on a timeline, tweak properties, copy the generated CSS."
-          description="Pick a preset (fadeIn, slideUp, pulse, shake…) or start blank. Drag keyframes on the timeline to time the motion; per-keyframe panels let you edit transform, opacity, color, and custom properties. Live preview loops continuously. Output is clean @keyframes + animation CSS you can paste directly."
-          audience={["Designers", "Motion designers", "Front-end developers"]}
-          whenToUse={[
-            "Building a loading or attention-getting animation",
-            "Prototyping a micro-interaction before handing off",
-            "Translating a designer's motion spec into CSS",
-          ]}
-        />
+    <ToolShell
+      title="Keyframe Animator"
+      tagline="Build @keyframes visually — timeline editor with live looping preview"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <ToolActionButton onClick={togglePlay} variant="outline">
+            {playing ? "Pause" : "Play"}
+          </ToolActionButton>
+          <ToolActionButton onClick={stop} variant="ghost">
+            Stop
+          </ToolActionButton>
+          <ToolActionButton onClick={copyCSS} variant="solid">
+            {copied ? "Copied!" : "Copy CSS"}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Presets">
+            <div className="flex flex-wrap gap-2">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => applyPreset(p)}
+                  className="px-3 py-2 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    minHeight: 40,
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </ControlGroup>
 
-        {/* Presets */}
-        <div className="mt-6">
-          <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
+          <ControlGroup label="Animation name">
+            <input
+              type="text"
+              value={config.name}
+              onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value.replace(/[^a-zA-Z0-9_-]/g, "") }))}
+              className="w-full px-3 py-2 font-mono text-sm"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+              }}
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Duration" hint={`${config.duration}s`}>
+            <Slider value={config.duration} onChange={(v) => setConfig((c) => ({ ...c, duration: v }))} min={0.1} max={5} step={0.1} unit="s" />
+          </ControlGroup>
+
+          <ControlGroup label="Timing">
+            <Select
+              value={config.timing}
+              onChange={(v) => setConfig((c) => ({ ...c, timing: v }))}
+              options={(["ease", "linear", "ease-in", "ease-out", "ease-in-out"] as TimingFunction[]).map((t) => ({ value: t, label: t }))}
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Iterations">
+            <Segment
+              value={config.iterations}
+              onChange={(v) => setConfig((c) => ({ ...c, iterations: v }))}
+              options={[
+                { value: "1", label: "1" },
+                { value: "2", label: "2" },
+                { value: "3", label: "3" },
+                { value: "infinite", label: "∞" },
+              ]}
+              full
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Direction">
+            <Select
+              value={config.direction}
+              onChange={(v) => setConfig((c) => ({ ...c, direction: v }))}
+              options={(["normal", "reverse", "alternate", "alternate-reverse"] as Direction[]).map((d) => ({ value: d, label: d }))}
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Fill mode">
+            <Segment
+              value={config.fillMode}
+              onChange={(v) => setConfig((c) => ({ ...c, fillMode: v }))}
+              options={[
+                { value: "none", label: "none" },
+                { value: "forwards", label: "fwd" },
+                { value: "backwards", label: "back" },
+                { value: "both", label: "both" },
+              ]}
+              full
+              size="sm"
+            />
+          </ControlGroup>
+
+          <ControlGroup label={`Keyframe @ ${current.percent}%`} hint={`${stops.length} stops`}>
+            <div className="mb-2 flex flex-wrap gap-1.5">
+              {sorted.map((s) => (
+                <button
+                  key={s._i}
+                  type="button"
+                  onClick={() => setSelected(s._i)}
+                  className="px-2.5 py-1.5 text-xs font-mono"
+                  style={{
+                    background: selected === s._i ? "var(--kami-cta-bg)" : "var(--kami-surface)",
+                    color: selected === s._i ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
+                  }}
+                >
+                  {s.percent}%
+                </button>
+              ))}
               <button
-                key={p.label}
-                onClick={() => applyPreset(p)}
-                className="px-3 py-1.5 text-xs transition"
+                type="button"
+                onClick={addStop}
+                className="px-2.5 py-1.5 text-xs"
                 style={{
-                  background: "var(--kami-surface-solid)",
+                  background: "transparent",
                   color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
+                  border: "1px dashed var(--kami-border-strong)",
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  minHeight: 32,
                 }}
               >
-                {p.label}
+                + Add
               </button>
+            </div>
+            <div className="mb-3 flex gap-1.5">
+              <ToolIconButton label="Remove keyframe" onClick={() => removeStop(selected)} disabled={stops.length <= 2}>×</ToolIconButton>
+              <ToolIconButton label="Replay" onClick={replay}>↻</ToolIconButton>
+            </div>
+            <Slider label="Position" value={current.percent} onChange={(v) => updateStop(selected, { percent: v })} min={0} max={100} unit="%" />
+            <Slider label="Opacity" value={current.opacity} onChange={(v) => updateStop(selected, { opacity: v })} min={0} max={1} step={0.05} />
+            <Slider label="Translate X" value={current.translateX} onChange={(v) => updateStop(selected, { translateX: v })} min={-200} max={200} unit="px" />
+            <Slider label="Translate Y" value={current.translateY} onChange={(v) => updateStop(selected, { translateY: v })} min={-200} max={200} unit="px" />
+            <Slider label="Scale" value={current.scale} onChange={(v) => updateStop(selected, { scale: v })} min={0} max={3} step={0.05} />
+            <Slider label="Rotate" value={current.rotate} onChange={(v) => updateStop(selected, { rotate: v })} min={-360} max={360} unit="°" />
+            <div className="mt-2">
+              <SwatchGrid
+                value={current.backgroundColor}
+                onChange={(c) => updateStop(selected, { backgroundColor: c })}
+                colors={["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6", "#ef4444", "#ffffff", "#000000"]}
+                label="Color"
+              />
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Generated CSS">
+            <pre
+              className="overflow-x-auto p-3 text-xs"
+              style={{
+                background: "var(--kami-overlay-bg, #0d1117)",
+                color: "var(--kami-overlay-text, #f1f5f9)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                maxHeight: 260,
+              }}
+            >
+              <code>{css}</code>
+            </pre>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Pick a preset or click <strong>+ Add</strong> in the Keyframe panel to insert a
+            stop in the widest gap. Each stop has its own translate, scale, rotate,
+            opacity and background color.
+          </p>
+          <p className="text-xs">Press the timeline dots to jump between keyframes. Play / Pause / Stop in the header controls playback.</p>
+        </div>
+      }
+    >
+      <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
+        {/* Live Preview */}
+        <div
+          className="relative flex flex-1 items-center justify-center overflow-hidden bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#fff_0%_50%)] bg-[length:20px_20px]"
+          style={{
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            minHeight: 260,
+          }}
+        >
+          <div
+            ref={previewRef}
+            key={animKey}
+            className="h-24 w-24 rounded-2xl"
+            style={{
+              backgroundColor: current.backgroundColor,
+              animation: playing
+                ? `__kf_preview__ ${config.duration}s ${config.timing} ${config.iterations === "infinite" ? "infinite" : config.iterations} ${config.direction} ${config.fillMode}`
+                : "none",
+            }}
+          />
+        </div>
+
+        {/* Timeline */}
+        <div
+          className="p-4"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          <div className="mb-3 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <span className="font-semibold">Timeline</span>
+            <span className="font-mono">{config.duration}s · {stops.length} stops</span>
+          </div>
+          <div
+            className="relative h-12"
+            style={{
+              background: "var(--kami-surface)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+            }}
+          >
+            {[0, 25, 50, 75, 100].map((t) => (
+              <div
+                key={t}
+                className="absolute top-0 h-full"
+                style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
+              >
+                <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
+              </div>
+            ))}
+            {sorted.map((s) => (
+              <button
+                key={s._i}
+                type="button"
+                onClick={() => setSelected(s._i)}
+                className="absolute top-1/2 h-6 w-6 rounded-full transition-all"
+                style={{
+                  left: `${s.percent}%`,
+                  transform: `translate(-50%, -50%) ${selected === s._i ? "scale(1.2)" : "scale(1)"}`,
+                  background: selected === s._i ? "var(--kami-text)" : s.backgroundColor,
+                  border: "2px solid var(--kami-surface-solid)",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                }}
+                title={`${s.percent}%`}
+                aria-label={`Keyframe at ${s.percent}%`}
+              />
             ))}
           </div>
         </div>
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_340px]">
-          {/* Left column: preview + timeline + CSS output */}
-          <div className="space-y-4">
-            {/* Live Preview */}
-            <div
-              className="overflow-hidden"
-              style={{
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="relative flex items-center justify-center bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#fff_0%_50%)] bg-[length:20px_20px] min-h-[280px]">
-                <div
-                  ref={previewRef}
-                  key={animKey}
-                  className="h-20 w-20 rounded-xl"
-                  style={{
-                    backgroundColor: current.backgroundColor,
-                    animation: `__kf_preview__ ${config.duration}s ${config.timing} ${config.iterations === "infinite" ? "infinite" : config.iterations} ${config.direction} ${config.fillMode}`,
-                  }}
-                />
-              </div>
-              <div
-                className="flex items-center justify-between px-4 py-2"
-                style={{
-                  borderTop: "1px solid var(--kami-border-strong)",
-                  background: "var(--kami-surface-solid)",
-                }}
-              >
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Live preview</span>
-                <button
-                  onClick={replay}
-                  className="px-2 py-1 text-xs"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  Replay
-                </button>
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Timeline</h2>
-                <button
-                  onClick={addStop}
-                  className="px-2 py-1 text-xs"
-                  style={{
-                    border: "1px dashed var(--kami-border-strong)",
-                    color: "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  + Add Keyframe
-                </button>
-              </div>
-
-              {/* Timeline bar */}
-              <div
-                className="relative h-10"
-                style={{
-                  background: "var(--kami-surface)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.5rem)",
-                }}
-              >
-                {/* Tick marks */}
-                {[0, 25, 50, 75, 100].map((t) => (
-                  <div
-                    key={t}
-                    className="absolute top-0 h-full"
-                    style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
-                  >
-                    <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
-                  </div>
-                ))}
-                {/* Keyframe dots */}
-                {sorted.map((s) => (
-                  <button
-                    key={s._i}
-                    onClick={() => setSelected(s._i)}
-                    className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-5 w-5 rounded-full transition-all"
-                    style={
-                      selected === s._i
-                        ? {
-                            border: "2px solid var(--kami-text)",
-                            background: "var(--kami-text)",
-                            transform: "translate(-50%, -50%) scale(1.25)",
-                            boxShadow: "var(--kami-card-shadow, 0 4px 6px rgba(0,0,0,0.1))",
-                            left: `${s.percent}%`,
-                          }
-                        : {
-                            border: "2px solid var(--kami-border-strong)",
-                            background: "var(--kami-surface-solid)",
-                            left: `${s.percent}%`,
-                          }
-                    }
-                    title={`${s.percent}%`}
-                  />
-                ))}
-              </div>
-
-              {/* Keyframe list */}
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {sorted.map((s) => (
-                  <div
-                    key={s._i}
-                    onClick={() => setSelected(s._i)}
-                    className="flex cursor-pointer items-center gap-1.5 px-2.5 py-1 text-xs transition"
-                    style={
-                      selected === s._i
-                        ? {
-                            background: "var(--kami-cta-bg, #111827)",
-                            color: "var(--kami-cta-text, #ffffff)",
-                            border: "1px solid var(--kami-cta-bg, #111827)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface)",
-                            color: "var(--kami-text-muted)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                    }
-                  >
-                    <span className="font-mono">{s.percent}%</span>
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{
-                        backgroundColor: s.backgroundColor,
-                        border: "1px solid var(--kami-border)",
-                      }}
-                    />
-                    {stops.length > 2 && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeStop(s._i); }}
-                        className="ml-0.5"
-                        style={{
-                          color: selected === s._i ? "var(--kami-cta-text, #d1d5db)" : "var(--kami-text-dim)",
-                        }}
-                      >
-                        &times;
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* CSS Output */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Generated CSS</h2>
-                <button
-                  onClick={copyCSS}
-                  className="px-2 py-1 text-xs"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
-              <pre
-                className="overflow-x-auto p-4 text-sm leading-relaxed"
-                style={{
-                  background: "var(--kami-overlay-bg, #111827)",
-                  color: "var(--kami-overlay-text, #f3f4f6)",
-                  borderRadius: "var(--kami-card-radius, 0.5rem)",
-                }}
-              >
-                <code>{css}</code>
-              </pre>
-            </div>
-          </div>
-
-          {/* Right column: controls */}
-          <div className="space-y-4">
-            {/* Animation Name */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Animation Name</label>
-              <input
-                type="text"
-                value={config.name}
-                onChange={(e) => setConfig((c) => ({ ...c, name: e.target.value.replace(/[^a-zA-Z0-9_-]/g, "") }))}
-                className="w-full px-3 py-2 font-mono text-sm outline-none"
-                style={{
-                  background: "var(--kami-input-bg, var(--kami-surface))",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                }}
-              />
-            </div>
-
-            {/* Keyframe Properties */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Keyframe at <span className="font-mono">{current.percent}%</span>
-              </h2>
-              <div className="space-y-3">
-                {/* Percent */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Position</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.percent}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    value={current.percent}
-                    onChange={(e) => updateStop(selected, { percent: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Opacity */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Opacity</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.opacity}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={current.opacity}
-                    onChange={(e) => updateStop(selected, { opacity: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Translate X */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Translate X</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.translateX}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-200}
-                    max={200}
-                    value={current.translateX}
-                    onChange={(e) => updateStop(selected, { translateX: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Translate Y */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Translate Y</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.translateY}px</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-200}
-                    max={200}
-                    value={current.translateY}
-                    onChange={(e) => updateStop(selected, { translateY: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Scale */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Scale</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.scale}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={3}
-                    step={0.05}
-                    value={current.scale}
-                    onChange={(e) => updateStop(selected, { scale: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Rotate */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Rotate</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{current.rotate}deg</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={-360}
-                    max={360}
-                    value={current.rotate}
-                    onChange={(e) => updateStop(selected, { rotate: Number(e.target.value) })}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Background Color */}
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Background Color</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={current.backgroundColor}
-                      onChange={(e) => updateStop(selected, { backgroundColor: e.target.value })}
-                      className="h-8 w-8 cursor-pointer"
-                      style={{
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={current.backgroundColor}
-                      onChange={(e) => updateStop(selected, { backgroundColor: e.target.value })}
-                      className="flex-1 px-2 py-1 font-mono text-xs outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Animation Controls */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h2 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Animation Controls</h2>
-              <div className="space-y-3">
-                {/* Duration */}
-                <div>
-                  <div className="mb-1 flex items-center justify-between">
-                    <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Duration</label>
-                    <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{config.duration}s</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={0.1}
-                    max={5}
-                    step={0.1}
-                    value={config.duration}
-                    onChange={(e) => setConfig((c) => ({ ...c, duration: Number(e.target.value) }))}
-                    className="h-1.5 w-full cursor-pointer appearance-none rounded-full"
-                    style={{ background: "var(--kami-border)", accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-                {/* Timing Function */}
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Timing Function</label>
-                  <select
-                    value={config.timing}
-                    onChange={(e) => setConfig((c) => ({ ...c, timing: e.target.value as TimingFunction }))}
-                    className="w-full px-3 py-1.5 text-sm outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    {(["ease", "linear", "ease-in", "ease-out", "ease-in-out"] as TimingFunction[]).map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* Iteration Count */}
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Iterations</label>
-                  <div className="flex gap-1.5">
-                    {(["1", "2", "3", "infinite"] as IterationCount[]).map((v) => (
-                      <button
-                        key={v}
-                        onClick={() => setConfig((c) => ({ ...c, iterations: v }))}
-                        className="flex-1 px-2 py-1 text-xs capitalize"
-                        style={
-                          config.iterations === v
-                            ? {
-                                background: "var(--kami-cta-bg, #111827)",
-                                color: "var(--kami-cta-text, #ffffff)",
-                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                              }
-                            : {
-                                background: "var(--kami-surface)",
-                                color: "var(--kami-text-muted)",
-                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                              }
-                        }
-                      >
-                        {v === "infinite" ? "\u221e" : v}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Direction */}
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Direction</label>
-                  <select
-                    value={config.direction}
-                    onChange={(e) => setConfig((c) => ({ ...c, direction: e.target.value as Direction }))}
-                    className="w-full px-3 py-1.5 text-sm outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    {(["normal", "reverse", "alternate", "alternate-reverse"] as Direction[]).map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
-                </div>
-                {/* Fill Mode */}
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Fill Mode</label>
-                  <div className="flex gap-1.5">
-                    {(["none", "forwards", "backwards", "both"] as FillMode[]).map((f) => (
-                      <button
-                        key={f}
-                        onClick={() => setConfig((c) => ({ ...c, fillMode: f }))}
-                        className="flex-1 px-1.5 py-1 text-[11px] capitalize"
-                        style={
-                          config.fillMode === f
-                            ? {
-                                background: "var(--kami-cta-bg, #111827)",
-                                color: "var(--kami-cta-text, #ffffff)",
-                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                              }
-                            : {
-                                background: "var(--kami-surface)",
-                                color: "var(--kami-text-muted)",
-                                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                              }
-                        }
-                      >
-                        {f}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }
