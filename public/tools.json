@@ -2,9 +2,9 @@
   "$schema": "https://tools.iamkesava.com/tools.schema.json",
   "site": "https://tools.iamkesava.com",
   "license": "MIT",
-  "last_updated": "2026-05-07",
+  "last_updated": "2026-05-16",
   "counts": {
-    "tools": 54,
+    "tools": 56,
     "collections": 8
   },
   "collections": [
@@ -742,6 +742,44 @@
         "heading",
         "seo score",
         "content optimization"
+      ]
+    },
+    {
+      "slug": "aeo-readiness-scorer",
+      "name": "AEO Readiness Scorer",
+      "url": "https://tools.iamkesava.com/aeo-readiness-scorer",
+      "description": "Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.",
+      "collections": [
+        "seo"
+      ],
+      "keywords": [
+        "aeo",
+        "answer engine",
+        "ai search",
+        "citation",
+        "schema",
+        "json-ld",
+        "llms.txt",
+        "readiness",
+        "aleyda solis"
+      ]
+    },
+    {
+      "slug": "passage-audit",
+      "name": "Passage Audit",
+      "url": "https://tools.iamkesava.com/passage-audit",
+      "description": "Score every passage on your page for AI retrievability. Catches thin copy that disappears when an AI chunks the page.",
+      "collections": [
+        "seo"
+      ],
+      "keywords": [
+        "passage",
+        "chunking",
+        "retrievability",
+        "rag",
+        "ai search",
+        "relevance engineering",
+        "mike king"
       ]
     },
     {
