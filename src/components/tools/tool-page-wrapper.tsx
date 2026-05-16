@@ -62,7 +62,7 @@ function ShortcutHintBar() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-center gap-4 px-4 py-2 text-xs transition-opacity duration-300"
+      className="hidden md:flex fixed bottom-0 left-0 right-0 z-40 items-center justify-center gap-4 px-4 py-2 text-xs transition-opacity duration-300"
       style={{
         opacity: visible ? 0.7 : 0,
         pointerEvents: visible ? "auto" : "none",

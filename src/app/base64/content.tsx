@@ -3,8 +3,12 @@
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 // --- Base64 helpers ---
 
@@ -93,9 +97,17 @@ function isImageMime(mime: string): boolean {
   return mime.startsWith("image/");
 }
 
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+}
+
 // --- UI ---
 
 type Variant = "standard" | "urlsafe";
+type Wrap = "0" | "64" | "76";
 
 export default function Base64Content() {
   const [{ q: plainText }, setToolState] = useToolState({ q: "" });
@@ -104,16 +116,21 @@ export default function Base64Content() {
   const [copied, setCopied] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileMime, setFileMime] = useState<string | null>(null);
+  const [fileSize, setFileSize] = useState<number>(0);
   const [variant, setVariant] = useState<Variant>("standard");
-  const [lineWrap, setLineWrap] = useState<number>(0); // 0 = no wrap, 76 = MIME, 64 = PEM
+  const [lineWrap, setLineWrap] = useState<Wrap>("0");
+  const [showImagePreviewTab, setShowImagePreviewTab] = useState(true);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const lineWrapNum = useMemo(() => parseInt(lineWrap, 10), [lineWrap]);
 
   const b64Output = useMemo(() => {
     let b64 = base64Text;
     if (variant === "urlsafe") b64 = toUrlSafe(b64);
-    if (lineWrap > 0) b64 = wrapLines(b64, lineWrap);
+    if (lineWrapNum > 0) b64 = wrapLines(b64, lineWrapNum);
     return b64;
-  }, [base64Text, variant, lineWrap]);
+  }, [base64Text, variant, lineWrapNum]);
 
   const detectedMime = useMemo(() => {
     if (fileMime) return fileMime;
@@ -136,10 +153,16 @@ export default function Base64Content() {
     }
   }, [base64Text]);
 
+  const inputByteSize = useMemo(() => {
+    if (fileName) return fileSize;
+    return new TextEncoder().encode(plainText).length;
+  }, [fileName, fileSize, plainText]);
+
   const handlePlainChange = useCallback((text: string) => {
     setPlainText(text);
     setFileName(null);
     setFileMime(null);
+    setFileSize(0);
     if (text) {
       setBase64Text(encode(text));
     } else {
@@ -148,7 +171,6 @@ export default function Base64Content() {
   }, [setPlainText]);
 
   const handleBase64Change = useCallback((text: string) => {
-    // If URL-safe, convert back for internal storage
     let normalized = text;
     if (variant === "urlsafe") normalized = fromUrlSafe(text.replace(/\s/g, ""));
     else normalized = text.replace(/\s/g, "");
@@ -156,6 +178,7 @@ export default function Base64Content() {
     setBase64Text(normalized);
     setFileName(null);
     setFileMime(null);
+    setFileSize(0);
     if (normalized && isBase64(normalized)) {
       setPlainText(decode(normalized));
     }
@@ -167,13 +190,12 @@ export default function Base64Content() {
     setTimeout(() => setCopied(null), 2000);
   }, []);
 
-  const handleFileSelect = useCallback(async (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
+  const handleFile = useCallback(async (file: File) => {
     const b64 = await fileToBase64(file);
     setBase64Text(b64);
     setFileName(file.name);
     setFileMime(file.type || null);
+    setFileSize(file.size);
     setPlainText("");
   }, [setPlainText]);
 
@@ -182,6 +204,7 @@ export default function Base64Content() {
     setBase64Text("");
     setFileName(null);
     setFileMime(null);
+    setFileSize(0);
   }, [setPlainText]);
 
   useKeyboardShortcuts(useMemo(() => [
@@ -199,96 +222,90 @@ export default function Base64Content() {
     background: "var(--kami-input-bg, var(--kami-surface-solid))",
     color: "var(--kami-text)",
     border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-input-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
   } as const;
-  const segActive = (active: boolean) => ({
-    background: active ? "var(--kami-cta-bg)" : "transparent",
-    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-  });
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  };
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Base64 Encode / Decode"
-          tagline="Encode or decode text and files with Standard, URL-safe, or Data URL variants - with drag-and-drop file support."
-          description="Paste text (or drop a file) and toggle encode/decode. Supports three Base64 flavors: Standard (RFC 4648), URL-safe (replaces + and / with - and _), and Data URL (ready to embed in HTML or CSS). Handles binary files up to tens of megabytes - entirely in your browser."
-          audience={["Developers", "API integrators", "Support engineers"]}
-          whenToUse={[
-            "Embedding a small image as a data URL",
-            "Decoding a Base64 token from logs",
-            "Encoding credentials for an Authorization header",
-          ]}
-        />
-
-        {/* Options bar */}
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div
-            className="flex items-center gap-1 px-1 py-0.5"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            }}
-          >
-            <button
-              onClick={() => setVariant("standard")}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={segActive(variant === "standard")}
-            >
-              Standard
-            </button>
-            <button
-              onClick={() => setVariant("urlsafe")}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={segActive(variant === "urlsafe")}
-            >
-              URL-safe
-            </button>
-          </div>
-          <div className="flex items-center gap-1.5 text-sm">
-            <span style={{ color: "var(--kami-text-muted)" }}>Wrap:</span>
-            {[
-              { label: "None", value: 0 },
-              { label: "64 (PEM)", value: 64 },
-              { label: "76 (MIME)", value: 76 },
-            ].map((opt) => (
-              <button
-                key={opt.value}
-                onClick={() => setLineWrap(opt.value)}
-                className="px-2 py-0.5 text-xs font-medium transition-colors"
-                style={{
-                  background: lineWrap === opt.value ? "var(--kami-surface)" : "transparent",
-                  color: lineWrap === opt.value ? "var(--kami-text)" : "var(--kami-text-muted)",
-                  borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                }}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
+    <ToolShell
+      title="Base64 Encode / Decode"
+      tagline="Text · files · data URLs · image preview"
+      accent="#10b981"
+      actions={
+        <>
+          {(plainText || base64Text) && (
+            <ToolActionButton onClick={handleClear} variant="ghost">Clear</ToolActionButton>
+          )}
+          {b64Output && (
+            <ToolActionButton onClick={() => handleCopy(b64Output, "base64")} variant="solid">
+              {copied === "base64" ? "Copied" : "Copy Base64"}
+            </ToolActionButton>
+          )}
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Variant">
+            <Segment<Variant>
+              value={variant}
+              onChange={setVariant}
+              options={[
+                { value: "standard", label: "Standard" },
+                { value: "urlsafe", label: "URL-safe" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <ControlGroup label="Line wrap">
+            <Segment<Wrap>
+              value={lineWrap}
+              onChange={setLineWrap}
+              options={[
+                { value: "0", label: "None" },
+                { value: "64", label: "PEM 64" },
+                { value: "76", label: "MIME 76" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <Toggle
+            label="Image preview"
+            hint="Show inline preview for image MIME types"
+            checked={showImagePreviewTab}
+            onChange={setShowImagePreviewTab}
+          />
+          <ControlGroup label="Size">
+            <div className="flex flex-col gap-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <span>In: {formatSize(inputByteSize)}</span>
+              <span>Base64: {formatSize(base64Text.length)}</span>
+              {byteSize > 0 && <span>Decoded: {formatSize(byteSize)}</span>}
+            </div>
+          </ControlGroup>
+        </>
+      }
+    >
+      <div
+        className="flex flex-col gap-3"
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        }}
+      >
+        {/* Dual editor */}
+        <div className="flex flex-col md:flex-row gap-3">
           {/* Plain text side */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Plain Text</span>
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                Plain text
+              </span>
               {plainText && (
-                <button
-                  onClick={() => handleCopy(plainText, "plain")}
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
-                  style={ctaStyle}
-                >
-                  {copied === "plain" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
-                </button>
+                <ToolActionButton onClick={() => handleCopy(plainText, "plain")} variant="ghost">
+                  {copied === "plain" ? "Copied" : "Copy"}
+                </ToolActionButton>
               )}
             </div>
             <textarea
@@ -296,33 +313,31 @@ export default function Base64Content() {
               onChange={(e) => handlePlainChange(e.target.value)}
               placeholder="Type or paste plain text..."
               className="w-full px-4 py-3 text-base font-mono focus:outline-none"
-              style={inputStyle}
+              style={{ ...inputStyle, minHeight: 220 }}
               rows={10}
               autoFocus
+              spellCheck={false}
             />
-            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
-              <span>{plainText.length} chars / {new TextEncoder().encode(plainText).length} bytes</span>
-              {plainText && (
-                <button onClick={handleClear}>Clear</button>
-              )}
+            <div className="flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <span>{plainText.length} chars · {new TextEncoder().encode(plainText).length} bytes</span>
             </div>
           </div>
 
           {/* Base64 side */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
+          <div className="flex-1 min-w-0 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Base64{variant === "urlsafe" ? " (URL-safe)" : ""}
-                {fileName && <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}> - {fileName}</span>}
+                {fileName && (
+                  <span className="font-normal ml-1" style={{ color: "var(--kami-text-dim)" }}>
+                    · {fileName}
+                  </span>
+                )}
               </span>
               {b64Output && (
-                <button
-                  onClick={() => handleCopy(b64Output, "base64")}
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
-                  style={ctaStyle}
-                >
-                  {copied === "base64" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
-                </button>
+                <ToolActionButton onClick={() => handleCopy(b64Output, "base64")} variant="ghost">
+                  {copied === "base64" ? "Copied" : "Copy"}
+                </ToolActionButton>
               )}
             </div>
             <textarea
@@ -330,57 +345,87 @@ export default function Base64Content() {
               onChange={(e) => handleBase64Change(e.target.value)}
               placeholder="Type or paste Base64..."
               className="w-full px-4 py-3 text-base font-mono focus:outline-none"
-              style={inputStyle}
+              style={{ ...inputStyle, minHeight: 220 }}
               rows={10}
+              spellCheck={false}
             />
-            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
               <span>
                 {base64Text.length} base64 chars
-                {byteSize > 0 && ` / ${byteSize.toLocaleString()} decoded bytes`}
+                {byteSize > 0 && ` · ${formatSize(byteSize)} decoded`}
               </span>
-              {base64Text && (
-                <button onClick={handleClear}>Clear</button>
-              )}
             </div>
           </div>
         </div>
 
-        {/* Data URL + Image preview */}
-        {base64Text && (
-          <div className="mt-4 space-y-3">
-            {/* Data URL */}
-            {dataUrl && (
-              <div className="p-4" style={cardStyle}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Data URL
-                    {detectedMime && <span className="font-normal ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>{detectedMime}</span>}
-                  </span>
-                  <button
-                    onClick={() => handleCopy(dataUrl, "dataurl")}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors"
-                    style={ctaStyle}
-                  >
-                    {copied === "dataurl" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy Data URL</>}
-                  </button>
-                </div>
-                <div
-                  className="font-mono text-xs break-all max-h-20 overflow-auto p-2"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  {dataUrl.slice(0, 200)}{dataUrl.length > 200 ? "..." : ""}
-                </div>
-              </div>
-            )}
+        {/* Drop zone integrated into canvas */}
+        <div
+          className="flex flex-col items-center justify-center text-center px-4 py-6 transition-colors"
+          style={{
+            background: dragOver ? "color-mix(in srgb, #10b981 8%, var(--kami-surface))" : "var(--kami-surface)",
+            border: `2px dashed ${dragOver ? "#10b981" : "var(--kami-border-strong)"}`,
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+            {dragOver ? "Drop the file" : "Drag a file here, or"}
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <ToolActionButton
+              onClick={() => fileInputRef.current?.click()}
+              variant="solid"
+            >
+              Encode file
+            </ToolActionButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handleFile(f);
+              }}
+            />
+          </div>
+          <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            Any file type — converts to Base64 with auto-detected MIME
+          </p>
+        </div>
 
-            {/* Image preview */}
-            {showImagePreview && dataUrl && (
+        {/* Data URL + Image preview */}
+        {base64Text && dataUrl && (
+          <div className="flex flex-col gap-3">
+            <div className="p-4" style={cardStyle}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  Data URL
+                  {detectedMime && (
+                    <span className="font-normal ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                      {detectedMime}
+                    </span>
+                  )}
+                </span>
+                <ToolActionButton onClick={() => handleCopy(dataUrl, "dataurl")} variant="outline">
+                  {copied === "dataurl" ? "Copied" : "Copy data URL"}
+                </ToolActionButton>
+              </div>
+              <div
+                className="font-mono text-xs break-all max-h-20 overflow-auto p-2"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text-muted)",
+                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                }}
+              >
+                {dataUrl.slice(0, 200)}{dataUrl.length > 200 ? "..." : ""}
+              </div>
+            </div>
+
+            {showImagePreview && showImagePreviewTab && (
               <div className="p-4" style={cardStyle}>
-                <span className="text-sm font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Preview</span>
+                <span className="text-sm font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>
+                  Preview
+                </span>
                 <div
                   className="flex items-center justify-center p-4"
                   style={{
@@ -397,53 +442,7 @@ export default function Base64Content() {
             )}
           </div>
         )}
-
-        {/* File drop zone */}
-        <div className="mt-6">
-          <FileDropZone
-            accept={[]}
-            onFiles={handleFileSelect}
-            label="Drop a file here or click to browse"
-            hint="Any file type - converts to Base64 with auto-detected MIME type"
-            multiple={false}
-          />
-        </div>
-
-        {/* Quick reference */}
-        <details className="mt-6">
-          <summary className="cursor-pointer text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            Base64 reference
-          </summary>
-          <div
-            className="mt-2 p-4 text-xs space-y-2"
-            style={{ ...cardStyle, color: "var(--kami-text-muted)" }}
-          >
-            <p><strong>Standard Base64</strong> uses A-Z, a-z, 0-9, +, / and = for padding. Used in emails (MIME), PEM certificates, and data URIs.</p>
-            <p><strong>URL-safe Base64</strong> replaces + with - and / with _, strips = padding. Used in JWTs, URL parameters, and file names.</p>
-            <p><strong>Line wrapping</strong>: PEM (64 chars/line) for certificates, MIME (76 chars/line) for email attachments.</p>
-            <p><strong>Size overhead</strong>: Base64 encoding increases size by ~33% (3 bytes become 4 characters).</p>
-          </div>
-        </details>
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }

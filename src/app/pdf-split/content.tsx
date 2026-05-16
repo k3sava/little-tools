@@ -5,9 +5,17 @@ import { PDFDocument } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 type Status = "idle" | "loading" | "extracting" | "done" | "error";
+type Mode = "select" | "every";
+
+const ACCENT = "#f43f5e";
 
 /** Parse a range string like "1-3, 5, 8-10" into a Set of 0-based page indices */
 function parseRanges(input: string, totalPages: number): Set<number> {
@@ -37,6 +45,26 @@ function parseRanges(input: string, totalPages: number): Set<number> {
   return result;
 }
 
+/** Compress an ordered list of 0-based indices into "1-3, 5, 7-10" */
+function indicesToRanges(indices: number[]): string {
+  if (indices.length === 0) return "";
+  const sorted = [...indices].sort((a, b) => a - b);
+  const chunks: string[] = [];
+  let start = sorted[0];
+  let prev = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === prev + 1) {
+      prev = sorted[i];
+    } else {
+      chunks.push(start === prev ? `${start + 1}` : `${start + 1}-${prev + 1}`);
+      start = sorted[i];
+      prev = sorted[i];
+    }
+  }
+  chunks.push(start === prev ? `${start + 1}` : `${start + 1}-${prev + 1}`);
+  return chunks.join(", ");
+}
+
 export default function PdfSplitContent() {
   const [file, setFile] = useState<File | null>(null);
   const [originalSize, setOriginalSize] = useState(0);
@@ -48,6 +76,8 @@ export default function PdfSplitContent() {
   const [sourceBytes, setSourceBytes] = useState<ArrayBuffer | null>(null);
   const [resultSize, setResultSize] = useState(0);
   const [resultPageCount, setResultPageCount] = useState(0);
+  const [mode, setMode] = useState<Mode>("select");
+  const [namePattern, setNamePattern] = useState("{name}-extracted");
 
   const handleFileLoad = useCallback(async (fileObj: File, buffer: ArrayBuffer) => {
     setStatus("loading");
@@ -156,7 +186,7 @@ export default function PdfSplitContent() {
   }, [rangeInput, pageCount]);
 
   const extract = useCallback(async () => {
-    if (!sourceBytes || !file || selectedPages.size === 0) return;
+    if (!sourceBytes || !file) return;
 
     setStatus("extracting");
     setErrorMessage("");
@@ -165,8 +195,45 @@ export default function PdfSplitContent() {
 
     try {
       const srcDoc = await PDFDocument.load(sourceBytes, { ignoreEncryption: true });
-      const newDoc = await PDFDocument.create();
+      const baseName = file.name.replace(/\.pdf$/i, "");
+      const fmt = (n: number) =>
+        (namePattern || "{name}-extracted")
+          .replace(/\{name\}/g, baseName)
+          .replace(/\{page\}/g, String(n));
 
+      if (mode === "every") {
+        // One PDF per page (auto-downloads each)
+        const indices = srcDoc.getPageIndices();
+        let totalBytes = 0;
+        for (const idx of indices) {
+          const newDoc = await PDFDocument.create();
+          const [p] = await newDoc.copyPages(srcDoc, [idx]);
+          newDoc.addPage(p);
+          const bytes = await newDoc.save();
+          totalBytes += bytes.byteLength;
+          const blob = new Blob([bytes.buffer as ArrayBuffer], { type: "application/pdf" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${fmt(idx + 1)}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          await new Promise((r) => setTimeout(r, 60));
+          URL.revokeObjectURL(url);
+        }
+        setResultSize(totalBytes);
+        setResultPageCount(indices.length);
+        setStatus("done");
+        return;
+      }
+
+      if (selectedPages.size === 0) {
+        setStatus("idle");
+        return;
+      }
+
+      const newDoc = await PDFDocument.create();
       const sortedIndices = Array.from(selectedPages).sort((a, b) => a - b);
       const copiedPages = await newDoc.copyPages(srcDoc, sortedIndices);
       for (const page of copiedPages) {
@@ -180,12 +247,10 @@ export default function PdfSplitContent() {
       setResultPageCount(sortedIndices.length);
       setStatus("done");
 
-      // Auto-download
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      const baseName = file.name.replace(/\.pdf$/i, "");
       a.href = url;
-      a.download = `${baseName}-extracted.pdf`;
+      a.download = `${fmt(sortedIndices[0] + 1)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -195,7 +260,7 @@ export default function PdfSplitContent() {
       setErrorMessage(message);
       setStatus("error");
     }
-  }, [sourceBytes, file, selectedPages]);
+  }, [sourceBytes, file, selectedPages, mode, namePattern]);
 
   const reset = useCallback(() => {
     setFile(null);
@@ -216,93 +281,58 @@ export default function PdfSplitContent() {
         key: "Enter",
         meta: true,
         action: () => {
-          if (file && selectedPages.size > 0 && status !== "extracting") extract();
+          if (file && status !== "extracting" && (mode === "every" || selectedPages.size > 0))
+            extract();
         },
         label: "Extract",
       },
     ],
-    [file, selectedPages.size, status, extract]
+    [file, selectedPages.size, status, extract, mode]
   );
 
   useKeyboardShortcuts(shortcuts);
 
   const selectedCount = selectedPages.size;
+  const rangeChips = useMemo(() => indicesToRanges(Array.from(selectedPages)), [selectedPages]);
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <ToolIntro
-        title="Split PDF"
-        tagline="Extract specific pages from a PDF - pick ranges, individual pages, or every-N-pages splits."
-        description="Drop a PDF, click to select pages, or type a range (1-5, 8, 10-12). Split modes: extract selected pages as a new PDF, split every page into its own file, or split at fixed intervals. Everything runs locally in your browser - safe for sensitive documents."
-        audience={["Everyone"]}
-        whenToUse={[
-          "Pulling one chapter out of an ebook",
-          "Extracting a signature page from a contract",
-          "Splitting a scanned multi-page document into individual PDFs",
-        ]}
-      />
-
-      {/* Drop zone (shown when no file loaded) */}
-      {!file && status !== "error" && (
-        <div className="mb-6">
-          <FileDropZone
-            accept={[".pdf"]}
-            onFiles={handleFiles}
-            label="Drop a PDF here or click to browse"
-            multiple={false}
-            icon={<>&#9986;</>}
-            hint=".pdf only"
-          />
-        </div>
+  const actions = (
+    <>
+      {file && (
+        <ToolActionButton variant="ghost" onClick={reset}>
+          Remove file
+        </ToolActionButton>
       )}
+      <ToolActionButton
+        variant="solid"
+        onClick={extract}
+        disabled={!file || status === "extracting" || (mode === "select" && selectedCount === 0)}
+      >
+        {status === "extracting"
+          ? "Extracting..."
+          : mode === "every"
+          ? `Extract every page`
+          : `Extract ${selectedCount}`}
+      </ToolActionButton>
+    </>
+  );
 
-      {/* Error state (no file) */}
-      {status === "error" && !file && (
-        <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-6 text-center dark:border-red-800 dark:bg-red-950/30">
-          <p className="text-sm font-medium text-red-700 dark:text-red-400">{errorMessage}</p>
-          <button
-            onClick={reset}
-            className="mt-4 rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
-            style={{ background: "#f43f5e" }}
-          >
-            Try another file
-          </button>
-        </div>
-      )}
+  const controls = (
+    <>
+      <ControlGroup label="Mode">
+        <Segment<Mode>
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "select", label: "Selected" },
+            { value: "every", label: "Every page" },
+          ]}
+          full
+        />
+      </ControlGroup>
 
-      {/* File loaded */}
-      {file && status !== "done" && (
-        <div className="space-y-5">
-          {/* File info card */}
-          <div
-            className="rounded-xl border px-4 py-3 shadow-sm"
-            style={{ background: "var(--kami-surface)", borderColor: "var(--kami-border)" }}
-          >
-            <div className="flex items-center justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium" style={{ color: "var(--kami-text)" }}>
-                  {file.name}
-                </p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  {formatBytes(originalSize)} &middot; {pageCount}{" "}
-                  {pageCount === 1 ? "page" : "pages"}
-                </p>
-              </div>
-              <button
-                onClick={reset}
-                className="ml-4 shrink-0 text-xs transition-opacity hover:opacity-70"
-                style={{ color: "var(--kami-text-muted)" }}
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-
-          {/* Range input */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text)" }}>
-              Page range
-            </label>
+      {mode === "select" && file && (
+        <>
+          <ControlGroup label="Page range" hint="e.g. 1-3, 5">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -314,58 +344,180 @@ export default function PdfSplitContent() {
                     applyRange();
                   }
                 }}
-                placeholder="e.g. 1-3, 5, 8-10"
-                className="flex-1 rounded-lg border px-3 py-2 text-sm outline-none transition-colors focus:border-rose-400"
+                placeholder="1-3, 5, 8-10"
+                className="kc-stepper-input"
                 style={{
-                  background: "var(--kami-input-bg)",
-                  borderColor: "var(--kami-border)",
+                  flex: 1,
+                  minHeight: 40,
+                  padding: "0 12px",
+                  borderRadius: 10,
+                  border: "1px solid var(--kami-border-strong)",
+                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
                   color: "var(--kami-text)",
                 }}
               />
               <button
+                type="button"
                 onClick={applyRange}
+                className="tool-action-btn"
+                data-variant="outline"
                 disabled={!rangeInput.trim()}
-                className="rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:opacity-80 disabled:opacity-40"
-                style={{
-                  borderColor: "var(--kami-border)",
-                  color: "var(--kami-text)",
-                }}
               >
                 Apply
               </button>
             </div>
-          </div>
+          </ControlGroup>
 
-          {/* Quick actions */}
-          <div className="flex flex-wrap gap-2">
-            {[
-              { label: "Select All", action: selectAll },
-              { label: "Select Odd", action: selectOdd },
-              { label: "Select Even", action: selectEven },
-              { label: "Invert", action: invertSelection },
-              { label: "Clear", action: selectNone },
-            ].map(({ label, action }) => (
-              <button
-                key={label}
-                onClick={action}
-                className="rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
+          <ControlGroup label="Quick select">
+            <div className="flex flex-wrap gap-2">
+              <button onClick={selectAll} className="tool-action-btn" data-variant="ghost">
+                All
+              </button>
+              <button onClick={selectOdd} className="tool-action-btn" data-variant="ghost">
+                Odd
+              </button>
+              <button onClick={selectEven} className="tool-action-btn" data-variant="ghost">
+                Even
+              </button>
+              <button onClick={invertSelection} className="tool-action-btn" data-variant="ghost">
+                Invert
+              </button>
+              <button onClick={selectNone} className="tool-action-btn" data-variant="ghost">
+                Clear
+              </button>
+            </div>
+          </ControlGroup>
+
+          {selectedCount > 0 && (
+            <ControlGroup label="Selection">
+              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                {selectedCount} / {pageCount} pages
+              </p>
+              <p
+                className="rounded-md px-3 py-2 font-mono text-xs"
                 style={{
-                  borderColor: "var(--kami-border)",
-                  color: "var(--kami-text-muted)",
+                  background: "var(--kami-input-bg)",
+                  color: "var(--kami-text)",
+                  overflowWrap: "anywhere",
                 }}
               >
-                {label}
-              </button>
-            ))}
-          </div>
+                {rangeChips || "(none)"}
+              </p>
+            </ControlGroup>
+          )}
+        </>
+      )}
 
-          {/* Visual page grid */}
+      <ControlGroup label="Filename pattern" hint="{name}, {page}">
+        <input
+          type="text"
+          value={namePattern}
+          onChange={(e) => setNamePattern(e.target.value)}
+          placeholder="{name}-extracted"
+          className="kc-stepper-input"
+          style={{
+            width: "100%",
+            minHeight: 40,
+            padding: "0 12px",
+            borderRadius: 10,
+            border: "1px solid var(--kami-border-strong)",
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+          }}
+        />
+      </ControlGroup>
+
+      {status === "done" && (
+        <ControlGroup label="Result">
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            {resultPageCount} {resultPageCount === 1 ? "page" : "pages"} ·{" "}
+            {formatBytes(resultSize)}
+          </p>
+        </ControlGroup>
+      )}
+
+      <ControlGroup>
+        <Toggle
+          checked={false}
+          onChange={() => {}}
+          label="Files processed in browser"
+          hint="Nothing is uploaded."
+        />
+      </ControlGroup>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Split PDF"
+      tagline="Extract pages from a PDF - select visually or by range."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Settings"
+    >
+      <div className="flex flex-col gap-4">
+        {!file && status !== "error" && (
+          <FileDropZone
+            accept={[".pdf"]}
+            onFiles={handleFiles}
+            label="Drop a PDF here or click to browse"
+            multiple={false}
+            icon={<>&#9986;</>}
+            hint=".pdf only"
+          />
+        )}
+
+        {status === "error" && !file && (
           <div
-            className="grid gap-2 rounded-xl border p-4"
+            className="rounded-xl border px-4 py-6 text-center"
             style={{
-              gridTemplateColumns: "repeat(auto-fill, minmax(56px, 1fr))",
-              background: "var(--kami-surface)",
-              borderColor: "var(--kami-border)",
+              borderColor: "color-mix(in srgb, #ef4444 30%, transparent)",
+              background: "color-mix(in srgb, #ef4444 10%, transparent)",
+            }}
+          >
+            <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+              {errorMessage}
+            </p>
+            <button
+              onClick={reset}
+              className="mt-3 rounded-lg px-4 py-2 text-sm font-medium text-white"
+              style={{ background: ACCENT }}
+            >
+              Try another file
+            </button>
+          </div>
+        )}
+
+        {file && (
+          <div
+            className="rounded-xl border px-4 py-3"
+            style={{
+              background: "var(--kami-surface-solid)",
+              borderColor: "var(--kami-border-strong)",
+            }}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+                  {file.name}
+                </p>
+                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  {formatBytes(originalSize)} · {pageCount}{" "}
+                  {pageCount === 1 ? "page" : "pages"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {file && mode === "select" && (
+          <div
+            className="grid gap-2 rounded-xl border p-3"
+            style={{
+              gridTemplateColumns: "repeat(auto-fill, minmax(64px, 1fr))",
+              background: "var(--kami-surface-solid)",
+              borderColor: "var(--kami-border-strong)",
             }}
           >
             {Array.from({ length: pageCount }, (_, i) => {
@@ -374,128 +526,43 @@ export default function PdfSplitContent() {
                 <button
                   key={i}
                   onClick={() => togglePage(i)}
-                  className={`flex h-14 w-full items-center justify-center rounded-lg border text-sm font-medium transition-all ${
-                    isSelected
-                      ? "border-rose-300 bg-rose-50 text-rose-700 dark:border-rose-600 dark:bg-rose-950/40 dark:text-rose-400"
-                      : "hover:border-gray-400 dark:hover:border-gray-500"
-                  }`}
+                  className="flex aspect-[3/4] w-full flex-col items-center justify-center rounded-lg border text-sm font-medium transition-all"
                   style={
                     isSelected
-                      ? undefined
+                      ? {
+                          background: `color-mix(in srgb, ${ACCENT} 15%, var(--kami-surface))`,
+                          borderColor: ACCENT,
+                          color: ACCENT,
+                        }
                       : {
+                          background: "var(--kami-surface)",
                           borderColor: "var(--kami-border)",
                           color: "var(--kami-text-muted)",
                         }
                   }
                   title={`Page ${i + 1}`}
                 >
-                  {i + 1}
+                  <span className="text-[10px] opacity-60">PG</span>
+                  <span className="text-base">{i + 1}</span>
                 </button>
               );
             })}
           </div>
+        )}
 
-          {/* Selection summary */}
+        {status === "error" && errorMessage && file && (
           <div
-            className="flex items-center justify-between rounded-lg px-4 py-2 text-xs"
-            style={{ color: "var(--kami-text-muted)", background: "var(--kami-input-bg)" }}
+            className="rounded-lg border px-4 py-3 text-sm"
+            style={{
+              borderColor: "color-mix(in srgb, #ef4444 30%, transparent)",
+              background: "color-mix(in srgb, #ef4444 10%, transparent)",
+              color: "var(--kami-text)",
+            }}
           >
-            <span>
-              {selectedCount} of {pageCount} {pageCount === 1 ? "page" : "pages"} selected
-            </span>
+            {errorMessage}
           </div>
-
-          {/* Error during extraction */}
-          {status === "error" && errorMessage && (
-            <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400">
-              {errorMessage}
-            </div>
-          )}
-
-          {/* Extract button */}
-          <button
-            onClick={extract}
-            disabled={selectedCount === 0 || status === "extracting"}
-            className="w-full rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-sm transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            style={{ background: "#f43f5e" }}
-          >
-            {status === "extracting"
-              ? "Extracting..."
-              : `Extract ${selectedCount} ${selectedCount === 1 ? "page" : "pages"}`}
-          </button>
-        </div>
-      )}
-
-      {/* Results */}
-      {status === "done" && file && (
-        <div className="space-y-5">
-          <div
-            className="rounded-xl border p-5 shadow-sm"
-            style={{ background: "var(--kami-surface)", borderColor: "var(--kami-border)" }}
-          >
-            <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text)" }}>
-              Extraction complete
-            </p>
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
-                  Original
-                </p>
-                <p className="mt-1 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
-                  {pageCount} {pageCount === 1 ? "page" : "pages"}
-                </p>
-                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  {formatBytes(originalSize)}
-                </p>
-              </div>
-              <div className="pb-2" style={{ color: "var(--kami-text-muted)" }}>
-                &rarr;
-              </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
-                  Extracted
-                </p>
-                <p className="mt-1 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
-                  {resultPageCount} {resultPageCount === 1 ? "page" : "pages"}
-                </p>
-                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  {formatBytes(resultSize)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={reset}
-              className="flex-1 rounded-xl border px-6 py-3 text-sm font-medium shadow-sm transition-colors hover:opacity-80"
-              style={{
-                borderColor: "var(--kami-border)",
-                color: "var(--kami-text)",
-              }}
-            >
-              Split another file
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!file && status === "idle" && (
-        <div
-          className="rounded-xl border px-6 py-8 text-center text-sm"
-          style={{
-            background: "var(--kami-surface)",
-            borderColor: "var(--kami-border)",
-            color: "var(--kami-text-muted)",
-          }}
-        >
-          <p className="mb-2 font-medium">No file loaded</p>
-          <p className="opacity-70">
-            Drop a PDF above or click to browse. Select pages to extract, then download the result.
-          </p>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </ToolShell>
   );
 }

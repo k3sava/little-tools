@@ -3,8 +3,12 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle, Select } from "@/components/tools/controls";
 
 // --- Character limit helpers ---
 
@@ -29,6 +33,8 @@ function statusBg(status: CharStatus): string {
   return "rgba(34,197,94,0.12)";
 }
 
+const ACCENT = "#3b82f6";
+
 // --- Meta tag generation ---
 
 function generateMetaTags(fields: {
@@ -41,21 +47,15 @@ function generateMetaTags(fields: {
   ogType: string;
   robots: string;
   includeViewport: boolean;
+  locale: string;
 }): string {
   const lines: string[] = [];
 
-  if (fields.title) {
-    lines.push(`<title>${esc(fields.title)}</title>`);
-  }
-  if (fields.description) {
-    lines.push(`<meta name="description" content="${esc(fields.description)}" />`);
-  }
-  if (fields.robots) {
-    lines.push(`<meta name="robots" content="${esc(fields.robots)}" />`);
-  }
-  if (fields.includeViewport) {
+  if (fields.title) lines.push(`<title>${esc(fields.title)}</title>`);
+  if (fields.description) lines.push(`<meta name="description" content="${esc(fields.description)}" />`);
+  if (fields.robots) lines.push(`<meta name="robots" content="${esc(fields.robots)}" />`);
+  if (fields.includeViewport)
     lines.push(`<meta name="viewport" content="width=device-width, initial-scale=1" />`);
-  }
 
   lines.push("");
   lines.push("<!-- Open Graph -->");
@@ -65,6 +65,7 @@ function generateMetaTags(fields: {
   if (fields.image) lines.push(`<meta property="og:image" content="${esc(fields.image)}" />`);
   lines.push(`<meta property="og:type" content="${esc(fields.ogType)}" />`);
   if (fields.siteName) lines.push(`<meta property="og:site_name" content="${esc(fields.siteName)}" />`);
+  if (fields.locale) lines.push(`<meta property="og:locale" content="${esc(fields.locale)}" />`);
 
   lines.push("");
   lines.push("<!-- Twitter Card -->");
@@ -108,39 +109,33 @@ function getBreadcrumbUrl(url: string): string {
   }
 }
 
-// --- Inline SVG Icons ---
+// --- Character count progress bar ---
 
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-// --- Character count badge ---
-
-function CharBadge({ current, max }: { current: number; max: number }) {
+function CharProgress({ current, max, label }: { current: number; max: number; label: string }) {
   const status = charStatus(current, max);
+  const pct = Math.min(100, (current / max) * 100);
   return (
-    <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium tabular-nums"
-      style={{
-        color: statusColor(status),
-        backgroundColor: statusBg(status),
-      }}
-    >
-      {current}/{max}
-    </span>
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-between text-xs">
+        <span style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+        <span
+          className="tabular-nums px-2 py-0.5 rounded-full text-[11px] font-medium"
+          style={{ color: statusColor(status), background: statusBg(status) }}
+        >
+          {current}/{max}
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
+        <div
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            background: statusColor(status),
+            transition: "width 0.2s ease",
+          }}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -152,17 +147,15 @@ function GoogleDesktopPreview({ title, description, url }: { title: string; desc
   const breadcrumb = getBreadcrumbUrl(url);
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--kami-card-border, #e5e7eb)", background: "white" }}>
-      <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted, #6b7280)" }}>
+    <div className="rounded-lg border p-4" style={{ borderColor: "var(--kami-border)", background: "#fff" }}>
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
         Google Desktop
       </div>
       <div style={{ maxWidth: 600, fontFamily: "Arial, sans-serif" }}>
-        {/* Breadcrumb URL */}
         <div className="flex items-center gap-1.5 mb-1">
           <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full" style={{ background: "#f1f3f4" }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
               <circle cx="12" cy="12" r="10" stroke="#70757a" strokeWidth="1.5" />
-              <path d="M12 6v6l4 2" stroke="#70757a" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </div>
           <div>
@@ -170,36 +163,18 @@ function GoogleDesktopPreview({ title, description, url }: { title: string; desc
             <div className="text-xs" style={{ color: "#4d5156" }}>{breadcrumb || "example.com"}</div>
           </div>
         </div>
-        {/* Title */}
         <div
-          className="text-xl leading-snug cursor-pointer hover:underline"
-          style={{
-            color: "#1a0dab",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: 580,
-          }}
+          className="text-lg leading-snug"
+          style={{ color: "#1a0dab", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 580 }}
         >
           {truncate(displayTitle, 60)}
         </div>
-        {/* Description */}
         <div
           className="mt-1 text-sm leading-relaxed"
-          style={{
-            color: "#4d5156",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
+          style={{ color: "#4d5156", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
           {truncate(displayDesc, 160)}
         </div>
-      </div>
-      <div className="mt-2 flex gap-2">
-        <CharBadge current={title.length} max={60} />
-        <CharBadge current={description.length} max={160} />
       </div>
     </div>
   );
@@ -210,41 +185,21 @@ function GoogleMobilePreview({ title, description, url }: { title: string; descr
   const displayDesc = description || "Add a meta description to see how it appears in search results.";
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: "var(--kami-card-border, #e5e7eb)", background: "white" }}>
-      <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted, #6b7280)" }}>
+    <div className="rounded-lg border p-4" style={{ borderColor: "var(--kami-border)", background: "#fff" }}>
+      <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
         Google Mobile
       </div>
       <div style={{ maxWidth: 360, fontFamily: "Arial, sans-serif" }}>
-        <div className="flex items-center gap-1.5 mb-1">
-          <div className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full" style={{ background: "#f1f3f4" }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#70757a" strokeWidth="1.5" />
-              <path d="M12 6v6l4 2" stroke="#70757a" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div className="text-xs" style={{ color: "#202124" }}>{getDomain(url) || "example.com"}</div>
-        </div>
+        <div className="text-xs" style={{ color: "#202124" }}>{getDomain(url) || "example.com"}</div>
         <div
-          className="text-base leading-snug"
-          style={{
-            color: "#1a0dab",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            maxWidth: 340,
-          }}
+          className="text-base leading-snug mt-0.5"
+          style={{ color: "#1a0dab", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 340 }}
         >
           {truncate(displayTitle, 60)}
         </div>
         <div
           className="mt-1 text-xs leading-relaxed"
-          style={{
-            color: "#4d5156",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            overflow: "hidden",
-          }}
+          style={{ color: "#4d5156", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
         >
           {truncate(displayDesc, 160)}
         </div>
@@ -253,26 +208,13 @@ function GoogleMobilePreview({ title, description, url }: { title: string; descr
   );
 }
 
-function FacebookPreview({
-  title,
-  description,
-  image,
-  siteName,
-}: {
-  title: string;
-  description: string;
-  image: string;
-  siteName: string;
-}) {
+function FacebookPreview({ title, description, image, siteName }: { title: string; description: string; image: string; siteName: string }) {
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--kami-card-border, #e5e7eb)", background: "white" }}>
-      <div className="px-4 pt-3 pb-1">
-        <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted, #6b7280)" }}>
-          Facebook / Open Graph
-        </div>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--kami-border)", background: "#fff" }}>
+      <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+        Facebook / OG
       </div>
-      <div className="mx-4 mb-4 rounded-lg overflow-hidden" style={{ maxWidth: 500, fontFamily: "Helvetica, Arial, sans-serif", border: "1px solid #dadde1" }}>
-        {/* Image placeholder */}
+      <div className="mx-4 mb-4 rounded-lg overflow-hidden" style={{ maxWidth: 500, border: "1px solid #dadde1" }}>
         <div
           className="flex items-center justify-center"
           style={{
@@ -291,43 +233,23 @@ function FacebookPreview({
             </svg>
           )}
         </div>
-        {/* Text content */}
         <div className="px-3 py-2.5" style={{ background: "#f0f2f5" }}>
-          <div className="text-xs uppercase tracking-wide" style={{ color: "#65676b" }}>
-            {siteName || "example.com"}
-          </div>
-          <div className="mt-0.5 text-base font-bold leading-tight" style={{ color: "#1c1e21" }}>
-            {truncate(title || "Page Title", 65)}
-          </div>
-          <div className="mt-0.5 text-sm leading-snug" style={{ color: "#65676b" }}>
-            {truncate(description || "Page description will appear here.", 100)}
-          </div>
+          <div className="text-xs uppercase tracking-wide" style={{ color: "#65676b" }}>{siteName || "example.com"}</div>
+          <div className="mt-0.5 text-base font-bold leading-tight" style={{ color: "#1c1e21" }}>{truncate(title || "Page Title", 65)}</div>
+          <div className="mt-0.5 text-sm leading-snug" style={{ color: "#65676b" }}>{truncate(description || "Page description will appear here.", 100)}</div>
         </div>
       </div>
     </div>
   );
 }
 
-function TwitterPreview({
-  title,
-  description,
-  image,
-  url,
-}: {
-  title: string;
-  description: string;
-  image: string;
-  url: string;
-}) {
+function TwitterPreview({ title, description, image, url }: { title: string; description: string; image: string; url: string }) {
   return (
-    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--kami-card-border, #e5e7eb)", background: "white" }}>
-      <div className="px-4 pt-3 pb-1">
-        <div className="text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-muted, #6b7280)" }}>
-          Twitter / X Card
-        </div>
+    <div className="rounded-lg border overflow-hidden" style={{ borderColor: "var(--kami-border)", background: "#fff" }}>
+      <div className="px-4 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>
+        Twitter / X Card
       </div>
-      <div className="mx-4 mb-4 rounded-xl overflow-hidden" style={{ maxWidth: 500, fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif", border: "1px solid #cfd9de" }}>
-        {/* Image (2:1 ratio) */}
+      <div className="mx-4 mb-4 rounded-xl overflow-hidden" style={{ maxWidth: 500, border: "1px solid #cfd9de" }}>
         <div
           className="flex items-center justify-center"
           style={{
@@ -346,17 +268,10 @@ function TwitterPreview({
             </svg>
           )}
         </div>
-        {/* Text */}
         <div className="px-3 py-2.5" style={{ borderTop: "1px solid #cfd9de" }}>
-          <div className="text-sm font-bold leading-tight" style={{ color: "#0f1419" }}>
-            {truncate(title || "Page Title", 70)}
-          </div>
-          <div className="mt-0.5 text-sm leading-snug" style={{ color: "#536471" }}>
-            {truncate(description || "Page description will appear here.", 125)}
-          </div>
-          <div className="mt-1 text-xs" style={{ color: "#536471" }}>
-            {getDomain(url) || "example.com"}
-          </div>
+          <div className="text-sm font-bold leading-tight" style={{ color: "#0f1419" }}>{truncate(title || "Page Title", 70)}</div>
+          <div className="mt-0.5 text-sm leading-snug" style={{ color: "#536471" }}>{truncate(description || "Page description will appear here.", 125)}</div>
+          <div className="mt-1 text-xs" style={{ color: "#536471" }}>{getDomain(url) || "example.com"}</div>
         </div>
       </div>
     </div>
@@ -364,6 +279,17 @@ function TwitterPreview({
 }
 
 // --- Main component ---
+
+const LOCALES = [
+  { value: "en_US", label: "English (US)" },
+  { value: "en_GB", label: "English (UK)" },
+  { value: "es_ES", label: "Spanish" },
+  { value: "fr_FR", label: "French" },
+  { value: "de_DE", label: "German" },
+  { value: "ja_JP", label: "Japanese" },
+  { value: "zh_CN", label: "Chinese (Simplified)" },
+  { value: "pt_BR", label: "Portuguese (Brazil)" },
+];
 
 export default function MetaTagGeneratorContent() {
   const [state, setToolState] = useToolState({
@@ -375,10 +301,12 @@ export default function MetaTagGeneratorContent() {
   const [image, setImage] = useState("");
   const [siteName, setSiteName] = useState("");
   const [twitterHandle, setTwitterHandle] = useState("");
-  const [ogType, setOgType] = useState("website");
+  const [ogType, setOgType] = useState<"website" | "article" | "product">("website");
   const [robots, setRobots] = useState("index, follow");
   const [includeViewport, setIncludeViewport] = useState(true);
+  const [locale, setLocale] = useState("en_US");
   const [copied, setCopied] = useState(false);
+  const [imageWarning, setImageWarning] = useState<string | null>(null);
 
   const title = state.title;
   const description = state.description;
@@ -400,9 +328,26 @@ export default function MetaTagGeneratorContent() {
         ogType,
         robots,
         includeViewport,
+        locale,
       }),
-    [title, description, url, image, siteName, twitterHandle, ogType, robots, includeViewport],
+    [title, description, url, image, siteName, twitterHandle, ogType, robots, includeViewport, locale],
   );
+
+  // OG image dimension probe
+  const handleImageChange = useCallback((v: string) => {
+    setImage(v);
+    setImageWarning(null);
+    if (!v) return;
+    const img = new Image();
+    img.onload = () => {
+      const ratio = img.width / img.height;
+      const ideal = 1200 / 630;
+      if (img.width < 1200) setImageWarning(`Image is ${img.width}×${img.height} — under 1200×630.`);
+      else if (Math.abs(ratio - ideal) > 0.1) setImageWarning(`Aspect ratio ${ratio.toFixed(2)} — ideal is 1.91 (1200×630).`);
+    };
+    img.onerror = () => setImageWarning("Could not load image.");
+    img.src = v;
+  }, []);
 
   const handleCopy = useCallback(async () => {
     await navigator.clipboard.writeText(metaTags);
@@ -423,15 +368,13 @@ export default function MetaTagGeneratorContent() {
   const handleFillExample = useCallback(() => {
     setToolState({
       title: "How to Build a Landing Page That Converts in 2024",
-      description: "Learn the proven strategies for creating high-converting landing pages. Step-by-step guide with real examples, templates, and optimization tips.",
+      description: "Learn proven strategies for creating high-converting landing pages. Step-by-step guide with real examples, templates, and optimization tips.",
       url: "https://example.com/blog/landing-page-guide",
     });
     setImage("https://example.com/images/landing-page-og.jpg");
     setSiteName("Example Blog");
     setTwitterHandle("@exampleblog");
     setOgType("article");
-    setRobots("index, follow");
-    setIncludeViewport(true);
   }, [setToolState]);
 
   useKeyboardShortcuts(
@@ -444,335 +387,182 @@ export default function MetaTagGeneratorContent() {
     ),
   );
 
-  return (
-    <div style={{ color: "var(--kami-text, #111)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Meta Tag Generator"
-          tagline="Build SEO-ready title, description, Open Graph, and Twitter card tags with live Google, Facebook, and Twitter previews."
-          description="Fill in title, description, and URL (plus an optional image) and we generate every meta tag you need, plus live SERP previews for Google (desktop + mobile), Facebook, and Twitter. Character counters flash yellow when you're approaching the truncation limit and red when you're over."
-          audience={["SEOs", "Content marketers", "Developers", "PMMs"]}
-          whenToUse={[
-            "Shipping a new page or blog post",
-            "Auditing meta tags for an existing page",
-            "Getting an OG image to preview correctly on Slack or Twitter",
-          ]}
-          quickLinks={[
-            { label: "SEO character limits", href: "#seo-limits" },
-            { label: "OG vs Twitter cards", href: "#og-twitter-diff" },
-          ]}
-        /><div className="text-center">
-          <button
-            onClick={handleFillExample}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors hover:opacity-80"
-            style={{
-              border: "1px dashed var(--kami-border-strong, #333)",
-              color: "var(--kami-text-muted, #6b7280)",
-            }}
-          >
-            Try example
-          </button>
-        </div>
+  const inputStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  };
 
-        {/* Two-column layout */}
-        <div className="grid gap-8 lg:grid-cols-2">
-          {/* Left: Inputs */}
-          <div className="flex flex-col gap-4">
-            {/* Title */}
+  const controls = (
+    <>
+      <ControlGroup label="Page type">
+        <Segment
+          value={ogType}
+          onChange={setOgType}
+          options={[
+            { value: "website", label: "Website" },
+            { value: "article", label: "Article" },
+            { value: "product", label: "Product" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Robots">
+        <Select
+          value={robots}
+          onChange={setRobots}
+          options={[
+            { value: "index, follow", label: "index, follow" },
+            { value: "noindex, follow", label: "noindex, follow" },
+            { value: "index, nofollow", label: "index, nofollow" },
+            { value: "noindex, nofollow", label: "noindex, nofollow" },
+          ]}
+        />
+      </ControlGroup>
+      <ControlGroup label="Locale">
+        <Select value={locale} onChange={setLocale} options={LOCALES} />
+      </ControlGroup>
+      <ControlGroup label="Site name">
+        <input
+          type="text"
+          value={siteName}
+          onChange={(e) => setSiteName(e.target.value)}
+          placeholder="My Website"
+          className="w-full px-3 py-2 text-sm focus:outline-none"
+          style={inputStyle}
+        />
+      </ControlGroup>
+      <ControlGroup label="Twitter handle">
+        <input
+          type="text"
+          value={twitterHandle}
+          onChange={(e) => setTwitterHandle(e.target.value)}
+          placeholder="@yourhandle"
+          className="w-full px-3 py-2 text-sm focus:outline-none"
+          style={inputStyle}
+        />
+      </ControlGroup>
+      <ControlGroup label="OG image URL">
+        <input
+          type="text"
+          value={image}
+          onChange={(e) => handleImageChange(e.target.value)}
+          placeholder="https://example.com/og.jpg"
+          className="w-full px-3 py-2 text-sm focus:outline-none"
+          style={inputStyle}
+        />
+        {imageWarning && (
+          <p className="text-xs mt-1" style={{ color: "#eab308" }}>
+            {imageWarning}
+          </p>
+        )}
+      </ControlGroup>
+      <ControlGroup label="Extras">
+        <Toggle checked={includeViewport} onChange={setIncludeViewport} label="Viewport meta tag" />
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleFillExample}>
+        Example
+      </ToolActionButton>
+      <ToolActionButton variant="outline" onClick={handleClear}>
+        Reset
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy}>
+        {copied ? "Copied" : "Copy HTML"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Build SEO-ready meta tags with live SERP, Twitter, and Facebook previews. Character bars turn yellow near truncation and red when over.</p>
+      <p><strong>OG image:</strong> ideal 1200×630, under 5MB, PNG or JPG. Twitter falls back to OG tags for most fields.</p>
+      <p><strong>Note:</strong> Google rewrites titles ~60% of the time based on query relevance — treat the title as a hint.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Meta Tag Generator"
+      tagline="Live SERP + social previews · char limits · OG image checks"
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-5 p-4 md:p-6">
+        {/* Inputs */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="flex flex-col gap-3">
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                  Title
-                </label>
-                <CharBadge current={title.length} max={60} />
-              </div>
+              <CharProgress current={title.length} max={60} label="Title" />
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Your page title"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
+                className="mt-1.5 w-full px-3 py-2 text-sm focus:outline-none"
+                style={inputStyle}
               />
             </div>
-
-            {/* Description */}
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <label className="text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                  Description
-                </label>
-                <CharBadge current={description.length} max={160} />
-              </div>
+              <CharProgress current={description.length} max={160} label="Description" />
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="A brief description of the page content"
                 rows={3}
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 resize-none"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
+                className="mt-1.5 w-full px-3 py-2 text-sm focus:outline-none resize-none"
+                style={inputStyle}
               />
             </div>
-
-            {/* URL */}
             <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                URL
-              </label>
+              <label className="block text-xs font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>URL</label>
               <input
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="https://example.com/page"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={inputStyle}
               />
-            </div>
-
-            {/* Image URL */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Image URL
-              </label>
-              <input
-                type="text"
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-                placeholder="https://example.com/og-image.jpg"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
-              />
-            </div>
-
-            {/* Site Name */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Site Name
-              </label>
-              <input
-                type="text"
-                value={siteName}
-                onChange={(e) => setSiteName(e.target.value)}
-                placeholder="My Website"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
-              />
-            </div>
-
-            {/* Twitter Handle */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Twitter Handle <span style={{ color: "var(--kami-text-muted, #9ca3af)" }}>(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={twitterHandle}
-                onChange={(e) => setTwitterHandle(e.target.value)}
-                placeholder="@yourhandle"
-                className="w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200"
-                style={{
-                  background: "var(--kami-input-bg, white)",
-                  borderColor: "var(--kami-input-border, #d1d5db)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  caretColor: "var(--kami-caret, #111)",
-                }}
-              />
-            </div>
-
-            {/* OG Type */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Type
-              </label>
-              <div className="flex items-center gap-1.5 rounded-lg border p-0.5" style={{ borderColor: "var(--kami-input-border, #d1d5db)" }}>
-                {(["website", "article", "product"] as const).map((type) => (
-                  <button
-                    key={type}
-                    onClick={() => setOgType(type)}
-                    className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                      ogType === type
-                        ? "shadow-sm"
-                        : ""
-                    }`}
-                    style={{
-                      background: ogType === type ? "var(--kami-surface-solid, white)" : "transparent",
-                      color: ogType === type ? "var(--kami-text, #111)" : "var(--kami-text-muted, #6b7280)",
-                    }}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Robots */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Robots
-              </label>
-              <div className="flex items-center gap-1.5 rounded-lg border p-0.5" style={{ borderColor: "var(--kami-input-border, #d1d5db)" }}>
-                {(["index, follow", "noindex, follow", "index, nofollow", "noindex, nofollow"] as const).map((opt) => (
-                  <button
-                    key={opt}
-                    onClick={() => setRobots(opt)}
-                    className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                      robots === opt ? "shadow-sm" : ""
-                    }`}
-                    style={{
-                      background: robots === opt ? "var(--kami-surface-solid, white)" : "transparent",
-                      color: robots === opt ? "var(--kami-text, #111)" : "var(--kami-text-muted, #6b7280)",
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Viewport */}
-            <div className="flex items-center gap-2.5">
-              <button
-                onClick={() => setIncludeViewport(!includeViewport)}
-                className="relative flex h-5 w-9 shrink-0 items-center rounded-full transition-colors"
-                style={{
-                  background: includeViewport ? "var(--kami-surface-solid, #111)" : "var(--kami-input-border, #d1d5db)",
-                }}
-              >
-                <span
-                  className="inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform"
-                  style={{
-                    transform: includeViewport ? "translateX(17px)" : "translateX(3px)",
-                  }}
-                />
-              </button>
-              <label className="text-sm font-medium" style={{ color: "var(--kami-text, #111)" }}>
-                Include viewport meta tag
-              </label>
-            </div>
-
-            {/* Clear button */}
-            <div className="flex justify-end">
-              <button
-                onClick={handleClear}
-                className="text-sm transition-colors"
-                style={{ color: "var(--kami-text-muted, #6b7280)" }}
-              >
-                Clear all
-              </button>
             </div>
           </div>
-
-          {/* Right: Previews */}
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <GoogleDesktopPreview title={title} description={description} url={url} />
             <GoogleMobilePreview title={title} description={description} url={url} />
-            <FacebookPreview title={title} description={description} image={image} siteName={siteName} />
-            <TwitterPreview title={title} description={description} image={image} url={url} />
           </div>
         </div>
 
-        {/* Output: Generated HTML */}
-        <div className="mt-10">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold" style={{ color: "var(--kami-text, #111)" }}>
-              Generated Meta Tags
-            </h2>
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors"
-              style={{
-                background: "var(--kami-surface-solid, #111)",
-                color: "white",
-                border: "1px solid var(--kami-border-strong, #333)",
-              }}
-            >
-              {copied ? (
-                <>
-                  <CheckIcon />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <CopyIcon />
-                  Copy HTML
-                </>
-              )}
-            </button>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <FacebookPreview title={title} description={description} image={image} siteName={siteName} />
+          <TwitterPreview title={title} description={description} image={image} url={url} />
+        </div>
+
+        {/* Generated HTML */}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
+              Generated meta tags
+            </span>
           </div>
           <pre
-            className="overflow-x-auto rounded-lg border p-4 text-sm leading-relaxed"
+            className="overflow-x-auto rounded-xl p-4 text-xs leading-relaxed"
             style={{
-              background: "var(--kami-input-bg, #fafafa)",
-              borderColor: "var(--kami-card-border, #e5e7eb)",
-              color: "var(--kami-text, #111)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              background: "var(--kami-overlay-bg)",
+              color: "var(--kami-overlay-text)",
+              border: "1px solid var(--kami-border-strong)",
             }}
           >
             <code>{metaTags}</code>
           </pre>
         </div>
-
-        <ReferencePanel
-          id="seo-limits"
-          title="SEO character limits you'll actually see enforced"
-          summary="Google and social networks truncate. Here's where."
-          defaultOpen
-        >
-          <div className="space-y-1">
-            <RuleRow rule="Meta title" explanation="Google cuts off around 600 pixels (~55-60 chars)." example="50-60 chars is safe" />
-            <RuleRow rule="Meta description" explanation="Google shows ~155-160 chars on desktop, ~120 on mobile." example="Aim for <155" />
-            <RuleRow rule="OG title" explanation="Facebook/LinkedIn show ~60 chars." example="<60 chars" />
-            <RuleRow rule="OG description" explanation="Usually truncated around 200 chars on FB/LinkedIn cards." example="<200 chars" />
-            <RuleRow rule="Twitter title" explanation="Twitter shows ~70 chars on large summary cards." example="<70 chars" />
-            <RuleRow rule="Twitter description" explanation="Truncated around 200 chars." example="<200 chars" />
-            <RuleRow rule="OG image" explanation="Ideal 1200×630. Under 5MB. PNG or JPG." example="1200×630 PNG" />
-          </div>
-          <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-900">
-            <strong>Tip:</strong> Google rewrites titles ~60% of the time based on relevance
-            to the query - so treat your meta title as a hint, not a guarantee. The description
-            is more reliably shown as-written.
-          </div>
-        </ReferencePanel>
-
-        <ReferencePanel
-          id="og-twitter-diff"
-          title="Open Graph vs Twitter Cards - do I need both?"
-          summary="Twitter falls back to OG tags for most fields. You can often just set OG."
-          defaultOpen={false}
-        >
-          <div className="space-y-2 text-xs">
-            <p><strong>Open Graph (og:*)</strong> is the Facebook-invented standard adopted by almost everyone: LinkedIn, Slack, Discord, iMessage, WhatsApp, and Twitter.</p>
-            <p><strong>Twitter Cards (twitter:*)</strong> exist because Twitter wants a few extras - specifically card <code>type</code> (summary vs summary_large_image) and <code>site</code>/<code>creator</code> handles.</p>
-            <p>If you only set OG tags, Twitter will still render a card. Set <code>twitter:card</code> and <code>twitter:site</code> if you want control over which card layout shows up.</p>
-            <p className="text-gray-500"><strong>Verdict:</strong> OG is the baseline. Add Twitter tags when you specifically care about card type or attribution.</p>
-          </div>
-        </ReferencePanel>
       </div>
-    </div>
+    </ToolShell>
   );
 }

@@ -3,7 +3,11 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -167,28 +171,66 @@ function rgbToCmyk(rgb: RGB): CMYK {
   };
 }
 
-function cmykToRgb(cmyk: CMYK): RGB {
-  const c = cmyk.c / 100;
-  const m = cmyk.m / 100;
-  const y = cmyk.y / 100;
-  const k = cmyk.k / 100;
+// sRGB <-> linear
+function srgbToLinear(v: number): number {
+  const s = v / 255;
+  return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+}
+
+// Linear sRGB -> OKLAB (Björn Ottosson)
+function rgbToOklab(rgb: RGB): { L: number; a: number; b: number } {
+  const r = srgbToLinear(rgb.r);
+  const g = srgbToLinear(rgb.g);
+  const b = srgbToLinear(rgb.b);
+  const l_ = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+  const m_ = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+  const s_ = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
+  const l = Math.cbrt(l_);
+  const m = Math.cbrt(m_);
+  const s = Math.cbrt(s_);
   return {
-    r: Math.round(255 * (1 - c) * (1 - k)),
-    g: Math.round(255 * (1 - m) * (1 - k)),
-    b: Math.round(255 * (1 - y) * (1 - k)),
+    L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
   };
+}
+
+function rgbToOklch(rgb: RGB): { L: number; C: number; h: number } {
+  const { L, a, b } = rgbToOklab(rgb);
+  const C = Math.sqrt(a * a + b * b);
+  let h = (Math.atan2(b, a) * 180) / Math.PI;
+  if (h < 0) h += 360;
+  return { L, C, h };
+}
+
+// Display-P3 conversion (approximate via sRGB linear -> P3 matrix)
+function rgbToP3(rgb: RGB): { r: number; g: number; b: number } {
+  // sRGB linear -> XYZ -> P3 linear -> P3 sRGB-encoded values (display-p3 uses sRGB transfer)
+  const r = srgbToLinear(rgb.r);
+  const g = srgbToLinear(rgb.g);
+  const b = srgbToLinear(rgb.b);
+  // sRGB -> XYZ (D65)
+  const X = 0.4124564 * r + 0.3575761 * g + 0.1804375 * b;
+  const Y = 0.2126729 * r + 0.7151522 * g + 0.072175 * b;
+  const Z = 0.0193339 * r + 0.119192 * g + 0.9503041 * b;
+  // XYZ -> Display-P3 (linear)
+  const pR = 2.493497 * X - 0.931384 * Y - 0.402711 * Z;
+  const pG = -0.829489 * X + 1.762664 * Y + 0.023625 * Z;
+  const pB = 0.035846 * X - 0.076172 * Y + 0.956885 * Z;
+  // Linear -> encoded (sRGB transfer for display-p3)
+  const enc = (v: number) => {
+    const c = Math.max(0, Math.min(1, v));
+    return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  };
+  return { r: enc(pR), g: enc(pG), b: enc(pB) };
 }
 
 // Relative luminance (sRGB linearization)
 function relativeLuminance(rgb: RGB): number {
-  const linearize = (v: number) => {
-    const s = v / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  };
   return (
-    0.2126 * linearize(rgb.r) +
-    0.7152 * linearize(rgb.g) +
-    0.0722 * linearize(rgb.b)
+    0.2126 * srgbToLinear(rgb.r) +
+    0.7152 * srgbToLinear(rgb.g) +
+    0.0722 * srgbToLinear(rgb.b)
   );
 }
 
@@ -205,75 +247,6 @@ function rotateHue(rgb: RGB, degrees: number): RGB {
   const hsl = rgbToHsl(rgb);
   hsl.h = (hsl.h + degrees + 360) % 360;
   return hslToRgb(hsl);
-}
-
-/* ------------------------------------------------------------------ */
-/*  Inline SVG icons                                                   */
-/* ------------------------------------------------------------------ */
-
-function CopyIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Small reusable pieces                                              */
-/* ------------------------------------------------------------------ */
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const copy = () => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  };
-  return (
-    <button
-      onClick={copy}
-      className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium"
-      style={{
-        background: "var(--kami-cta-bg)",
-        color: "var(--kami-cta-text)",
-        borderRadius: "var(--kami-cta-radius, 0.5rem)",
-        boxShadow: "var(--kami-cta-shadow, none)",
-      }}
-      title="Copy"
-    >
-      {copied ? <CheckIcon /> : <CopyIcon />}
-      {copied ? "Copied" : "Copy"}
-    </button>
-  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -328,22 +301,6 @@ function parseHsvInput(v: string): HSV | null {
   return null;
 }
 
-function parseCmykInput(v: string): CMYK | null {
-  const m = v.match(
-    /cmyk\s*\(\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*,\s*([\d.]+)%?\s*\)/i
-  );
-  if (m) return { c: +m[1], m: +m[2], y: +m[3], k: +m[4] };
-  const parts = v
-    .replace(/%/g, "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (parts.length === 4 && parts.every((p) => /^[\d.]+$/.test(p))) {
-    return { c: +parts[0], m: +parts[1], y: +parts[2], k: +parts[3] };
-  }
-  return null;
-}
-
 /* ------------------------------------------------------------------ */
 /*  Format strings                                                     */
 /* ------------------------------------------------------------------ */
@@ -366,6 +323,88 @@ function fmtCmyk(rgb: RGB) {
   const c = rgbToCmyk(rgb);
   return `cmyk(${Math.round(c.c)}%, ${Math.round(c.m)}%, ${Math.round(c.y)}%, ${Math.round(c.k)}%)`;
 }
+function fmtOklab(rgb: RGB) {
+  const { L, a, b } = rgbToOklab(rgb);
+  return `oklab(${(L * 100).toFixed(1)}% ${a.toFixed(3)} ${b.toFixed(3)})`;
+}
+function fmtOklch(rgb: RGB) {
+  const { L, C, h } = rgbToOklch(rgb);
+  return `oklch(${(L * 100).toFixed(1)}% ${C.toFixed(3)} ${h.toFixed(1)})`;
+}
+function fmtP3(rgb: RGB) {
+  const { r, g, b } = rgbToP3(rgb);
+  return `color(display-p3 ${r.toFixed(3)} ${g.toFixed(3)} ${b.toFixed(3)})`;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Copy-to-clipboard one-line row                                     */
+/* ------------------------------------------------------------------ */
+
+function FormatRow({ label, value, onParse, parseable }: {
+  label: string;
+  value: string;
+  onParse?: (v: string) => void;
+  parseable?: boolean;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [draft, setDraft] = useState(value);
+
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const copy = () => {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span
+        className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide"
+        style={{ color: "var(--kami-text-dim)" }}
+      >
+        {label}
+      </span>
+      <input
+        value={parseable ? draft : value}
+        readOnly={!parseable}
+        onChange={
+          parseable
+            ? (e) => {
+                setDraft(e.target.value);
+                onParse?.(e.target.value);
+              }
+            : undefined
+        }
+        onClick={parseable ? undefined : copy}
+        className="w-full px-3 py-2 font-mono text-xs focus:outline-none"
+        style={{
+          background: "var(--kami-input-bg, var(--kami-surface-solid))",
+          color: "var(--kami-text)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-input-radius, 0.5rem)",
+          cursor: parseable ? "text" : "pointer",
+        }}
+      />
+      <button
+        onClick={copy}
+        className="shrink-0 px-2 py-2 text-xs"
+        style={{
+          background: copied ? "var(--kami-cta-bg)" : "var(--kami-surface)",
+          color: copied ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+          border: "1px solid var(--kami-border-strong)",
+          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+          minWidth: 64,
+        }}
+      >
+        {copied ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /*  Main component                                                     */
@@ -376,72 +415,30 @@ export default function ColorConverterContent() {
   const initialRgb = useMemo(() => hexToRgb(initialColor) ?? { r: 255, g: 102, b: 0 }, []);
   const [rgb, setRgb] = useState<RGB>(initialRgb);
 
-  // Text fields - kept as strings so user can type freely
-  const [hexField, setHexField] = useState(fmtHex(initialRgb));
-  const [rgbField, setRgbField] = useState(fmtRgb(initialRgb));
-  const [hslField, setHslField] = useState(fmtHsl(initialRgb));
-  const [hsvField, setHsvField] = useState(fmtHsv(initialRgb));
-  const [cmykField, setCmykField] = useState(fmtCmyk(initialRgb));
-
-  // Contrast checker
-  const [fgColor, setFgColor] = useState<RGB>({ r: 255, g: 255, b: 255 });
-  const [bgColor, setBgColor] = useState<RGB>(rgb);
-  const [fgHex, setFgHex] = useState("#ffffff");
-  const [bgHex, setBgHex] = useState(rgbToHex(rgb));
-
-  // Sync all fields from a new RGB source, except the one being edited
+  // Sync from a new RGB source
   const syncAll = useCallback(
-    (newRgb: RGB, except?: string) => {
+    (newRgb: RGB) => {
       setRgb(newRgb);
-      const newHex = fmtHex(newRgb);
-      if (except !== "hex") setHexField(newHex);
-      if (except !== "rgb") setRgbField(fmtRgb(newRgb));
-      if (except !== "hsl") setHslField(fmtHsl(newRgb));
-      if (except !== "hsv") setHsvField(fmtHsv(newRgb));
-      if (except !== "cmyk") setCmykField(fmtCmyk(newRgb));
-      setToolState({ color: newHex });
+      setToolState({ color: rgbToHex(newRgb) });
     },
-    [setToolState]
+    [setToolState],
   );
 
-  // Handlers for each field
-  const onHexChange = (v: string) => {
-    setHexField(v);
+  const onHexParse = (v: string) => {
     const parsed = parseHexInput(v);
-    if (parsed) syncAll(parsed, "hex");
+    if (parsed) syncAll(parsed);
   };
-
-  const onRgbChange = (v: string) => {
-    setRgbField(v);
+  const onRgbParse = (v: string) => {
     const parsed = parseRgbInput(v);
-    if (parsed) syncAll(parsed, "rgb");
+    if (parsed) syncAll(parsed);
   };
-
-  const onHslChange = (v: string) => {
-    setHslField(v);
+  const onHslParse = (v: string) => {
     const parsed = parseHslInput(v);
-    if (parsed) {
-      const newRgb = hslToRgb(parsed);
-      syncAll(newRgb, "hsl");
-    }
+    if (parsed) syncAll(hslToRgb(parsed));
   };
-
-  const onHsvChange = (v: string) => {
-    setHsvField(v);
+  const onHsvParse = (v: string) => {
     const parsed = parseHsvInput(v);
-    if (parsed) {
-      const newRgb = hsvToRgb(parsed);
-      syncAll(newRgb, "hsv");
-    }
-  };
-
-  const onCmykChange = (v: string) => {
-    setCmykField(v);
-    const parsed = parseCmykInput(v);
-    if (parsed) {
-      const newRgb = cmykToRgb(parsed);
-      syncAll(newRgb, "cmyk");
-    }
+    if (parsed) syncAll(hsvToRgb(parsed));
   };
 
   const onPickerChange = (v: string) => {
@@ -449,27 +446,27 @@ export default function ColorConverterContent() {
     if (parsed) syncAll(parsed);
   };
 
-  // Keep bg in sync with main color on first load
-  useEffect(() => {
-    setBgColor(rgb);
-    setBgHex(rgbToHex(rgb));
-  }, [rgb]);
+  useKeyboardShortcuts(
+    useMemo(
+      () => [
+        {
+          key: "Enter",
+          meta: true,
+          action: () => {
+            navigator.clipboard.writeText(fmtHex(rgb));
+          },
+          label: "Copy HEX",
+        },
+      ],
+      [rgb],
+    ),
+  );
 
-  const onFgHexChange = (v: string) => {
-    setFgHex(v);
-    const parsed = hexToRgb(v);
-    if (parsed) setFgColor(parsed);
-  };
+  const hex = fmtHex(rgb);
+  const whiteContrast = contrastRatio(rgb, { r: 255, g: 255, b: 255 });
+  const blackContrast = contrastRatio(rgb, { r: 0, g: 0, b: 0 });
 
-  const onBgHexChange = (v: string) => {
-    setBgHex(v);
-    const parsed = hexToRgb(v);
-    if (parsed) setBgColor(parsed);
-  };
-
-  const ratio = contrastRatio(fgColor, bgColor);
-
-  // Palette
+  // Palette items
   const complementary = rotateHue(rgb, 180);
   const analogous1 = rotateHue(rgb, 30);
   const analogous2 = rotateHue(rgb, -30);
@@ -480,334 +477,281 @@ export default function ColorConverterContent() {
 
   const paletteItems: { label: string; color: RGB }[] = [
     { label: "Complementary", color: complementary },
-    { label: "Analogous 1", color: analogous1 },
-    { label: "Analogous 2", color: analogous2 },
-    { label: "Triadic 1", color: triadic1 },
-    { label: "Triadic 2", color: triadic2 },
-    { label: "Split-comp 1", color: splitComp1 },
-    { label: "Split-comp 2", color: splitComp2 },
+    { label: "Analogous +30", color: analogous1 },
+    { label: "Analogous −30", color: analogous2 },
+    { label: "Triadic A", color: triadic1 },
+    { label: "Triadic B", color: triadic2 },
+    { label: "Split-comp A", color: splitComp1 },
+    { label: "Split-comp B", color: splitComp2 },
   ];
 
-  useKeyboardShortcuts(useMemo(() => [
-    { key: "Enter", meta: true, action: () => { navigator.clipboard.writeText(fmtHex(rgb)); }, label: "Copy HEX" },
-  ], [rgb]));
+  // Shades
+  const shades = useMemo(() => {
+    const hsl = rgbToHsl(rgb);
+    const lightnesses = [97, 93, 86, 77, 66, 50, 40, 32, 24, 17, 10];
+    return lightnesses.map((l) => hslToRgb({ h: hsl.h, s: hsl.s, l }));
+  }, [rgb]);
 
-  const inputClass = "w-full px-3 py-2 text-sm focus:outline-none";
-  const inputStyle = {
-    background: "var(--kami-input-bg, var(--kami-surface-solid))",
-    color: "var(--kami-text)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-input-radius, 0.5rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
+  // Color blindness sims
+  const cbSims = useMemo(
+    () => ({
+      protanopia: simulateColorBlindness(rgb, "protanopia"),
+      deuteranopia: simulateColorBlindness(rgb, "deuteranopia"),
+      tritanopia: simulateColorBlindness(rgb, "tritanopia"),
+    }),
+    [rgb],
+  );
 
-  const cardStyle = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
+  // Closest named CSS color
+  const closestNamed = useMemo(() => {
+    return CSS_NAMED_COLORS.map(([name, h]) => {
+      const candidate = hexToRgb(h)!;
+      return { name, hex: h, dist: colorDistance(rgb, candidate), rgb: candidate };
+    })
+      .sort((a, b) => a.dist - b.dist)
+      .slice(0, 6);
+  }, [rgb]);
+
+  const copyHex = () => navigator.clipboard.writeText(hex);
+  const copyAll = () => {
+    navigator.clipboard.writeText(
+      [fmtHex(rgb), fmtRgb(rgb), fmtHsl(rgb), fmtHsv(rgb), fmtOklch(rgb), fmtOklab(rgb), fmtP3(rgb), fmtCmyk(rgb)].join("\n"),
+    );
+  };
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Color Converter"
-          tagline="Convert any color between HEX, RGB, HSL, HSB/HSV, OKLCH, and CMYK - with live picker and contrast check."
-          description="Type a color in any format (hex code, rgb(), hsl()) and see it converted to all others simultaneously. Drag the hue and saturation pickers to tweak it visually. Built-in WCAG contrast check against white and black tells you if the color is usable for text."
-          audience={["Designers", "Front-end developers", "Brand teams"]}
-          whenToUse={[
-            "Translating a Figma hex into HSL for a CSS variable",
-            "Checking if a brand color works as text on white",
-            "Exploring a color's saturation/lightness neighbors",
-          ]}
-        />
-
-        {/* Color preview + picker */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <div className="flex flex-col items-center gap-4 sm:flex-row">
-            <div
-              className="h-28 w-28 shrink-0"
-              style={{
-                backgroundColor: rgbToHex(rgb),
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            />
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Color Picker
-              </label>
+    <ToolShell
+      title="Color Converter"
+      tagline="HEX · RGB · HSL · HSV · OKLCH · OKLAB · Display-P3 · CMYK · contrast"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <ToolActionButton onClick={copyAll} variant="outline">Copy all</ToolActionButton>
+          <ToolActionButton onClick={copyHex} variant="solid">Copy HEX</ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Pick a color">
+            <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={rgbToHex(rgb)}
+                value={hex}
                 onChange={(e) => onPickerChange(e.target.value)}
-                className="h-10 w-20 cursor-pointer"
+                aria-label="Color picker"
+                className="h-12 w-16 cursor-pointer"
                 style={{
                   border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.25rem)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
                 }}
               />
+              <span className="font-mono text-sm" style={{ color: "var(--kami-text-muted)" }}>{hex.toUpperCase()}</span>
             </div>
+          </ControlGroup>
+
+          <ControlGroup label="Quick palette">
+            <div className="grid grid-cols-4 gap-2">
+              {paletteItems.map((p) => (
+                <button
+                  key={p.label}
+                  onClick={() => syncAll(p.color)}
+                  className="flex flex-col items-center gap-1"
+                  title={`${p.label} · ${rgbToHex(p.color)}`}
+                >
+                  <span
+                    className="block h-9 w-full"
+                    style={{
+                      background: rgbToHex(p.color),
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "var(--kami-cta-radius, 0.4rem)",
+                    }}
+                  />
+                  <span className="truncate text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{p.label}</span>
+                </button>
+              ))}
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Closest CSS named">
+            <div className="flex flex-wrap gap-1.5">
+              {closestNamed.map((c) => (
+                <button
+                  key={c.name}
+                  onClick={() => syncAll(c.rgb)}
+                  className="flex items-center gap-1.5 px-2 py-1 text-[11px]"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.4rem)",
+                    color: "var(--kami-text-muted)",
+                  }}
+                >
+                  <span
+                    className="inline-block h-3 w-3"
+                    style={{
+                      background: c.hex,
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "2px",
+                    }}
+                  />
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Color-blindness sim">
+            <div className="grid grid-cols-3 gap-2">
+              {(["protanopia", "deuteranopia", "tritanopia"] as const).map((t) => (
+                <div key={t} className="flex flex-col items-center gap-1">
+                  <span
+                    className="block h-9 w-full"
+                    style={{
+                      background: rgbToHex(cbSims[t]),
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: "var(--kami-cta-radius, 0.4rem)",
+                    }}
+                  />
+                  <span className="text-[10px] capitalize" style={{ color: "var(--kami-text-dim)" }}>{t.replace("opia", ".")}</span>
+                </div>
+              ))}
+            </div>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Type a color in any format (hex, rgb(), hsl(), hsv()) and see it converted to
+            every other format simultaneously - including modern OKLCH, OKLAB and Display-P3.
+            Click any field to copy.
+          </p>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <p className="mt-1">Designers, front-end developers, brand teams.</p>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <ul className="mt-1 space-y-1 text-xs">
+              <li>· Translating a Figma hex into HSL or OKLCH</li>
+              <li>· Checking a brand color works on white or black</li>
+              <li>· Exporting a Display-P3 wide-gamut equivalent</li>
+            </ul>
           </div>
         </div>
-
-        {/* Conversion fields */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Color Values</h2>
-          <div className="grid gap-4">
-            {/* HEX */}
-            <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                HEX
-              </label>
-              <input
-                className={inputClass}
-                style={inputStyle}
-                value={hexField}
-                onChange={(e) => onHexChange(e.target.value)}
-              />
-              <CopyButton text={hexField} />
-            </div>
-            {/* RGB */}
-            <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                RGB
-              </label>
-              <input
-                className={inputClass}
-                style={inputStyle}
-                value={rgbField}
-                onChange={(e) => onRgbChange(e.target.value)}
-              />
-              <CopyButton text={rgbField} />
-            </div>
-            {/* HSL */}
-            <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                HSL
-              </label>
-              <input
-                className={inputClass}
-                style={inputStyle}
-                value={hslField}
-                onChange={(e) => onHslChange(e.target.value)}
-              />
-              <CopyButton text={hslField} />
-            </div>
-            {/* HSV / HSB */}
-            <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                HSB
-              </label>
-              <input
-                className={inputClass}
-                style={inputStyle}
-                value={hsvField}
-                onChange={(e) => onHsvChange(e.target.value)}
-              />
-              <CopyButton text={hsvField} />
-            </div>
-            {/* CMYK */}
-            <div className="flex items-center gap-3">
-              <label className="w-16 shrink-0 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                CMYK
-              </label>
-              <input
-                className={inputClass}
-                style={inputStyle}
-                value={cmykField}
-                onChange={(e) => onCmykChange(e.target.value)}
-              />
-              <CopyButton text={cmykField} />
-            </div>
-          </div>
-        </div>
-
-        {/* Contrast checker */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>
-            Contrast Checker (WCAG)
-          </h2>
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Foreground (text)
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={rgbToHex(fgColor)}
-                  onChange={(e) => onFgHexChange(e.target.value)}
-                  className="h-9 w-12 cursor-pointer"
-                  style={{
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.25rem)",
-                  }}
-                />
-                <input
-                  className={inputClass}
-                  style={inputStyle}
-                  value={fgHex}
-                  onChange={(e) => onFgHexChange(e.target.value)}
-                />
-              </div>
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Background
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={rgbToHex(bgColor)}
-                  onChange={(e) => onBgHexChange(e.target.value)}
-                  className="h-9 w-12 cursor-pointer"
-                  style={{
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.25rem)",
-                  }}
-                />
-                <input
-                  className={inputClass}
-                  style={inputStyle}
-                  value={bgHex}
-                  onChange={(e) => onBgHexChange(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Live preview - user data colors preserved */}
+      }
+    >
+      <div className="flex h-full min-h-[60vh] flex-col gap-3">
+        {/* Big swatch + contrast inline */}
+        <div
+          className="flex flex-col gap-3 overflow-hidden sm:flex-row"
+          style={{
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
           <div
-            className="mb-4 p-6 text-center"
+            className="flex h-40 w-full items-end justify-between gap-2 p-4 sm:w-1/2"
             style={{
-              backgroundColor: rgbToHex(bgColor),
-              color: rgbToHex(fgColor),
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
+              background: hex,
+              color: relativeLuminance(rgb) > 0.5 ? "#111" : "#fff",
             }}
           >
-            <p className="text-lg font-semibold">
-              Sample Text - {ratio.toFixed(2)}:1
-            </p>
-            <p className="text-sm">
-              The quick brown fox jumps over the lazy dog.
-            </p>
+            <div className="font-mono text-xs uppercase tracking-wide opacity-80">{hex}</div>
           </div>
+          <div
+            className="grid w-full grid-cols-2 gap-2 p-4 sm:w-1/2"
+            style={{ background: "var(--kami-surface-solid)" }}
+          >
+            <ContrastBadge label="vs white" ratio={whiteContrast} />
+            <ContrastBadge label="vs black" ratio={blackContrast} />
+            <div className="col-span-2 text-[11px]" style={{ color: "var(--kami-text-dim)" }}>
+              Hue {Math.round(rgbToHsl(rgb).h)}° · Sat {Math.round(rgbToHsl(rgb).s)}% · Lum {Math.round(rgbToHsl(rgb).l)}%
+            </div>
+          </div>
+        </div>
 
-          {/* Results grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              {
-                label: "AA Normal",
-                pass: ratio >= 4.5,
-                req: "4.5:1",
-              },
-              {
-                label: "AA Large",
-                pass: ratio >= 3,
-                req: "3:1",
-              },
-              {
-                label: "AAA Normal",
-                pass: ratio >= 7,
-                req: "7:1",
-              },
-              {
-                label: "AAA Large",
-                pass: ratio >= 4.5,
-                req: "4.5:1",
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="p-3 text-center text-sm font-medium"
+        {/* Format rows */}
+        <div
+          className="flex flex-col gap-2 p-3"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <FormatRow label="HEX" value={fmtHex(rgb)} parseable onParse={onHexParse} />
+          <FormatRow label="RGB" value={fmtRgb(rgb)} parseable onParse={onRgbParse} />
+          <FormatRow label="HSL" value={fmtHsl(rgb)} parseable onParse={onHslParse} />
+          <FormatRow label="HSV" value={fmtHsv(rgb)} parseable onParse={onHsvParse} />
+          <FormatRow label="OKLCH" value={fmtOklch(rgb)} />
+          <FormatRow label="OKLAB" value={fmtOklab(rgb)} />
+          <FormatRow label="P3" value={fmtP3(rgb)} />
+          <FormatRow label="CMYK" value={fmtCmyk(rgb)} />
+        </div>
+
+        {/* Shade ramp */}
+        <div
+          className="p-3"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+            Shades · 50 → 950
+          </div>
+          <div className="grid grid-cols-11 gap-1">
+            {shades.map((s, i) => (
+              <button
+                key={i}
+                onClick={() => syncAll(s)}
+                title={`${i === 0 ? 50 : i === 10 ? 950 : i * 100} · ${rgbToHex(s)}`}
+                className="flex h-12 items-end justify-center pb-1"
                 style={{
-                  background: item.pass
-                    ? "color-mix(in srgb, #16a34a 12%, var(--kami-surface))"
-                    : "color-mix(in srgb, #dc2626 12%, var(--kami-surface))",
-                  color: item.pass
-                    ? "color-mix(in srgb, #166534 80%, var(--kami-text))"
-                    : "color-mix(in srgb, #991b1b 80%, var(--kami-text))",
-                  border: item.pass
-                    ? "1px solid color-mix(in srgb, #16a34a 35%, transparent)"
-                    : "1px solid color-mix(in srgb, #dc2626 35%, transparent)",
-                  borderRadius: "var(--kami-card-radius, 0.5rem)",
+                  background: rgbToHex(s),
+                  color: relativeLuminance(s) > 0.5 ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.85)",
+                  fontSize: 9,
+                  fontWeight: 600,
+                  borderRadius: 4,
+                  border: "1px solid var(--kami-border)",
                 }}
               >
-                <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{item.label}</div>
-                <div className="mt-1">
-                  {item.pass ? "Pass" : "Fail"}{" "}
-                  <span className="text-xs font-normal" style={{ color: "var(--kami-text-dim)" }}>
-                    ({item.req})
-                  </span>
-                </div>
-              </div>
+                {i === 0 ? 50 : i === 10 ? 950 : i * 100}
+              </button>
             ))}
           </div>
         </div>
-
-        {/* Palette generator */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Palette Generator</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {/* Current color */}
-            <PaletteSwatch label="Current" color={rgb} />
-            {paletteItems.map((item) => (
-              <PaletteSwatch
-                key={item.label}
-                label={item.label}
-                color={item.color}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Shade generator */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Shades & Tints</h2>
-          <div className="grid grid-cols-5 gap-1.5 sm:grid-cols-11">
-            {generateShades(rgb).map((shade, i) => (
-              <PaletteSwatch
-                key={i}
-                label={`${i === 0 ? "50" : i === 10 ? "950" : i * 100}`}
-                color={shade}
-                compact
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Color blindness simulation */}
-        <div className="mb-8 p-5" style={cardStyle}>
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>Color Blindness Simulation</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <PaletteSwatch label="Normal Vision" color={rgb} />
-            <PaletteSwatch label="Protanopia (no red)" color={simulateColorBlindness(rgb, "protanopia")} />
-            <PaletteSwatch label="Deuteranopia (no green)" color={simulateColorBlindness(rgb, "deuteranopia")} />
-            <PaletteSwatch label="Tritanopia (no blue)" color={simulateColorBlindness(rgb, "tritanopia")} />
-          </div>
-        </div>
-
-        {/* Named CSS colors lookup */}
-        <NamedColorLookup currentRgb={rgb} onSelect={(c) => syncAll(c)} />
-
-        {/* Footer */}
       </div>
-    </div>
+    </ToolShell>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Shade generation                                                    */
-/* ------------------------------------------------------------------ */
-
-function generateShades(rgb: RGB): RGB[] {
-  const hsl = rgbToHsl(rgb);
-  // Generate 11 shades: 50, 100, 200, ..., 900, 950
-  const lightnesses = [97, 93, 86, 77, 66, 50, 40, 32, 24, 17, 10];
-  return lightnesses.map((l) => hslToRgb({ h: hsl.h, s: hsl.s, l }));
+function ContrastBadge({ label, ratio }: { label: string; ratio: number }) {
+  const level = ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA-Lg" : "Fail";
+  const tone =
+    ratio >= 4.5
+      ? { bg: "rgba(34,197,94,0.14)", fg: "#16a34a", border: "rgba(34,197,94,0.30)" }
+      : ratio >= 3
+        ? { bg: "rgba(234,179,8,0.14)", fg: "#a16207", border: "rgba(234,179,8,0.30)" }
+        : { bg: "rgba(239,68,68,0.14)", fg: "#b91c1c", border: "rgba(239,68,68,0.30)" };
+  return (
+    <div
+      className="flex items-center justify-between rounded px-2 py-1.5 text-xs"
+      style={{
+        background: tone.bg,
+        color: tone.fg,
+        border: `1px solid ${tone.border}`,
+        borderRadius: "var(--kami-cta-radius, 0.4rem)",
+      }}
+    >
+      <span>{label}</span>
+      <span className="font-mono">{ratio.toFixed(2)}:1 · {level}</span>
+    </div>
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -816,8 +760,7 @@ function generateShades(rgb: RGB): RGB[] {
 
 function simulateColorBlindness(rgb: RGB, type: "protanopia" | "deuteranopia" | "tritanopia"): RGB {
   const r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255;
-  // Linearize sRGB
-  const lin = (v: number) => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const lin = (v: number) => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
   const lr = lin(r), lg = lin(g), lb = lin(b);
 
   let sr: number, sg: number, sb: number;
@@ -830,16 +773,15 @@ function simulateColorBlindness(rgb: RGB, type: "protanopia" | "deuteranopia" | 
     case "deuteranopia":
       sr = 0.367322 * lr + 0.860646 * lg - 0.227968 * lb;
       sg = 0.280085 * lr + 0.672501 * lg + 0.047413 * lb;
-      sb = -0.011820 * lr + 0.042940 * lg + 0.968881 * lb;
+      sb = -0.01182 * lr + 0.04294 * lg + 0.968881 * lb;
       break;
     case "tritanopia":
       sr = 1.255528 * lr - 0.076749 * lg - 0.178779 * lb;
       sg = -0.078411 * lr + 0.930809 * lg + 0.147602 * lb;
-      sb = 0.004733 * lr + 0.691367 * lg + 0.303900 * lb;
+      sb = 0.004733 * lr + 0.691367 * lg + 0.3039 * lb;
       break;
   }
 
-  // Delinearize
   const delin = (v: number) => {
     const c = Math.max(0, Math.min(1, v));
     return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
@@ -852,7 +794,7 @@ function simulateColorBlindness(rgb: RGB, type: "protanopia" | "deuteranopia" | 
 }
 
 /* ------------------------------------------------------------------ */
-/*  Named CSS color lookup                                              */
+/*  Named CSS color list                                                */
 /* ------------------------------------------------------------------ */
 
 const CSS_NAMED_COLORS: [string, string][] = [
@@ -895,184 +837,6 @@ const CSS_NAMED_COLORS: [string, string][] = [
 ];
 
 function colorDistance(a: RGB, b: RGB): number {
-  // Weighted Euclidean distance (human perception)
   const dr = a.r - b.r, dg = a.g - b.g, db = a.b - b.b;
   return Math.sqrt(2 * dr * dr + 4 * dg * dg + 3 * db * db);
-}
-
-function NamedColorLookup({ currentRgb, onSelect }: { currentRgb: RGB; onSelect: (rgb: RGB) => void }) {
-  const [search, setSearch] = useState("");
-
-  const closest = useMemo(() => {
-    return CSS_NAMED_COLORS
-      .map(([name, hex]) => {
-        const rgb = hexToRgb(hex)!;
-        return { name, hex, rgb, dist: colorDistance(currentRgb, rgb) };
-      })
-      .sort((a, b) => a.dist - b.dist)
-      .slice(0, 5);
-  }, [currentRgb]);
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return null;
-    const q = search.toLowerCase();
-    return CSS_NAMED_COLORS
-      .filter(([name]) => name.includes(q))
-      .slice(0, 20)
-      .map(([name, hex]) => ({ name, hex, rgb: hexToRgb(hex)! }));
-  }, [search]);
-
-  return (
-    <div
-      className="mb-8 p-5"
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
-      <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>CSS Named Colors</h2>
-
-      {/* Closest matches */}
-      <div className="mb-4">
-        <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>Closest named colors to current:</p>
-        <div className="flex flex-wrap gap-2">
-          {closest.map((c) => (
-            <button
-              key={c.name}
-              onClick={() => onSelect(c.rgb)}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm transition"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              <div
-                className="h-4 w-4"
-                style={{
-                  backgroundColor: c.hex,
-                  border: "1px solid var(--kami-border)",
-                  borderRadius: "4px",
-                }}
-              />
-              <span style={{ color: "var(--kami-text-muted)" }}>{c.name}</span>
-              <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{c.hex}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Search */}
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search 147 named colors..."
-        className="w-full px-3 py-2 text-sm focus:outline-none"
-        style={{
-          background: "var(--kami-input-bg, var(--kami-surface-solid))",
-          color: "var(--kami-text)",
-          border: "1px solid var(--kami-border-strong)",
-          borderRadius: "var(--kami-input-radius, 0.5rem)",
-          boxShadow: "var(--kami-card-shadow, none)",
-        }}
-      />
-      {filtered && filtered.length > 0 && (
-        <div className="mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-          {filtered.map((c) => (
-            <button
-              key={c.name}
-              onClick={() => { onSelect(c.rgb); setSearch(""); }}
-              className="flex items-center gap-2 px-2.5 py-1.5 text-xs transition"
-              style={{
-                border: "1px solid var(--kami-border)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              <div
-                className="h-3.5 w-3.5 shrink-0"
-                style={{
-                  backgroundColor: c.hex,
-                  border: "1px solid var(--kami-border)",
-                  borderRadius: "4px",
-                }}
-              />
-              <span className="truncate" style={{ color: "var(--kami-text-muted)" }}>{c.name}</span>
-            </button>
-          ))}
-        </div>
-      )}
-      {filtered && filtered.length === 0 && (
-        <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>No matching color names</p>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Palette swatch                                                     */
-/* ------------------------------------------------------------------ */
-
-function PaletteSwatch({ label, color, compact }: { label: string; color: RGB; compact?: boolean }) {
-  const hex = rgbToHex(color);
-  const [copied, setCopied] = useState(false);
-
-  const copy = () => {
-    navigator.clipboard.writeText(hex).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
-  };
-
-  if (compact) {
-    return (
-      <button
-        onClick={copy}
-        className="case-preserve group flex flex-col items-center gap-1 p-1.5 text-center transition"
-        style={{
-          border: "1px solid var(--kami-border)",
-          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-        }}
-        title={`Copy ${hex}`}
-      >
-        <div
-          className="h-8 w-full"
-          style={{
-            backgroundColor: hex,
-            border: "1px solid var(--kami-border)",
-            borderRadius: "4px",
-          }}
-        />
-        <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
-          {copied ? "Copied!" : label}
-        </span>
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={copy}
-      className="case-preserve group flex flex-col items-center gap-1.5 p-3 text-center transition"
-      style={{
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-cta-radius, 0.5rem)",
-      }}
-      title={`Copy ${hex}`}
-    >
-      <div
-        className="h-12 w-full"
-        style={{
-          backgroundColor: hex,
-          border: "1px solid var(--kami-border)",
-          borderRadius: "6px",
-        }}
-      />
-      <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-        {copied ? "Copied!" : hex}
-      </span>
-      <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{label}</span>
-    </button>
-  );
 }
