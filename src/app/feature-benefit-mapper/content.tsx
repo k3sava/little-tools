@@ -455,7 +455,17 @@ export default function FeatureBenefitMapperContent() {
             </button>
           </div>
         </div>
+      </div>
+    </ToolShell>
+  );
+}
 
+// stale legacy markup retained below for reference
+function _unused() { return null; }
+const _stale = (
+  <div style={{ display: "none" }}>
+    {false && (
+      <div>
         {/* Tips */}
         <div
           className="mt-6 p-5"
@@ -511,65 +521,7 @@ export default function FeatureBenefitMapperContent() {
           </div>
         </div>
 
-        <ReferencePanel
-          id="feat-vs-benefit"
-          title="Features vs benefits - the rewrite formula"
-          summary="A three-step translation that works on almost any feature."
-          defaultOpen
-        >
-          <div className="space-y-4 text-sm">
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 1</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>State the feature (what it does)</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;AES-256 encryption at rest and in transit.&quot;</div>
-            </div>
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 2</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Ask &quot;so what?&quot; until it hits a human outcome</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>Encrypted → unreadable if stolen → customer data stays safe → you don&apos;t make the news.</div>
-            </div>
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 3</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Rewrite as what the customer gains</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;Your customer data stays private - even if a backup is stolen.&quot;</div>
-            </div>
-            <div
-              className="p-3 text-xs"
-              style={{
-                background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
-                border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-                color: "var(--kami-text)",
-              }}
-            >
-              <strong>Rule of thumb:</strong> if you can put &quot;so what?&quot; after your
-              sentence and it still needs an answer, it&apos;s a feature. If the reader&apos;s
-              reaction is &quot;oh - I want that,&quot; it&apos;s a benefit.
-            </div>
-          </div>
-        </ReferencePanel>
       </div>
-    </div>
-  );
-}
+    )}
+  </div>
+);
