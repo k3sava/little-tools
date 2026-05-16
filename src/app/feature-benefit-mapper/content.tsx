@@ -2,8 +2,13 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ReferencePanel } from "@/components/tools/reference-panel";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+
+const ACCENT_PMM = "#14b8a6";
 
 // --- Types ---
 
@@ -214,24 +219,89 @@ export default function FeatureBenefitMapperContent() {
     return { total: filled.length, valid, needsBenefit, featureSpeak, score };
   }, [rows]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Feature-Benefit Mapper"
-          tagline="Turn every feature into a customer benefit - and get warned when your copy is still 'feature-speak.'"
-          description="List your features in the left column. For each, write the benefit it delivers - what the customer gains, not what the product does. We flag rows that are still technical-sounding (&quot;API endpoint&quot;, &quot;integration&quot;) and suggest verbs that re-frame them as outcomes. Export the mapped table to use in your landing page copy."
-          audience={["PMMs", "Copywriters", "Founders", "Growth"]}
-          whenToUse={[
-            "Rewriting a feature-dense landing page",
-            "Turning a changelog into marketing copy",
-            "Reviewing ad copy for customer-speak",
-          ]}
-          quickLinks={[
-            { label: "Features vs benefits, explained", href: "#feat-vs-benefit" },
-          ]}
-        />
+  const customerLangPrompt = useMemo(() => {
+    const filled = rows.filter((r) => r.feature.trim());
+    if (!filled.length) return "";
+    const features = filled.map((r) => `- ${r.feature}${r.benefit ? ` → ${r.benefit}` : ""}`).join("\n");
+    return `Translate these product features into customer-language benefits. Use concrete outcomes (time saved, money made, risk avoided). One sentence each.\n\n${features}`;
+  }, [rows]);
 
+  const handleCopyPrompt = useCallback(() => {
+    navigator.clipboard.writeText(customerLangPrompt);
+  }, [customerLangPrompt]);
+
+  const controls = (
+    <>
+      <ControlGroup label="Score">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <span>Benefit coverage</span>
+            <span className="tabular-nums font-bold" style={{ color: "var(--kami-text)" }}>{stats.score}%</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
+            <div
+              style={{
+                width: `${stats.score}%`,
+                height: "100%",
+                background: stats.score >= 80 ? "#10b981" : stats.score >= 50 ? "#f59e0b" : "#ef4444",
+              }}
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-xs mt-2">
+          <div>
+            <span className="block font-bold" style={{ color: "#10b981" }}>{stats.valid}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>mapped</span>
+          </div>
+          <div>
+            <span className="block font-bold" style={{ color: "#f59e0b" }}>{stats.needsBenefit}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>missing</span>
+          </div>
+          <div>
+            <span className="block font-bold" style={{ color: "#ef4444" }}>{stats.featureSpeak}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>spec-y</span>
+          </div>
+        </div>
+      </ControlGroup>
+      <ControlGroup label="Manage">
+        <button onClick={addRow} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Add row</button>
+        <button onClick={clearAll} className="kc-segment-btn" style={{ minHeight: 40 }}>Reset</button>
+      </ControlGroup>
+      <ControlGroup label="AI prompt">
+        <button onClick={handleCopyPrompt} disabled={!customerLangPrompt} className="kc-segment-btn" style={{ minHeight: 40 }}>
+          Copy &quot;translate to customer language&quot; prompt
+        </button>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleDownloadCSV}>CSV</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopyMarkdown}>
+        {copied ? "Copied" : "Copy MD"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Map features → benefits → outcomes. We flag &quot;feature-speak&quot; rows (api/integration/architecture words) and rows missing a benefit.</p>
+      <p><strong>Rewrite formula:</strong> state the feature → ask &quot;so what?&quot; until it hits a human outcome → rewrite as what the customer gains.</p>
+      <p>If you can put &quot;so what?&quot; after your sentence and it still needs an answer, it&apos;s a feature.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Feature-Benefit Mapper"
+      tagline="Feature → benefit → outcome · feature-speak detection · export MD/CSV"
+      accent={ACCENT_PMM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
         {/* Score bar */}
         <div
           className="mb-6 p-5"

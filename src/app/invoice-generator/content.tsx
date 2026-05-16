@@ -3,7 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { jsPDF } from "jspdf";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment } from "@/components/tools/controls";
+
+const ACCENT = "#f43f5e";
 
 // --- Types ---
 
