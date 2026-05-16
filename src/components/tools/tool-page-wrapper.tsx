@@ -89,11 +89,29 @@ function ShortcutHintBar() {
   );
 }
 
+const RECENT_KEY = "tools-recent";
+const RECENT_MAX = 6;
+
+function recordRecent(href: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const list: string[] = JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]");
+    const next = [href, ...list.filter((h) => h !== href)].slice(0, RECENT_MAX);
+    localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
+}
+
 function ToolPageInner({ children }: { children: React.ReactNode }) {
   const rawPathname = usePathname();
   const pathname = rawPathname?.replace(/\/$/, "") || rawPathname;
   const tool = allTools.find((t) => t.href === pathname);
   const collection = tool ? getPrimaryCollection(tool) : null;
+
+  useEffect(() => {
+    if (tool) recordRecent(tool.href);
+  }, [tool]);
 
   const breadcrumbItems = [
     { label: "home", href: "https://iamkesava.com" },

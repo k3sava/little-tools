@@ -2724,3 +2724,136 @@ html[data-theme="brutalist"] .tool-action-btn,
 html[data-theme="brutalist"] .tool-icon-btn { border-radius: 0; }
 html[data-theme="brutalist"] .kc-swatch { border-radius: 0; border: 2px solid #000; }
 
+
+/* ============================================================
+   Tools hub homepage — wordart/pixart-style compact layout
+   ============================================================ */
+.tools-hub-search-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: 8px;
+  padding-bottom: 12px;
+  background: color-mix(in srgb, var(--kami-bg) 92%, transparent);
+  backdrop-filter: saturate(140%) blur(10px);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
+  margin-bottom: 16px;
+}
+.tools-hub-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--kami-surface-solid);
+  border: 1px solid var(--kami-border-strong);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  color: var(--kami-text-muted);
+}
+.tools-hub-search:focus-within {
+  border-color: var(--kami-cta-bg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kami-cta-bg) 18%, transparent);
+}
+.tools-hub-search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--kami-text);
+  font-size: 15px;
+  caret-color: var(--kami-caret);
+}
+.tools-hub-search-input::placeholder { color: var(--kami-text-dim); }
+.tools-hub-search-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--kami-text) 6%, transparent);
+  color: var(--kami-text-muted);
+  border: 0;
+  font-size: 18px;
+  cursor: pointer;
+}
+.tools-hub-search-clear:hover { background: color-mix(in srgb, var(--kami-text) 12%, transparent); }
+.tools-hub-search-kbd {
+  display: none;
+  font-family: var(--kami-font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--kami-text) 6%, transparent);
+  color: var(--kami-text-dim);
+  border: 1px solid var(--kami-border-strong);
+}
+@media (min-width: 768px) {
+  .tools-hub-search-kbd { display: inline-flex; }
+}
+
+.tools-hub-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 2px 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tools-hub-chips::-webkit-scrollbar { display: none; }
+.tools-hub-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--kami-surface-solid);
+  color: var(--kami-text-muted);
+  border: 1px solid var(--kami-border-strong);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
+  flex: 0 0 auto;
+}
+.tools-hub-chip:hover { color: var(--kami-text); }
+.tools-hub-chip[data-active="true"] {
+  background: var(--kami-cta-bg);
+  color: var(--kami-cta-text);
+  border-color: var(--kami-cta-bg);
+}
+.tools-hub-chip-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 999px;
+}
+.tools-hub-chip-count {
+  font-size: 11px;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+
+.tools-hub-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 480px) {
+  .tools-hub-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 900px) {
+  .tools-hub-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 1200px) {
+  .tools-hub-grid { grid-template-columns: repeat(4, 1fr); gap: 12px; }
+}
+
+/* Brutalist overrides */
+html[data-theme="brutalist"] .tools-hub-search { border-radius: 0; border: 2px solid #000; box-shadow: 4px 4px 0 #000; }
+html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px solid #000; }
+

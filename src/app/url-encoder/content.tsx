@@ -3,7 +3,12 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 // --- URL parsing ---
 
@@ -32,260 +37,287 @@ function parseUrl(input: string): UrlParts | null {
   }
 }
 
+function buildUrl(parts: UrlParts): string {
+  try {
+    const params = new URLSearchParams();
+    for (const [k, v] of parts.params) {
+      if (k) params.append(k, v);
+    }
+    const qs = params.toString();
+    return `${parts.protocol}//${parts.host}${parts.pathname}${qs ? "?" + qs : ""}${parts.hash}`;
+  } catch {
+    return "";
+  }
+}
+
 // --- UI ---
+
+type Mode = "encode" | "decode" | "parse";
 
 export default function UrlEncoderContent() {
   const [{ q: input }, setToolState] = useToolState({ q: "" });
   const setInput = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
-  const [mode, setMode] = useState<"encode" | "decode">("encode");
-  const [copied, setCopied] = useState(false);
+  const [mode, setMode] = useState<Mode>("encode");
+  const [copied, setCopied] = useState<string | null>(null);
+  const [plusEncode, setPlusEncode] = useState(false);
+  const [paramRows, setParamRows] = useState<[string, string][]>([]);
 
   const output = useMemo(() => {
     if (!input) return "";
     try {
-      return mode === "encode"
-        ? encodeURIComponent(input)
-        : decodeURIComponent(input);
+      if (mode === "encode") {
+        const encoded = encodeURIComponent(input);
+        return plusEncode ? encoded.replace(/%20/g, "+") : encoded;
+      }
+      if (mode === "decode") {
+        const normalized = plusEncode ? input.replace(/\+/g, "%20") : input;
+        return decodeURIComponent(normalized);
+      }
+      return "";
     } catch {
       return mode === "encode" ? input : "Invalid encoded string";
     }
-  }, [input, mode]);
+  }, [input, mode, plusEncode]);
 
   const urlParts = useMemo(() => parseUrl(input), [input]);
 
-  const handleCopy = useCallback(async (text: string) => {
+  // Sync param rows when URL parts change
+  useMemo(() => {
+    if (urlParts) setParamRows(urlParts.params);
+  }, [urlParts]);
+
+  const handleCopy = useCallback(async (text: string, key = "out") => {
     await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setCopied(key);
+    setTimeout(() => setCopied(null), 2000);
   }, []);
+
+  const handleRebuildUrl = useCallback(() => {
+    if (!urlParts) return;
+    const rebuilt = buildUrl({ ...urlParts, params: paramRows });
+    setInput(rebuilt);
+  }, [urlParts, paramRows, setInput]);
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => { if (output) handleCopy(output); }, label: "Copy" },
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-  ], [output, handleCopy]));
+  ], [output, handleCopy, setInput]));
 
-  const inputBg = "var(--kami-input-bg, var(--kami-surface-solid))";
-  const inputBorder = "1px solid var(--kami-border-strong)";
-  const inputRadius = "var(--kami-input-radius, 0.75rem)";
-  const cardBg = "var(--kami-surface-solid)";
-  const cardRadius = "var(--kami-card-radius, 0.75rem)";
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  } as const;
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="URL Encode / Decode"
-          tagline="Encode, decode, and dissect URLs - component-by-component, with per-part encoding for tricky query params."
-          description="Encode or decode an entire URL, or just a single component (like a query value with special characters). Parse mode splits a URL into protocol / host / path / query / fragment so you can edit a specific piece. Supports both %-encoding and + encoding for form-style query strings."
-          audience={["Developers", "QA testers", "Marketers"]}
-          whenToUse={[
-            "Debugging a URL with escaped characters in logs",
-            "Building a search URL with unusual characters in a query param",
-            "Comparing two URLs that look different but decode to the same thing",
-          ]}
-        />
-
-        {/* Mode toggle */}
-        <div
-          className="mb-4 flex items-center gap-1 px-1 py-0.5 w-fit"
-          style={{
-            background: cardBg,
-            border: inputBorder,
-            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-          }}
-        >
-          <button
-            onClick={() => setMode("encode")}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={{
-              background: mode === "encode" ? "var(--kami-cta-bg)" : "transparent",
-              color: mode === "encode" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-              borderRadius: "var(--kami-cta-radius, 0.25rem)",
-            }}
-          >
-            Encode
-          </button>
-          <button
-            onClick={() => setMode("decode")}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={{
-              background: mode === "decode" ? "var(--kami-cta-bg)" : "transparent",
-              color: mode === "decode" ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-              borderRadius: "var(--kami-cta-radius, 0.25rem)",
-            }}
-          >
-            Decode
-          </button>
-        </div>
-
-        {/* Input */}
+    <ToolShell
+      title="URL Encode / Decode"
+      tagline="Encode, decode, and dissect URLs"
+      accent="#10b981"
+      actions={
+        <>
+          {input && (
+            <ToolActionButton onClick={() => setInput("")} variant="ghost">
+              Clear
+            </ToolActionButton>
+          )}
+          {output && (
+            <ToolActionButton onClick={() => handleCopy(output)} variant="solid">
+              {copied === "out" ? "Copied" : "Copy"}
+            </ToolActionButton>
+          )}
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Mode">
+            <Segment<Mode>
+              value={mode}
+              onChange={setMode}
+              options={[
+                { value: "encode", label: "Encode" },
+                { value: "decode", label: "Decode" },
+                { value: "parse", label: "Parse" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <ControlGroup label="Options">
+            <Toggle
+              checked={plusEncode}
+              onChange={setPlusEncode}
+              label="Form-style (+) encoding"
+              hint="Use + for spaces (application/x-www-form-urlencoded)"
+            />
+          </ControlGroup>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={
             mode === "encode"
               ? "Type or paste text to encode..."
-              : "Paste URL-encoded text to decode..."
+              : mode === "decode"
+              ? "Paste URL-encoded text to decode..."
+              : "Paste a full URL to parse..."
           }
           className="w-full px-4 py-3 text-base font-mono focus:outline-none"
           style={{
-            background: inputBg,
-            color: "var(--kami-text)",
-            border: inputBorder,
-            borderRadius: inputRadius,
-            boxShadow: "var(--kami-card-shadow, none)",
+            ...inputStyle,
+            minHeight: "160px",
           }}
-          rows={4}
+          rows={5}
           autoFocus
+          spellCheck={false}
         />
-        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+        <div className="text-xs flex items-center justify-between" style={{ color: "var(--kami-text-dim)" }}>
           <span>{input.length} chars</span>
-          {input && (
-            <button onClick={() => setInput("")}>
-              Clear
-            </button>
+          {mode !== "parse" && output && (
+            <span>{output.length} chars out</span>
           )}
         </div>
 
-        {/* Output */}
-        {input && output && (
-          <div className="mt-6">
+        {/* Encode/decode output */}
+        {(mode === "encode" || mode === "decode") && input && output && (
+          <div>
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                {mode === "encode" ? "Encoded" : "Decoded"} Output
+                {mode === "encode" ? "Encoded" : "Decoded"} output
               </span>
-              <button
-                onClick={() => handleCopy(output)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {copied ? (
-                  <><CheckIcon /> Copied</>
-                ) : (
-                  <><CopyIcon /> Copy</>
-                )}
-              </button>
+              <ToolActionButton onClick={() => handleCopy(output)} variant="outline">
+                {copied === "out" ? "Copied" : "Copy"}
+              </ToolActionButton>
             </div>
             <div
               className="whitespace-pre-wrap break-all px-4 py-3 text-base font-mono"
-              style={{
-                background: cardBg,
-                color: "var(--kami-text)",
-                border: inputBorder,
-                borderRadius: cardRadius,
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
+              style={cardStyle}
             >
               {output}
             </div>
           </div>
         )}
 
-        {/* URL Parser */}
-        {urlParts && (
-          <div className="mt-6">
-            <h2 className="text-sm font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
-              URL Components
-            </h2>
-            <div
-              className="overflow-hidden"
-              style={{
-                background: cardBg,
-                border: inputBorder,
-                borderRadius: cardRadius,
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <table className="w-full text-sm">
-                <tbody>
-                  {[
-                    ["Protocol", urlParts.protocol],
-                    ["Host", urlParts.host],
-                    ["Path", urlParts.pathname],
-                    ["Search", urlParts.search || "(none)"],
-                    ["Hash", urlParts.hash || "(none)"],
-                  ].map(([label, value]) => (
-                    <tr key={label} style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                      <td className="px-4 py-2 font-medium w-28" style={{ color: "var(--kami-text-muted)" }}>
-                        {label}
-                      </td>
-                      <td className="px-4 py-2 font-mono break-all">{value}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Parse view */}
+        {mode === "parse" && urlParts && (
+          <div className="flex flex-col gap-4">
+            <div style={cardStyle}>
+              <div className="px-4 py-2 border-b" style={{ borderColor: "var(--kami-border)" }}>
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  URL Components
+                </span>
+              </div>
+              <div className="flex flex-col">
+                {([
+                  ["protocol", urlParts.protocol],
+                  ["host", urlParts.host],
+                  ["path", urlParts.pathname],
+                  ["query", urlParts.search || "(none)"],
+                  ["hash", urlParts.hash || "(none)"],
+                ] as const).map(([label, value], i, arr) => (
+                  <div
+                    key={label}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5"
+                    style={i < arr.length - 1 ? { borderBottom: "1px solid var(--kami-border)" } : undefined}
+                  >
+                    <span className="text-xs font-medium uppercase tracking-wide shrink-0 w-20" style={{ color: "var(--kami-text-muted)" }}>
+                      {label}
+                    </span>
+                    <span className="font-mono text-sm break-all flex-1 min-w-0">{value}</span>
+                    <ToolActionButton onClick={() => handleCopy(String(value), `part-${label}`)} variant="ghost">
+                      {copied === `part-${label}` ? "✓" : "Copy"}
+                    </ToolActionButton>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Query params */}
-            {urlParts.params.length > 0 && (
-              <div className="mt-4">
-                <h3 className="text-sm font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
-                  Query Parameters
-                </h3>
-                <div
-                  className="overflow-hidden"
-                  style={{
-                    background: cardBg,
-                    border: inputBorder,
-                    borderRadius: cardRadius,
-                    boxShadow: "var(--kami-card-shadow, none)",
-                  }}
-                >
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                          Key
-                        </th>
-                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                          Value
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {urlParts.params.map(([key, value], i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                          <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text-muted)" }}>
-                            {key}
-                          </td>
-                          <td className="px-4 py-2 font-mono break-all">
-                            {value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+            {/* Query param editor */}
+            <div style={cardStyle}>
+              <div className="px-4 py-2 border-b flex items-center justify-between" style={{ borderColor: "var(--kami-border)" }}>
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  Query Parameters ({paramRows.length})
+                </span>
+                <div className="flex items-center gap-2">
+                  <ToolActionButton onClick={() => setParamRows((r) => [...r, ["", ""]])} variant="ghost">
+                    + Row
+                  </ToolActionButton>
+                  <ToolActionButton onClick={handleRebuildUrl} variant="solid">
+                    Rebuild URL
+                  </ToolActionButton>
                 </div>
               </div>
-            )}
+              <div className="flex flex-col">
+                {paramRows.length === 0 ? (
+                  <div className="px-4 py-6 text-sm text-center" style={{ color: "var(--kami-text-dim)" }}>
+                    No query parameters
+                  </div>
+                ) : (
+                  paramRows.map(([key, value], i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col md:flex-row gap-2 items-stretch md:items-center px-4 py-2"
+                      style={i > 0 ? { borderTop: "1px solid var(--kami-border)" } : undefined}
+                    >
+                      <input
+                        value={key}
+                        onChange={(e) => {
+                          const next = paramRows.slice();
+                          next[i] = [e.target.value, value];
+                          setParamRows(next);
+                        }}
+                        placeholder="key"
+                        className="flex-1 min-w-0 px-3 py-2 text-sm font-mono focus:outline-none"
+                        style={inputStyle}
+                      />
+                      <input
+                        value={value}
+                        onChange={(e) => {
+                          const next = paramRows.slice();
+                          next[i] = [key, e.target.value];
+                          setParamRows(next);
+                        }}
+                        placeholder="value"
+                        className="flex-1 min-w-0 px-3 py-2 text-sm font-mono focus:outline-none"
+                        style={inputStyle}
+                      />
+                      <button
+                        onClick={() => setParamRows((r) => r.filter((_, idx) => idx !== i))}
+                        className="px-3 py-2 text-sm font-medium"
+                        style={{
+                          background: "var(--kami-surface)",
+                          color: "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          minHeight: 40,
+                        }}
+                        aria-label="Remove row"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Footer */}
+        {mode === "parse" && input && !urlParts && (
+          <div className="px-4 py-3 text-sm" style={{ ...cardStyle, color: "var(--kami-text-muted)" }}>
+            Not a valid URL — needs protocol (e.g. <code>https://</code>) and host.
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }

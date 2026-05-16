@@ -2,7 +2,16 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import {
+  NumberStepper,
+  Segment,
+  Toggle,
+} from "@/components/tools/controls";
 
 // --- Flavor word pools ---
 
@@ -12,7 +21,9 @@ type Flavor =
   | "office"
   | "pirate"
   | "movie"
-  | "literary";
+  | "literary"
+  | "cupcake"
+  | "bacon";
 
 const CLASSIC_OPENER =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
@@ -135,15 +146,46 @@ const WORD_POOLS: Record<Flavor, string[]> = {
     "introspection", "epiphany", "serendipity", "nostalgia", "yearning",
     "longing", "devotion", "eloquence", "resonance", "cadence",
   ],
+  cupcake: [
+    "sprinkles", "frosting", "buttercream", "vanilla", "chocolate",
+    "strawberry", "caramel", "fondant", "ganache", "macaron", "meringue",
+    "marshmallow", "cinnamon", "sugar", "honey", "cream", "whipped",
+    "fluffy", "sweet", "delightful", "tasty", "yummy", "scrumptious",
+    "delicious", "decadent", "indulgent", "heavenly", "blissful",
+    "dreamy", "rainbow", "pastel", "glitter", "sparkle", "shimmer",
+    "cupcake", "muffin", "donut", "cookie", "brownie", "cake", "pie",
+    "tart", "pastry", "danish", "eclair", "souffle", "trifle", "parfait",
+    "sundae", "sorbet", "gelato", "candy", "chocolate", "truffle",
+    "praline", "marzipan", "nougat", "toffee", "fudge", "lollipop",
+    "gumdrop", "jellybean", "licorice", "peppermint", "cotton-candy",
+    "bubblegum", "smoothie", "milkshake", "frappe", "latte", "mocha",
+  ],
+  bacon: [
+    "bacon", "ipsum", "pork", "belly", "ribeye", "brisket", "tenderloin",
+    "sirloin", "shank", "shoulder", "loin", "rump", "chuck", "flank",
+    "short-ribs", "spare-ribs", "meatball", "meatloaf", "sausage",
+    "pepperoni", "salami", "prosciutto", "pancetta", "ham", "jerky",
+    "biltong", "pastrami", "corned-beef", "kielbasa", "chorizo",
+    "andouille", "bratwurst", "frankfurter", "kabob", "burger", "patty",
+    "filet", "cutlet", "chop", "steak", "roast", "stew", "barbecue",
+    "smoked", "grilled", "cured", "salted", "marinated", "braised",
+    "roasted", "charred", "seared", "rendered", "drippings", "fat",
+    "crackling", "glazed", "stuffed", "wrapped", "rolled", "carved",
+    "sliced", "diced", "chopped", "minced", "ground", "shredded",
+    "savory", "smoky", "salty", "fatty", "juicy", "tender", "crispy",
+    "succulent", "umami", "rich", "hearty", "rustic", "artisanal",
+  ],
 };
 
 const FLAVOR_OPTIONS: { value: Flavor; label: string }[] = [
-  { value: "classic", label: "Classic Latin" },
+  { value: "classic", label: "Classic" },
   { value: "hipster", label: "Hipster" },
-  { value: "office", label: "Office Jargon" },
+  { value: "office", label: "Corporate" },
   { value: "pirate", label: "Pirate" },
-  { value: "movie", label: "Movie Quotes" },
+  { value: "movie", label: "Movie" },
   { value: "literary", label: "Literary" },
+  { value: "cupcake", label: "Cupcake" },
+  { value: "bacon", label: "Bacon" },
 ];
 
 // --- Generation logic ---
@@ -302,16 +344,8 @@ const DEFAULTS: Record<OutputMode, number> = {
   words: 100,
 };
 
-// --- UI ---
-
-const MODES: { value: OutputMode; label: string }[] = [
-  { value: "paragraphs", label: "Paragraphs" },
-  { value: "sentences", label: "Sentences" },
-  { value: "words", label: "Words" },
-];
-
-const HTML_TAGS: { value: HtmlTag; label: string }[] = [
-  { value: "none", label: "Plain Text" },
+const HTML_TAGS: { value: HtmlTag; label: React.ReactNode }[] = [
+  { value: "none", label: "Plain" },
   { value: "p", label: "<p>" },
   { value: "li", label: "<li>" },
   { value: "h2", label: "<h2>" },
@@ -321,7 +355,7 @@ const TEMPLATES: { value: TemplateName; label: string; desc: string }[] = [
   { value: "blog", label: "Blog Post", desc: "Title + 3 paragraphs" },
   {
     value: "product",
-    label: "Product Description",
+    label: "Product",
     desc: "Summary + features list",
   },
   { value: "email", label: "Email", desc: "Greeting + body + sign-off" },
@@ -371,20 +405,6 @@ export default function LoremIpsumContent() {
     setSeed((s) => s + 1);
   }, []);
 
-  const handleCountChange = useCallback(
-    (val: string) => {
-      const num = parseInt(val, 10);
-      if (!isNaN(num)) {
-        const clamped = Math.max(
-          LIMITS[mode].min,
-          Math.min(LIMITS[mode].max, num)
-        );
-        setCount(clamped);
-      }
-    },
-    [mode]
-  );
-
   const handleGenerate = useCallback(() => {
     setActiveTemplate(null);
     setSeed((s) => s + 1);
@@ -410,355 +430,174 @@ export default function LoremIpsumContent() {
   ], [handleCopy]));
 
   const handleCopyMarkdown = useCallback(async () => {
-    // Ensure double newlines between paragraphs for markdown
     const mdText = output.replace(/\n{1,}/g, "\n\n");
     await navigator.clipboard.writeText(mdText);
     setCopiedMd(true);
     setTimeout(() => setCopiedMd(false), 2000);
   }, [output]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Lorem Ipsum Generator"
-          tagline="Placeholder text in multiple flavors - classic Latin, Bacon, Hipster, Corporate, Pirate - sized to words, sentences, or paragraphs."
-          description="Pick how many paragraphs / sentences / words you need, pick a flavor (boring Latin, Bacon Ipsum, tech jargon, etc.), and click to copy. Great for mocking up designs without leaving tabs; useful for stress-testing layouts with different word-length distributions."
-          audience={["Designers", "Developers", "Writers"]}
-          whenToUse={[
-            "Filling a mockup with realistic-length copy",
-            "Stress-testing a component with long-word languages",
-            "Giving stakeholders placeholder text that looks final",
-          ]}
-        />
+  const limits = LIMITS[mode];
 
-        {/* Controls */}
-        <div
-          className="p-5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          {/* Flavor selector */}
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-              Flavor
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {FLAVOR_OPTIONS.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => {
-                    setFlavor(f.value);
-                    setSeed((s) => s + 1);
-                  }}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={
-                    flavor === f.value
-                      ? {
-                          background: "var(--kami-cta-bg)",
-                          color: "var(--kami-cta-text)",
-                          border: "1px solid var(--kami-cta-bg)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                      : {
-                          background: "var(--kami-surface-solid)",
-                          color: "var(--kami-text-muted)",
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                  }
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Mode selector */}
-          <div className="mb-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-              Mode
-            </label>
-            <div className="flex gap-2">
-              {MODES.map((m) => (
-                <button
-                  key={m.value}
-                  onClick={() => handleModeChange(m.value)}
-                  className="px-4 py-2 text-sm font-medium transition-colors"
-                  style={
-                    mode === m.value && !activeTemplate
-                      ? {
-                          background: "var(--kami-cta-bg)",
-                          color: "var(--kami-cta-text)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                      : {
-                          background: "var(--kami-surface)",
-                          color: "var(--kami-text-muted)",
-                          border: "1px solid var(--kami-border)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                  }
-                >
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Count + options row */}
-          <div className="mt-4 flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2">
-              <label htmlFor="count" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                Count:
-              </label>
-              <input
-                id="count"
-                type="number"
-                value={count}
-                onChange={(e) => handleCountChange(e.target.value)}
-                min={LIMITS[mode].min}
-                max={LIMITS[mode].max}
-                className="w-24 px-3 py-1.5 text-sm focus:outline-none"
-                style={{
-                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              />
-              <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                ({LIMITS[mode].min}-{LIMITS[mode].max})
-              </span>
-            </div>
-
-            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: "var(--kami-text-muted)" }}>
-              <input
-                type="checkbox"
-                checked={startClassic}
-                onChange={(e) => setStartClassic(e.target.checked)}
-                className="h-4 w-4"
-                style={{ accentColor: "var(--kami-text)" }}
-              />
-              Start with &ldquo;Lorem ipsum...&rdquo;
-            </label>
-          </div>
-
-          {/* HTML output mode */}
-          <div className="mt-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-              HTML Output
-            </label>
-            <div className="flex gap-2">
-              {HTML_TAGS.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => setHtmlTag(t.value)}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={
-                    htmlTag === t.value
-                      ? {
-                          background: "var(--kami-cta-bg)",
-                          color: "var(--kami-cta-text)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                      : {
-                          background: "var(--kami-surface)",
-                          color: "var(--kami-text-muted)",
-                          border: "1px solid var(--kami-border)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                  }
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Content templates */}
-          <div className="mt-4">
-            <label className="mb-2 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-              Templates
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {TEMPLATES.map((t) => (
-                <button
-                  key={t.value}
-                  onClick={() => handleTemplateClick(t.value)}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={
-                    activeTemplate === t.value
-                      ? {
-                          background: "var(--kami-cta-bg)",
-                          color: "var(--kami-cta-text)",
-                          border: "1px solid var(--kami-cta-bg)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                      : {
-                          background: "var(--kami-surface-solid)",
-                          color: "var(--kami-text-muted)",
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }
-                  }
-                  title={t.desc}
-                >
-                  {t.label}
-                  <span className="ml-1 text-xs opacity-60">
-                    ({t.desc})
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Generate button */}
-          <div className="mt-4">
+  const controls = (
+    <>
+      <ControlGroup label="Flavor">
+        <div className="grid grid-cols-2 gap-2">
+          {FLAVOR_OPTIONS.map((f) => (
             <button
-              onClick={handleGenerate}
-              className="px-4 py-2 text-sm font-medium transition-colors"
+              key={f.value}
+              onClick={() => {
+                setFlavor(f.value);
+                setSeed((s) => s + 1);
+                setActiveTemplate(null);
+              }}
+              data-active={flavor === f.value}
+              className="kc-segment-btn"
+              style={{ minHeight: 40 }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </ControlGroup>
+
+      <ControlGroup label="Output">
+        <Segment
+          value={mode}
+          onChange={handleModeChange}
+          options={[
+            { value: "paragraphs", label: "Paragraphs" },
+            { value: "sentences", label: "Sentences" },
+            { value: "words", label: "Words" },
+          ]}
+          full
+        />
+        <NumberStepper
+          value={count}
+          onChange={(n) => {
+            const clamped = Math.max(limits.min, Math.min(limits.max, n));
+            setCount(clamped);
+            setActiveTemplate(null);
+            setSeed((s) => s + 1);
+          }}
+          min={limits.min}
+          max={limits.max}
+          label={`Count (${limits.min}-${limits.max})`}
+        />
+      </ControlGroup>
+
+      <ControlGroup label="Options">
+        <Toggle
+          checked={startClassic}
+          onChange={setStartClassic}
+          label='Start with "Lorem ipsum"'
+          hint="Classic flavor only"
+        />
+      </ControlGroup>
+
+      <ControlGroup label="HTML wrap">
+        <Segment
+          value={htmlTag}
+          onChange={(v) => setHtmlTag(v)}
+          options={HTML_TAGS.map((t) => ({ value: t.value, label: t.label }))}
+          full
+        />
+      </ControlGroup>
+
+      <ControlGroup label="Templates" hint="Preset shapes">
+        <div className="grid grid-cols-1 gap-2">
+          {TEMPLATES.map((t) => (
+            <button
+              key={t.value}
+              onClick={() => handleTemplateClick(t.value)}
+              data-active={activeTemplate === t.value}
+              className="kc-segment-btn"
+              style={{ minHeight: 44, textAlign: "left", padding: "8px 12px" }}
+              title={t.desc}
+            >
+              <div>
+                <div className="text-sm font-medium">{t.label}</div>
+                <div className="text-xs opacity-60">{t.desc}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleGenerate}>
+        Regenerate
+      </ToolActionButton>
+      <ToolActionButton variant="outline" onClick={handleCopyMarkdown}>
+        {copiedMd ? "Copied MD" : "Copy MD"}
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy}>
+        {copied ? "Copied" : htmlTag !== "none" ? "Copy HTML" : "Copy"}
+      </ToolActionButton>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Lorem Ipsum Generator"
+      tagline="Placeholder text · 8 flavors · words, sentences, paragraphs"
+      accent="#6366f1"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-3 p-4 md:p-6">
+        <div
+          className="flex items-center justify-between text-xs"
+          style={{ color: "var(--kami-text-dim)" }}
+        >
+          <span>
+            {wordCount.toLocaleString()} words · {charCount.toLocaleString()} chars
+          </span>
+          {activeTemplate && (
+            <span
+              className="px-2 py-0.5 text-xs font-medium"
               style={{
-                background: "var(--kami-cta-bg)",
-                color: "var(--kami-cta-text)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                background: "var(--kami-surface)",
+                color: "var(--kami-text-muted)",
+                borderRadius: "999px",
               }}
             >
-              Generate
-            </button>
-          </div>
+              Template: {activeTemplate}
+            </span>
+          )}
         </div>
-
-        {/* Output */}
-        {output && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                {wordCount.toLocaleString()} words &middot;{" "}
-                {charCount.toLocaleString()} characters
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCopyMarkdown}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-surface-solid)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  {copiedMd ? (
-                    <>
-                      <CheckIcon />
-                      Copied MD
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon />
-                      Copy as Markdown
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={handleCopy}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta-bg)",
-                    color: "var(--kami-cta-text)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  {copied ? (
-                    <>
-                      <CheckIcon />
-                      Copied
-                    </>
-                  ) : (
-                    <>
-                      <CopyIcon />
-                      {htmlTag !== "none" ? "Copy HTML" : "Copy"}
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-
-            {/* Show HTML code if HTML mode is active */}
-            {htmlTag !== "none" && htmlOutput ? (
-              <div
-                className="px-4 py-3 text-sm leading-relaxed font-mono whitespace-pre-wrap max-h-96 overflow-y-auto"
-                style={{
-                  background: "var(--kami-overlay-bg)",
-                  color: "color-mix(in srgb, #4ade80 75%, var(--kami-overlay-text))",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                {htmlOutput}
-              </div>
-            ) : (
-              <div
-                className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap max-h-96 overflow-y-auto"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                {output}
-              </div>
-            )}
+        {htmlTag !== "none" && htmlOutput ? (
+          <div
+            className="px-4 py-3 text-sm leading-relaxed font-mono whitespace-pre-wrap overflow-auto"
+            style={{
+              background: "var(--kami-overlay-bg)",
+              color: "color-mix(in srgb, #4ade80 75%, var(--kami-overlay-text))",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+              minHeight: 240,
+            }}
+          >
+            {htmlOutput}
+          </div>
+        ) : (
+          <div
+            className="px-4 py-3 text-base leading-relaxed whitespace-pre-wrap overflow-auto"
+            style={{
+              background: "var(--kami-surface-solid)",
+              color: "var(--kami-text-muted)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+              minHeight: 240,
+            }}
+          >
+            {output || "Configure options to generate text."}
           </div>
         )}
-
-        {/* Footer */}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }
