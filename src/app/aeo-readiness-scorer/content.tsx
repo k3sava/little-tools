@@ -1,6 +1,12 @@
 "use client";
 
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+
+const ACCENT = "#3b82f6";
 
 const SIGNALS: { name: string; weight: number; what: string }[] = [
   { name: "llms.txt presence", weight: 5, what: "Root file that tells AI crawlers what to index." },
@@ -17,101 +23,171 @@ const SIGNALS: { name: string; weight: number; what: string }[] = [
   { name: "Heading depth", weight: 2, what: "Reasonable h2/h3 structure." },
 ];
 
+const MAX_SCORE = SIGNALS.reduce((s, x) => s + x.weight, 0);
+
 export default function AeoReadinessScorerContent() {
-  return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <ToolIntro
-        title="AEO Readiness Scorer"
-        tagline="Score any page on the structural signals AI search uses."
-        description="A small offline Python script that scores any saved HTML page or URL on twelve structural and semantic signals AI engines use to decide what to cite. Inspired by Aleyda Solis's Readiness framework. Browser version coming. Today, run it from the command line."
-        audience={["SEO", "PMM", "Marketers"]}
-        whenToUse={[
-          "Auditing pages before launch for AI-search visibility.",
-          "Comparing two pages to see which is more citation-ready.",
-          "Catching missing structured data or thin first paragraphs.",
-        ]}
-        quickLinks={[
-          { label: "How to run it", href: "#run" },
-          { label: "What it scores", href: "#signals" },
-          { label: "Credits", href: "#credits" },
-        ]}
-      />
+  const actions = (
+    <a href="/aeo-readiness-scorer.py" download>
+      <ToolActionButton variant="solid">Download .py</ToolActionButton>
+    </a>
+  );
 
-      <section className="mt-8 rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold">Download the script</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              152 lines. Pure Python 3 standard library. No dependencies, no API keys.
-            </p>
-          </div>
-          <a
-            href="/aeo-readiness-scorer.py"
-            download
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+  const controls = (
+    <>
+      <ControlGroup label="Score circle" hint={`Max ${MAX_SCORE}`}>
+        <div className="flex items-center justify-center py-4">
+          <div
+            className="relative flex h-32 w-32 items-center justify-center rounded-full"
+            style={{
+              background: `conic-gradient(${ACCENT} 0% 75%, var(--kami-surface) 75% 100%)`,
+            }}
           >
-            Download .py
-          </a>
+            <div
+              className="flex h-24 w-24 flex-col items-center justify-center rounded-full text-center"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+              }}
+            >
+              <span className="text-2xl font-bold" style={{ color: ACCENT }}>
+                A
+              </span>
+              <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                target
+              </span>
+            </div>
+          </div>
         </div>
-      </section>
+        <p className="text-center text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          12 weighted signals. Run the script for your real score.
+        </p>
+      </ControlGroup>
 
-      <section id="run" className="mt-8">
-        <h2 className="text-lg font-semibold">How to run it</h2>
-        <pre className="mt-3 overflow-x-auto rounded-md bg-zinc-900 p-4 text-sm text-zinc-100">
+      <ControlGroup label="What to fix next">
+        <ol className="list-decimal pl-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <li>Add llms.txt to the site root.</li>
+          <li>Inject JSON-LD with Article or Product type.</li>
+          <li>Tighten meta description to 120-160 chars.</li>
+        </ol>
+      </ControlGroup>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="AEO Readiness Scorer"
+      tagline="Score any page on the structural signals AI search uses."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Insights"
+    >
+      <div className="flex flex-col gap-6">
+        <section
+          className="rounded-xl border p-6"
+          style={{ background: "var(--kami-surface-solid)", borderColor: "var(--kami-border-strong)" }}
+        >
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold">Download the script</h2>
+              <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                152 lines. Pure Python 3 standard library. No dependencies, no API keys.
+              </p>
+            </div>
+            <a
+              href="/aeo-readiness-scorer.py"
+              download
+              className="rounded-md px-4 py-2 text-sm font-medium text-white"
+              style={{ background: ACCENT }}
+            >
+              Download .py
+            </a>
+          </div>
+        </section>
+
+        <section id="run">
+          <h2 className="text-lg font-semibold">How to run it</h2>
+          <pre
+            className="mt-3 overflow-x-auto rounded-md p-4 text-sm"
+            style={{ background: "var(--kami-overlay-bg)", color: "var(--kami-overlay-text)" }}
+          >
 {`# Score a saved HTML file
 python aeo-readiness-scorer.py page.html
 
 # Or fetch and score a URL directly
 python aeo-readiness-scorer.py https://example.com/blog-post`}
-        </pre>
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-          Output is JSON with a per-signal verdict and a prioritized fix list.
-        </p>
-      </section>
+          </pre>
+          <p className="mt-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            Output is JSON with a per-signal verdict and a prioritized fix list.
+          </p>
+        </section>
 
-      <section id="signals" className="mt-8">
-        <h2 className="text-lg font-semibold">What it scores</h2>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Twelve signals, each weighted 2–5 by impact on citation likelihood.
-        </p>
-        <div className="mt-4 overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800">
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 dark:bg-zinc-900">
-              <tr>
-                <th className="px-3 py-2 text-left font-medium">Signal</th>
-                <th className="px-3 py-2 text-left font-medium">Weight</th>
-                <th className="px-3 py-2 text-left font-medium">What it checks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {SIGNALS.map((s) => (
-                <tr key={s.name} className="border-t border-zinc-200 dark:border-zinc-800">
-                  <td className="px-3 py-2 font-medium">{s.name}</td>
-                  <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{s.weight}</td>
-                  <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">{s.what}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+        <section id="signals">
+          <h2 className="text-lg font-semibold">Per-signal checks</h2>
+          <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            Twelve signals, each weighted 2–5 by impact on citation likelihood.
+          </p>
+          <div className="mt-4 grid gap-2">
+            {SIGNALS.map((s) => (
+              <div
+                key={s.name}
+                className="flex items-start justify-between gap-3 rounded-lg border p-3"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  borderColor: "var(--kami-border-strong)",
+                }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="inline-flex h-5 items-center rounded-full px-2 text-[10px] font-semibold"
+                      style={{
+                        background: `color-mix(in srgb, ${ACCENT} 15%, transparent)`,
+                        color: ACCENT,
+                      }}
+                    >
+                      w{s.weight}
+                    </span>
+                    <p className="text-sm font-medium">{s.name}</p>
+                  </div>
+                  <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    {s.what}
+                  </p>
+                </div>
+                <span
+                  className="text-xs"
+                  style={{ color: "var(--kami-text-muted)" }}
+                  aria-label="Status pending"
+                >
+                  ○
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
 
-      <section id="credits" className="mt-8 text-sm text-zinc-600 dark:text-zinc-400">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Credits</h2>
-        <p className="mt-2">
-          The Readiness layer concept is from{" "}
-          <a
-            className="underline"
-            href="https://www.aleydasolis.com/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Aleyda Solis
-          </a>
-          ’s three-layer AEO framework (Presence / Readiness / Impact). This tool implements the
-          Readiness scoring as a simple, runnable script.
-        </p>
-      </section>
-    </div>
+        <section
+          id="credits"
+          className="rounded-xl border p-4 text-sm"
+          style={{
+            background: "var(--kami-surface-solid)",
+            borderColor: "var(--kami-border-strong)",
+            color: "var(--kami-text-muted)",
+          }}
+        >
+          <h2 className="text-base font-semibold" style={{ color: "var(--kami-text)" }}>
+            Credits
+          </h2>
+          <p className="mt-2">
+            The Readiness layer concept is from{" "}
+            <a className="underline" href="https://www.aleydasolis.com/" target="_blank" rel="noreferrer">
+              Aleyda Solis
+            </a>
+            ’s three-layer AEO framework (Presence / Readiness / Impact). This tool implements the
+            Readiness scoring as a runnable script.
+          </p>
+        </section>
+      </div>
+    </ToolShell>
   );
 }

@@ -2,19 +2,36 @@
 
 import { useState, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Slider, Segment, Toggle, SwatchGrid } from "@/components/tools/controls";
 
 type StyleMode = "glass" | "neumorph";
+type GlassPreset = "apple" | "material" | "custom";
+
+const SCENE_GRADIENTS: { name: string; from: string; to: string }[] = [
+  { name: "Indigo", from: "#6366f1", to: "#ec4899" },
+  { name: "Sunset", from: "#f59e0b", to: "#ef4444" },
+  { name: "Ocean", from: "#0ea5e9", to: "#22d3ee" },
+  { name: "Forest", from: "#10b981", to: "#84cc16" },
+  { name: "Night", from: "#1e1b4b", to: "#0f172a" },
+  { name: "Rose", from: "#fb7185", to: "#a855f7" },
+];
 
 export default function GlassmorphismContent() {
   const [mode, setMode] = useState<StyleMode>("glass");
 
   // Glass state
   const [glassBlur, setGlassBlur] = useState(12);
+  const [glassSaturation, setGlassSaturation] = useState(150);
+  const [glassBrightness, setGlassBrightness] = useState(110);
   const [glassOpacity, setGlassOpacity] = useState(20);
   const [glassBorder, setGlassBorder] = useState(1);
   const [glassBg, setGlassBg] = useState("#ffffff");
-  const [sceneBg, setSceneBg] = useState("#6366f1");
+  const [sceneIdx, setSceneIdx] = useState(0);
 
   // Neumorphism state
   const [neuBg, setNeuBg] = useState("#e0e5ec");
@@ -29,9 +46,10 @@ export default function GlassmorphismContent() {
   const glassR = parseInt(glassBg.slice(1, 3), 16);
   const glassG = parseInt(glassBg.slice(3, 5), 16);
   const glassB = parseInt(glassBg.slice(5, 7), 16);
+  const filterCSS = `blur(${glassBlur}px) saturate(${glassSaturation}%) brightness(${glassBrightness}%)`;
   const glassCSS = `background: rgba(${glassR}, ${glassG}, ${glassB}, ${(glassOpacity / 100).toFixed(2)});
-backdrop-filter: blur(${glassBlur}px);
--webkit-backdrop-filter: blur(${glassBlur}px);
+backdrop-filter: ${filterCSS};
+-webkit-backdrop-filter: ${filterCSS};
 border: ${glassBorder}px solid rgba(${glassR}, ${glassG}, ${glassB}, ${Math.min(1, glassOpacity / 100 + 0.18).toFixed(2)});
 border-radius: 16px;`;
 
@@ -60,200 +78,262 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => copy(), label: "Copy CSS" },
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [currentCSS]));
 
-  const cardStyle = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
+  const applyGlassPreset = (preset: GlassPreset) => {
+    if (preset === "apple") {
+      setGlassBlur(20);
+      setGlassSaturation(180);
+      setGlassBrightness(110);
+      setGlassOpacity(40);
+      setGlassBorder(1);
+      setGlassBg("#ffffff");
+    } else if (preset === "material") {
+      setGlassBlur(10);
+      setGlassSaturation(100);
+      setGlassBrightness(100);
+      setGlassOpacity(15);
+      setGlassBorder(1);
+      setGlassBg("#ffffff");
+    }
   };
 
-  const tabStyle = (active: boolean) => ({
-    background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
-    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-    border: active ? "1px solid var(--kami-cta-bg)" : "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  });
+  const scene = SCENE_GRADIENTS[sceneIdx];
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Glassmorphism / Neumorphism"
-          tagline="Generate the two trendiest surface styles - frosted glass (backdrop blur) and soft UI (neumorphic shadows) - with live CSS output."
-          description="Switch between modes and drag the sliders for blur, transparency, border, and shadow. Glass mode produces backdrop-filter-based frosted panels (perfect for overlays on photos). Neumorph mode generates the inner/outer shadow pair that creates the soft extruded look."
-          audience={["Designers", "Front-end developers"]}
-          whenToUse={[
-            "Building a card or modal with a frosted-glass look",
-            "Prototyping a soft-UI toggle or dial",
-            "Exploring which look fits your brand",
-          ]}
-        />
+    <ToolShell
+      title="Glassmorphism"
+      tagline="Frosted glass and soft UI with backdrop-filter and layered shadows"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <Segment
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "glass", label: "Glass" },
+              { value: "neumorph", label: "Neumorph" },
+            ]}
+            size="sm"
+          />
+          <ToolActionButton onClick={copy} variant="solid">
+            {copied ? "Copied!" : "Copy CSS"}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        mode === "glass" ? (
+          <>
+            <ControlGroup label="Presets">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => applyGlassPreset("apple")}
+                  className="px-3 py-2 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                    minHeight: 40,
+                  }}
+                >
+                  Apple
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyGlassPreset("material")}
+                  className="px-3 py-2 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                    minHeight: 40,
+                  }}
+                >
+                  Material
+                </button>
+              </div>
+            </ControlGroup>
 
-        {/* Mode tabs */}
-        <div className="mt-6 flex gap-2">
-          <button
-            onClick={() => setMode("glass")}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={tabStyle(mode === "glass")}
-          >
-            Glassmorphism
-          </button>
-          <button
-            onClick={() => setMode("neumorph")}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={tabStyle(mode === "neumorph")}
-          >
-            Neumorphism
-          </button>
-        </div>
+            <ControlGroup label="Blur" hint={`${glassBlur}px`}>
+              <Slider value={glassBlur} onChange={setGlassBlur} min={0} max={40} unit="px" />
+            </ControlGroup>
+            <ControlGroup label="Saturation" hint={`${glassSaturation}%`}>
+              <Slider value={glassSaturation} onChange={setGlassSaturation} min={0} max={300} unit="%" />
+            </ControlGroup>
+            <ControlGroup label="Brightness" hint={`${glassBrightness}%`}>
+              <Slider value={glassBrightness} onChange={setGlassBrightness} min={50} max={200} unit="%" />
+            </ControlGroup>
+            <ControlGroup label="Tint opacity" hint={`${glassOpacity}%`}>
+              <Slider value={glassOpacity} onChange={setGlassOpacity} min={0} max={100} unit="%" />
+            </ControlGroup>
+            <ControlGroup label="Border" hint={`${glassBorder}px`}>
+              <Slider value={glassBorder} onChange={setGlassBorder} min={0} max={5} unit="px" />
+            </ControlGroup>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">
-          {/* Preview */}
-          {mode === "glass" ? (
-            <div
-              className="relative flex min-h-[360px] items-center justify-center overflow-hidden"
-              style={{
-                background: `linear-gradient(135deg, ${sceneBg}, ${adjustColor(sceneBg, 40)})`,
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              {/* Decorative blobs */}
-              <div className="absolute top-8 left-8 h-32 w-32 rounded-full opacity-60" style={{ backgroundColor: adjustColor(sceneBg, -30) }} />
-              <div className="absolute bottom-12 right-12 h-24 w-24 rounded-full opacity-40" style={{ backgroundColor: adjustColor(sceneBg, 60) }} />
-              {/* Glass card */}
-              <div
-                className="relative z-10 h-48 w-64 flex items-center justify-center"
+            <ControlGroup label="Tint color">
+              <SwatchGrid
+                value={glassBg}
+                onChange={setGlassBg}
+                colors={["#ffffff", "#000000", "#3b82f6", "#ec4899", "#10b981", "#f59e0b", "#8b5cf6"]}
+              />
+            </ControlGroup>
+
+            <ControlGroup label="Backdrop scene">
+              <div className="flex flex-wrap gap-2">
+                {SCENE_GRADIENTS.map((g, i) => (
+                  <button
+                    key={g.name}
+                    type="button"
+                    onClick={() => setSceneIdx(i)}
+                    className="flex items-center gap-2 px-2.5 py-1.5 text-xs transition"
+                    style={{
+                      background: i === sceneIdx ? "var(--kami-cta-bg)" : "var(--kami-surface)",
+                      color: i === sceneIdx ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      minHeight: 40,
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="h-5 w-5 rounded-full"
+                      style={{ background: `linear-gradient(135deg, ${g.from}, ${g.to})` }}
+                    />
+                    {g.name}
+                  </button>
+                ))}
+              </div>
+            </ControlGroup>
+
+            <ControlGroup label="CSS">
+              <pre
+                className="overflow-x-auto p-3 text-xs"
                 style={{
-                  background: `rgba(${glassR},${glassG},${glassB},${glassOpacity / 100})`,
-                  backdropFilter: `blur(${glassBlur}px)`,
-                  WebkitBackdropFilter: `blur(${glassBlur}px)`,
-                  border: `${glassBorder}px solid rgba(${glassR},${glassG},${glassB},${Math.min(1, glassOpacity / 100 + 0.18)})`,
-                  borderRadius: 16,
+                  background: "var(--kami-overlay-bg, #0d1117)",
+                  color: "var(--kami-overlay-text, #f1f5f9)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  maxHeight: 220,
                 }}
               >
-                <span className="text-white text-sm font-medium drop-shadow">Glass Card</span>
-              </div>
-            </div>
-          ) : (
-            <div
-              className="flex min-h-[360px] items-center justify-center"
-              style={{
-                backgroundColor: neuDark ? "#2d2d2d" : neuBg,
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div
-                className="flex h-48 w-64 items-center justify-center"
+                <code>{glassCSS}</code>
+              </pre>
+            </ControlGroup>
+          </>
+        ) : (
+          <>
+            <ControlGroup label="Distance" hint={`${neuDistance}px`}>
+              <Slider value={neuDistance} onChange={setNeuDistance} min={1} max={30} unit="px" />
+            </ControlGroup>
+            <ControlGroup label="Intensity" hint={`${neuIntensity}%`}>
+              <Slider value={neuIntensity} onChange={setNeuIntensity} min={1} max={50} unit="%" />
+            </ControlGroup>
+            <ControlGroup label="Blur" hint={`${neuBlur}px`}>
+              <Slider value={neuBlur} onChange={setNeuBlur} min={0} max={60} unit="px" />
+            </ControlGroup>
+            <ControlGroup label="Surface color">
+              <SwatchGrid
+                value={neuBg}
+                onChange={setNeuBg}
+                colors={["#e0e5ec", "#f0f0f3", "#d1d9e6", "#fafafa", "#1e293b", "#334155", "#262626"]}
+              />
+            </ControlGroup>
+            <ControlGroup>
+              <Toggle
+                checked={neuDark}
+                onChange={setNeuDark}
+                label="Dark mode"
+                hint="Use higher-contrast shadow pair"
+              />
+            </ControlGroup>
+
+            <ControlGroup label="CSS">
+              <pre
+                className="overflow-x-auto p-3 text-xs"
                 style={{
-                  background: neuDark ? "#2d2d2d" : neuBg,
-                  borderRadius: 16,
-                  boxShadow: `${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow}, ${-neuDistance}px ${-neuDistance}px ${neuBlur}px ${lightShadow}`,
+                  background: "var(--kami-overlay-bg, #0d1117)",
+                  color: "var(--kami-overlay-text, #f1f5f9)",
+                  borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  maxHeight: 220,
                 }}
               >
-                <span className={`text-sm font-medium ${neuDark ? "text-gray-300" : "text-gray-500"}`}>Soft Card</span>
-              </div>
-            </div>
-          )}
-
-          {/* Controls */}
-          <div className="p-4" style={cardStyle}>
-            {mode === "glass" ? (
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Glass Settings</h3>
-                <SliderRow label="Blur" value={glassBlur} min={0} max={40} suffix="px" onChange={setGlassBlur} />
-                <SliderRow label="Opacity" value={glassOpacity} min={0} max={100} suffix="%" onChange={setGlassOpacity} />
-                <SliderRow label="Border" value={glassBorder} min={0} max={5} suffix="px" onChange={setGlassBorder} />
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Card</span>
-                  <input type="color" value={glassBg} onChange={(e) => setGlassBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{glassBg}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Scene</span>
-                  <input type="color" value={sceneBg} onChange={(e) => setSceneBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{sceneBg}</span>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Neumorphism Settings</h3>
-                <SliderRow label="Distance" value={neuDistance} min={1} max={30} suffix="px" onChange={setNeuDistance} />
-                <SliderRow label="Intensity" value={neuIntensity} min={1} max={50} suffix="%" onChange={setNeuIntensity} />
-                <SliderRow label="Blur" value={neuBlur} min={0} max={60} suffix="px" onChange={setNeuBlur} />
-                <div className="flex items-center gap-2">
-                  <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>Color</span>
-                  <input type="color" value={neuBg} onChange={(e) => setNeuBg(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{neuBg}</span>
-                </div>
-                <label className="flex items-center gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  <input type="checkbox" checked={neuDark} onChange={(e) => setNeuDark(e.target.checked)} />
-                  Dark Mode
-                </label>
-              </div>
-            )}
-          </div>
+                <code>{neuCSS}</code>
+              </pre>
+            </ControlGroup>
+          </>
+        )
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Glass mode renders backdrop-filter with blur + saturation + brightness
+            against a chosen gradient scene. Neumorph mode generates the soft
+            inner/outer shadow pair.
+          </p>
+          <p className="text-xs">
+            backdrop-filter requires the parent to have content behind it — that&apos;s
+            why we render against a colorful scene.
+          </p>
         </div>
-
-        {/* CSS */}
-        <div className="mt-6 p-4" style={cardStyle}>
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>CSS</h2>
-            <button
-              onClick={copy}
-              className="px-2 py-1 text-xs"
-              style={{
-                color: "var(--kami-text-muted)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.25rem)",
-              }}
-            >
-              {copied ? "Copied!" : "Copy"}
-            </button>
-          </div>
-          <pre
-            className="overflow-x-auto p-4 text-sm"
+      }
+    >
+      {mode === "glass" ? (
+        <div
+          className="relative flex h-full min-h-[60vh] w-full items-center justify-center overflow-hidden"
+          style={{
+            background: `linear-gradient(135deg, ${scene.from}, ${scene.to})`,
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            border: "1px solid var(--kami-border-strong)",
+          }}
+        >
+          <div
+            aria-hidden
+            className="absolute -top-6 -left-6 h-40 w-40 rounded-full opacity-60"
+            style={{ background: scene.from, filter: "brightness(1.4)" }}
+          />
+          <div
+            aria-hidden
+            className="absolute -bottom-10 -right-10 h-52 w-52 rounded-full opacity-50"
+            style={{ background: scene.to, filter: "brightness(0.7)" }}
+          />
+          <div
+            className="relative z-10 flex h-56 w-72 max-w-[80%] flex-col items-center justify-center px-6 text-center"
             style={{
-              background: "var(--kami-overlay-bg, #0d1117)",
-              color: "var(--kami-overlay-text, #f1f5f9)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
+              background: `rgba(${glassR},${glassG},${glassB},${glassOpacity / 100})`,
+              backdropFilter: filterCSS,
+              WebkitBackdropFilter: filterCSS,
+              border: `${glassBorder}px solid rgba(${glassR},${glassG},${glassB},${Math.min(1, glassOpacity / 100 + 0.18)})`,
+              borderRadius: 20,
             }}
-          ><code>{currentCSS}</code></pre>
+          >
+            <span className="text-base font-semibold text-white drop-shadow">Glass Card</span>
+            <span className="mt-1 text-xs text-white/80 drop-shadow">backdrop-filter preview</span>
+          </div>
         </div>
-      </div>
-    </div>
+      ) : (
+        <div
+          className="flex h-full min-h-[60vh] w-full items-center justify-center"
+          style={{
+            backgroundColor: neuDark ? "#2d2d2d" : neuBg,
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            border: "1px solid var(--kami-border-strong)",
+          }}
+        >
+          <div
+            className="flex h-56 w-56 max-w-[70%] items-center justify-center"
+            style={{
+              background: neuDark ? "#2d2d2d" : neuBg,
+              borderRadius: 24,
+              boxShadow: `${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow}, ${-neuDistance}px ${-neuDistance}px ${neuBlur}px ${lightShadow}`,
+            }}
+          >
+            <span className={`text-sm font-medium ${neuDark ? "text-gray-300" : "text-gray-500"}`}>Soft Card</span>
+          </div>
+        </div>
+      )}
+    </ToolShell>
   );
-}
-
-function SliderRow({ label, value, min, max, suffix, onChange }: { label: string; value: number; min: number; max: number; suffix: string; onChange: (v: number) => void }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="w-16 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
-        style={{
-          background: "var(--kami-border-strong)",
-          accentColor: "var(--kami-text)",
-        }}
-      />
-      <span className="w-12 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}{suffix}</span>
-    </div>
-  );
-}
-
-function adjustColor(hex: string, amount: number): string {
-  const r = Math.max(0, Math.min(255, parseInt(hex.slice(1, 3), 16) + amount));
-  const g = Math.max(0, Math.min(255, parseInt(hex.slice(3, 5), 16) + amount));
-  const b = Math.max(0, Math.min(255, parseInt(hex.slice(5, 7), 16) + amount));
-  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }

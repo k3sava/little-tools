@@ -2876,3 +2876,12 @@ html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px sol
   }
 }
 
+
+/* On tool pages using ToolShell, move the floating share button and
+   theme switcher OUT of the way of the sticky tool header (56px) on
+   desktop. They sit just under the header. */
+@media (min-width: 640px) {
+  body:has(.tool-shell) .kami-share-btn { top: 70px !important; }
+  body:has(.tool-shell) .theme-switcher-container { top: 70px !important; }
+}
+

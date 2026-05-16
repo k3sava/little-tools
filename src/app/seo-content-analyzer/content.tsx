@@ -3,7 +3,13 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+
+const ACCENT_SEO = "#3b82f6";
 
 // --- Stop words ---
 
@@ -659,120 +665,86 @@ export default function SeoContentAnalyzerContent() {
     )
   );
 
+  const controls = (
+    <>
+      <ControlGroup label="Target keyword" hint="Optional — drives density check">
+        <input
+          type="text"
+          value={targetKeyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="e.g. SEO content strategy"
+          className="w-full px-3 py-2.5 text-sm focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.5rem)",
+          }}
+        />
+      </ControlGroup>
+      <ControlGroup label="Quick stats">
+        {analysis ? (
+          <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.stats.wordCount.toLocaleString()}</span>words</div>
+            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.stats.sentenceCount}</span>sentences</div>
+            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.readability.fleschScore}</span>Flesch</div>
+            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.headings.headings.length}</span>headings</div>
+          </div>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Paste content to see stats.</p>
+        )}
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleClear}>Clear</ToolActionButton>
+      <ToolActionButton variant="outline" onClick={handleDownloadReport} disabled={!analysis}>
+        Download .md
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopyReport} disabled={!analysis}>
+        {copyFeedback ? "Copied" : "Copy report"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Paste article text or HTML to score keyword density, heading structure, readability and length. Score is weighted across content length, readability, heading hierarchy, sentence structure and keyword presence.</p>
+      <p><strong>Density:</strong> aim for 1–3%. <strong>H1:</strong> exactly one per page. <strong>Sentences:</strong> avg 15–20 words.</p>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="SEO Content Analyzer"
-          tagline="Score an article for SEO before publishing - keyword density, heading structure, readability, meta length, internal links."
-          description="Paste your article and target keyword. We check keyword density, count H2s/H3s and flag missing heading hierarchy, compute reading grade, check word count against SEO norms, and identify meta title/description length issues. Every check links to a specific fix."
-          audience={["SEOs", "Content marketers", "Bloggers"]}
-          whenToUse={[
-            "Final check before publishing a blog post",
-            "Auditing an underperforming page to find easy wins",
-            "Training junior writers on SEO basics",
-          ]}
+    <ToolShell
+      title="SEO Content Analyzer"
+      tagline="Score · keyword density · heading outline · readability · recommendations"
+      accent={ACCENT_SEO}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-5 p-4 md:p-6">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Paste your article content here (plain text or HTML)..."
+          className="w-full px-4 py-3 text-base focus:outline-none"
+          style={{
+            background: "var(--kami-input-bg, var(--kami-surface-solid))",
+            color: "var(--kami-text)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-input-radius, 0.75rem)",
+            minHeight: 220,
+          }}
         />
 
-        {/* Target keyword */}
-        <div className="mb-3">
-          <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--kami-text-muted)" }}>
-            Target Keyword{" "}
-            <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}>(optional)</span>
-          </label>
-          <input
-            type="text"
-            value={targetKeyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="e.g. SEO content strategy"
-            className="w-full px-4 py-2.5 text-base focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          />
-        </div>
-
-        {/* Content input */}
-        <div className="mb-1">
-          <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--kami-text-muted)" }}>
-            Article Content{" "}
-            <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}>
-              (plain text or HTML)
-            </span>
-          </label>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Paste your article content here..."
-            className="w-full px-4 py-3 text-base focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-            rows={10}
-            autoFocus
-          />
-        </div>
-
-        <div className="flex items-center justify-between text-xs mb-8" style={{ color: "var(--kami-text-dim)" }}>
-          <span>
-            {analysis
-              ? `${analysis.stats.wordCount} words`
-              : "Paste content to analyze"}
-          </span>
-          {content && (
-            <button
-              onClick={handleClear}
-              style={{ color: "var(--kami-text-dim)" }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Results */}
         {analysis && (
-          <div className="space-y-6">
-            {/* Overall score + export actions */}
-            <div className="flex flex-col items-center gap-4">
+          <div className="space-y-5">
+            <div className="flex flex-col items-center gap-3">
               <ScoreBadge score={analysis.score} />
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleCopyReport}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    boxShadow: "var(--kami-card-shadow, none)",
-                  }}
-                >
-                  <CopyIcon />
-                  {copyFeedback ? "Copied!" : "Copy Report"}
-                </button>
-                <button
-                  onClick={handleDownloadReport}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    boxShadow: "var(--kami-card-shadow, none)",
-                  }}
-                >
-                  <DownloadIcon />
-                  Download .md
-                </button>
-              </div>
+              <ScoreBreakdown analysis={analysis} />
             </div>
 
             {/* Cards grid */}
