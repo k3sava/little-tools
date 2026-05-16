@@ -2885,3 +2885,111 @@ html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px sol
   body:has(.tool-shell) .theme-switcher-container { top: 70px !important; }
 }
 
+
+/* CopyableValue */
+.kc-copyable {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--kami-surface-solid);
+  border: 1px solid var(--kami-border-strong);
+  min-height: 40px;
+  max-width: 100%;
+}
+.kc-copyable.is-full { display: flex; width: 100%; }
+.kc-copyable-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--kami-text-muted);
+  flex: 0 0 auto;
+}
+.kc-copyable-value {
+  font-size: 13px;
+  color: var(--kami-text);
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.kc-copyable-value.is-mono {
+  font-family: var(--kami-font-mono);
+}
+.kc-copyable-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: transparent;
+  border: 0;
+  color: var(--kami-text-muted);
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.kc-copyable-btn:hover {
+  background: color-mix(in srgb, var(--kami-text) 8%, transparent);
+  color: var(--kami-text);
+}
+
+/* StatCard / StatGrid */
+.kc-stat {
+  position: relative;
+  padding: 14px;
+  background: var(--kami-surface-solid);
+  border: 1px solid var(--kami-border-strong);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+.kc-stat::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--kc-stat-accent, var(--kami-cta-bg));
+  opacity: 0.65;
+}
+.kc-stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--kami-text-muted);
+}
+.kc-stat-value {
+  font-family: var(--kami-font-mono);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--kami-text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.kc-stat-sub {
+  font-size: 11px;
+  color: var(--kami-text-dim);
+}
+.kc-stat-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+}
+.kc-stat-grid.is-3 { grid-template-columns: repeat(2, 1fr); }
+.kc-stat-grid.is-4 { grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 640px) {
+  .kc-stat-grid.is-3 { grid-template-columns: repeat(3, 1fr); }
+  .kc-stat-grid.is-4 { grid-template-columns: repeat(4, 1fr); }
+}
+
+html[data-theme="brutalist"] .kc-copyable,
+html[data-theme="brutalist"] .kc-stat {
+  border-radius: 0;
+  border: 2px solid #000;
+}

@@ -1,7 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment } from "@/components/tools/controls";
+
+const ACCENT = "#3b82f6";
 
 interface Scored {
   i: number;
@@ -12,6 +19,8 @@ interface Scored {
   numberScore: number;
   score: number;
 }
+
+type Filter = "all" | "weak";
 
 function audit(input: string): { passages: Scored[]; total: number; mean: number } {
   const stripped = input
@@ -57,14 +66,20 @@ const SAMPLE = `<h1>Sales software that closes faster</h1>
 <h3>Try free</h3>
 <p>14 days, no credit card.</p>`;
 
-function scoreColor(score: number): string {
-  if (score >= 1.0) return "text-emerald-600 dark:text-emerald-400";
-  if (score >= 0.6) return "text-amber-600 dark:text-amber-400";
-  return "text-rose-600 dark:text-rose-400";
+function ratingColor(score: number): string {
+  if (score >= 1.0) return "#10b981"; // emerald
+  if (score >= 0.6) return "#f59e0b"; // amber
+  return "#ef4444"; // rose
+}
+
+function csvEscape(s: string): string {
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
 }
 
 export default function PassageAuditContent() {
   const [input, setInput] = useState("");
+  const [filter, setFilter] = useState<Filter>("all");
 
   const result = useMemo(() => (input.trim() ? audit(input) : null), [input]);
   const weakest = useMemo(
@@ -72,160 +87,266 @@ export default function PassageAuditContent() {
     [result]
   );
 
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      <ToolIntro
-        title="Passage Audit"
-        tagline="See which passages on your page disappear when AI chunks it."
-        description="Paste a page (HTML or Markdown). The tool splits it into passages by heading, then scores each on length, entity shape, and number/citation density. The lowest-scoring passages are the ones AI search will skip when deciding what to cite. Inspired by Mike King's relevance engineering work."
-        audience={["SEO", "PMM", "Marketers", "Writers"]}
-        whenToUse={[
-          "Auditing landing pages before launch.",
-          "Comparing two pages to see which is more chunker-friendly.",
-          "Catching hero lines and button labels that look fine to humans but vanish for AI.",
-        ]}
-      />
+  const visible = useMemo(() => {
+    if (!result) return [];
+    return filter === "weak" ? result.passages.filter((p) => p.score < 0.6) : result.passages;
+  }, [result, filter]);
 
-      <div className="mt-8 grid gap-4">
-        <div className="flex items-center justify-between">
-          <label htmlFor="input" className="text-sm font-medium">
-            Paste HTML or Markdown
-          </label>
-          <button
-            type="button"
-            onClick={() => setInput(SAMPLE)}
-            className="text-xs text-zinc-500 underline hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            Load sample
-          </button>
-        </div>
-        <textarea
-          id="input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="<h1>Your page</h1><p>...</p>"
-          className="min-h-[200px] w-full rounded-md border border-zinc-200 bg-white p-3 font-mono text-sm dark:border-zinc-800 dark:bg-zinc-950"
-        />
-      </div>
+  const exportCsv = () => {
+    if (!result) return;
+    const header = ["#", "chars", "size", "entity", "number", "score", "preview"].join(",");
+    const rows = result.passages.map((p) =>
+      [
+        p.i + 1,
+        p.chars,
+        p.sizeScore,
+        p.entityScore ? 0.2 : 0,
+        p.numberScore ? 0.2 : 0,
+        p.score,
+        csvEscape(p.text.slice(0, 200)),
+      ].join(",")
+    );
+    const csv = [header, ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "passage-audit.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-      {result && result.passages.length === 0 && (
-        <p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">
-          Nothing scored. The tool needs at least one passage longer than 80 characters between
-          headings.
-        </p>
+  const actions = (
+    <>
+      <ToolActionButton variant="ghost" onClick={() => setInput(SAMPLE)}>
+        Load sample
+      </ToolActionButton>
+      {result && result.passages.length > 0 && (
+        <ToolActionButton variant="solid" onClick={exportCsv}>
+          Export CSV
+        </ToolActionButton>
       )}
+    </>
+  );
 
+  const controls = (
+    <>
       {result && result.passages.length > 0 && (
         <>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
-            <Stat label="Passages" value={result.passages.length.toString()} />
-            <Stat label="Mean score" value={result.mean.toFixed(2)} />
-            <Stat
-              label="Below 0.6"
-              value={result.passages.filter((p) => p.score < 0.6).length.toString()}
+          <ControlGroup label="Stats">
+            <div className="grid grid-cols-3 gap-2">
+              <Stat label="Total" value={String(result.passages.length)} />
+              <Stat label="Mean" value={result.mean.toFixed(2)} />
+              <Stat
+                label="< 0.6"
+                value={String(result.passages.filter((p) => p.score < 0.6).length)}
+                tone="warn"
+              />
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Filter">
+            <Segment<Filter>
+              value={filter}
+              onChange={setFilter}
+              options={[
+                { value: "all", label: "All" },
+                { value: "weak", label: "Weak" },
+              ]}
+              full
             />
-          </div>
-
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold">Weakest passages</h2>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-              Bottom three by score. These are the candidates to rewrite first.
-            </p>
-            <div className="mt-4 space-y-3">
-              {weakest.map((p) => (
-                <div
-                  key={p.i}
-                  className="rounded-md border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
-                >
-                  <div className="flex items-baseline justify-between gap-4">
-                    <div className={`text-sm font-medium ${scoreColor(p.score)}`}>
-                      Score {p.score.toFixed(2)}
-                    </div>
-                    <div className="text-xs text-zinc-500">{p.chars} chars</div>
-                  </div>
-                  <p className="mt-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    {p.text.length > 220 ? p.text.slice(0, 220) + "…" : p.text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mt-8">
-            <h2 className="text-lg font-semibold">All passages</h2>
-            <div className="mt-4 overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800">
-              <table className="w-full text-sm">
-                <thead className="bg-zinc-50 dark:bg-zinc-900">
-                  <tr>
-                    <th className="px-3 py-2 text-left font-medium">#</th>
-                    <th className="px-3 py-2 text-left font-medium">Chars</th>
-                    <th className="px-3 py-2 text-left font-medium">Size</th>
-                    <th className="px-3 py-2 text-left font-medium">Entity</th>
-                    <th className="px-3 py-2 text-left font-medium">Number</th>
-                    <th className="px-3 py-2 text-left font-medium">Score</th>
-                    <th className="px-3 py-2 text-left font-medium">Preview</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.passages.map((p) => (
-                    <tr key={p.i} className="border-t border-zinc-200 dark:border-zinc-800">
-                      <td className="px-3 py-2 text-zinc-500">{p.i + 1}</td>
-                      <td className="px-3 py-2">{p.chars}</td>
-                      <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
-                        {p.sizeScore.toFixed(2)}
-                      </td>
-                      <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
-                        {p.entityScore ? "+0.2" : "—"}
-                      </td>
-                      <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
-                        {p.numberScore ? "+0.2" : "—"}
-                      </td>
-                      <td className={`px-3 py-2 font-medium ${scoreColor(p.score)}`}>
-                        {p.score.toFixed(2)}
-                      </td>
-                      <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
-                        {p.text.slice(0, 60)}
-                        {p.text.length > 60 ? "…" : ""}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+          </ControlGroup>
         </>
       )}
 
-      <section className="mt-10 text-sm text-zinc-600 dark:text-zinc-400">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">How scoring works</h2>
-        <ul className="mt-2 list-disc space-y-1 pl-5">
+      <ControlGroup label="How scoring works">
+        <ul
+          className="list-disc space-y-1 pl-4 text-xs"
+          style={{ color: "var(--kami-text-muted)" }}
+        >
           <li>
-            <strong>Size (0–1):</strong> 200–1200 characters is the sweet spot for AI chunkers.
-            Shorter passages get a fractional score; longer ones taper off.
+            <strong style={{ color: "var(--kami-text)" }}>Size (0-1):</strong> 200-1200 chars is the
+            sweet spot.
           </li>
           <li>
-            <strong>Entity (+0.2):</strong> passages that start with a capitalized noun phrase
-            (a person, place, product, or concept) are easier to retrieve.
+            <strong style={{ color: "var(--kami-text)" }}>Entity (+0.2):</strong> starts with a
+            named entity.
           </li>
           <li>
-            <strong>Number (+0.2):</strong> passages with a percentage, dollar amount, or large
-            number are easier to cite.
+            <strong style={{ color: "var(--kami-text)" }}>Number (+0.2):</strong> a percentage,
+            $amount, or large number.
           </li>
         </ul>
-        <p className="mt-3">
-          Maximum score is 1.4. Anything below 0.6 is a candidate to rewrite or merge with an
-          adjacent passage.
+        <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          Max 1.4. Anything &lt; 0.6 should be rewritten.
         </p>
-      </section>
-    </div>
+      </ControlGroup>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Passage Audit"
+      tagline="See which passages on your page disappear when AI chunks it."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Insights"
+    >
+      <div className="flex flex-col gap-4">
+        <div>
+          <label
+            htmlFor="input"
+            className="mb-2 block text-sm font-medium"
+            style={{ color: "var(--kami-text)" }}
+          >
+            Paste HTML or Markdown
+          </label>
+          <textarea
+            id="input"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="<h1>Your page</h1><p>...</p>"
+            className="min-h-[180px] w-full rounded-lg border p-3 font-mono text-sm"
+            style={{
+              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+              borderColor: "var(--kami-border-strong)",
+              color: "var(--kami-text)",
+            }}
+          />
+        </div>
+
+        {result && result.passages.length === 0 && (
+          <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            Nothing scored. Paste at least one passage longer than 80 characters.
+          </p>
+        )}
+
+        {result && result.passages.length > 0 && (
+          <>
+            <section>
+              <h2 className="text-base font-semibold">Weakest passages</h2>
+              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                Rewrite these first.
+              </p>
+              <div className="mt-3 grid gap-2">
+                {weakest.map((p) => (
+                  <div
+                    key={p.i}
+                    className="rounded-lg border p-3"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      borderColor: "var(--kami-border-strong)",
+                    }}
+                  >
+                    <div className="flex items-baseline justify-between gap-4">
+                      <div
+                        className="text-sm font-semibold"
+                        style={{ color: ratingColor(p.score) }}
+                      >
+                        Score {p.score.toFixed(2)}
+                      </div>
+                      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        {p.chars} chars
+                      </div>
+                    </div>
+                    <p className="mt-2 text-sm" style={{ color: "var(--kami-text)" }}>
+                      {p.text.length > 220 ? p.text.slice(0, 220) + "…" : p.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-base font-semibold">
+                {filter === "weak" ? "Weak passages" : "All passages"}
+              </h2>
+              <div className="mt-3 grid gap-2">
+                {visible.map((p) => (
+                  <div
+                    key={p.i}
+                    className="rounded-lg border p-3"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      borderColor: "var(--kami-border-strong)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        #{p.i + 1} · {p.chars} chars
+                      </span>
+                      <span
+                        className="text-sm font-semibold"
+                        style={{ color: ratingColor(p.score) }}
+                      >
+                        {p.score.toFixed(2)}
+                      </span>
+                    </div>
+                    <div
+                      className="mt-2 h-1.5 w-full overflow-hidden rounded-full"
+                      style={{ background: "var(--kami-surface)" }}
+                    >
+                      <div
+                        className="h-full transition-all"
+                        style={{
+                          width: `${Math.min(100, (p.score / 1.4) * 100)}%`,
+                          background: ratingColor(p.score),
+                        }}
+                      />
+                    </div>
+                    <p className="mt-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      {p.text.slice(0, 120)}
+                      {p.text.length > 120 ? "…" : ""}
+                    </p>
+                    <div
+                      className="mt-2 flex gap-2 text-[10px]"
+                      style={{ color: "var(--kami-text-muted)" }}
+                    >
+                      <span>size {p.sizeScore.toFixed(2)}</span>
+                      <span>{p.entityScore ? "+entity" : "—entity"}</span>
+                      <span>{p.numberScore ? "+number" : "—number"}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+      </div>
+    </ToolShell>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone?: "warn";
+}) {
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-      <div className="text-xs uppercase tracking-wide text-zinc-500">{label}</div>
-      <div className="mt-1 text-2xl font-semibold">{value}</div>
+    <div
+      className="rounded-md border p-2 text-center"
+      style={{
+        background: "var(--kami-input-bg)",
+        borderColor: "var(--kami-border)",
+      }}
+    >
+      <div
+        className="text-[10px] uppercase tracking-wide"
+        style={{ color: "var(--kami-text-muted)" }}
+      >
+        {label}
+      </div>
+      <div
+        className="mt-1 text-lg font-semibold"
+        style={{ color: tone === "warn" ? "#f59e0b" : "var(--kami-text)" }}
+      >
+        {value}
+      </div>
     </div>
   );
 }

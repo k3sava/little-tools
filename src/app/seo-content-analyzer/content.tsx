@@ -999,6 +999,13 @@ export default function SeoContentAnalyzerContent() {
               </Card>
             </div>
 
+            {/* Keyword density treemap */}
+            {analysis.keyword && analysis.keyword.topPhrases.length > 0 && (
+              <Card title="Keyword Density Treemap" icon={<KeywordIcon />}>
+                <Treemap phrases={analysis.keyword.topPhrases} />
+              </Card>
+            )}
+
             {/* Recommendations - full width */}
             <Card title="Recommendations" icon={<RecommendationIcon />}>
               <div className="space-y-2">
@@ -1017,6 +1024,57 @@ export default function SeoContentAnalyzerContent() {
           </div>
         )}
       </div>
+    </ToolShell>
+  );
+}
+
+// --- Treemap visualization ---
+function Treemap({ phrases }: { phrases: { phrase: string; count: number }[] }) {
+  const max = Math.max(...phrases.map((p) => p.count));
+  return (
+    <div className="flex flex-wrap gap-2">
+      {phrases.map((p) => {
+        const scale = 0.6 + (p.count / max) * 0.6;
+        return (
+          <span
+            key={p.phrase}
+            className="px-3 py-1.5 rounded-lg font-medium tabular-nums"
+            style={{
+              background: `color-mix(in srgb, ${ACCENT_SEO} ${20 + scale * 30}%, var(--kami-surface))`,
+              color: "var(--kami-text)",
+              fontSize: `${0.75 + scale * 0.4}rem`,
+              border: "1px solid var(--kami-border)",
+            }}
+          >
+            {p.phrase} <span style={{ opacity: 0.6 }}>×{p.count}</span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+// --- Score breakdown bars ---
+function ScoreBreakdown({ analysis }: { analysis: FullAnalysis }) {
+  const items = [
+    { label: "Length", value: Math.min(100, (analysis.stats.wordCount / 1000) * 100) },
+    { label: "Readability", value: analysis.readability.fleschScore },
+    { label: "Headings", value: (analysis.headings.hasH1 ? 50 : 0) + (analysis.headings.singleH1 ? 25 : 0) + (analysis.headings.logicalOrder ? 25 : 0) },
+    { label: "Sentence", value: analysis.stats.avgSentenceLength >= 15 && analysis.stats.avgSentenceLength <= 20 ? 100 : 60 },
+  ];
+  return (
+    <div className="w-full max-w-md grid grid-cols-2 gap-3">
+      {items.map((it) => (
+        <div key={it.label}>
+          <div className="flex justify-between text-xs mb-1" style={{ color: "var(--kami-text-muted)" }}>
+            <span>{it.label}</span>
+            <span className="tabular-nums">{Math.round(it.value)}</span>
+          </div>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
+            <div style={{ width: `${Math.min(100, it.value)}%`, height: "100%", background: ACCENT_SEO }} />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
