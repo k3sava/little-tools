@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 // --- Types ---
 
@@ -24,6 +29,12 @@ interface DiffSegment {
   text: string;
 }
 
+interface Preset {
+  id: string;
+  name: string;
+  rules: Array<{ find: string; replace: string }>;
+}
+
 // --- Regex library ---
 
 const REGEX_LIBRARY = [
@@ -31,9 +42,11 @@ const REGEX_LIBRARY = [
   { label: "URL", pattern: "https?://[^\\s]+" },
   { label: "Phone", pattern: "\\+?[\\d\\s\\-()]{7,}" },
   { label: "Date", pattern: "\\d{1,2}[/\\-]\\d{1,2}[/\\-]\\d{2,4}" },
-  { label: "IP Address", pattern: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" },
+  { label: "IP", pattern: "\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}" },
   { label: "Whitespace", pattern: "\\s+" },
 ];
+
+const PRESETS_KEY = "kami_find_replace_presets";
 
 // --- Find & Replace logic ---
 
@@ -41,11 +54,14 @@ function buildRegex(
   find: string,
   isRegex: boolean,
   caseSensitive: boolean,
-  global: boolean
+  global: boolean,
+  wholeWord: boolean,
+  multiline: boolean
 ): RegExp | null {
   if (!find) return null;
-  const pattern = isRegex ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const flags = (global ? "g" : "") + (caseSensitive ? "" : "i");
+  let pattern = isRegex ? find : find.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  if (wholeWord) pattern = `\\b${pattern}\\b`;
+  const flags = (global ? "g" : "") + (caseSensitive ? "" : "i") + (multiline ? "m" : "");
   try {
     return new RegExp(pattern, flags);
   } catch {
@@ -59,23 +75,21 @@ function findAndReplace(
   replace: string,
   isRegex: boolean,
   caseSensitive: boolean,
-  replaceAll: boolean
+  replaceAll: boolean,
+  wholeWord: boolean,
+  multiline: boolean
 ): MatchResult {
   if (!text || !find) return { output: text, matchCount: 0, error: null };
-
-  const countRegex = buildRegex(find, isRegex, caseSensitive, true);
+  const countRegex = buildRegex(find, isRegex, caseSensitive, true, wholeWord, multiline);
   if (!countRegex) {
     return { output: text, matchCount: 0, error: "Invalid regex pattern" };
   }
-
   const matches = text.match(countRegex);
   const matchCount = matches ? matches.length : 0;
-
-  const replaceRegex = buildRegex(find, isRegex, caseSensitive, replaceAll);
+  const replaceRegex = buildRegex(find, isRegex, caseSensitive, replaceAll, wholeWord, multiline);
   if (!replaceRegex) {
     return { output: text, matchCount, error: "Invalid regex pattern" };
   }
-
   const output = text.replace(replaceRegex, replace);
   return { output, matchCount, error: null };
 }
@@ -84,38 +98,49 @@ function batchReplace(
   text: string,
   rules: Rule[],
   isRegex: boolean,
-  caseSensitive: boolean
+  caseSensitive: boolean,
+  wholeWord: boolean,
+  multiline: boolean
 ): MatchResult {
   if (!text) return { output: text, matchCount: 0, error: null };
   let result = text;
   let totalMatches = 0;
-
   for (const rule of rules) {
     if (!rule.find) continue;
-    const r = findAndReplace(result, rule.find, rule.replace, isRegex, caseSensitive, true);
+    const r = findAndReplace(result, rule.find, rule.replace, isRegex, caseSensitive, true, wholeWord, multiline);
     if (r.error) return { output: text, matchCount: 0, error: `Rule "${rule.find}": ${r.error}` };
     totalMatches += r.matchCount;
     result = r.output;
   }
-
   return { output: result, matchCount: totalMatches, error: null };
 }
 
-// --- Diff computation ---
+function buildLCS(a: string, b: string): number[][] {
+  const maxLen = 5000;
+  const sa = a.length > maxLen ? a.slice(0, maxLen) : a;
+  const sb = b.length > maxLen ? b.slice(0, maxLen) : b;
+  const m = sa.length;
+  const n = sb.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (sa[i - 1] === sb[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+  return dp;
+}
 
 function computeDiff(original: string, modified: string): DiffSegment[] {
   if (original === modified) return [{ type: "same", text: original }];
-
   const segments: DiffSegment[] = [];
-  // Simple LCS-based character diff
   const lcs = buildLCS(original, modified);
-
-  // Trace back through LCS to build diff
   const ops: Array<{ type: "same" | "removed" | "added"; char: string }> = [];
-
   let a = original.length;
   let b = modified.length;
-
   while (a > 0 || b > 0) {
     if (a > 0 && b > 0 && original[a - 1] === modified[b - 1]) {
       ops.push({ type: "same", char: original[a - 1] });
@@ -129,10 +154,7 @@ function computeDiff(original: string, modified: string): DiffSegment[] {
       a--;
     }
   }
-
   ops.reverse();
-
-  // Merge consecutive ops of same type
   for (const op of ops) {
     if (segments.length > 0 && segments[segments.length - 1].type === op.type) {
       segments[segments.length - 1].text += op.char;
@@ -140,72 +162,8 @@ function computeDiff(original: string, modified: string): DiffSegment[] {
       segments.push({ type: op.type, text: op.char });
     }
   }
-
   return segments;
 }
-
-function buildLCS(a: string, b: string): number[][] {
-  // For very long strings, truncate diff to avoid perf issues
-  const maxLen = 5000;
-  const sa = a.length > maxLen ? a.slice(0, maxLen) : a;
-  const sb = b.length > maxLen ? b.slice(0, maxLen) : b;
-
-  const m = sa.length;
-  const n = sb.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (sa[i - 1] === sb[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
-      } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-      }
-    }
-  }
-
-  return dp;
-}
-
-// --- Highlight matches ---
-
-function getHighlightedSegments(
-  text: string,
-  find: string,
-  isRegex: boolean,
-  caseSensitive: boolean
-): Array<{ text: string; highlighted: boolean }> {
-  if (!text || !find) return [{ text, highlighted: false }];
-
-  const regex = buildRegex(find, isRegex, caseSensitive, true);
-  if (!regex) return [{ text, highlighted: false }];
-
-  const segments: Array<{ text: string; highlighted: boolean }> = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  // Reset regex
-  regex.lastIndex = 0;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      segments.push({ text: text.slice(lastIndex, match.index), highlighted: false });
-    }
-    segments.push({ text: match[0], highlighted: true });
-    lastIndex = match.index + match[0].length;
-    if (match[0].length === 0) {
-      regex.lastIndex++;
-    }
-  }
-
-  if (lastIndex < text.length) {
-    segments.push({ text: text.slice(lastIndex), highlighted: false });
-  }
-
-  return segments.length > 0 ? segments : [{ text, highlighted: false }];
-}
-
-// --- UI ---
 
 let ruleIdCounter = 0;
 function nextRuleId() {
@@ -221,42 +179,47 @@ export default function FindReplaceContent() {
   const setReplace = useCallback((v: string) => setToolState({ replace: v }), [setToolState]);
   const [isRegex, setIsRegex] = useState(false);
   const [caseSensitive, setCaseSensitive] = useState(true);
+  const [wholeWord, setWholeWord] = useState(false);
+  const [multiline, setMultiline] = useState(false);
   const [replaceAllMode, setReplaceAllMode] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // Batch rules mode
   const [mode, setMode] = useState<"single" | "rules">("single");
   const [rules, setRules] = useState<Rule[]>([
     { id: nextRuleId(), find: "", replace: "" },
     { id: nextRuleId(), find: "", replace: "" },
   ]);
 
-  // Regex library
-  const [showRegexLib, setShowRegexLib] = useState(false);
-
-  // Preview diff
   const [showPreview, setShowPreview] = useState(true);
+  const [presets, setPresets] = useState<Preset[]>([]);
 
-  // Single mode result
+  // Load presets
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PRESETS_KEY);
+      if (raw) setPresets(JSON.parse(raw));
+    } catch { /* ignore */ }
+  }, []);
+
   const result = useMemo(
     () =>
       mode === "single"
-        ? findAndReplace(input, find, replace, isRegex, caseSensitive, replaceAllMode)
-        : batchReplace(input, rules, isRegex, caseSensitive),
-    [input, find, replace, isRegex, caseSensitive, replaceAllMode, mode, rules]
+        ? findAndReplace(input, find, replace, isRegex, caseSensitive, replaceAllMode, wholeWord, multiline)
+        : batchReplace(input, rules, isRegex, caseSensitive, wholeWord, multiline),
+    [input, find, replace, isRegex, caseSensitive, replaceAllMode, mode, rules, wholeWord, multiline]
   );
 
   const matchCount = useMemo(() => {
     if (!input) return 0;
     if (mode === "single") {
       if (!find) return 0;
-      const countRegex = buildRegex(find, isRegex, caseSensitive, true);
+      const countRegex = buildRegex(find, isRegex, caseSensitive, true, wholeWord, multiline);
       if (!countRegex) return 0;
       const matches = input.match(countRegex);
       return matches ? matches.length : 0;
     }
     return result.matchCount;
-  }, [input, find, isRegex, caseSensitive, mode, result.matchCount]);
+  }, [input, find, isRegex, caseSensitive, mode, result.matchCount, wholeWord, multiline]);
 
   const handleCopy = useCallback(async () => {
     if (!result.output) return;
@@ -264,6 +227,11 @@ export default function FindReplaceContent() {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [result.output]);
+
+  const handleApply = useCallback(() => {
+    if (result.error || !matchCount) return;
+    setInput(result.output);
+  }, [result, matchCount]);
 
   const addRule = useCallback(() => {
     setRules((prev) => [...prev, { id: nextRuleId(), find: "", replace: "" }]);
@@ -277,30 +245,62 @@ export default function FindReplaceContent() {
     setRules((prev) => prev.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   }, []);
 
-  const insertRegexPattern = useCallback((pattern: string) => {
-    if (mode === "single") {
-      setFind(pattern);
+  const savePreset = useCallback(() => {
+    const name = window.prompt("Preset name:");
+    if (!name) return;
+    const payload: Preset = {
+      id: `preset-${Date.now()}`,
+      name,
+      rules:
+        mode === "single"
+          ? [{ find, replace }]
+          : rules.map((r) => ({ find: r.find, replace: r.replace })),
+    };
+    setPresets((prev) => {
+      const next = [...prev, payload];
+      try {
+        localStorage.setItem(PRESETS_KEY, JSON.stringify(next));
+      } catch { /* ignore */ }
+      return next;
+    });
+  }, [mode, find, replace, rules]);
+
+  const loadPreset = useCallback((p: Preset) => {
+    if (p.rules.length <= 1) {
+      setMode("single");
+      setFind(p.rules[0]?.find ?? "");
+      setReplace(p.rules[0]?.replace ?? "");
+    } else {
+      setMode("rules");
+      setRules(p.rules.map((r) => ({ id: nextRuleId(), find: r.find, replace: r.replace })));
     }
+  }, [setFind, setReplace]);
+
+  const deletePreset = useCallback((id: string) => {
+    setPresets((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      try {
+        localStorage.setItem(PRESETS_KEY, JSON.stringify(next));
+      } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
+
+  const insertRegexPattern = useCallback((pattern: string) => {
+    if (mode === "single") setFind(pattern);
     setIsRegex(true);
-  }, [mode]);
+  }, [mode, setFind]);
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => { handleCopy(); }, label: "Copy result" },
     { key: "k", meta: true, action: () => { setInput(""); setFind(""); setReplace(""); }, label: "Clear" },
-  ], [handleCopy]));
+  ], [handleCopy, setFind, setReplace]));
 
   const hasChanges = input && matchCount > 0;
 
-  // Highlighted segments for source text
-  const highlightedSegments = useMemo(() => {
-    if (mode !== "single" || !find || !input) return null;
-    return getHighlightedSegments(input, find, isRegex, caseSensitive);
-  }, [input, find, isRegex, caseSensitive, mode]);
-
-  // Diff segments
   const diffSegments = useMemo(() => {
     if (!hasChanges || !showPreview) return null;
-    if (input.length > 5000) return null; // Skip diff for very long texts
+    if (input.length > 5000) return null;
     return computeDiff(input, result.output);
   }, [input, result.output, hasChanges, showPreview]);
 
@@ -317,109 +317,117 @@ export default function FindReplaceContent() {
     borderRadius: "var(--kami-card-radius, 0.75rem)",
     boxShadow: "var(--kami-card-shadow, none)",
   };
-  const ctaToggle = (active: boolean): React.CSSProperties => ({
-    background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
-    color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-    border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  });
+
+  const controls = (
+    <>
+      <ControlGroup label="Mode">
+        <Segment
+          value={mode}
+          onChange={setMode}
+          options={[
+            { value: "single", label: "Single" },
+            { value: "rules", label: "Rules" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Flags">
+        <Toggle checked={isRegex} onChange={setIsRegex} label="Regex" hint=".* $1 captures" />
+        <Toggle checked={caseSensitive} onChange={setCaseSensitive} label="Case sensitive" />
+        <Toggle checked={wholeWord} onChange={setWholeWord} label="Whole word" hint="\\bword\\b" />
+        <Toggle checked={multiline} onChange={setMultiline} label="Multiline" hint="^ and $ per line" />
+        {mode === "single" && (
+          <Toggle checked={replaceAllMode} onChange={setReplaceAllMode} label="Replace all" />
+        )}
+      </ControlGroup>
+      <ControlGroup label="Preview">
+        <Toggle checked={showPreview} onChange={setShowPreview} label="Show diff" />
+      </ControlGroup>
+      <ControlGroup label="Regex library" hint="Insert pattern">
+        <div className="grid grid-cols-2 gap-2">
+          {REGEX_LIBRARY.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => insertRegexPattern(item.pattern)}
+              className="kc-segment-btn"
+              style={{ minHeight: 36 }}
+              title={item.pattern}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </ControlGroup>
+      <ControlGroup label="Presets" hint={`${presets.length} saved`}>
+        <div className="flex flex-col gap-2">
+          {presets.map((p) => (
+            <div key={p.id} className="flex items-center gap-2">
+              <button
+                onClick={() => loadPreset(p)}
+                className="kc-segment-btn flex-1 truncate text-left"
+                style={{ minHeight: 36, padding: "6px 10px", justifyContent: "flex-start" }}
+                title={p.name}
+              >
+                {p.name}
+              </button>
+              <button
+                onClick={() => deletePreset(p.id)}
+                className="kc-segment-btn"
+                style={{ minHeight: 36, minWidth: 36 }}
+                aria-label="Delete preset"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+          <button onClick={savePreset} className="kc-segment-btn" style={{ minHeight: 40 }}>
+            + Save current
+          </button>
+        </div>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleApply} disabled={!hasChanges}>
+        Apply
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy} disabled={!hasChanges}>
+        {copied ? "Copied" : "Copy result"}
+      </ToolActionButton>
+    </>
+  );
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Find &amp; Replace"
-          tagline="Bulk find-and-replace across pasted text - with regex, case-insensitive matching, whole-word matching, and match counting."
-          description="Paste your text, type what to find, type what to replace it with. Regex mode unlocks capture groups ($1, $2). Matches are highlighted live, and the result area shows the count before you commit. Works for renaming variables, cleaning up CSVs, swapping brand terms, or any bulk edit."
-          audience={["Developers", "Writers", "Editors", "Data folks"]}
-          whenToUse={[
-            "Renaming a variable across pasted code",
-            "Swapping brand terms site-wide before republishing",
-            "Cleaning up a CSV field before importing",
-          ]}
+    <ToolShell
+      title="Find & Replace"
+      tagline="Regex · whole word · multiline · presets · live preview"
+      accent="#6366f1"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-3 p-4 md:p-6">
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Paste your text here..."
+          className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+          style={{ ...inputStyle, minHeight: 140 }}
+          rows={6}
+          autoFocus
         />
-
-        {/* Mode toggle */}
-        <div className="mb-4 flex gap-2">
-          <button
-            onClick={() => setMode("single")}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={ctaToggle(mode === "single")}
-          >
-            Single
-          </button>
-          <button
-            onClick={() => setMode("rules")}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={ctaToggle(mode === "rules")}
-          >
-            Rules
-          </button>
-        </div>
-
-        {/* Input with match highlighting */}
-        <div className="relative">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste your text here..."
-            className="w-full px-4 py-3 text-base focus:outline-none"
-            style={inputStyle}
-            rows={6}
-            autoFocus
-          />
-        </div>
-
-        {/* Match highlighting display */}
-        {highlightedSegments && matchCount > 0 && (
-          <div
-            className="mt-2 whitespace-pre-wrap px-4 py-3 text-base max-h-48 overflow-y-auto"
-            style={cardStyle}
-          >
-            {highlightedSegments.map((seg, i) =>
-              seg.highlighted ? (
-                <mark
-                  key={i}
-                  className="rounded-sm px-0.5"
-                  style={{
-                    background: "color-mix(in srgb, #eab308 35%, var(--kami-surface-solid))",
-                    color: "color-mix(in srgb, #a16207 70%, var(--kami-text))",
-                  }}
-                >
-                  {seg.text}
-                </mark>
-              ) : (
-                <span key={i}>{seg.text}</span>
-              )
-            )}
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
-          <span>
-            {input.length} {input.length === 1 ? "character" : "characters"}
-          </span>
-          {input && (
-            <button
-              onClick={() => setInput("")}
-              style={{ color: "var(--kami-text-dim)" }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
 
         {/* Find / Replace fields - Single mode */}
         {mode === "single" && (
-          <div className="mt-5 space-y-3">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
             <div className="relative">
               <input
                 type="text"
                 value={find}
                 onChange={(e) => setFind(e.target.value)}
                 placeholder="Find..."
-                className="w-full px-4 py-3 text-base focus:outline-none"
+                className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
                 style={inputStyle}
               />
               {find && matchCount > 0 && (
@@ -428,10 +436,10 @@ export default function FindReplaceContent() {
                   style={{
                     background: "var(--kami-surface)",
                     color: "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    borderRadius: 999,
                   }}
                 >
-                  {matchCount} {matchCount === 1 ? "match" : "matches"}
+                  {matchCount}
                 </span>
               )}
               {result.error && (
@@ -440,13 +448,12 @@ export default function FindReplaceContent() {
                 </span>
               )}
             </div>
-
             <input
               type="text"
               value={replace}
               onChange={(e) => setReplace(e.target.value)}
               placeholder="Replace with..."
-              className="w-full px-4 py-3 text-base focus:outline-none"
+              className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
               style={inputStyle}
             />
           </div>
@@ -454,134 +461,70 @@ export default function FindReplaceContent() {
 
         {/* Rules mode */}
         {mode === "rules" && (
-          <div className="mt-5 space-y-3">
+          <div className="flex flex-col gap-2">
             {rules.map((rule, index) => (
-              <div key={rule.id} className="flex gap-2 items-start">
-                <div className="flex-1 space-y-2">
-                  <input
-                    type="text"
-                    value={rule.find}
-                    onChange={(e) => updateRule(rule.id, "find", e.target.value)}
-                    placeholder={`Find #${index + 1}...`}
-                    className="w-full px-4 py-2.5 text-sm focus:outline-none"
-                    style={inputStyle}
-                  />
-                  <input
-                    type="text"
-                    value={rule.replace}
-                    onChange={(e) => updateRule(rule.id, "replace", e.target.value)}
-                    placeholder="Replace with..."
-                    className="w-full px-4 py-2.5 text-sm focus:outline-none"
-                    style={inputStyle}
-                  />
-                </div>
+              <div key={rule.id} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                <input
+                  type="text"
+                  value={rule.find}
+                  onChange={(e) => updateRule(rule.id, "find", e.target.value)}
+                  placeholder={`Find #${index + 1}`}
+                  className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
+                  style={inputStyle}
+                />
+                <input
+                  type="text"
+                  value={rule.replace}
+                  onChange={(e) => updateRule(rule.id, "replace", e.target.value)}
+                  placeholder="Replace with..."
+                  className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
+                  style={inputStyle}
+                />
                 <button
                   onClick={() => removeRule(rule.id)}
-                  className="mt-2 p-1.5 transition-colors"
-                  style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.5rem)" }}
-                  title="Remove rule"
+                  className="kc-segment-btn"
+                  style={{ minHeight: 40, minWidth: 40 }}
+                  aria-label="Remove rule"
                 >
-                  <TrashIcon />
+                  ×
                 </button>
               </div>
             ))}
             <button
               onClick={addRule}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm transition-colors w-full justify-center"
-              style={{
-                border: "1px dashed var(--kami-border-strong)",
-                color: "var(--kami-text-muted)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
+              className="kc-segment-btn"
+              style={{ minHeight: 40, borderStyle: "dashed" }}
             >
-              <PlusIcon /> Add Rule
+              + Add rule
             </button>
             {result.error && (
-              <p className="text-xs mt-1" style={{ color: "#ef4444" }}>{result.error}</p>
-            )}
-            {matchCount > 0 && (
-              <p className="text-xs mt-1" style={{ color: "var(--kami-text-muted)" }}>
-                {matchCount} total {matchCount === 1 ? "match" : "matches"} across all rules
-              </p>
+              <p className="text-xs" style={{ color: "#ef4444" }}>{result.error}</p>
             )}
           </div>
         )}
 
-        {/* Toggles */}
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            onClick={() => setIsRegex((v) => !v)}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={ctaToggle(isRegex)}
-          >
-            .* Regex
-          </button>
-          <button
-            onClick={() => setCaseSensitive((v) => !v)}
-            className="px-3 py-1.5 text-sm font-medium transition-colors"
-            style={ctaToggle(caseSensitive)}
-          >
-            Aa Case sensitive
-          </button>
-          {mode === "single" && (
-            <button
-              onClick={() => setReplaceAllMode((v) => !v)}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={ctaToggle(replaceAllMode)}
-            >
-              Replace all
-            </button>
+        {/* Stats line */}
+        <div
+          className="flex items-center justify-between text-xs"
+          style={{ color: "var(--kami-text-dim)" }}
+        >
+          <span>{input.length} chars</span>
+          {matchCount > 0 && (
+            <span style={{ color: "var(--kami-text-muted)" }}>
+              {matchCount} {matchCount === 1 ? "match" : "matches"}
+            </span>
           )}
         </div>
 
-        {/* Regex library */}
-        <div className="mt-4">
-          <button
-            onClick={() => setShowRegexLib((v) => !v)}
-            className="flex items-center gap-1.5 text-sm transition-colors"
-            style={{ color: "var(--kami-text-muted)" }}
-          >
-            <ChevronIcon open={showRegexLib} />
-            Common regex patterns
-          </button>
-          {showRegexLib && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {REGEX_LIBRARY.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => insertRegexPattern(item.pattern)}
-                  className="px-3 py-1.5 text-xs font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                  title={item.pattern}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Replace preview (diff) */}
-        {hasChanges && diffSegments && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Preview</span>
-              <button
-                onClick={() => setShowPreview((v) => !v)}
-                className="text-xs"
-                style={{ color: "var(--kami-text-dim)" }}
-              >
-                {showPreview ? "Hide" : "Show"} preview
-              </button>
+        {/* Preview diff */}
+        {hasChanges && showPreview && diffSegments && (
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>
+              Preview
             </div>
             <div
-              className="whitespace-pre-wrap px-4 py-3 text-base max-h-64 overflow-y-auto"
-              style={cardStyle}
+              className="whitespace-pre-wrap px-4 py-3 text-sm overflow-auto"
+              style={{ ...cardStyle, maxHeight: 260 }}
             >
               {diffSegments.map((seg, i) => {
                 if (seg.type === "removed") {
@@ -617,141 +560,21 @@ export default function FindReplaceContent() {
           </div>
         )}
 
-        {/* Output */}
+        {/* Result output */}
         {hasChanges && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Result{" "}
-                <span className="font-normal" style={{ color: "var(--kami-text-dim)" }}>
-                  - {mode === "rules" ? "all rules applied" : replaceAllMode ? "all" : "first"} replaced
-                </span>
-              </span>
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  boxShadow: "var(--kami-cta-shadow, none)",
-                }}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon />
-                    Copy
-                  </>
-                )}
-              </button>
+          <div>
+            <div className="text-sm font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>
+              Result
             </div>
             <div
-              className="whitespace-pre-wrap px-4 py-3 text-base"
-              style={cardStyle}
+              className="whitespace-pre-wrap px-4 py-3 text-sm font-mono overflow-auto"
+              style={{ ...cardStyle, maxHeight: 300 }}
             >
               {result.output}
             </div>
           </div>
         )}
-
-        {/* Footer */}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-    </svg>
-  );
-}
-
-function PlusIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`transition-transform ${open ? "rotate-90" : ""}`}
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
+    </ToolShell>
   );
 }

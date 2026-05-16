@@ -2857,3 +2857,22 @@ html[data-theme="brutalist"] .kc-swatch { border-radius: 0; border: 2px solid #0
 html[data-theme="brutalist"] .tools-hub-search { border-radius: 0; border: 2px solid #000; box-shadow: 4px 4px 0 #000; }
 html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px solid #000; }
 
+
+/* On mobile, the kami-mobile-bar sits at top:0 height:48px and
+   .kami-scope gets padding-top:48px. The ToolShell sticky header
+   needs to stick BELOW that bar, not behind it. */
+@media (max-width: 639px) {
+  .tool-shell-header {
+    top: 48px;
+  }
+}
+
+/* On mobile, .kami-scope's 48px padding-top adds extra space before
+   the ToolShell header. We don't want that — the sticky header has
+   its own backdrop. Remove the padding when ToolShell is in use. */
+@media (max-width: 639px) {
+  .kami-scope:has(.tool-shell) {
+    padding-top: 48px;
+  }
+}
+
