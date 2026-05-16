@@ -791,65 +791,16 @@ export default function RiceCalculatorContent() {
         </div>
       )}
 
-      {/* Formula reference */}
-      <div
-        id="rice-meanings"
-        className="rounded-xl p-5"
-        style={{
-          background: "var(--kami-surface)",
-          border: "var(--kami-card-border)",
-          boxShadow: "var(--kami-card-shadow)",
-        }}
-      >
-        <h2
-          className="mb-3 text-sm font-semibold uppercase tracking-wide"
-          style={{ color: "var(--kami-text-muted)" }}
-        >
-          How RICE Scoring Works
-        </h2>
-        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4" style={{ color: "var(--kami-text)" }}>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Reach</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How many people will this impact per quarter? Enter an estimated number of users or customers.
-            </p>
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
+            style={{ background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }}
+          >
+            {toast}
           </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Impact</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How much will this impact each person? Massive = 3x, High = 2x, Medium = 1x, Low = 0.5x, Minimal = 0.25x.
-            </p>
-          </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Confidence</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How confident are you in your estimates? High = 100%, Medium = 80%, Low = 50%.
-            </p>
-          </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Effort</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              Person-months of work required. Higher effort lowers the score, penalizing large initiatives.
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 rounded-lg px-4 py-3 text-center font-mono text-sm" style={{ background: "var(--kami-input-bg)", color: "var(--kami-text)" }}>
-          RICE Score = (Reach x Impact x Confidence) / Effort
-        </div>
+        )}
       </div>
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
-          style={{
-            background: "var(--kami-cta-bg)",
-            color: "var(--kami-cta-text)",
-          }}
-        >
-          {toast}
-        </div>
-      )}
-    </div>
+    </ToolShell>
   );
 }
