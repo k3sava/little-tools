@@ -3,7 +3,16 @@
 import { useState, useMemo, useCallback } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import {
+  NumberStepper,
+  Segment,
+  Toggle,
+} from "@/components/tools/controls";
 
 // --- Stop words ---
 
@@ -29,6 +38,8 @@ interface TextStats {
   readabilityLabel: string;
   gradeLevel: number | null;
   gradeLevelLabel: string;
+  byteSize: number;
+  longestLine: number;
 }
 
 interface KeywordEntry {
@@ -56,16 +67,12 @@ const ABBREVIATIONS = new Set([
 function countSentences(text: string): number {
   const trimmed = text.trim();
   if (!trimmed) return 0;
-
-  // Remove abbreviations followed by periods to avoid false positives
-  // Also handle initials like U.S., U.K., etc.
   const cleaned = trimmed
-    .replace(/\b([A-Z]\.){2,}/g, "ABBR") // U.S.A., U.K., etc.
+    .replace(/\b([A-Z]\.){2,}/g, "ABBR")
     .replace(new RegExp(
       "\\b(" + Array.from(ABBREVIATIONS).join("|") + ")\\.",
       "gi"
     ), "$1");
-
   const matches = cleaned.match(/[.!?]+(?:\s|$)/g);
   return matches ? matches.length : (trimmed.length > 0 ? 1 : 0);
 }
@@ -79,34 +86,27 @@ function countParagraphs(text: string): number {
 function countSyllables(word: string): number {
   const w = word.toLowerCase().replace(/[^a-z]/g, "");
   if (w.length <= 2) return w.length > 0 ? 1 : 0;
-
   let count = 0;
   const vowels = "aeiouy";
   let prevVowel = false;
-
   for (let i = 0; i < w.length; i++) {
     const isVowel = vowels.includes(w[i]);
     if (isVowel && !prevVowel) count++;
     prevVowel = isVowel;
   }
-
   if (w.endsWith("e") && count > 1) count--;
   if (w.endsWith("le") && w.length > 2 && !vowels.includes(w[w.length - 3])) count++;
-
   return Math.max(count, 1);
 }
 
 function fleschKincaid(words: string[], sentenceCount: number): { score: number; label: string } | null {
   if (words.length === 0 || sentenceCount === 0) return null;
-
   const totalSyllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
   const score =
     206.835 -
     1.015 * (words.length / sentenceCount) -
     84.6 * (totalSyllables / words.length);
-
   const clamped = Math.max(0, Math.min(100, Math.round(score * 10) / 10));
-
   let label: string;
   if (clamped >= 90) label = "Very Easy";
   else if (clamped >= 80) label = "Easy";
@@ -115,17 +115,14 @@ function fleschKincaid(words: string[], sentenceCount: number): { score: number;
   else if (clamped >= 50) label = "Fairly Difficult";
   else if (clamped >= 30) label = "Difficult";
   else label = "Very Difficult";
-
   return { score: clamped, label };
 }
 
 function computeGradeLevel(words: string[], sentenceCount: number): { grade: number; label: string } | null {
   if (words.length === 0 || sentenceCount === 0) return null;
-
   const totalSyllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
   const grade = 0.39 * (words.length / sentenceCount) + 11.8 * (totalSyllables / words.length) - 15.59;
   const rounded = Math.round(grade * 10) / 10;
-
   let label: string;
   if (rounded < 1) label = "Kindergarten";
   else if (rounded <= 5) label = `Grade ${Math.round(rounded)}`;
@@ -133,11 +130,10 @@ function computeGradeLevel(words: string[], sentenceCount: number): { grade: num
   else if (rounded <= 12) label = `Grade ${Math.round(rounded)}`;
   else if (rounded <= 16) label = "College";
   else label = "Graduate";
-
   return { grade: rounded, label };
 }
 
-function computeStats(text: string): TextStats {
+function computeStats(text: string, includeSpaces: boolean): TextStats {
   const characters = text.length;
   const charactersNoSpaces = text.replace(/\s/g, "").length;
   const words = text.trim() ? text.trim().split(/\s+/) : [];
@@ -151,8 +147,16 @@ function computeStats(text: string): TextStats {
   const fk = fleschKincaid(words, sentenceCount);
   const gl = computeGradeLevel(words, sentenceCount);
 
+  // UTF-8 byte size: use TextEncoder
+  let byteSize = 0;
+  if (typeof TextEncoder !== "undefined") {
+    byteSize = new TextEncoder().encode(includeSpaces ? text : text.replace(/\s/g, "")).length;
+  }
+
+  const longestLine = text.split("\n").reduce((m, l) => Math.max(m, l.length), 0);
+
   return {
-    characters,
+    characters: includeSpaces ? characters : charactersNoSpaces,
     charactersNoSpaces,
     words: wordCount,
     sentences: sentenceCount,
@@ -160,9 +164,11 @@ function computeStats(text: string): TextStats {
     readingTimeMin,
     speakingTimeMin,
     readabilityScore: fk?.score ?? null,
-    readabilityLabel: fk?.label ?? "\u2014",
+    readabilityLabel: fk?.label ?? "—",
     gradeLevel: gl?.grade ?? null,
-    gradeLevelLabel: gl?.label ?? "\u2014",
+    gradeLevelLabel: gl?.label ?? "—",
+    byteSize,
+    longestLine,
   };
 }
 
@@ -171,13 +177,11 @@ function computeKeywordDensity(text: string): KeywordEntry[] {
   const words = text.trim().toLowerCase().split(/\s+/).map((w) => w.replace(/[^a-z0-9'-]/g, "")).filter(Boolean);
   const totalWords = words.length;
   if (totalWords === 0) return [];
-
   const freq: Record<string, number> = {};
   for (const w of words) {
     if (STOP_WORDS.has(w) || w.length < 2) continue;
     freq[w] = (freq[w] || 0) + 1;
   }
-
   return Object.entries(freq)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10)
@@ -197,13 +201,10 @@ function getSentences(text: string): string[] {
 function computeSentenceStats(text: string): SentenceStats | null {
   const sentences = getSentences(text);
   if (sentences.length === 0) return null;
-
   const lengths = sentences.map((s) => s.split(/\s+/).filter(Boolean).length);
   const longest = Math.max(...lengths);
   const shortest = Math.min(...lengths);
   const average = Math.round((lengths.reduce((a, b) => a + b, 0) / lengths.length) * 10) / 10;
-
-  // Standard deviation / average for variety
   let varietyLabel = "Low";
   if (lengths.length > 1 && average > 0) {
     const variance = lengths.reduce((sum, l) => sum + Math.pow(l - average, 2), 0) / lengths.length;
@@ -213,7 +214,6 @@ function computeSentenceStats(text: string): SentenceStats | null {
     else if (ratio > 0.25) varietyLabel = "Medium";
     else varietyLabel = "Low";
   }
-
   return { longest, shortest, average, varietyLabel };
 }
 
@@ -228,29 +228,18 @@ function formatTime(minutes: number): string {
   return `${mins} min ${secs} sec`;
 }
 
-// --- Social media limits ---
-
 const SOCIAL_LIMITS = [
-  { name: "Twitter / X", limit: 280, unit: "chars" as const },
-  { name: "Instagram", limit: 2200, unit: "chars" as const },
-  { name: "LinkedIn", limit: 3000, unit: "chars" as const },
-  { name: "SMS", limit: 160, unit: "chars" as const },
-  { name: "Meta Title", limit: 60, unit: "chars" as const },
-  { name: "Meta Description", limit: 160, unit: "chars" as const },
+  { name: "Tweet", limit: 280 },
+  { name: "Title tag", limit: 60 },
+  { name: "Meta desc", limit: 160 },
+  { name: "SMS", limit: 160 },
+  { name: "LinkedIn post", limit: 3000 },
 ];
 
-// --- UI components ---
-
-interface StatCardProps {
-  label: string;
-  value: string | number;
-  sub?: string;
-}
-
-function StatCard({ label, value, sub }: StatCardProps) {
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
     <div
-      className="px-4 py-3"
+      className="px-3 py-3"
       style={{
         background: "var(--kami-surface-solid)",
         border: "1px solid var(--kami-border-strong)",
@@ -258,218 +247,34 @@ function StatCard({ label, value, sub }: StatCardProps) {
         boxShadow: "var(--kami-card-shadow, none)",
       }}
     >
-      <div className="text-2xl font-bold" style={{ color: "var(--kami-text)" }}>{value}</div>
-      <div className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
+      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--kami-text)" }}>{value}</div>
+      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
       {sub && <div className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>{sub}</div>}
     </div>
   );
 }
 
-function getProgressColor(ratio: number): string {
-  if (ratio <= 0.7) return "#22c55e";
-  if (ratio <= 0.9) return "#eab308";
-  return "#ef4444";
-}
-
-function getProgressTextColor(ratio: number): string {
-  if (ratio <= 0.7) return "#16a34a";
-  if (ratio <= 0.9) return "#ca8a04";
-  return "#dc2626";
-}
-
-function SocialLimitBar({ name, limit, current }: { name: string; limit: number; current: number }) {
+function ProgressBar({ name, limit, current }: { name: string; limit: number; current: number }) {
   const ratio = current / limit;
   const percent = Math.min(ratio * 100, 100);
   const over = current > limit;
-
+  const color = ratio <= 0.7 ? "#22c55e" : ratio <= 0.95 ? "#eab308" : "#ef4444";
   return (
-    <div className="flex items-center gap-3">
-      <div className="w-32 shrink-0 text-sm" style={{ color: "var(--kami-text-muted)" }}>{name}</div>
-      <div className="flex-1">
-        <div
-          className="h-2.5 w-full overflow-hidden"
-          style={{
-            background: "var(--kami-surface)",
-            borderRadius: "9999px",
-            border: "1px solid var(--kami-border)",
-          }}
-        >
-          <div
-            className="h-full transition-all duration-200"
-            style={{ width: `${percent}%`, background: getProgressColor(ratio), borderRadius: "9999px" }}
-          />
-        </div>
+    <div>
+      <div className="flex items-center justify-between text-xs mb-1">
+        <span style={{ color: "var(--kami-text-muted)" }}>{name}</span>
+        <span className="tabular-nums" style={{ color: over ? "#ef4444" : "var(--kami-text-muted)" }}>
+          {current} / {limit}
+        </span>
       </div>
-      <div className="w-24 shrink-0 text-right text-sm font-medium tabular-nums" style={{ color: getProgressTextColor(ratio) }}>
-        {current} / {limit}
-        {over && <span className="ml-1 text-xs" style={{ color: "#ef4444" }}>({current - limit} over)</span>}
-      </div>
-    </div>
-  );
-}
-
-function CollapsibleSection({
-  title,
-  icon,
-  defaultOpen = true,
-  children,
-}: {
-  title: string;
-  icon: React.ReactNode;
-  defaultOpen?: boolean;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <div
-      className="overflow-hidden"
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors"
+      <div
+        className="h-2 w-full overflow-hidden"
+        style={{ background: "var(--kami-surface)", borderRadius: 999 }}
       >
-        <div className="flex items-center gap-2.5">
-          {icon}
-          <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{title}</span>
-        </div>
-        <ChevronIcon open={open} />
-      </button>
-      {open && <div className="px-5 py-4" style={{ borderTop: "1px solid var(--kami-border)" }}>{children}</div>}
-    </div>
-  );
-}
-
-function GoalTracker({
-  goalType,
-  setGoalType,
-  goalValue,
-  setGoalValue,
-  current,
-}: {
-  goalType: "words" | "characters";
-  setGoalType: (v: "words" | "characters") => void;
-  goalValue: string;
-  setGoalValue: (v: string) => void;
-  current: number;
-}) {
-  const target = parseInt(goalValue, 10) || 0;
-  const ratio = target > 0 ? current / target : 0;
-  const percent = Math.min(ratio * 100, 100);
-  const reached = current >= target && target > 0;
-
-  const tabBtnActive = {
-    background: "var(--kami-surface-solid)",
-    color: "var(--kami-text)",
-    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
-  const tabBtnInactive = {
-    color: "var(--kami-text-muted)",
-    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-  } as const;
-  return (
-    <div
-      className="overflow-hidden"
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
-      <div className="px-5 py-4">
-        <div className="flex items-center gap-2.5 mb-4">
-          <TargetIcon />
-          <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>Goal Setting</span>
-        </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Target:</label>
-            <input
-              type="number"
-              min="0"
-              value={goalValue}
-              onChange={(e) => setGoalValue(e.target.value)}
-              placeholder="500"
-              className="w-24 px-3 py-1.5 text-sm focus:outline-none"
-              style={{
-                background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                color: "var(--kami-text)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
-              }}
-            />
-          </div>
-          <div
-            className="flex items-center gap-1.5 p-0.5"
-            style={{
-              background: "var(--kami-surface)",
-              border: "1px solid var(--kami-border)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            }}
-          >
-            <button
-              onClick={() => setGoalType("words")}
-              className="px-3 py-1 text-xs font-medium transition-colors"
-              style={goalType === "words" ? tabBtnActive : tabBtnInactive}
-            >
-              Words
-            </button>
-            <button
-              onClick={() => setGoalType("characters")}
-              className="px-3 py-1 text-xs font-medium transition-colors"
-              style={goalType === "characters" ? tabBtnActive : tabBtnInactive}
-            >
-              Characters
-            </button>
-          </div>
-        </div>
-        {target > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                {current} / {target} {goalType}
-              </span>
-              <span className="text-sm font-medium" style={{ color: reached ? "#16a34a" : "var(--kami-text-muted)" }}>
-                {Math.round(percent)}%
-              </span>
-            </div>
-            <div
-              className="h-3 w-full overflow-hidden"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border)",
-                borderRadius: "9999px",
-              }}
-            >
-              <div
-                className="h-full transition-all duration-300"
-                style={{
-                  width: `${percent}%`,
-                  background: reached ? "#22c55e" : "#3b82f6",
-                  borderRadius: "9999px",
-                }}
-              />
-            </div>
-            {reached && (
-              <div className="mt-2 flex items-center gap-1.5 text-sm" style={{ color: "#16a34a" }}>
-                <CheckCircleIcon />
-                Goal reached!
-              </div>
-            )}
-            {!reached && target > 0 && (
-              <div className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                {target - current} {goalType} remaining
-              </div>
-            )}
-          </div>
-        )}
+        <div
+          className="h-full"
+          style={{ width: `${percent}%`, background: color, borderRadius: 999 }}
+        />
       </div>
     </div>
   );
@@ -482,13 +287,15 @@ export default function CharacterCounterContent() {
   const setInput = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
   const [copiedStats, setCopiedStats] = useState(false);
   const [goalType, setGoalType] = useState<"words" | "characters">("words");
-  const [goalValue, setGoalValue] = useState("");
+  const [goalValue, setGoalValue] = useState(500);
+  const [includeSpaces, setIncludeSpaces] = useState(true);
+  const [view, setView] = useState<"stats" | "limits" | "keywords" | "lines">("stats");
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-  ], []));
+  ], [setInput]));
 
-  const stats = useMemo(() => computeStats(input), [input]);
+  const stats = useMemo(() => computeStats(input, includeSpaces), [input, includeSpaces]);
   const keywords = useMemo(() => computeKeywordDensity(input), [input]);
   const sentenceStats = useMemo(() => computeSentenceStats(input), [input]);
 
@@ -501,34 +308,87 @@ export default function CharacterCounterContent() {
       `Paragraphs: ${stats.paragraphs}`,
       `Reading time: ${formatTime(stats.readingTimeMin)}`,
       `Speaking time: ${formatTime(stats.speakingTimeMin)}`,
+      `UTF-8 bytes: ${stats.byteSize}`,
     ];
     if (stats.readabilityScore !== null) {
       lines.push(`Readability: ${stats.readabilityScore} (${stats.readabilityLabel})`);
-    }
-    if (stats.gradeLevel !== null) {
-      lines.push(`Reading Level: ${stats.gradeLevelLabel} (${stats.gradeLevel})`);
     }
     await navigator.clipboard.writeText(lines.join("\n"));
     setCopiedStats(true);
     setTimeout(() => setCopiedStats(false), 2000);
   }, [stats]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Character Counter"
-          tagline="Live character, word, sentence, and paragraph counts - with progress bars for Twitter, SMS, meta descriptions, and custom goals."
-          description="Type or paste into the box; we count everything in real time: characters (with and without spaces), words, sentences, paragraphs, reading time. Set a goal (280 chars for a tweet, 160 for SMS, 155 for a meta description) and watch the progress bar fill."
-          audience={["Writers", "Marketers", "Students", "Developers"]}
-          whenToUse={[
-            "Staying under Twitter / SMS / meta description limits",
-            "Writing to a word-count target",
-            "Estimating reading time for a post or email",
-          ]}
-        />
+  const target = goalValue;
+  const currentGoal = goalType === "words" ? stats.words : stats.characters;
+  const goalRatio = target > 0 ? currentGoal / target : 0;
+  const goalPct = Math.min(goalRatio * 100, 100);
 
-        {/* Input */}
+  const lines = useMemo(() => input.split("\n"), [input]);
+
+  const controls = (
+    <>
+      <ControlGroup label="Counting">
+        <Toggle
+          checked={includeSpaces}
+          onChange={setIncludeSpaces}
+          label="Include spaces"
+          hint="Affects char count + byte size"
+        />
+      </ControlGroup>
+      <ControlGroup label="Goal">
+        <Segment
+          value={goalType}
+          onChange={setGoalType}
+          options={[
+            { value: "words", label: "Words" },
+            { value: "characters", label: "Chars" },
+          ]}
+          full
+        />
+        <NumberStepper
+          value={goalValue}
+          onChange={(n) => setGoalValue(Math.max(0, n))}
+          min={0}
+          step={goalType === "words" ? 50 : 100}
+          label="Target"
+        />
+      </ControlGroup>
+      <ControlGroup label="Panel">
+        <Segment
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "stats", label: "Stats" },
+            { value: "limits", label: "Limits" },
+            { value: "keywords", label: "Keywords" },
+            { value: "lines", label: "Lines" },
+          ]}
+          full
+        />
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={() => setInput("")}>
+        Clear
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopyStats} disabled={!input}>
+        {copiedStats ? "Copied" : "Copy stats"}
+      </ToolActionButton>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Character Counter"
+      tagline="Chars · words · sentences · UTF-8 bytes · platform limits"
+      accent="#6366f1"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -540,374 +400,179 @@ export default function CharacterCounterContent() {
             border: "1px solid var(--kami-border-strong)",
             borderRadius: "var(--kami-input-radius, 0.75rem)",
             boxShadow: "var(--kami-card-shadow, none)",
+            minHeight: 200,
           }}
           rows={8}
           autoFocus
         />
 
-        {/* Clear */}
-        <div className="mt-1.5 flex items-center justify-end text-xs" style={{ color: "var(--kami-text-dim)" }}>
-          {input && (
-            <button onClick={() => setInput("")}>
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Stats grid */}
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Characters" value={stats.characters} />
-          <StatCard label="No Spaces" value={stats.charactersNoSpaces} />
-          <StatCard label="Words" value={stats.words} />
-          <StatCard label="Sentences" value={stats.sentences} />
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard label="Paragraphs" value={stats.paragraphs} />
-          <StatCard
-            label="Reading Time"
-            value={formatTime(stats.readingTimeMin)}
-          />
-          <StatCard
-            label="Speaking Time"
-            value={formatTime(stats.speakingTimeMin)}
-          />
-          <StatCard
-            label="Readability"
-            value={stats.readabilityScore !== null ? stats.readabilityScore : "\u2014"}
-            sub={stats.readabilityLabel !== "\u2014" ? stats.readabilityLabel : undefined}
-          />
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            label="Reading Level"
-            value={stats.gradeLevelLabel}
-            sub={stats.gradeLevel !== null ? `Grade ${stats.gradeLevel}` : undefined}
-          />
-        </div>
-
-        {/* Copy stats button */}
-        <div className="mt-6 flex justify-center">
-          <button
-            onClick={handleCopyStats}
-            disabled={!input}
-            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        {/* Goal bar */}
+        {target > 0 && (
+          <div
+            className="px-4 py-3"
             style={{
-              background: "var(--kami-cta-bg)",
-              color: "var(--kami-cta-text)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
             }}
           >
-            {copiedStats ? (
-              <>
-                <CheckIcon />
-                Copied Stats
-              </>
-            ) : (
-              <>
-                <CopyIcon />
-                Copy Stats
-              </>
-            )}
-          </button>
-        </div>
-
-        {/* Goal Setting */}
-        <div className="mt-8">
-          <GoalTracker
-            goalType={goalType}
-            setGoalType={setGoalType}
-            goalValue={goalValue}
-            setGoalValue={setGoalValue}
-            current={goalType === "words" ? stats.words : stats.characters}
-          />
-        </div>
-
-        {/* Collapsible sections */}
-        <div className="mt-6 flex flex-col gap-4">
-          {/* Social Media Limits */}
-          <CollapsibleSection title="Social Media Limits" icon={<ShareIcon />} defaultOpen={true}>
-            <div className="flex flex-col gap-3">
-              {SOCIAL_LIMITS.map((item) => (
-                <SocialLimitBar
-                  key={item.name}
-                  name={item.name}
-                  limit={item.limit}
-                  current={stats.characters}
-                />
-              ))}
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span style={{ color: "var(--kami-text-muted)" }}>
+                Goal: {currentGoal} / {target} {goalType}
+              </span>
+              <span
+                style={{
+                  color:
+                    currentGoal >= target
+                      ? "color-mix(in srgb, #16a34a 70%, var(--kami-text))"
+                      : "var(--kami-text-muted)",
+                }}
+              >
+                {Math.round(goalPct)}%
+              </span>
             </div>
-          </CollapsibleSection>
+            <div
+              className="h-2 w-full overflow-hidden"
+              style={{ background: "var(--kami-surface)", borderRadius: 999 }}
+            >
+              <div
+                className="h-full"
+                style={{
+                  width: `${goalPct}%`,
+                  background: currentGoal >= target ? "#22c55e" : "#6366f1",
+                  borderRadius: 999,
+                }}
+              />
+            </div>
+          </div>
+        )}
 
-          {/* Keyword Density */}
-          <CollapsibleSection title="Keyword Density" icon={<KeyIcon />} defaultOpen={true}>
+        {/* Stats grid */}
+        {view === "stats" && (
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+            <StatCard label="Characters" value={stats.characters} />
+            <StatCard label="Words" value={stats.words} />
+            <StatCard label="Sentences" value={stats.sentences} />
+            <StatCard label="Paragraphs" value={stats.paragraphs} />
+            <StatCard label="Reading" value={formatTime(stats.readingTimeMin)} />
+            <StatCard label="Speaking" value={formatTime(stats.speakingTimeMin)} />
+            <StatCard label="UTF-8 bytes" value={stats.byteSize} />
+            <StatCard
+              label="Readability"
+              value={stats.readabilityScore !== null ? stats.readabilityScore : "—"}
+              sub={stats.readabilityLabel !== "—" ? stats.readabilityLabel : undefined}
+            />
+          </div>
+        )}
+
+        {view === "limits" && (
+          <div
+            className="px-4 py-4 flex flex-col gap-3"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            {SOCIAL_LIMITS.map((s) => (
+              <ProgressBar key={s.name} name={s.name} limit={s.limit} current={stats.characters} />
+            ))}
+          </div>
+        )}
+
+        {view === "keywords" && (
+          <div
+            className="overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
             {keywords.length === 0 ? (
-              <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>Start typing to see keyword density analysis.</p>
+              <p className="px-4 py-4 text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                Type something to see keyword density.
+              </p>
             ) : (
-              <div className="overflow-hidden">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                      <th className="pb-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Keyword</th>
-                      <th className="pb-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Count</th>
-                      <th className="pb-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Density</th>
-                      <th className="pb-2 w-32 pl-4 font-medium" style={{ color: "var(--kami-text-muted)" }}></th>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Word</th>
+                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Count</th>
+                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Density</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {keywords.map((kw) => (
+                    <tr key={kw.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <td className="px-4 py-1.5 font-medium" style={{ color: "var(--kami-text)" }}>{kw.word}</td>
+                      <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.count}</td>
+                      <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.percentage}%</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {keywords.map((kw) => (
-                      <tr key={kw.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                        <td className="py-1.5 font-medium" style={{ color: "var(--kami-text)" }}>{kw.word}</td>
-                        <td className="py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.count}</td>
-                        <td className="py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.percentage}%</td>
-                        <td className="py-1.5 pl-4">
-                          <div
-                            className="h-1.5 w-full overflow-hidden"
-                            style={{
-                              background: "var(--kami-surface)",
-                              borderRadius: "9999px",
-                            }}
-                          >
-                            <div
-                              className="h-full transition-all duration-200"
-                              style={{
-                                width: `${Math.min(kw.percentage * 10, 100)}%`,
-                                background: "#60a5fa",
-                                borderRadius: "9999px",
-                              }}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {sentenceStats && (
+              <div
+                className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 py-3"
+                style={{ borderTop: "1px solid var(--kami-border)" }}
+              >
+                <StatCard label="Longest" value={sentenceStats.longest} sub="words" />
+                <StatCard label="Shortest" value={sentenceStats.shortest} sub="words" />
+                <StatCard label="Avg" value={sentenceStats.average} sub="words/sent" />
+                <StatCard label="Variety" value={sentenceStats.varietyLabel} />
               </div>
             )}
-          </CollapsibleSection>
+          </div>
+        )}
 
-          {/* Sentence Analysis */}
-          <CollapsibleSection title="Sentence Analysis" icon={<BarChartIcon />} defaultOpen={true}>
-            {!sentenceStats ? (
-              <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>Start typing to see sentence-level analysis.</p>
-            ) : (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div
-                  className="px-3 py-2.5"
-                  style={{
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.longest}</div>
-                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Longest (words)</div>
-                </div>
-                <div
-                  className="px-3 py-2.5"
-                  style={{
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.shortest}</div>
-                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Shortest (words)</div>
-                </div>
-                <div
-                  className="px-3 py-2.5"
-                  style={{
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{sentenceStats.average}</div>
-                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Avg Length</div>
-                </div>
-                <div
-                  className="px-3 py-2.5"
-                  style={{
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  <div
-                    className="text-lg font-bold"
-                    style={{
-                      color:
-                        sentenceStats.varietyLabel === "High"
-                          ? "#16a34a"
-                          : sentenceStats.varietyLabel === "Medium"
-                          ? "#ca8a04"
-                          : "var(--kami-text-muted)",
-                    }}
-                  >
-                    {sentenceStats.varietyLabel}
-                  </div>
-                  <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Variety</div>
-                </div>
-              </div>
-            )}
-          </CollapsibleSection>
-        </div>
-
-        {/* Footer */}
+        {view === "lines" && (
+          <div
+            className="overflow-hidden"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <div
+              className="px-4 py-2 text-xs flex items-center justify-between"
+              style={{
+                borderBottom: "1px solid var(--kami-border)",
+                color: "var(--kami-text-muted)",
+              }}
+            >
+              <span>{lines.length} lines · longest {stats.longestLine} chars</span>
+            </div>
+            <div className="max-h-80 overflow-auto">
+              <table className="w-full text-xs font-mono">
+                <tbody>
+                  {lines.slice(0, 200).map((line, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <td
+                        className="px-3 py-1 tabular-nums w-12 text-right"
+                        style={{ color: "var(--kami-text-dim)" }}
+                      >
+                        {i + 1}
+                      </td>
+                      <td className="px-3 py-1 truncate" style={{ color: "var(--kami-text)" }}>
+                        {line || " "}
+                      </td>
+                      <td
+                        className="px-3 py-1 tabular-nums w-16 text-right"
+                        style={{ color: "var(--kami-text-dim)" }}
+                      >
+                        {line.length}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <polyline points="22 4 12 14.01 9 11.01" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
-      style={{ color: "var(--kami-text-dim)" }}
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
-  );
-}
-
-function ShareIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
-    >
-      <circle cx="18" cy="5" r="3" />
-      <circle cx="6" cy="12" r="3" />
-      <circle cx="18" cy="19" r="3" />
-      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-    </svg>
-  );
-}
-
-function KeyIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
-    >
-      <path d="M15 3h6v6" />
-      <path d="M10 14L21 3" />
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-    </svg>
-  );
-}
-
-function BarChartIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
-    >
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <circle cx="12" cy="12" r="6" />
-      <circle cx="12" cy="12" r="2" />
-    </svg>
+    </ToolShell>
   );
 }

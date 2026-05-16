@@ -2,13 +2,22 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import {
+  Segment,
+  Slider,
+  NumberStepper,
+  Toggle,
+} from "@/components/tools/controls";
 
 // ============================================================================
 // ID Generation Engines (pure browser APIs, zero dependencies)
 // ============================================================================
 
-const HEX = "0123456789abcdef";
 const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 const CROCKFORD_LOWER = "0123456789abcdefghjkmnpqrstvwxyz";
 const DEFAULT_NANOID_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
@@ -23,40 +32,61 @@ function bytesToHex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function formatUuid(hex: string, hyphens: boolean, uppercase: boolean): string {
+function formatUuid(hex: string, hyphens: boolean, uppercase: boolean, braces: boolean): string {
   const raw = hyphens
     ? `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
     : hex;
-  return uppercase ? raw.toUpperCase() : raw.toLowerCase();
+  const cased = uppercase ? raw.toUpperCase() : raw.toLowerCase();
+  return braces ? `{${cased}}` : cased;
+}
+
+// --- UUID v1 (time-based) ---
+function uuidV1(hyphens = true, uppercase = false, braces = false): string {
+  // 100-ns intervals since UUID epoch (1582-10-15)
+  const UUID_EPOCH_DIFF = 122192928000000000n;
+  const nowMs = BigInt(Date.now());
+  const intervals = nowMs * 10000n + UUID_EPOCH_DIFF;
+  const intervalsHex = intervals.toString(16).padStart(15, "0");
+  const timeLow = intervalsHex.slice(-8);
+  const timeMid = intervalsHex.slice(-12, -8);
+  const timeHi = intervalsHex.slice(-15, -12); // 12 bits
+  // version 1 nibble + timeHi
+  const versionAndTimeHi = "1" + timeHi;
+  const clockSeq = randomBytes(2);
+  clockSeq[0] = (clockSeq[0] & 0x3f) | 0x80; // variant 10
+  const clockSeqHex = bytesToHex(clockSeq);
+  const node = randomBytes(6);
+  // Set multicast bit on node so we don't accidentally claim a real MAC
+  node[0] |= 0x01;
+  const nodeHex = bytesToHex(node);
+  const hex = `${timeLow}${timeMid}${versionAndTimeHi}${clockSeqHex}${nodeHex}`;
+  return formatUuid(hex, hyphens, uppercase, braces);
 }
 
 // --- UUID v4 ---
-function uuidV4(hyphens = true, uppercase = false): string {
+function uuidV4(hyphens = true, uppercase = false, braces = false): string {
   const bytes = randomBytes(16);
   bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
   bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
-  return formatUuid(bytesToHex(bytes), hyphens, uppercase);
+  return formatUuid(bytesToHex(bytes), hyphens, uppercase, braces);
 }
 
 // --- UUID v7 (RFC 9562) ---
-function uuidV7(hyphens = true, uppercase = false): string {
+function uuidV7(hyphens = true, uppercase = false, braces = false): string {
   const now = Date.now();
   const bytes = randomBytes(16);
-  // 48-bit timestamp (ms since epoch) in bytes 0-5
   bytes[0] = (now / 2 ** 40) & 0xff;
   bytes[1] = (now / 2 ** 32) & 0xff;
   bytes[2] = (now / 2 ** 24) & 0xff;
   bytes[3] = (now / 2 ** 16) & 0xff;
   bytes[4] = (now / 2 ** 8) & 0xff;
   bytes[5] = now & 0xff;
-  // version 7
   bytes[6] = (bytes[6] & 0x0f) | 0x70;
-  // variant 10
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  return formatUuid(bytesToHex(bytes), hyphens, uppercase);
+  return formatUuid(bytesToHex(bytes), hyphens, uppercase, braces);
 }
 
-// --- ULID (Crockford Base32, monotonic within ms) ---
+// --- ULID ---
 function generateUlid(uppercase = true): string {
   const now = Date.now();
   let ts = "";
@@ -98,8 +128,8 @@ let cuid2Counter = Math.floor(Math.random() * 2147483647);
 async function generateCuid2(): Promise<string> {
   const timestamp = Date.now().toString(36);
   const count = (cuid2Counter++).toString(36);
-  const randBytes = randomBytes(32);
-  const randStr = Array.from(randBytes, (b) => b.toString(36).slice(-1)).join("");
+  const randBytesArr = randomBytes(32);
+  const randStr = Array.from(randBytesArr, (b) => b.toString(36).slice(-1)).join("");
   const fingerprint = (typeof navigator !== "undefined" ? navigator.userAgent : "node").slice(0, 16);
   const input = `${timestamp}${count}${randStr}${fingerprint}`;
   const encoder = new TextEncoder();
@@ -110,7 +140,6 @@ async function generateCuid2(): Promise<string> {
   for (let i = 0; i < hashArray.length; i++) {
     hash += hashArray[i].toString(36);
   }
-  // CUID2 starts with a letter, 24 chars total
   const letters = "abcdefghijklmnopqrstuvwxyz";
   const firstChar = letters[hashArray[0] % 26];
   return firstChar + hash.slice(0, 23);
@@ -138,10 +167,9 @@ const ULID_RE = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
 const CUID2_RE = /^[a-z][a-z0-9]{23}$/;
 
 function inspectId(input: string): InspectionResult {
-  const trimmed = input.trim();
+  const trimmed = input.trim().replace(/^\{|\}$/g, "");
   if (!trimmed) return { type: "Unknown", valid: false };
 
-  // UUID check (with or without hyphens)
   if (UUID_RE.test(trimmed)) {
     const hex = trimmed.replace(/-/g, "").toLowerCase();
     const versionNibble = parseInt(hex[12], 16);
@@ -169,7 +197,6 @@ function inspectId(input: string): InspectionResult {
     ];
 
     let timestamp: Date | undefined;
-    // UUID v7: first 48 bits are ms timestamp
     if (versionNibble === 7) {
       const tsHex = hex.slice(0, 12);
       const ms = parseInt(tsHex, 16);
@@ -177,10 +204,9 @@ function inspectId(input: string): InspectionResult {
       breakdown.push({ label: "Timestamp", value: timestamp.toISOString(), description: `${ms}ms since epoch` });
       breakdown.push({ label: "Random", value: hex.slice(12), description: "74 bits of randomness (after version/variant)" });
     } else if (versionNibble === 1) {
-      // UUID v1: timestamp is split across fields
       const timeLow = hex.slice(0, 8);
       const timeMid = hex.slice(8, 12);
-      const timeHi = hex.slice(13, 16); // skip version nibble
+      const timeHi = hex.slice(13, 16);
       const ts100ns = parseInt(timeHi + timeMid + timeLow, 16);
       const unixMs = (ts100ns - 122192928000000000) / 10000;
       if (unixMs > 0 && unixMs < 4102444800000) {
@@ -203,10 +229,8 @@ function inspectId(input: string): InspectionResult {
     };
   }
 
-  // ULID check
   if (ULID_RE.test(trimmed)) {
     const upper = trimmed.toUpperCase();
-    // Decode Crockford timestamp (first 10 chars)
     let ts = 0;
     for (let i = 0; i < 10; i++) {
       ts = ts * 32 + CROCKFORD.indexOf(upper[i]);
@@ -227,7 +251,6 @@ function inspectId(input: string): InspectionResult {
     };
   }
 
-  // CUID2 check (lowercase letter + 23 lowercase alphanumeric)
   if (CUID2_RE.test(trimmed)) {
     return {
       type: "CUID2",
@@ -242,7 +265,6 @@ function inspectId(input: string): InspectionResult {
     };
   }
 
-  // NanoID heuristic: 21 chars from URL-safe alphabet
   const NANOID_RE = /^[A-Za-z0-9_-]{10,64}$/;
   if (NANOID_RE.test(trimmed) && trimmed.length >= 10 && trimmed.length <= 64) {
     const hasLetters = /[a-zA-Z]/.test(trimmed);
@@ -271,45 +293,44 @@ function inspectId(input: string): InspectionResult {
 // Types
 // ============================================================================
 
-type GeneratorType = "uuid-v4" | "uuid-v7" | "ulid" | "nanoid" | "cuid2";
+type GeneratorType = "uuid-v1" | "uuid-v4" | "uuid-v7" | "ulid" | "nanoid" | "cuid2";
 
 interface GeneratorConfig {
   label: string;
   shortLabel: string;
   description: string;
-  useCase: string;
 }
 
 const GENERATORS: Record<GeneratorType, GeneratorConfig> = {
+  "uuid-v1": {
+    label: "UUID v1",
+    shortLabel: "v1",
+    description: "Time-based (1582 epoch, 100-ns intervals) with random node + clock seq.",
+  },
   "uuid-v4": {
     label: "UUID v4",
     shortLabel: "v4",
     description: "128-bit random identifier. RFC 4122.",
-    useCase: "Default choice when you need a random, unique ID with no time component.",
   },
   "uuid-v7": {
     label: "UUID v7",
     shortLabel: "v7",
     description: "Time-ordered UUID. 48-bit ms timestamp + random. RFC 9562.",
-    useCase: "Database primary keys where you need time-sortable UUIDs with good index locality.",
   },
   ulid: {
     label: "ULID",
     shortLabel: "ULID",
-    description: "Universally Unique Lexicographically Sortable Identifier. Crockford Base32.",
-    useCase: "When you need sortable IDs that are shorter than UUIDs and use a URL-safe alphabet.",
+    description: "Universally Unique Lexicographically Sortable Identifier.",
   },
   nanoid: {
     label: "NanoID",
     shortLabel: "Nano",
     description: "Compact, URL-safe, configurable alphabet and length.",
-    useCase: "Short URL slugs, file names, or any context where compact size matters more than time-ordering.",
   },
   cuid2: {
     label: "CUID2",
     shortLabel: "CUID2",
     description: "Collision-resistant ID using SHA-256. Secure, no timestamp leakage.",
-    useCase: "When you need collision resistance across distributed systems without leaking creation time.",
   },
 };
 
@@ -320,36 +341,36 @@ const GENERATORS: Record<GeneratorType, GeneratorConfig> = {
 export default function UuidGeneratorContent() {
   const [activeType, setActiveType] = useState<GeneratorType>("uuid-v4");
   const [ids, setIds] = useState<string[]>([]);
-  const [count, setCount] = useState(1);
-  const [copied, setCopied] = useState<number | "all" | null>(null);
+  const [count, setCount] = useState(10);
+  const [copied, setCopied] = useState<number | "all" | "array" | null>(null);
   const [inspectInput, setInspectInput] = useState("");
-  const [showReference, setShowReference] = useState(false);
 
   // Format options
   const [uppercase, setUppercase] = useState(false);
   const [hyphens, setHyphens] = useState(true);
+  const [braces, setBraces] = useState(false);
 
   // NanoID options
   const [nanoAlphabet, setNanoAlphabet] = useState(DEFAULT_NANOID_ALPHABET);
   const [nanoLength, setNanoLength] = useState(21);
 
-  // Quick copy states (for one-click buttons)
-  const [quickCopied, setQuickCopied] = useState<GeneratorType | null>(null);
-
   const countInputRef = useRef<HTMLInputElement>(null);
 
   const generate = useCallback(async () => {
-    const n = Math.min(Math.max(1, count), 1000);
+    const n = Math.min(Math.max(1, count), 500);
     let newIds: string[];
     switch (activeType) {
+      case "uuid-v1":
+        newIds = Array.from({ length: n }, () => uuidV1(hyphens, uppercase, braces));
+        break;
       case "uuid-v4":
-        newIds = Array.from({ length: n }, () => uuidV4(hyphens, uppercase));
+        newIds = Array.from({ length: n }, () => uuidV4(hyphens, uppercase, braces));
         break;
       case "uuid-v7":
-        newIds = Array.from({ length: n }, () => uuidV7(hyphens, uppercase));
+        newIds = Array.from({ length: n }, () => uuidV7(hyphens, uppercase, braces));
         break;
       case "ulid":
-        newIds = Array.from({ length: n }, () => generateUlid(!uppercase ? false : true));
+        newIds = Array.from({ length: n }, () => generateUlid(uppercase));
         break;
       case "nanoid":
         newIds = Array.from({ length: n }, () => nanoid(nanoAlphabet, nanoLength));
@@ -361,7 +382,7 @@ export default function UuidGeneratorContent() {
         newIds = [];
     }
     setIds(newIds);
-  }, [activeType, count, hyphens, uppercase, nanoAlphabet, nanoLength]);
+  }, [activeType, count, hyphens, uppercase, braces, nanoAlphabet, nanoLength]);
 
   useKeyboardShortcuts(
     useMemo(
@@ -370,7 +391,7 @@ export default function UuidGeneratorContent() {
     ),
   );
 
-  const handleCopy = useCallback(async (text: string, index: number | "all") => {
+  const handleCopy = useCallback(async (text: string, index: number | "all" | "array") => {
     await navigator.clipboard.writeText(text);
     setCopied(index);
     setTimeout(() => setCopied(null), 2000);
@@ -380,320 +401,164 @@ export default function UuidGeneratorContent() {
     handleCopy(ids.join("\n"), "all");
   }, [ids, handleCopy]);
 
-  // Quick generate + copy for each type
-  const handleQuickGenerate = useCallback(
-    async (type: GeneratorType) => {
-      let id: string;
-      switch (type) {
-        case "uuid-v4":
-          id = uuidV4(hyphens, uppercase);
-          break;
-        case "uuid-v7":
-          id = uuidV7(hyphens, uppercase);
-          break;
-        case "ulid":
-          id = generateUlid(!uppercase ? false : true);
-          break;
-        case "nanoid":
-          id = nanoid(nanoAlphabet, nanoLength);
-          break;
-        case "cuid2":
-          id = await generateCuid2();
-          break;
-      }
-      await navigator.clipboard.writeText(id);
-      setQuickCopied(type);
-      setTimeout(() => setQuickCopied(null), 1500);
-    },
-    [hyphens, uppercase, nanoAlphabet, nanoLength],
-  );
+  const handleCopyArray = useCallback(() => {
+    handleCopy(JSON.stringify(ids, null, 2), "array");
+  }, [ids, handleCopy]);
 
   const inspection = inspectInput.trim() ? inspectId(inspectInput) : null;
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Universal ID Generator"
-          tagline="Generate UUIDv4, UUIDv7, ULID, NanoID, CUID2, KSUID, TSID, Snowflake - with format info and bulk generation."
-          description="Pick an ID format, see how it's structured (timestamp vs random, length, sortability), and generate one or a thousand. Decode any ID to reveal embedded timestamps. Use the format picker as a learning tool when choosing an ID scheme for a new database column or API."
-          audience={["Developers", "Database engineers"]}
-          whenToUse={[
-            "Picking an ID format for a new table or record type",
-            "Decoding a ULID / UUIDv7 to read its timestamp",
-            "Bulk-generating IDs for a migration or seed script",
-          ]}
-        />
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  } as const;
 
-        {/* Quick Generate Cards */}
-        <div className="mb-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => {
-            const gen = GENERATORS[type];
-            const isQuickCopied = quickCopied === type;
-            return (
-              <button
-                key={type}
-                onClick={() => handleQuickGenerate(type)}
-                className="group relative p-4 text-left transition-all active:scale-[0.98]"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{gen.label}</span>
-                  <span className="text-xs transition-colors" style={{ color: "var(--kami-text-dim)" }}>
-                    {isQuickCopied ? (
-                      <span className="flex items-center gap-1 text-green-600">
-                        <CheckIcon /> Copied
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <CopyIcon /> Click to copy
-                      </span>
-                    )}
-                  </span>
-                </div>
-                <p className="mt-1.5 text-xs leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>{gen.description}</p>
-              </button>
-            );
-          })}
+  return (
+    <ToolShell
+      title="Universal ID Generator"
+      tagline="UUID v1/v4/v7 · ULID · NanoID · CUID2 — bulk + inspect"
+      accent="#10b981"
+      actions={
+        <>
+          <ToolActionButton onClick={generate} variant="solid">
+            Generate {count > 1 ? `(${count})` : ""}
+          </ToolActionButton>
+          {ids.length > 0 && (
+            <ToolActionButton onClick={handleCopyAll} variant="outline">
+              {copied === "all" ? "Copied" : "Copy all"}
+            </ToolActionButton>
+          )}
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="ID type">
+            <Segment<GeneratorType>
+              value={activeType}
+              onChange={setActiveType}
+              options={(Object.keys(GENERATORS) as GeneratorType[]).map((t) => ({
+                value: t,
+                label: GENERATORS[t].shortLabel,
+              }))}
+              full
+              size="sm"
+            />
+            <p className="mt-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              {GENERATORS[activeType].description}
+            </p>
+          </ControlGroup>
+
+          <ControlGroup label={`Bulk count (${count})`}>
+            <Slider
+              value={count}
+              onChange={(v) => setCount(Math.round(v))}
+              min={1}
+              max={500}
+              step={1}
+              ariaLabel="Bulk count"
+            />
+            <NumberStepper
+              value={count}
+              onChange={(v) => setCount(Math.max(1, Math.min(500, v)))}
+              min={1}
+              max={500}
+            />
+          </ControlGroup>
+
+          {(activeType === "uuid-v1" || activeType === "uuid-v4" || activeType === "uuid-v7") && (
+            <ControlGroup label="UUID format">
+              <Toggle label="Hyphens" checked={hyphens} onChange={setHyphens} />
+              <Toggle label="Uppercase" checked={uppercase} onChange={setUppercase} />
+              <Toggle label="Braces { }" checked={braces} onChange={setBraces} />
+            </ControlGroup>
+          )}
+
+          {activeType === "ulid" && (
+            <ControlGroup label="ULID format">
+              <Toggle label="Uppercase" checked={uppercase} onChange={setUppercase} />
+            </ControlGroup>
+          )}
+
+          {activeType === "nanoid" && (
+            <ControlGroup label="NanoID">
+              <NumberStepper
+                label="Length"
+                value={nanoLength}
+                onChange={(v) => setNanoLength(Math.max(2, Math.min(128, v)))}
+                min={2}
+                max={128}
+              />
+              <label className="kc-label">Alphabet</label>
+              <input
+                value={nanoAlphabet}
+                onChange={(e) => setNanoAlphabet(e.target.value || DEFAULT_NANOID_ALPHABET)}
+                className="w-full px-3 py-2 font-mono text-xs focus:outline-none"
+                style={{ ...inputStyle, minHeight: 40 }}
+              />
+              <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                Entropy ~{Math.floor(nanoLength * Math.log2(Math.max(2, nanoAlphabet.length)))} bits
+                · {nanoAlphabet.length} chars
+              </p>
+              <ToolActionButton onClick={() => setNanoAlphabet(DEFAULT_NANOID_ALPHABET)} variant="ghost">
+                Reset alphabet
+              </ToolActionButton>
+            </ControlGroup>
+          )}
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {/* Quick copy strip */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+          {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => {
+                setActiveType(type);
+                setCount(1);
+                setTimeout(() => generate(), 0);
+              }}
+              className="px-3 py-2 text-sm font-semibold transition-colors"
+              style={{
+                background: activeType === type ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+                color: activeType === type ? "var(--kami-cta-text)" : "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                minHeight: 44,
+              }}
+            >
+              {GENERATORS[type].shortLabel}
+            </button>
+          ))}
         </div>
 
-        {/* Main Generator */}
-        <div
-          className="p-5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <div className="mb-5 flex flex-wrap items-center gap-3">
-            {/* Type selector */}
-            <div
-              className="flex items-center gap-1 px-1 py-0.5"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
-              }}
-            >
-              {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setActiveType(type)}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: activeType === type ? "var(--kami-cta-bg, #111827)" : "transparent",
-                    color: activeType === type ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  {GENERATORS[type].shortLabel}
-                </button>
-              ))}
-            </div>
-
-            {/* Count */}
-            <div className="flex items-center gap-1.5">
-              <label htmlFor="count" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                Count:
-              </label>
-              <input
-                ref={countInputRef}
-                id="count"
-                type="number"
-                min={1}
-                max={1000}
-                value={count}
-                onChange={(e) => setCount(parseInt(e.target.value, 10) || 1)}
-                className="w-20 px-3 py-1.5 text-sm focus:outline-none"
-                style={{
-                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                }}
-              />
-            </div>
-
-            {/* Format options (UUID types) */}
-            {(activeType === "uuid-v4" || activeType === "uuid-v7") && (
-              <div className="flex items-center gap-3">
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-                  <input
-                    type="checkbox"
-                    checked={hyphens}
-                    onChange={(e) => setHyphens(e.target.checked)}
-                    className="rounded"
-                  />
-                  Hyphens
-                </label>
-                <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-                  <input
-                    type="checkbox"
-                    checked={uppercase}
-                    onChange={(e) => setUppercase(e.target.checked)}
-                    className="rounded"
-                  />
-                  Uppercase
-                </label>
+        {/* Generated IDs */}
+        <div style={cardStyle} className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+              {ids.length === 0 ? "No IDs yet" : `${ids.length} × ${GENERATORS[activeType].label}`}
+            </span>
+            {ids.length > 0 && (
+              <div className="flex items-center gap-1">
+                <ToolActionButton onClick={handleCopyArray} variant="outline">
+                  {copied === "array" ? "Copied" : "Copy as array"}
+                </ToolActionButton>
+                <ToolActionButton onClick={handleCopyAll} variant="outline">
+                  {copied === "all" ? "Copied" : "Copy all"}
+                </ToolActionButton>
               </div>
-            )}
-
-            {/* ULID case option */}
-            {activeType === "ulid" && (
-              <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-                <input
-                  type="checkbox"
-                  checked={uppercase}
-                  onChange={(e) => setUppercase(e.target.checked)}
-                  className="rounded"
-                />
-                Uppercase
-              </label>
-            )}
-
-            {/* Generate button */}
-            <button
-              onClick={generate}
-              className="px-5 py-2 text-sm font-medium transition-colors"
-              style={{
-                background: "var(--kami-cta-bg, #111827)",
-                color: "var(--kami-cta-text, #ffffff)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              Generate {count > 1 ? `(${count})` : ""}
-            </button>
-
-            {/* Copy all */}
-            {ids.length > 1 && (
-              <button
-                onClick={handleCopyAll}
-                className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {copied === "all" ? (
-                  <>
-                    <CheckIcon /> Copied all
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon /> Copy all
-                  </>
-                )}
-              </button>
             )}
           </div>
 
-          {/* NanoID options */}
-          {activeType === "nanoid" && (
-            <div
-              className="mb-5 flex flex-wrap items-center gap-4 p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border)",
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
-              }}
-            >
-              <div className="flex items-center gap-1.5">
-                <label htmlFor="nano-length" className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                  Length:
-                </label>
-                <input
-                  id="nano-length"
-                  type="number"
-                  min={2}
-                  max={128}
-                  value={nanoLength}
-                  onChange={(e) => setNanoLength(Math.max(2, Math.min(128, parseInt(e.target.value, 10) || 21)))}
-                  className="w-20 px-3 py-1.5 text-sm focus:outline-none"
-                  style={{
-                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-text)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  }}
-                />
-              </div>
-              <div className="flex flex-1 items-center gap-1.5">
-                <label htmlFor="nano-alphabet" className="text-sm whitespace-nowrap" style={{ color: "var(--kami-text-muted)" }}>
-                  Alphabet:
-                </label>
-                <input
-                  id="nano-alphabet"
-                  type="text"
-                  value={nanoAlphabet}
-                  onChange={(e) => setNanoAlphabet(e.target.value || DEFAULT_NANOID_ALPHABET)}
-                  className="w-full min-w-0 px-3 py-1.5 font-mono text-xs focus:outline-none"
-                  style={{
-                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-text)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  }}
-                />
-              </div>
-              <button
-                onClick={() => setNanoAlphabet(DEFAULT_NANOID_ALPHABET)}
-                className="px-2.5 py-1.5 text-xs font-medium"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                Reset
-              </button>
-              <div className="w-full text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                Entropy: ~{Math.floor(nanoLength * Math.log2(nanoAlphabet.length))} bits ({nanoAlphabet.length} chars in alphabet)
-              </div>
-            </div>
-          )}
-
-          {/* Generated IDs */}
-          {ids.length > 0 && (
-            <div className={`space-y-1 ${ids.length > 20 ? "max-h-[600px] overflow-y-auto" : ""}`}>
-              {ids.map((id, i) => (
-                <div
-                  key={`${id}-${i}`}
-                  className="group flex items-center justify-between px-4 py-2 transition-colors"
-                  style={{
-                    background: "var(--kami-surface)",
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    color: "var(--kami-text)",
-                  }}
-                >
-                  <span className="font-mono text-sm select-all break-all">{id}</span>
-                  <button
-                    onClick={() => handleCopy(id, i)}
-                    className="ml-3 flex-shrink-0 p-1.5 transition-colors"
-                    style={{
-                      color: "var(--kami-text-dim)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    }}
-                    title="Copy"
-                  >
-                    {copied === i ? <CheckIcon /> : <CopyIcon />}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {ids.length === 0 && (
+          {ids.length === 0 ? (
             <div
               className="flex items-center justify-center py-12 text-sm"
               style={{
@@ -702,44 +567,50 @@ export default function UuidGeneratorContent() {
                 color: "var(--kami-text-dim)",
               }}
             >
-              Select a type and click Generate, or use the quick-copy cards above
+              Tap Generate to create {count} {GENERATORS[activeType].shortLabel} ID{count > 1 ? "s" : ""}.
+            </div>
+          ) : (
+            <div className={`flex flex-col gap-1 ${ids.length > 20 ? "max-h-[600px] overflow-y-auto" : ""}`}>
+              {ids.map((id, i) => (
+                <div
+                  key={`${id}-${i}`}
+                  className="flex items-center justify-between gap-2 px-3 py-2"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    color: "var(--kami-text)",
+                  }}
+                >
+                  <span className="font-mono text-sm select-all break-all min-w-0 flex-1">{id}</span>
+                  <ToolActionButton onClick={() => handleCopy(id, i)} variant="ghost">
+                    {copied === i ? "✓" : "Copy"}
+                  </ToolActionButton>
+                </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* ID Inspector */}
-        <div
-          className="mt-10 p-5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
-          <p className="mb-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-            Paste any ID to auto-detect its type, extract timestamps, and see the byte-level breakdown.
+        {/* Inspector */}
+        <div style={cardStyle} className="p-4">
+          <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
+          <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>
+            Paste any ID to auto-detect its type and decode embedded timestamps.
           </p>
           <input
+            ref={countInputRef}
             type="text"
             value={inspectInput}
             onChange={(e) => setInspectInput(e.target.value)}
-            placeholder="Paste a UUID, ULID, NanoID, or CUID2 to inspect..."
+            placeholder="Paste a UUID, ULID, NanoID, or CUID2..."
             className="w-full px-4 py-3 font-mono text-sm focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.5rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
+            style={{ ...inputStyle, minHeight: 44 }}
           />
 
           {inspection && (
             <div className="mt-4">
-              {/* Type badge + validity */}
-              <div className="mb-4 flex items-center gap-3">
+              <div className="mb-3 flex flex-wrap items-center gap-2">
                 <span
                   className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${
                     inspection.valid
@@ -757,23 +628,32 @@ export default function UuidGeneratorContent() {
                 )}
               </div>
 
-              {/* Breakdown table */}
               {inspection.breakdown && inspection.breakdown.length > 0 && (
-                <div className="overflow-hidden" style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}>
+                <div
+                  className="overflow-x-auto"
+                  style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}
+                >
                   <table className="w-full text-sm">
                     <thead>
                       <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
-                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
-                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
-                        <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Description</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
+                        <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
+                        <th className="px-3 py-2 text-left font-medium hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>Description</th>
                       </tr>
                     </thead>
                     <tbody>
                       {inspection.breakdown.map((row, i) => (
-                        <tr key={i} style={i < inspection.breakdown!.length - 1 ? { borderBottom: "1px solid var(--kami-border)" } : undefined}>
-                          <td className="px-4 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
-                          <td className="px-4 py-2 font-mono" style={{ color: "var(--kami-text)" }}>{row.value}</td>
-                          <td className="px-4 py-2" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
+                        <tr
+                          key={i}
+                          style={
+                            i < inspection.breakdown!.length - 1
+                              ? { borderBottom: "1px solid var(--kami-border)" }
+                              : undefined
+                          }
+                        >
+                          <td className="px-3 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
+                          <td className="px-3 py-2 font-mono break-all" style={{ color: "var(--kami-text)" }}>{row.value}</td>
+                          <td className="px-3 py-2 hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -783,247 +663,7 @@ export default function UuidGeneratorContent() {
             </div>
           )}
         </div>
-
-        {/* Quick Reference */}
-        <div
-          className="mt-10"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <button
-            onClick={() => setShowReference(!showReference)}
-            className="flex w-full items-center justify-between px-5 py-4 text-left"
-          >
-            <h2 className="text-lg font-semibold" style={{ color: "var(--kami-text)" }}>When to use each type</h2>
-            <ChevronIcon open={showReference} />
-          </button>
-
-          {showReference && (
-            <div className="px-5 pb-5" style={{ borderTop: "1px solid var(--kami-border)" }}>
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <ReferenceCard
-                  title="UUID v4"
-                  tag="Random"
-                  tagColor="blue"
-                  format="xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-                  pros={["Universal compatibility", "No coordination needed", "122 bits of randomness"]}
-                  cons={["Not time-sortable", "Poor database index locality", "36 chars with hyphens"]}
-                  bestFor="General-purpose unique IDs where compatibility matters most."
-                />
-                <ReferenceCard
-                  title="UUID v7"
-                  tag="Time-ordered"
-                  tagColor="purple"
-                  format="tttttttt-tttt-7xxx-yxxx-xxxxxxxxxxxx"
-                  pros={["Time-sortable", "Great DB index locality", "UUID-compatible", "Embeds millisecond timestamp"]}
-                  cons={["Leaks creation time", "Newer standard (RFC 9562)"]}
-                  bestFor="Database primary keys. Best of both worlds: UUID compatibility + time ordering."
-                />
-                <ReferenceCard
-                  title="ULID"
-                  tag="Sortable"
-                  tagColor="amber"
-                  format="01ARZ3NDEKTSV4RRFFQ69G5FAV"
-                  pros={["Lexicographically sortable", "Crockford Base32 (no ambiguous chars)", "26 chars, no hyphens", "Case-insensitive"]}
-                  cons={["Not a UUID (different format)", "Less ecosystem support"]}
-                  bestFor="When you want sortable IDs in a compact, URL-safe, human-friendly format."
-                />
-                <ReferenceCard
-                  title="NanoID"
-                  tag="Compact"
-                  tagColor="green"
-                  format="V1StGXR8_Z5jdHi6B-myT"
-                  pros={["Configurable length + alphabet", "URL-safe by default", "21 chars = 126 bits entropy", "Tiny"]}
-                  cons={["No timestamp", "Custom alphabet may reduce entropy", "No built-in validation"]}
-                  bestFor="Short URL slugs, session tokens, file IDs. Anywhere compact size wins."
-                />
-                <ReferenceCard
-                  title="CUID2"
-                  tag="Collision-resistant"
-                  tagColor="rose"
-                  format="clh3am4lj0000i2m0p9qhtxx7"
-                  pros={["Collision-resistant at scale", "No timestamp leakage (SHA-256)", "Works across distributed systems", "Always starts with a letter"]}
-                  cons={["Requires SHA-256 (async in browser)", "24 chars", "Less common"]}
-                  bestFor="Distributed systems where collision resistance matters more than sorting."
-                />
-              </div>
-
-              {/* Comparison table */}
-              <div className="mt-6 overflow-x-auto" style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
-                      <th className="px-4 py-2.5 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Feature</th>
-                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>v4</th>
-                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>v7</th>
-                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>ULID</th>
-                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>Nano</th>
-                      <th className="px-4 py-2.5 text-center font-medium" style={{ color: "var(--kami-text-muted)" }}>CUID2</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <ComparisonRow label="Length" values={["36", "36", "26", "21*", "24"]} />
-                    <ComparisonRow label="Time-sortable" values={["No", "Yes", "Yes", "No", "No"]} highlights={[false, true, true, false, false]} />
-                    <ComparisonRow label="Timestamp" values={["No", "48-bit ms", "48-bit ms", "No", "No (hashed)"]} />
-                    <ComparisonRow label="Entropy bits" values={["122", "74", "80", "126*", "~128"]} />
-                    <ComparisonRow label="Encoding" values={["Hex", "Hex", "Base32", "Base64*", "Base36"]} />
-                    <ComparisonRow label="UUID-compatible" values={["Yes", "Yes", "No", "No", "No"]} highlights={[true, true, false, false, false]} />
-                    <ComparisonRow label="URL-safe" values={["No", "No", "Yes", "Yes", "Yes"]} highlights={[false, false, true, true, true]} />
-                  </tbody>
-                </table>
-                <div className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-dim)", borderTop: "1px solid var(--kami-border)" }}>
-                  * NanoID values depend on configured alphabet and length (defaults shown)
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// Sub-components
-// ============================================================================
-
-function ReferenceCard({
-  title,
-  tag,
-  tagColor,
-  format,
-  pros,
-  cons,
-  bestFor,
-}: {
-  title: string;
-  tag: string;
-  tagColor: string;
-  format: string;
-  pros: string[];
-  cons: string[];
-  bestFor: string;
-}) {
-  const colorMap: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-700 ring-blue-200",
-    purple: "bg-purple-50 text-purple-700 ring-purple-200",
-    amber: "bg-amber-50 text-amber-700 ring-amber-200",
-    green: "bg-green-50 text-green-700 ring-green-200",
-    rose: "bg-rose-50 text-rose-700 ring-rose-200",
-  };
-
-  return (
-    <div
-      className="p-4"
-      style={{
-        background: "var(--kami-surface)",
-        border: "1px solid var(--kami-border)",
-        borderRadius: "var(--kami-card-radius, 0.5rem)",
-      }}
-    >
-      <div className="mb-2 flex items-center gap-2">
-        <h3 className="font-semibold" style={{ color: "var(--kami-text)" }}>{title}</h3>
-        <span className={`rounded-md px-2 py-0.5 text-xs font-medium ring-1 ${colorMap[tagColor] || colorMap.blue}`}>
-          {tag}
-        </span>
-      </div>
-      <p className="mb-3 font-mono text-xs break-all" style={{ color: "var(--kami-text-dim)" }}>{format}</p>
-      <div className="mb-3 grid grid-cols-2 gap-2 text-xs">
-        <div>
-          <p className="mb-1 font-medium text-green-700">Pros</p>
-          <ul className="space-y-0.5" style={{ color: "var(--kami-text-muted)" }}>
-            {pros.map((p, i) => (
-              <li key={i} className="flex gap-1">
-                <span className="text-green-500 flex-shrink-0">+</span> {p}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div>
-          <p className="mb-1 font-medium text-red-600">Cons</p>
-          <ul className="space-y-0.5" style={{ color: "var(--kami-text-muted)" }}>
-            {cons.map((c, i) => (
-              <li key={i} className="flex gap-1">
-                <span className="text-red-400 flex-shrink-0">-</span> {c}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-        <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {bestFor}
-      </p>
-    </div>
-  );
-}
-
-function ComparisonRow({
-  label,
-  values,
-  highlights,
-}: {
-  label: string;
-  values: string[];
-  highlights?: boolean[];
-}) {
-  return (
-    <tr style={{ borderTop: "1px solid var(--kami-border)" }}>
-      <td className="px-4 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{label}</td>
-      {values.map((v, i) => (
-        <td
-          key={i}
-          className="px-4 py-2 text-center"
-          style={{
-            color: highlights && highlights[i] ? "var(--kami-text)" : "var(--kami-text-muted)",
-            fontWeight: highlights && highlights[i] ? 500 : undefined,
-          }}
-        >
-          {v}
-        </td>
-      ))}
-    </tr>
-  );
-}
-
-// ============================================================================
-// Inline SVG Icons
-// ============================================================================
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`transition-transform ${open ? "rotate-180" : ""}`}
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
+    </ToolShell>
   );
 }

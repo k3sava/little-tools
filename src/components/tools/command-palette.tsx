@@ -96,7 +96,7 @@ export function CommandPalette() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+      className="fixed inset-0 z-[80] flex items-start justify-center px-3 pt-[10vh] sm:pt-[20vh]"
       onClick={() => setOpen(false)}
     >
       {/* backdrop */}
@@ -131,7 +131,7 @@ export function CommandPalette() {
         </div>
 
         {/* results */}
-        <div ref={listRef} className="max-h-72 overflow-y-auto p-1.5">
+        <div ref={listRef} className="max-h-[60vh] sm:max-h-72 overflow-y-auto p-1.5">
           {results.length === 0 && (
             <div className="px-3 py-8 text-center text-sm opacity-40">
               No tools found
