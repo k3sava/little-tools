@@ -2,9 +2,12 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-
-// --- Types ---
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Select } from "@/components/tools/controls";
 
 interface LinkItem {
   id: string;
@@ -38,7 +41,12 @@ type Theme =
   | "lavender"
   | "candy";
 
-const THEMES: Record<Theme, { bg: string; card: string; text: string; accent: string; btnBg: string; btnText: string; btnBorder: string }> = {
+const ACCENT = "#f43f5e";
+
+const THEMES: Record<
+  Theme,
+  { bg: string; card: string; text: string; accent: string; btnBg: string; btnText: string; btnBorder: string }
+> = {
   light: { bg: "#f9fafb", card: "#ffffff", text: "#111827", accent: "#6b7280", btnBg: "#ffffff", btnText: "#111827", btnBorder: "#e5e7eb" },
   dark: { bg: "#111827", card: "#1f2937", text: "#f9fafb", accent: "#9ca3af", btnBg: "#1f2937", btnText: "#f9fafb", btnBorder: "#374151" },
   gradient: { bg: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", card: "rgba(255,255,255,0.15)", text: "#ffffff", accent: "rgba(255,255,255,0.7)", btnBg: "rgba(255,255,255,0.2)", btnText: "#ffffff", btnBorder: "rgba(255,255,255,0.3)" },
@@ -70,8 +78,6 @@ const DEFAULT_PROFILE: Profile = {
 
 let nextId = 100;
 
-// --- Social icon detection ---
-
 const SOCIAL_PLATFORMS: { pattern: RegExp; label: string }[] = [
   { pattern: /(?:twitter\.com|x\.com)/i, label: "Twitter" },
   { pattern: /github\.com/i, label: "GitHub" },
@@ -99,8 +105,6 @@ function detectPlatform(url: string): string | null {
   return null;
 }
 
-// --- HTML generation ---
-
 function generateHTML(profile: Profile): string {
   const t = THEMES[profile.theme];
   const isGradient = t.bg.startsWith("linear");
@@ -110,14 +114,14 @@ function generateHTML(profile: Profile): string {
     : `<div style="width:80px;height:80px;border-radius:50%;${isGradient ? "background:rgba(255,255,255,0.2)" : "background-color:#e5e7eb"};display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:32px;color:${t.text};">${profile.name.charAt(0).toUpperCase()}</div>`;
 
   const itemsHTML = profile.links
-    .filter((l) => l.type === "header" ? l.label : l.label && l.url)
+    .filter((l) => (l.type === "header" ? l.label : l.label && l.url))
     .map((l) => {
       if (l.type === "header") {
         return `<div style="padding:8px 0 4px;text-align:center;font-size:13px;font-weight:600;color:${t.text};letter-spacing:0.05em;text-transform:uppercase;opacity:0.7;">${escapeHtml(l.label)}</div>`;
       }
       const platform = detectPlatform(l.url);
       const displayLabel = platform ? `[${platform}] ${l.label}` : l.label;
-      return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" style="display:block;width:100%;padding:14px 20px;border-radius:12px;background:${t.btnBg};color:${t.btnText};border:1px solid ${t.btnBorder};text-decoration:none;text-align:center;font-size:15px;font-weight:500;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">${escapeHtml(displayLabel)}</a>`;
+      return `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" style="display:block;width:100%;padding:14px 20px;border-radius:12px;background:${t.btnBg};color:${t.btnText};border:1px solid ${t.btnBorder};text-decoration:none;text-align:center;font-size:15px;font-weight:500;">${escapeHtml(displayLabel)}</a>`;
     })
     .join("\n      ");
 
@@ -152,11 +156,10 @@ function escapeHtml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// --- Component ---
-
 export default function LinkInBioContent() {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [copied, setCopied] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
 
   const update = useCallback((patch: Partial<Profile>) => {
     setProfile((p) => ({ ...p, ...patch }));
@@ -199,6 +202,25 @@ export default function LinkInBioContent() {
     });
   }, []);
 
+  const onDragStart = (id: string) => setDragId(id);
+  const onDragOver = (e: React.DragEvent) => e.preventDefault();
+  const onDropOn = (targetId: string) => {
+    if (!dragId || dragId === targetId) {
+      setDragId(null);
+      return;
+    }
+    setProfile((p) => {
+      const from = p.links.findIndex((l) => l.id === dragId);
+      const to = p.links.findIndex((l) => l.id === targetId);
+      if (from < 0 || to < 0) return p;
+      const links = [...p.links];
+      const [moved] = links.splice(from, 1);
+      links.splice(to, 0, moved);
+      return { ...p, links };
+    });
+    setDragId(null);
+  };
+
   const exportHTML = useCallback(() => {
     const html = generateHTML(profile);
     const blob = new Blob([html], { type: "text/html" });
@@ -210,9 +232,12 @@ export default function LinkInBioContent() {
     URL.revokeObjectURL(url);
   }, [profile]);
 
-  useKeyboardShortcuts(useMemo(() => [
-    { key: "Enter", meta: true, action: () => exportHTML(), label: "Save" },
-  ], [exportHTML]));
+  useKeyboardShortcuts(
+    useMemo(
+      () => [{ key: "Enter", meta: true, action: () => exportHTML(), label: "Save" }],
+      [exportHTML]
+    )
+  );
 
   const copyHTML = useCallback(() => {
     navigator.clipboard.writeText(generateHTML(profile));
@@ -220,525 +245,327 @@ export default function LinkInBioContent() {
     setTimeout(() => setCopied(false), 2000);
   }, [profile]);
 
-  const handleAvatarUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 500_000) {
-      alert("Image must be under 500KB for inline embedding.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      update({ avatar: reader.result as string });
-    };
-    reader.readAsDataURL(file);
-  }, [update]);
+  const handleAvatarUpload = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (file.size > 500_000) {
+        alert("Image must be under 500KB for inline embedding.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        update({ avatar: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    },
+    [update]
+  );
 
   const t = THEMES[profile.theme];
   const isGradient = t.bg.startsWith("linear");
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Link-in-Bio Builder"
-          tagline="Build a simple, Linktree-style landing page - customize theme, add links, export a single HTML file you can host anywhere."
-          description="Add your photo, bio, and as many link buttons as you want. Pick a theme (solid, gradient, minimal) and see the mobile preview update live. Export a standalone HTML file - drop it onto GitHub Pages, Netlify, or any static host. No accounts, no subscription, no analytics tracking."
-          audience={["Creators", "Freelancers", "Anyone with a bio link"]}
-          whenToUse={[
-            "Replacing a Linktree / Beacons subscription",
-            "Giving a workshop or event a shareable URL",
-            "Hosting a tiny personal landing page",
-          ]}
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    minHeight: 40,
+    padding: "8px 12px",
+    borderRadius: 10,
+    border: "1px solid var(--kami-border-strong)",
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    outline: "none",
+    fontSize: 14,
+  };
+
+  const actions = (
+    <>
+      <ToolActionButton variant="ghost" onClick={copyHTML}>
+        {copied ? "Copied!" : "Copy HTML"}
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={exportHTML}>
+        Export HTML
+      </ToolActionButton>
+    </>
+  );
+
+  const controls = (
+    <>
+      <ControlGroup label="Profile">
+        <input
+          type="text"
+          value={profile.name}
+          onChange={(e) => update({ name: e.target.value })}
+          placeholder="Name"
+          style={inputStyle}
         />
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_380px]">
-          {/* Editor */}
-          <div className="space-y-4">
-            {/* Profile */}
-            <div
-              className="p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Profile</h3>
-              <div className="space-y-3">
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Name</label>
-                  <input
-                    type="text"
-                    value={profile.name}
-                    onChange={(e) => update({ name: e.target.value })}
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Bio</label>
-                  <input
-                    type="text"
-                    value={profile.bio}
-                    onChange={(e) => update({ bio: e.target.value })}
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Avatar (optional, &lt;500KB)</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAvatarUpload}
-                      className="text-xs file:mr-2 file:rounded-lg file:border-0 file:px-3 file:py-1.5 file:text-xs"
-                      style={{ color: "var(--kami-text-muted)" }}
-                    />
-                    {profile.avatar && (
-                      <button
-                        onClick={() => update({ avatar: "" })}
-                        className="text-xs"
-                        style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Links */}
-            <div
-              className="p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Links & Sections</h3>
-              <div className="space-y-2">
-                {profile.links.map((link, idx) => (
-                  <div
-                    key={link.id}
-                    className="flex items-start gap-2 p-3"
-                    style={{
-                      background: link.type === "header" ? "var(--kami-surface)" : "transparent",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    <div className="flex flex-col gap-0.5 pt-1">
-                      <button
-                        onClick={() => moveLink(link.id, -1)}
-                        disabled={idx === 0}
-                        className="text-xs disabled:opacity-30"
-                        style={{ color: "var(--kami-text-dim)" }}
-                        title="Move up"
-                      >
-                        &uarr;
-                      </button>
-                      <button
-                        onClick={() => moveLink(link.id, 1)}
-                        disabled={idx === profile.links.length - 1}
-                        className="text-xs disabled:opacity-30"
-                        style={{ color: "var(--kami-text-dim)" }}
-                        title="Move down"
-                      >
-                        &darr;
-                      </button>
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      {link.type === "header" ? (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>Header</span>
-                          <input
-                            type="text"
-                            value={link.label}
-                            onChange={(e) => updateLink(link.id, { label: e.target.value })}
-                            placeholder="Section title"
-                            className="flex-1 px-2.5 py-1.5 text-sm font-semibold focus:outline-none"
-                            style={{
-                              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                              color: "var(--kami-text)",
-                              border: "1px solid var(--kami-border-strong)",
-                              borderRadius: "var(--kami-input-radius, 0.375rem)",
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <input
-                            type="text"
-                            value={link.label}
-                            onChange={(e) => updateLink(link.id, { label: e.target.value })}
-                            placeholder="Label"
-                            className="w-full px-2.5 py-1.5 text-sm focus:outline-none"
-                            style={{
-                              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                              color: "var(--kami-text)",
-                              border: "1px solid var(--kami-border-strong)",
-                              borderRadius: "var(--kami-input-radius, 0.375rem)",
-                            }}
-                          />
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="url"
-                              value={link.url}
-                              onChange={(e) => updateLink(link.id, { url: e.target.value })}
-                              placeholder="https://..."
-                              className="flex-1 px-2.5 py-1.5 text-sm focus:outline-none"
-                              style={{
-                                background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                                color: "var(--kami-text)",
-                                border: "1px solid var(--kami-border-strong)",
-                                borderRadius: "var(--kami-input-radius, 0.375rem)",
-                              }}
-                            />
-                            {link.url && detectPlatform(link.url) && (
-                              <span
-                                className="whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium"
-                                style={{
-                                  background: "var(--kami-surface)",
-                                  color: "var(--kami-text-muted)",
-                                }}
-                              >
-                                {detectPlatform(link.url)}
-                              </span>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => removeLink(link.id)}
-                      className="mt-1 text-xs"
-                      style={{ color: "var(--kami-text-dim)" }}
-                      title="Remove"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-3 flex gap-2">
-                <button
-                  onClick={addLink}
-                  className="flex-1 px-4 py-2 text-sm"
-                  style={{
-                    border: "1px dashed var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    color: "var(--kami-text-muted)",
-                    background: "transparent",
-                  }}
-                >
-                  + Add Link
-                </button>
-                <button
-                  onClick={addHeader}
-                  className="px-4 py-2 text-sm"
-                  style={{
-                    border: "1px dashed var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    color: "var(--kami-text-muted)",
-                    background: "transparent",
-                  }}
-                >
-                  + Add Header
-                </button>
-              </div>
-            </div>
-
-            {/* Theme */}
-            <div
-              className="p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Theme</h3>
-              <div className="flex flex-wrap gap-2">
-                {(Object.keys(THEMES) as Theme[]).map((key) => {
-                  const th = THEMES[key];
-                  const isGrad = th.bg.startsWith("linear");
-                  const isActive = profile.theme === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => update({ theme: key })}
-                      className="flex items-center gap-2 px-3 py-2 text-xs capitalize transition-all"
-                      style={{
-                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        border: "1px solid var(--kami-border-strong)",
-                        boxShadow: isActive ? "0 0 0 2px var(--kami-text)" : "none",
-                        color: "var(--kami-text)",
-                        background: "var(--kami-surface-solid)",
-                      }}
-                    >
-                      <span
-                        className="h-4 w-4 rounded-full"
-                        style={{
-                          background: isGrad ? th.bg : th.bg,
-                          border: "1px solid var(--kami-border-strong)",
-                        }}
-                      />
-                      {key}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Export */}
-            <div className="flex gap-2">
+        <input
+          type="text"
+          value={profile.bio}
+          onChange={(e) => update({ bio: e.target.value })}
+          placeholder="Bio"
+          style={inputStyle}
+        />
+        <div>
+          <label
+            className="mb-1 block text-[10px] uppercase"
+            style={{ color: "var(--kami-text-muted)" }}
+          >
+            Avatar (≤500KB)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="text-xs"
+            />
+            {profile.avatar && (
               <button
-                onClick={exportHTML}
-                className="px-5 py-2.5 text-sm font-medium"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
+                onClick={() => update({ avatar: "" })}
+                className="text-xs"
+                style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
               >
-                Download HTML
+                Remove
               </button>
-              <button
-                onClick={copyHTML}
-                className="px-4 py-2.5 text-sm"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {copied ? "Copied!" : "Copy HTML"}
-              </button>
-            </div>
-          </div>
-
-          {/* Live Preview - Phone Frame */}
-          <div className="lg:sticky lg:top-6 lg:self-start">
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-2 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>Preview</div>
-              {/* Phone frame */}
-              <div
-                className="mx-auto"
-                style={{
-                  width: 320,
-                  maxWidth: "100%",
-                  borderRadius: 40,
-                  border: "6px solid #1f2937",
-                  overflow: "hidden",
-                  position: "relative",
-                  boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
-                }}
-              >
-                {/* Notch */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: 120,
-                    height: 28,
-                    backgroundColor: "#1f2937",
-                    borderRadius: "0 0 16px 16px",
-                    zIndex: 10,
-                  }}
-                >
-                  {/* Camera dot */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 8,
-                      right: 24,
-                      width: 10,
-                      height: 10,
-                      borderRadius: "50%",
-                      backgroundColor: "#374151",
-                      border: "2px solid #4b5563",
-                    }}
-                  />
-                </div>
-                {/* Status bar */}
-                <div
-                  style={{
-                    height: 44,
-                    display: "flex",
-                    alignItems: "flex-end",
-                    justifyContent: "space-between",
-                    padding: "0 20px 4px",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: isGradient ? "#fff" : t.text,
-                    ...(isGradient ? { background: t.bg } : { backgroundColor: t.bg }),
-                  }}
-                >
-                  <span>9:41</span>
-                  <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-                    {/* Signal bars */}
-                    <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                      <rect x="0" y="9" width="3" height="3" rx="0.5" fill="currentColor" />
-                      <rect x="4.5" y="6" width="3" height="6" rx="0.5" fill="currentColor" />
-                      <rect x="9" y="3" width="3" height="9" rx="0.5" fill="currentColor" />
-                      <rect x="13" y="0" width="3" height="12" rx="0.5" fill="currentColor" opacity="0.3" />
-                    </svg>
-                    {/* Battery */}
-                    <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
-                      <rect x="0.5" y="0.5" width="18" height="10" rx="2" stroke="currentColor" strokeWidth="1" />
-                      <rect x="2" y="2" width="12" height="7" rx="1" fill="currentColor" />
-                      <rect x="19.5" y="3" width="2" height="5" rx="1" fill="currentColor" opacity="0.4" />
-                    </svg>
-                  </div>
-                </div>
-                {/* Phone content */}
-                <div
-                  style={{
-                    minHeight: 560,
-                    ...(isGradient ? { background: t.bg } : { backgroundColor: t.bg }),
-                    padding: "16px 16px 32px",
-                    overflowY: "auto",
-                  }}
-                >
-                  {/* Avatar */}
-                  <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 24 }}>
-                    {profile.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={profile.avatar}
-                        alt=""
-                        style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover", marginBottom: 10 }}
-                      />
-                    ) : (
-                      <div
-                        style={{
-                          width: 64,
-                          height: 64,
-                          borderRadius: "50%",
-                          background: isGradient ? "rgba(255,255,255,0.2)" : "#e5e7eb",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginBottom: 10,
-                          fontSize: 26,
-                          fontWeight: 700,
-                          color: t.text,
-                        }}
-                      >
-                        {profile.name.charAt(0).toUpperCase() || "?"}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 18, fontWeight: 700, color: t.text }}>{profile.name || "Your Name"}</div>
-                    <div style={{ fontSize: 12, color: t.accent, marginTop: 2 }}>{profile.bio}</div>
-                  </div>
-
-                  {/* Links and headers */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    {profile.links
-                      .filter((l) => l.type === "header" ? l.label : l.label)
-                      .map((link) => {
-                        if (link.type === "header") {
-                          return (
-                            <div
-                              key={link.id}
-                              style={{
-                                padding: "8px 0 4px",
-                                textAlign: "center",
-                                fontSize: 11,
-                                fontWeight: 600,
-                                color: t.text,
-                                letterSpacing: "0.05em",
-                                textTransform: "uppercase",
-                                opacity: 0.7,
-                              }}
-                            >
-                              {link.label}
-                            </div>
-                          );
-                        }
-                        const platform = detectPlatform(link.url);
-                        return (
-                          <div
-                            key={link.id}
-                            style={{
-                              padding: "11px 16px",
-                              borderRadius: 10,
-                              background: t.btnBg,
-                              border: `1px solid ${t.btnBorder}`,
-                              textAlign: "center",
-                              fontSize: 13,
-                              fontWeight: 500,
-                              color: t.btnText,
-                              cursor: "default",
-                            }}
-                          >
-                            {platform && (
-                              <span style={{ opacity: 0.6, marginRight: 4, fontSize: 11 }}>
-                                [{platform}]
-                              </span>
-                            )}
-                            {link.label}
-                          </div>
-                        );
-                      })}
-                  </div>
-
-                  <div style={{ textAlign: "center", marginTop: 32, fontSize: 10, color: t.accent }}>
-                    Made with kami
-                  </div>
-                </div>
-                {/* Home indicator bar */}
-                <div
-                  style={{
-                    height: 20,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    ...(isGradient ? { background: t.bg } : { backgroundColor: t.bg }),
-                  }}
-                >
-                  <div
-                    style={{
-                      width: 100,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: isGradient ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.15)",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
+      </ControlGroup>
+
+      <ControlGroup label="Theme">
+        <Select<Theme>
+          value={profile.theme}
+          onChange={(v) => update({ theme: v })}
+          options={(Object.keys(THEMES) as Theme[]).map((th) => ({ value: th, label: th }))}
+        />
+        <div className="grid grid-cols-5 gap-1.5">
+          {(Object.keys(THEMES) as Theme[]).map((th) => {
+            const colors = THEMES[th];
+            return (
+              <button
+                key={th}
+                type="button"
+                onClick={() => update({ theme: th })}
+                className="h-8 rounded-md"
+                title={th}
+                style={{
+                  background: colors.bg,
+                  outline: profile.theme === th ? `2px solid ${ACCENT}` : "none",
+                  outlineOffset: 2,
+                }}
+              />
+            );
+          })}
+        </div>
+      </ControlGroup>
+
+      <ControlGroup label="Items">
+        <div className="flex gap-2">
+          <button onClick={addLink} className="tool-action-btn" data-variant="outline">
+            + Link
+          </button>
+          <button onClick={addHeader} className="tool-action-btn" data-variant="outline">
+            + Header
+          </button>
+        </div>
+      </ControlGroup>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Link-in-Bio Builder"
+      tagline="Tiny Linktree-style page, exported as a single HTML file."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Design"
+    >
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="flex flex-col gap-2">
+          <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+            Links
+          </h2>
+          {profile.links.map((link, idx) => (
+            <div
+              key={link.id}
+              draggable
+              onDragStart={() => onDragStart(link.id)}
+              onDragOver={onDragOver}
+              onDrop={() => onDropOn(link.id)}
+              className="flex items-start gap-2 rounded-lg border p-3"
+              style={{
+                background: link.type === "header" ? "var(--kami-surface)" : "var(--kami-surface-solid)",
+                borderColor: dragId === link.id ? ACCENT : "var(--kami-border-strong)",
+                cursor: "grab",
+              }}
+            >
+              <div className="flex flex-col gap-0.5 pt-1 text-xs">
+                <button
+                  onClick={() => moveLink(link.id, -1)}
+                  disabled={idx === 0}
+                  className="tool-shell-icon-btn"
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => moveLink(link.id, 1)}
+                  disabled={idx === profile.links.length - 1}
+                  className="tool-shell-icon-btn"
+                >
+                  ↓
+                </button>
+              </div>
+              <div className="flex-1 space-y-1.5">
+                {link.type === "header" ? (
+                  <input
+                    type="text"
+                    value={link.label}
+                    onChange={(e) => updateLink(link.id, { label: e.target.value })}
+                    placeholder="Section title"
+                    style={{ ...inputStyle, fontWeight: 600 }}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={link.label}
+                      onChange={(e) => updateLink(link.id, { label: e.target.value })}
+                      placeholder="Label"
+                      style={inputStyle}
+                    />
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => updateLink(link.id, { url: e.target.value })}
+                      placeholder="https://"
+                      style={inputStyle}
+                    />
+                    {link.url && detectPlatform(link.url) && (
+                      <span
+                        className="inline-flex rounded-full px-2 py-0.5 text-[10px]"
+                        style={{
+                          background: `color-mix(in srgb, ${ACCENT} 15%, transparent)`,
+                          color: ACCENT,
+                        }}
+                      >
+                        {detectPlatform(link.url)}
+                      </span>
+                    )}
+                  </>
+                )}
+              </div>
+              <button onClick={() => removeLink(link.id)} className="tool-shell-icon-btn">
+                ✕
+              </button>
+            </div>
+          ))}
+        </section>
+
+        <section className="flex flex-col gap-2">
+          <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+            Mobile preview
+          </h2>
+          <div
+            className="mx-auto w-full max-w-[360px] overflow-hidden rounded-[36px] border-[8px]"
+            style={{
+              borderColor: "var(--kami-border-strong)",
+              boxShadow: "var(--kami-card-shadow, 0 10px 30px rgba(0,0,0,0.15))",
+            }}
+          >
+            <div
+              className="flex justify-center p-6"
+              style={{
+                background: isGradient ? t.bg : t.bg,
+                minHeight: 600,
+              }}
+            >
+              <div style={{ width: "100%", maxWidth: 320 }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    marginBottom: 24,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                  }}
+                >
+                  {profile.avatar ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={profile.avatar}
+                      alt=""
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        marginBottom: 12,
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: "50%",
+                        background: isGradient ? "rgba(255,255,255,0.2)" : "#e5e7eb",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: 12,
+                        fontSize: 24,
+                        color: t.text,
+                      }}
+                    >
+                      {profile.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <p style={{ fontSize: 18, fontWeight: 700, color: t.text }}>{profile.name}</p>
+                  <p style={{ fontSize: 13, color: t.accent }}>{profile.bio}</p>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {profile.links.map((l) =>
+                    l.type === "header" ? (
+                      <div
+                        key={l.id}
+                        style={{
+                          padding: "8px 0 4px",
+                          textAlign: "center",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: t.text,
+                          letterSpacing: "0.05em",
+                          textTransform: "uppercase",
+                          opacity: 0.7,
+                        }}
+                      >
+                        {l.label}
+                      </div>
+                    ) : (
+                      <div
+                        key={l.id}
+                        style={{
+                          padding: "12px 16px",
+                          borderRadius: 10,
+                          background: t.btnBg,
+                          color: t.btnText,
+                          border: `1px solid ${t.btnBorder}`,
+                          textAlign: "center",
+                          fontSize: 13,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {l.label || "(empty)"}
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </ToolShell>
   );
 }

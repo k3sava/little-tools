@@ -6,7 +6,21 @@
     <link>https://tools.iamkesava.com/</link>
     <language>en</language>
     <atom:link href="https://tools.iamkesava.com/feed.xml" rel="self" type="application/rss+xml" />
-    <lastBuildDate>Thu, 07 May 2026 10:11:28 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 16 May 2026 19:27:30 GMT</lastBuildDate>
+    <item>
+      <title>Passage Audit</title>
+      <description>Score every passage on your page for AI retrievability. Catches thin copy that disappears when an AI chunks the page.</description>
+      <link>https://tools.iamkesava.com/passage-audit/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/passage-audit/</guid>
+      <pubDate>Fri, 08 May 2026 16:54:32 GMT</pubDate>
+    </item>
+    <item>
+      <title>AEO Readiness Scorer</title>
+      <description>Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.</description>
+      <link>https://tools.iamkesava.com/aeo-readiness-scorer/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/aeo-readiness-scorer/</guid>
+      <pubDate>Fri, 08 May 2026 16:50:58 GMT</pubDate>
+    </item>
     <item>
       <title>Case Converter</title>
       <description>Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.</description>
@@ -341,20 +355,6 @@
       <description>Build positioning statements with guided frameworks from Dunford, Moore, and more.</description>
       <link>https://tools.iamkesava.com/positioning-builder/</link>
       <guid isPermaLink="true">https://tools.iamkesava.com/positioning-builder/</guid>
-      <pubDate>Tue, 21 Apr 2026 22:11:19 GMT</pubDate>
-    </item>
-    <item>
-      <title>RICE Scoring Calculator</title>
-      <description>Prioritize features with the RICE framework. Score initiatives by Reach, Impact, Confidence, and Effort.</description>
-      <link>https://tools.iamkesava.com/rice-calculator/</link>
-      <guid isPermaLink="true">https://tools.iamkesava.com/rice-calculator/</guid>
-      <pubDate>Tue, 21 Apr 2026 22:11:19 GMT</pubDate>
-    </item>
-    <item>
-      <title>A/B Test Calculator</title>
-      <description>Statistical significance calculator for A/B tests. Sample size planner and results analyzer.</description>
-      <link>https://tools.iamkesava.com/ab-test-calculator/</link>
-      <guid isPermaLink="true">https://tools.iamkesava.com/ab-test-calculator/</guid>
       <pubDate>Tue, 21 Apr 2026 22:11:19 GMT</pubDate>
     </item>
   </channel>

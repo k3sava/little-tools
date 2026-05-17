@@ -2,7 +2,13 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+  ToolIconButton,
+} from "@/components/tools/tool-shell";
+import { Slider, Segment, Toggle, SwatchGrid } from "@/components/tools/controls";
 
 // --- Types ---
 
@@ -16,7 +22,7 @@ interface ShadowLayer {
   inset: boolean;
 }
 
-type OutputFormat = "css" | "tailwind" | "react-native";
+type OutputFormat = "css" | "tailwind" | "scss" | "react-native";
 
 interface Preset {
   name: string;
@@ -43,7 +49,7 @@ const PRESETS: Preset[] = [
     layers: [{ x: 0, y: 20, blur: 25, spread: -5, color: "#000000", opacity: 10, inset: false }, { x: 0, y: 8, blur: 10, spread: -6, color: "#000000", opacity: 10, inset: false }],
   },
   {
-    name: "Sharp",
+    name: "Hard",
     layers: [{ x: 4, y: 4, blur: 0, spread: 0, color: "#000000", opacity: 100, inset: false }],
   },
   {
@@ -51,7 +57,7 @@ const PRESETS: Preset[] = [
     layers: [{ x: 0, y: 0, blur: 20, spread: 2, color: "#3b82f6", opacity: 30, inset: false }],
   },
   {
-    name: "Neumorphism",
+    name: "Neumorphic",
     layers: [
       { x: 6, y: 6, blur: 12, spread: 0, color: "#000000", opacity: 15, inset: false },
       { x: -6, y: -6, blur: 12, spread: 0, color: "#ffffff", opacity: 80, inset: false },
@@ -68,13 +74,6 @@ const PRESETS: Preset[] = [
       { x: 0, y: 2, blur: 4, spread: 0, color: "#000000", opacity: 5, inset: false },
       { x: 0, y: 5, blur: 10, spread: 0, color: "#000000", opacity: 5, inset: false },
       { x: 0, y: 10, blur: 20, spread: 0, color: "#000000", opacity: 5, inset: false },
-    ],
-  },
-  {
-    name: "3D Button",
-    layers: [
-      { x: 0, y: 4, blur: 0, spread: 0, color: "#000000", opacity: 25, inset: false },
-      { x: 0, y: -2, blur: 4, spread: 0, color: "#ffffff", opacity: 20, inset: true },
     ],
   },
   {
@@ -104,6 +103,21 @@ const DEFAULT_LAYER: ShadowLayer = {
   inset: false,
 };
 
+const MAX_LAYERS = 6;
+
+const COLOR_SWATCHES = [
+  "#000000",
+  "#1f2937",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#ef4444",
+  "#f59e0b",
+  "#10b981",
+  "#14b8a6",
+  "#ffffff",
+];
+
 // --- Helpers ---
 
 function layerToCSS(l: ShadowLayer): string {
@@ -115,7 +129,6 @@ function layerToCSS(l: ShadowLayer): string {
 }
 
 function layersToTailwind(layers: ShadowLayer[]): string {
-  // Map to closest Tailwind shadow class
   if (layers.length === 1 && !layers[0].inset) {
     const l = layers[0];
     if (l.blur === 0 && l.spread === 0) return "shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]";
@@ -126,16 +139,17 @@ function layersToTailwind(layers: ShadowLayer[]): string {
     if (l.blur <= 50) return "shadow-xl";
     return "shadow-2xl";
   }
-  // Custom arbitrary value
   const val = layers.map(layerToCSS).join(",_");
   return `shadow-[${val.replace(/\s+/g, "_")}]`;
 }
 
+function layersToScss(layers: ShadowLayer[]): string {
+  const val = layers.map(layerToCSS).join(",\n    ");
+  return `@mixin box-shadow {\n  box-shadow: ${val};\n}`;
+}
+
 function layersToReactNative(layers: ShadowLayer[]): string {
-  const l = layers[0]; // RN only supports single shadow
-  const r = parseInt(l.color.slice(1, 3), 16);
-  const g = parseInt(l.color.slice(3, 5), 16);
-  const b = parseInt(l.color.slice(5, 7), 16);
+  const l = layers[0];
   return `shadowColor: "${l.color}",
 shadowOffset: { width: ${l.x}, height: ${l.y} },
 shadowOpacity: ${(l.opacity / 100).toFixed(2)},
@@ -147,8 +161,9 @@ elevation: ${Math.max(1, Math.round(l.blur / 2))},`;
 
 export default function BoxShadowContent() {
   const [layers, setLayers] = useState<ShadowLayer[]>([{ ...DEFAULT_LAYER }]);
+  const [activeLayer, setActiveLayer] = useState(0);
   const [copied, setCopied] = useState(false);
-  const [bgColor, setBgColor] = useState("#ffffff");
+  const [bgColor, setBgColor] = useState("#f1f5f9");
   const [cardColor, setCardColor] = useState("#ffffff");
   const [cardRadius, setCardRadius] = useState(16);
   const [cardSize, setCardSize] = useState(192);
@@ -161,6 +176,7 @@ export default function BoxShadowContent() {
     switch (outputFormat) {
       case "css": return fullCSS;
       case "tailwind": return `className="${layersToTailwind(layers)}"`;
+      case "scss": return layersToScss(layers);
       case "react-native": return layersToReactNative(layers);
     }
   }, [outputFormat, layers, fullCSS]);
@@ -172,19 +188,30 @@ export default function BoxShadowContent() {
   }, []);
 
   const addLayer = useCallback(() => {
-    setLayers((prev) => [...prev, { ...DEFAULT_LAYER, y: (prev.length + 1) * 4 }]);
+    setLayers((prev) => {
+      if (prev.length >= MAX_LAYERS) return prev;
+      const next = [...prev, { ...DEFAULT_LAYER, y: (prev.length + 1) * 4 }];
+      setActiveLayer(next.length - 1);
+      return next;
+    });
   }, []);
 
   const removeLayer = useCallback((index: number) => {
-    if (layers.length <= 1) return;
-    setLayers((prev) => prev.filter((_, i) => i !== index));
-  }, [layers.length]);
+    setLayers((prev) => {
+      if (prev.length <= 1) return prev;
+      const next = prev.filter((_, i) => i !== index);
+      setActiveLayer((cur) => Math.min(cur, next.length - 1));
+      return next;
+    });
+  }, []);
 
   const duplicateLayer = useCallback((index: number) => {
     setLayers((prev) => {
+      if (prev.length >= MAX_LAYERS) return prev;
       const copy = { ...prev[index] };
       const next = [...prev];
       next.splice(index + 1, 0, copy);
+      setActiveLayer(index + 1);
       return next;
     });
   }, []);
@@ -195,12 +222,14 @@ export default function BoxShadowContent() {
       if (target < 0 || target >= prev.length) return prev;
       const next = [...prev];
       [next[index], next[target]] = [next[target], next[index]];
+      setActiveLayer(target);
       return next;
     });
   }, []);
 
   const applyPreset = useCallback((preset: Preset) => {
     setLayers(preset.layers.map((l) => ({ ...l })));
+    setActiveLayer(0);
   }, []);
 
   const copy = useCallback(() => {
@@ -213,265 +242,222 @@ export default function BoxShadowContent() {
     { key: "Enter", meta: true, action: copy, label: "Copy" },
   ], [copy]));
 
-  const cardStyle = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  };
+  // Drag offset on preview to set X/Y of active layer
+  const onPreviewDrag = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const layer = layers[activeLayer];
+    if (!layer) return;
+    const startLx = layer.x;
+    const startLy = layer.y;
+
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      updateLayer(activeLayer, {
+        x: Math.max(-50, Math.min(50, Math.round(startLx + dx / 4))),
+        y: Math.max(-50, Math.min(50, Math.round(startLy + dy / 4))),
+      });
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }, [activeLayer, layers, updateLayer]);
+
+  const layer = layers[activeLayer] ?? layers[0];
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Box Shadow Generator"
-          tagline="Stack multiple shadow layers for realistic depth - with presets modeled on Material, iOS, and Tailwind conventions."
-          description="Drag the offset / blur / spread sliders on each layer. Stacking two shadows (a tight dark one and a loose soft one) is what makes UI shadows look real instead of cheap. Presets cover flat, Material 2-24, iOS, Tailwind sm-2xl, and inner shadow variants. Export as CSS, Tailwind, or React Native."
-          audience={["Designers", "Front-end developers"]}
-          whenToUse={[
-            "Matching a design-system shadow token",
-            "Adding believable depth to a card or button",
-            "Exploring inner-shadow (pressed-button) effects",
-          ]}
-        />
-
-        {/* Presets */}
-        <div className="mb-6">
-          <span className="text-xs font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Presets</span>
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((preset) => (
-              <button
-                key={preset.name}
-                onClick={() => applyPreset(preset)}
-                className="group flex items-center gap-2 px-3 py-2 text-sm transition"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  color: "var(--kami-text-muted)",
-                }}
-              >
-                <div
-                  className="h-6 w-6"
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                    boxShadow: preset.layers.map(layerToCSS).join(", "),
-                  }}
-                />
-                <span>{preset.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-          {/* Preview */}
-          <div
-            className="p-8"
-            style={{
-              backgroundColor: bgColor,
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <div className="flex min-h-[300px] items-center justify-center">
-              <div
-                style={{
-                  width: cardSize,
-                  height: cardSize,
-                  backgroundColor: cardColor,
-                  boxShadow: layers.map(layerToCSS).join(", "),
-                  borderRadius: cardRadius,
-                }}
-              />
-            </div>
-            <div className="mt-4 flex flex-wrap items-center gap-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              <label className="flex items-center gap-1.5">
-                BG:
-                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-6 w-6 cursor-pointer rounded" />
-              </label>
-              <label className="flex items-center gap-1.5">
-                Card:
-                <input type="color" value={cardColor} onChange={(e) => setCardColor(e.target.value)} className="h-6 w-6 cursor-pointer rounded" />
-              </label>
-              <label className="flex items-center gap-1.5">
-                Size:
-                <input type="range" min={80} max={320} value={cardSize} onChange={(e) => setCardSize(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
-                <span className="font-mono w-8">{cardSize}</span>
-              </label>
-              <label className="flex items-center gap-1.5">
-                Radius:
-                <input type="range" min={0} max={100} value={cardRadius} onChange={(e) => setCardRadius(Number(e.target.value))} className="h-1.5 w-20 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
-                <span className="font-mono w-8">{cardRadius}</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Controls */}
-          <div className="space-y-3 max-h-[600px] overflow-y-auto">
-            {layers.map((layer, i) => (
-              <div key={i} className="p-4" style={cardStyle}>
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Layer {i + 1}</span>
-                  <div className="flex items-center gap-1.5">
-                    <label className="flex items-center gap-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                      <input
-                        type="checkbox"
-                        checked={layer.inset}
-                        onChange={(e) => updateLayer(i, { inset: e.target.checked })}
-                        style={{ accentColor: "var(--kami-text)" }}
-                      />
-                      Inset
-                    </label>
-                    {layers.length > 1 && (
-                      <>
-                        <button onClick={() => moveLayer(i, -1)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Move up">↑</button>
-                        <button onClick={() => moveLayer(i, 1)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Move down">↓</button>
-                      </>
-                    )}
-                    <button onClick={() => duplicateLayer(i)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Duplicate">⧉</button>
-                    {layers.length > 1 && (
-                      <button onClick={() => removeLayer(i)} className="text-xs px-1" style={{ color: "var(--kami-text-dim)" }} title="Remove">×</button>
-                    )}
-                  </div>
-                </div>
-                <Slider label="X" value={layer.x} min={-50} max={50} onChange={(v) => updateLayer(i, { x: v })} />
-                <Slider label="Y" value={layer.y} min={-50} max={50} onChange={(v) => updateLayer(i, { y: v })} />
-                <Slider label="Blur" value={layer.blur} min={0} max={100} onChange={(v) => updateLayer(i, { blur: v })} />
-                <Slider label="Spread" value={layer.spread} min={-50} max={50} onChange={(v) => updateLayer(i, { spread: v })} />
-                <Slider label="Opacity" value={layer.opacity} min={0} max={100} suffix="%" onChange={(v) => updateLayer(i, { opacity: v })} />
-                <div className="mt-2 flex items-center gap-2">
-                  <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Color</label>
-                  <input type="color" value={layer.color} onChange={(e) => updateLayer(i, { color: e.target.value })} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                  <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{layer.color}</span>
-                </div>
-              </div>
-            ))}
-            <button
-              onClick={addLayer}
-              className="w-full py-2 text-sm"
-              style={{
-                background: "var(--kami-surface-solid)",
-                color: "var(--kami-text-muted)",
-                border: "1px dashed var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              + Add Shadow Layer
-            </button>
-          </div>
-        </div>
-
-        {/* Output */}
-        <div className="mt-6 p-4" style={cardStyle}>
-          <div className="mb-3 flex items-center justify-between">
-            <div
-              className="flex items-center gap-1 px-1 py-0.5"
-              style={{
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              {(["css", "tailwind", "react-native"] as const).map((fmt) => (
+    <ToolShell
+      title="Box Shadow"
+      tagline="Multi-layer shadows with live drag-to-offset preview"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <Segment
+            value={outputFormat}
+            onChange={setOutputFormat}
+            options={[
+              { value: "css", label: "CSS" },
+              { value: "tailwind", label: "TW" },
+              { value: "scss", label: "SCSS" },
+              { value: "react-native", label: "RN" },
+            ]}
+            size="sm"
+          />
+          <ToolActionButton onClick={copy} variant="solid">
+            {copied ? "Copied!" : "Copy"}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Presets">
+            <div className="grid grid-cols-3 gap-2">
+              {PRESETS.map((preset) => (
                 <button
-                  key={fmt}
-                  onClick={() => setOutputFormat(fmt)}
-                  className="px-3 py-1 text-xs font-medium transition-colors"
+                  key={preset.name}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className="flex flex-col items-center gap-1.5 p-2 text-[11px] transition"
                   style={{
-                    background: outputFormat === fmt ? "var(--kami-cta-bg)" : "transparent",
-                    color: outputFormat === fmt ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                    minHeight: 64,
                   }}
                 >
-                  {fmt === "css" ? "CSS" : fmt === "tailwind" ? "Tailwind" : "React Native"}
+                  <div
+                    className="h-7 w-7"
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid var(--kami-border)",
+                      borderRadius: 6,
+                      boxShadow: preset.layers.map(layerToCSS).join(", "),
+                    }}
+                  />
+                  <span>{preset.name}</span>
                 </button>
               ))}
             </div>
-            <button
-              onClick={copy}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium"
-              style={ctaStyle}
-            >
-              {copied ? (
-                <><CheckIcon /> Copied</>
-              ) : (
-                <><CopyIcon /> Copy</>
+          </ControlGroup>
+
+          <ControlGroup label="Layers" hint={`${layers.length}/${MAX_LAYERS}`}>
+            <div className="flex flex-wrap gap-1.5">
+              {layers.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveLayer(i)}
+                  className="px-2.5 py-1.5 text-xs font-mono transition"
+                  style={{
+                    background: i === activeLayer ? "var(--kami-cta-bg)" : "var(--kami-surface)",
+                    color: i === activeLayer ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
+                    minWidth: 32,
+                  }}
+                >
+                  L{i + 1}
+                </button>
+              ))}
+              {layers.length < MAX_LAYERS && (
+                <button
+                  type="button"
+                  onClick={addLayer}
+                  className="px-2.5 py-1.5 text-xs"
+                  style={{
+                    background: "transparent",
+                    color: "var(--kami-text-muted)",
+                    border: "1px dashed var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
+                  }}
+                >
+                  + Add
+                </button>
               )}
-            </button>
-          </div>
-          <pre
-            className="overflow-x-auto p-4 text-sm"
-            style={{
-              background: "var(--kami-overlay-bg, #0d1117)",
-              color: "var(--kami-overlay-text, #f1f5f9)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
-            }}
-          ><code>{outputCode}</code></pre>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              <ToolIconButton label="Move up" onClick={() => moveLayer(activeLayer, -1)}>↑</ToolIconButton>
+              <ToolIconButton label="Move down" onClick={() => moveLayer(activeLayer, 1)}>↓</ToolIconButton>
+              <ToolIconButton label="Duplicate" onClick={() => duplicateLayer(activeLayer)}>⧉</ToolIconButton>
+              <ToolIconButton label="Remove" onClick={() => removeLayer(activeLayer)} disabled={layers.length <= 1}>×</ToolIconButton>
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Offset X" hint={`${layer.x}px`}>
+            <Slider value={layer.x} onChange={(v) => updateLayer(activeLayer, { x: v })} min={-50} max={50} unit="px" />
+          </ControlGroup>
+          <ControlGroup label="Offset Y" hint={`${layer.y}px`}>
+            <Slider value={layer.y} onChange={(v) => updateLayer(activeLayer, { y: v })} min={-50} max={50} unit="px" />
+          </ControlGroup>
+          <ControlGroup label="Blur" hint={`${layer.blur}px`}>
+            <Slider value={layer.blur} onChange={(v) => updateLayer(activeLayer, { blur: v })} min={0} max={100} unit="px" />
+          </ControlGroup>
+          <ControlGroup label="Spread" hint={`${layer.spread}px`}>
+            <Slider value={layer.spread} onChange={(v) => updateLayer(activeLayer, { spread: v })} min={-50} max={50} unit="px" />
+          </ControlGroup>
+          <ControlGroup label="Opacity" hint={`${layer.opacity}%`}>
+            <Slider value={layer.opacity} onChange={(v) => updateLayer(activeLayer, { opacity: v })} min={0} max={100} unit="%" />
+          </ControlGroup>
+
+          <ControlGroup label="Shadow color">
+            <SwatchGrid value={layer.color} onChange={(c) => updateLayer(activeLayer, { color: c })} colors={COLOR_SWATCHES} />
+          </ControlGroup>
+
+          <ControlGroup>
+            <Toggle
+              checked={layer.inset}
+              onChange={(v) => updateLayer(activeLayer, { inset: v })}
+              label="Inset"
+              hint="Render shadow inside the box"
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Preview card">
+            <Slider label="Size" value={cardSize} onChange={setCardSize} min={80} max={320} unit="px" />
+            <Slider label="Radius" value={cardRadius} onChange={setCardRadius} min={0} max={100} unit="px" />
+            <SwatchGrid value={cardColor} onChange={setCardColor} colors={["#ffffff", "#f1f5f9", "#1f2937", "#0f172a", "#fef3c7", "#dbeafe", "#fce7f3"]} label="Card" />
+            <SwatchGrid value={bgColor} onChange={setBgColor} colors={["#ffffff", "#f1f5f9", "#e2e8f0", "#1f2937", "#0f172a", "#fef3c7", "#dbeafe"]} label="Backdrop" />
+          </ControlGroup>
+
+          <ControlGroup label="Output">
+            <pre
+              className="overflow-x-auto p-3 text-xs"
+              style={{
+                background: "var(--kami-overlay-bg, #0d1117)",
+                color: "var(--kami-overlay-text, #f1f5f9)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                maxHeight: 220,
+              }}
+            >
+              <code>{outputCode}</code>
+            </pre>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Stack up to {MAX_LAYERS} shadow layers for realistic depth. Drag inside the
+            preview to set the active layer&apos;s X/Y offset directly.
+          </p>
+          <p className="text-xs">
+            Tip: a tight dark layer plus a soft loose one is what makes UI shadows look real.
+            Use the SCSS export to drop the result into a design system as a mixin.
+          </p>
         </div>
+      }
+    >
+      <div
+        className="flex h-full min-h-[60vh] w-full items-center justify-center p-6 sm:p-10"
+        style={{
+          backgroundColor: bgColor,
+          borderRadius: "var(--kami-card-radius, 0.75rem)",
+          border: "1px solid var(--kami-border-strong)",
+        }}
+      >
+        <div
+          onPointerDown={onPreviewDrag}
+          style={{
+            width: cardSize,
+            height: cardSize,
+            backgroundColor: cardColor,
+            boxShadow: layers.map(layerToCSS).join(", "),
+            borderRadius: cardRadius,
+            cursor: "grab",
+            touchAction: "none",
+          }}
+          title="Drag to set offset of active layer"
+        />
       </div>
-    </div>
-  );
-}
-
-// --- Slider ---
-
-function Slider({
-  label,
-  value,
-  min,
-  max,
-  suffix,
-  onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  suffix?: string;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <span className="w-14 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
-        style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }}
-      />
-      <span className="w-12 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>
-        {value}{suffix || "px"}
-      </span>
-    </div>
-  );
-}
-
-// --- Icons ---
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }

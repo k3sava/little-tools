@@ -1,8 +1,14 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+
+const ACCENT_PM = "#0ea5e9";
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -276,100 +282,122 @@ export default function RiceCalculatorContent() {
     );
   };
 
+  // CSV import
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  const handleImportCsv = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      const dataLines = lines[0]?.toLowerCase().includes("name") ? lines.slice(1) : lines;
+      const newItems: RiceItem[] = [];
+      for (const ln of dataLines) {
+        const parts = ln.match(/("([^"]|"")*"|[^,]+)/g) || [];
+        const cleaned = parts.map((p) => p.replace(/^"|"$/g, "").replace(/""/g, '"').trim());
+        if (cleaned.length < 5) continue;
+        newItems.push({
+          id: newId(),
+          name: cleaned[0] || "Imported",
+          reach: Number(cleaned[1]) || 0,
+          impact: Number(cleaned[2]) || 1,
+          confidence: Number(cleaned[3]) || 0.8,
+          effort: Number(cleaned[4]) || 1,
+        });
+      }
+      if (newItems.length) setItems(newItems);
+    };
+    reader.readAsText(f);
+    e.target.value = "";
+  }, []);
+
+  void scoreColorClass; void scoreBgClass;
+
+  const controls = (
+    <>
+      <ControlGroup label="Scoreboard">
+        {summary ? (
+          <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div>
+              <span className="block text-base font-bold" style={{ color: "var(--kami-text)" }}>{summary.total}</span>
+              features
+            </div>
+            <div>
+              <span className="block text-base font-bold" style={{ color: scoreColorHex(summary.avg) }}>{summary.avg.toFixed(1)}</span>
+              avg
+            </div>
+            <div>
+              <span className="block text-base font-bold" style={{ color: scoreColorHex(summary.highest) }}>{summary.highest.toFixed(1)}</span>
+              top
+            </div>
+            <div>
+              <span className="block text-base font-bold" style={{ color: scoreColorHex(summary.lowest) }}>{summary.lowest.toFixed(1)}</span>
+              low
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Add features to score.</p>
+        )}
+      </ControlGroup>
+      <ControlGroup label="Manage">
+        <button onClick={addItem} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Add feature</button>
+        <button onClick={resetDefaults} className="kc-segment-btn" style={{ minHeight: 40 }}>Load examples</button>
+        <button onClick={clearAll} disabled={items.length === 0} className="kc-segment-btn" style={{ minHeight: 40 }}>Clear all</button>
+      </ControlGroup>
+      <ControlGroup label="Import / export">
+        <label className="kc-segment-btn block text-center" style={{ minHeight: 40, cursor: "pointer" }}>
+          Import CSV
+          <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={handleImportCsv} className="sr-only" />
+        </label>
+        <button onClick={exportCsv} disabled={items.length === 0} className="kc-segment-btn" style={{ minHeight: 40 }}>Export CSV</button>
+      </ControlGroup>
+      <ControlGroup label="Sort by">
+        <div className="grid grid-cols-2 gap-2">
+          {(["score", "name", "reach", "impact", "confidence", "effort"] as SortField[]).map((f) => (
+            <button
+              key={f}
+              onClick={() => toggleSort(f)}
+              data-active={sortField === f}
+              className="kc-segment-btn"
+              style={{ minHeight: 36 }}
+            >
+              {f}{sortField === f ? (sortDir === "desc" ? " ↓" : " ↑") : ""}
+            </button>
+          ))}
+        </div>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={addItem}>+ Feature</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={copyMarkdown} disabled={items.length === 0}>
+        Copy MD
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>RICE prioritizes ideas by (Reach × Impact × Confidence) / Effort. Higher score wins. Originally from Intercom.</p>
+      <p><strong>Reach:</strong> users/qtr affected. <strong>Impact:</strong> 0.25–3. <strong>Confidence:</strong> 50–100%. <strong>Effort:</strong> person-months.</p>
+      <p>State auto-saves to localStorage. Import/export CSV to share with stakeholders.</p>
+    </div>
+  );
+
   // --- Render ---
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <ToolIntro
-        title="RICE Scoring Calculator"
-        tagline="Prioritize a list of product ideas, features, or bugs using the RICE framework from Intercom."
-        description="Enter each candidate with four numbers - Reach (people affected per quarter), Impact (0.25 minimal → 3 massive), Confidence (50-100%), and Effort (person-months). We compute (R × I × C) / E for each, rank them, and let you export the table as CSV or Markdown."
-        audience={["PMs", "Engineering managers", "Founders"]}
-        whenToUse={[
-          "Planning a roadmap with a long candidate list",
-          "Justifying why X ships before Y",
-          "Comparing initiatives across teams",
-        ]}
-        quickLinks={[
-          { label: "What each factor means", href: "#rice-meanings" },
-        ]}
-      />
-
-      {/* Summary bar */}
-      {summary && (
-        <div
-          className="mb-6 grid grid-cols-2 gap-3 rounded-xl px-4 py-3 sm:grid-cols-4"
-          style={{
-            background: "var(--kami-surface)",
-            border: "var(--kami-card-border)",
-            boxShadow: "var(--kami-card-shadow)",
-          }}
-        >
-          <div>
-            <div className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Features
-            </div>
-            <div className="text-lg font-semibold tabular-nums" style={{ color: "var(--kami-text)" }}>
-              {summary.total}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Avg Score
-            </div>
-            <div className="text-lg font-semibold tabular-nums" style={{ color: scoreColorHex(summary.avg) }}>
-              {summary.avg.toFixed(1)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Highest
-            </div>
-            <div className="text-lg font-semibold tabular-nums" style={{ color: scoreColorHex(summary.highest) }}>
-              {summary.highest.toFixed(1)}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Lowest
-            </div>
-            <div className="text-lg font-semibold tabular-nums" style={{ color: scoreColorHex(summary.lowest) }}>
-              {summary.lowest.toFixed(1)}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Controls bar */}
-      <div
-        className="mb-6 flex flex-wrap items-center gap-3 rounded-xl px-4 py-3"
-        style={{
-          background: "var(--kami-surface)",
-          border: "var(--kami-card-border)",
-          boxShadow: "var(--kami-card-shadow)",
-        }}
-      >
-        <button onClick={addItem} className="kami-btn-primary">
-          + Add Feature
-        </button>
-        <div className="mx-2 h-5 w-px" style={{ background: "var(--kami-border-strong)" }} />
-        <button onClick={exportCsv} className="kami-btn-secondary" disabled={items.length === 0}>
-          Export CSV
-        </button>
-        <button onClick={copyMarkdown} className="kami-btn-secondary" disabled={items.length === 0}>
-          Copy Markdown
-        </button>
-        <div className="mx-2 h-5 w-px" style={{ background: "var(--kami-border-strong)" }} />
-        <button
-          onClick={clearAll}
-          className="kami-btn-secondary"
-          disabled={items.length === 0}
-        >
-          Clear All
-        </button>
-        <button onClick={resetDefaults} className="kami-btn-secondary">
-          Reset Examples
-        </button>
-      </div>
+    <ToolShell
+      title="RICE Scoring Calculator"
+      tagline="Prioritize features · sortable scorecard · CSV import/export · auto-save"
+      accent={ACCENT_PM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
 
       {/* Desktop table */}
       {items.length > 0 ? (
@@ -763,65 +791,16 @@ export default function RiceCalculatorContent() {
         </div>
       )}
 
-      {/* Formula reference */}
-      <div
-        id="rice-meanings"
-        className="rounded-xl p-5"
-        style={{
-          background: "var(--kami-surface)",
-          border: "var(--kami-card-border)",
-          boxShadow: "var(--kami-card-shadow)",
-        }}
-      >
-        <h2
-          className="mb-3 text-sm font-semibold uppercase tracking-wide"
-          style={{ color: "var(--kami-text-muted)" }}
-        >
-          How RICE Scoring Works
-        </h2>
-        <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4" style={{ color: "var(--kami-text)" }}>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Reach</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How many people will this impact per quarter? Enter an estimated number of users or customers.
-            </p>
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
+            style={{ background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }}
+          >
+            {toast}
           </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Impact</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How much will this impact each person? Massive = 3x, High = 2x, Medium = 1x, Low = 0.5x, Minimal = 0.25x.
-            </p>
-          </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Confidence</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              How confident are you in your estimates? High = 100%, Medium = 80%, Low = 50%.
-            </p>
-          </div>
-          <div>
-            <div className="font-semibold" style={{ color: "var(--kami-text)" }}>Effort</div>
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              Person-months of work required. Higher effort lowers the score, penalizing large initiatives.
-            </p>
-          </div>
-        </div>
-        <div className="mt-4 rounded-lg px-4 py-3 text-center font-mono text-sm" style={{ background: "var(--kami-input-bg)", color: "var(--kami-text)" }}>
-          RICE Score = (Reach x Impact x Confidence) / Effort
-        </div>
+        )}
       </div>
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
-          style={{
-            background: "var(--kami-cta-bg)",
-            color: "var(--kami-cta-text)",
-          }}
-        >
-          {toast}
-        </div>
-      )}
-    </div>
+    </ToolShell>
   );
 }

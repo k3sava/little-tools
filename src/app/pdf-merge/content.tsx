@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
-import { PDFDocument } from "pdf-lib";
+import { PDFDocument, degrees } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
 
 interface PdfEntry {
   id: string;
@@ -13,6 +17,48 @@ interface PdfEntry {
   name: string;
   pageCount: number;
   size: number;
+  rotation: number; // 0/90/180/270 — recorded for UI; applied during merge
+  range: string; // e.g. "1-3,5"
+}
+
+const ACCENT = "#f43f5e";
+
+/** Parse a range like "1-3,5" into 0-indexed page list within bounds. */
+function parsePageList(input: string, total: number): number[] {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    const all: number[] = [];
+    for (let i = 0; i < total; i++) all.push(i);
+    return all;
+  }
+  const out: number[] = [];
+  const seen = new Set<number>();
+  const parts = trimmed.split(",").map((p) => p.trim()).filter(Boolean);
+  for (const part of parts) {
+    const m = part.split("-").map((s) => s.trim());
+    if (m.length === 1) {
+      const n = parseInt(m[0], 10);
+      if (!isNaN(n) && n >= 1 && n <= total) {
+        const idx = n - 1;
+        if (!seen.has(idx)) {
+          out.push(idx);
+          seen.add(idx);
+        }
+      }
+    } else if (m.length === 2) {
+      const lo = Math.max(1, parseInt(m[0], 10));
+      const hi = Math.min(total, parseInt(m[1], 10));
+      if (!isNaN(lo) && !isNaN(hi) && lo <= hi) {
+        for (let i = lo; i <= hi; i++) {
+          if (!seen.has(i - 1)) {
+            out.push(i - 1);
+            seen.add(i - 1);
+          }
+        }
+      }
+    }
+  }
+  return out;
 }
 
 export default function PdfMergeContent() {
@@ -20,8 +66,18 @@ export default function PdfMergeContent() {
   const [merging, setMerging] = useState(false);
   const [mergedUrl, setMergedUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [outputName, setOutputName] = useState("merged");
+  const [progress, setProgress] = useState(0);
+  const [dragId, setDragId] = useState<string | null>(null);
 
-  const totalPages = useMemo(() => entries.reduce((s, e) => s + e.pageCount, 0), [entries]);
+  const totalPages = useMemo(
+    () =>
+      entries.reduce((s, e) => {
+        const list = parsePageList(e.range, e.pageCount);
+        return s + list.length;
+      }, 0),
+    [entries],
+  );
   const totalSize = useMemo(() => entries.reduce((s, e) => s + e.size, 0), [entries]);
 
   const addFiles = useCallback(async (files: File[]) => {
@@ -39,6 +95,8 @@ export default function PdfMergeContent() {
           name: file.name,
           pageCount: pdf.getPageCount(),
           size: file.size,
+          rotation: 0,
+          range: "",
         });
       } catch {
         setError(`Could not load "${file.name}" - it may be corrupted or password-protected.`);
@@ -66,23 +124,61 @@ export default function PdfMergeContent() {
     setMergedUrl(null);
   }, []);
 
+  const rotateEntry = useCallback((id: string) => {
+    setEntries((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, rotation: (e.rotation + 90) % 360 } : e)),
+    );
+    setMergedUrl(null);
+  }, []);
+
+  const setRange = useCallback((id: string, range: string) => {
+    setEntries((prev) => prev.map((e) => (e.id === id ? { ...e, range } : e)));
+    setMergedUrl(null);
+  }, []);
+
+  const onDragStart = (id: string) => setDragId(id);
+  const onDragOver = (e: React.DragEvent) => e.preventDefault();
+  const onDropOn = (targetId: string) => {
+    if (!dragId || dragId === targetId) {
+      setDragId(null);
+      return;
+    }
+    setEntries((prev) => {
+      const from = prev.findIndex((p) => p.id === dragId);
+      const to = prev.findIndex((p) => p.id === targetId);
+      if (from < 0 || to < 0) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
+    setDragId(null);
+    setMergedUrl(null);
+  };
+
   const merge = useCallback(async () => {
     if (entries.length < 2) return;
     setMerging(true);
     setError(null);
     setMergedUrl(null);
+    setProgress(0);
 
     try {
       const merged = await PDFDocument.create();
 
-      for (const entry of entries) {
+      for (let i = 0; i < entries.length; i++) {
+        const entry = entries[i];
         const buf = await entry.file.arrayBuffer();
         const src = await PDFDocument.load(buf, { ignoreEncryption: true });
-        const indices = src.getPageIndices();
+        const indices = parsePageList(entry.range, entry.pageCount);
         const pages = await merged.copyPages(src, indices);
         for (const page of pages) {
+          if (entry.rotation) {
+            page.setRotation(degrees(entry.rotation));
+          }
           merged.addPage(page);
         }
+        setProgress(Math.round(((i + 1) / entries.length) * 100));
       }
 
       const pdfBytes = await merged.save();
@@ -90,10 +186,10 @@ export default function PdfMergeContent() {
       const url = URL.createObjectURL(blob);
       setMergedUrl(url);
 
-      // Auto-download
+      const safe = (outputName.trim() || "merged").replace(/[^a-zA-Z0-9._-]+/g, "_");
       const a = document.createElement("a");
       a.href = url;
-      a.download = "merged.pdf";
+      a.download = `${safe}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -102,179 +198,264 @@ export default function PdfMergeContent() {
     } finally {
       setMerging(false);
     }
-  }, [entries]);
+  }, [entries, outputName]);
 
   const shortcuts = useMemo(
-    () => [
-      { key: "Enter", meta: true, action: merge, label: "Merge" },
-    ],
+    () => [{ key: "Enter", meta: true, action: merge, label: "Merge" }],
     [merge],
   );
   useKeyboardShortcuts(shortcuts);
 
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <ToolIntro
-        title="Merge PDF"
-        tagline="Combine any number of PDFs into one - drag to reorder, remove pages you don't want, export in seconds."
-        description="Drop multiple PDFs (or add them one by one). Drag cards to reorder the final document. Everything runs in your browser - the files never leave your device, so it's safe to use with sensitive contracts or financials."
-        audience={["Everyone"]}
-        whenToUse={[
-          "Combining a scanned cover letter + resume",
-          "Assembling a contract from multiple signed pages",
-          "Collating expense reports for one submission",
-        ]}
-      />
+  const actions = (
+    <>
+      {entries.length > 0 && (
+        <ToolActionButton
+          variant="ghost"
+          onClick={() => {
+            setEntries([]);
+            setMergedUrl(null);
+          }}
+        >
+          Clear
+        </ToolActionButton>
+      )}
+      <ToolActionButton
+        variant="solid"
+        onClick={merge}
+        disabled={merging || entries.length < 2}
+      >
+        {merging ? `Merging ${progress}%` : `Merge ${entries.length || ""}`.trim()}
+      </ToolActionButton>
+    </>
+  );
 
-      {/* Drop zone */}
-      <div className="mb-6">
+  const controls = (
+    <>
+      <ControlGroup label="Output filename">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={outputName}
+            onChange={(e) => setOutputName(e.target.value)}
+            placeholder="merged"
+            className="kc-stepper-input"
+            style={{
+              width: "100%",
+              minHeight: 40,
+              padding: "0 12px",
+              borderRadius: 10,
+              border: "1px solid var(--kami-border-strong)",
+              background: "var(--kami-input-bg, var(--kami-surface-solid))",
+              color: "var(--kami-text)",
+            }}
+          />
+          <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            .pdf
+          </span>
+        </div>
+      </ControlGroup>
+
+      <ControlGroup
+        label="Files"
+        hint={`${entries.length} · ${totalPages} pages · ${formatBytes(totalSize)}`}
+      >
+        {entries.length === 0 ? (
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            Drop PDFs in the canvas to add them.
+          </p>
+        ) : (
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            Drag tiles in the canvas to reorder. Use ↻ to rotate. Set a range
+            (e.g. <code>1-3,5</code>) to include only certain pages.
+          </p>
+        )}
+      </ControlGroup>
+
+      {merging && (
+        <ControlGroup label="Progress" hint={`${progress}%`}>
+          <div
+            className="h-2 w-full overflow-hidden rounded-full"
+            style={{ background: "var(--kami-surface)" }}
+          >
+            <div
+              className="h-full rounded-full transition-all"
+              style={{ width: `${progress}%`, background: ACCENT }}
+            />
+          </div>
+        </ControlGroup>
+      )}
+
+      {mergedUrl && (
+        <ControlGroup label="Result">
+          <a
+            href={mergedUrl}
+            download={`${(outputName || "merged").replace(/[^a-zA-Z0-9._-]+/g, "_")}.pdf`}
+            className="tool-action-btn"
+            data-variant="outline"
+            style={{ justifyContent: "center" }}
+          >
+            Download {outputName || "merged"}.pdf
+          </a>
+        </ControlGroup>
+      )}
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Merge PDF"
+      tagline="Combine PDFs - drag to reorder, rotate, filter pages, export."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Settings"
+    >
+      <div className="flex flex-col gap-4">
         <FileDropZone
           accept={[".pdf"]}
           onFiles={addFiles}
-          label="Drop PDF files here or click to browse"
+          label="Drop PDFs here or click to browse"
           multiple
           icon={<>📄</>}
-          hint=".pdf only"
+          hint=".pdf only · drag tiles below to reorder"
         />
-      </div>
 
-      {/* Error */}
-      {error && (
-        <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-400">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div
+            className="rounded-lg border px-4 py-3 text-sm"
+            style={{
+              borderColor: "color-mix(in srgb, #ef4444 30%, transparent)",
+              background: "color-mix(in srgb, #ef4444 10%, transparent)",
+              color: "var(--kami-text)",
+            }}
+          >
+            {error}
+          </div>
+        )}
 
-      {/* File list */}
-      {entries.length > 0 && (
-        <div className="mb-6 space-y-2">
-          {entries.map((entry, i) => (
-            <div
-              key={entry.id}
-              className="flex items-center gap-3 rounded-xl border px-4 py-3"
-              style={{
-                background: "var(--kami-surface)",
-                borderColor: "var(--kami-border)",
-              }}
-            >
-              <span className="text-lg opacity-40">📄</span>
-              <div className="min-w-0 flex-1">
+        {entries.length > 0 && (
+          <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
+            {entries.map((entry, i) => (
+              <div
+                key={entry.id}
+                draggable
+                onDragStart={() => onDragStart(entry.id)}
+                onDragOver={onDragOver}
+                onDrop={() => onDropOn(entry.id)}
+                className="group relative flex flex-col gap-2 rounded-xl border p-3"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  borderColor: dragId === entry.id ? ACCENT : "var(--kami-border-strong)",
+                  boxShadow: "var(--kami-card-shadow, none)",
+                  cursor: "grab",
+                }}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-semibold text-white"
+                      style={{ background: ACCENT }}
+                    >
+                      {i + 1}
+                    </span>
+                    <span
+                      className="text-[20px]"
+                      style={{
+                        transform: `rotate(${entry.rotation}deg)`,
+                        transition: "transform 150ms",
+                        display: "inline-block",
+                      }}
+                    >
+                      📄
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => rotateEntry(entry.id)}
+                      title={`Rotate (${entry.rotation}°)`}
+                      className="tool-shell-icon-btn"
+                    >
+                      ↻
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeEntry(entry.id)}
+                      title="Remove"
+                      className="tool-shell-icon-btn"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
                 <p
                   className="truncate text-sm font-medium"
                   style={{ color: "var(--kami-text)" }}
+                  title={entry.name}
                 >
                   {entry.name}
                 </p>
                 <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  {entry.pageCount} {entry.pageCount === 1 ? "page" : "pages"} · {formatBytes(entry.size)}
+                  {entry.pageCount} {entry.pageCount === 1 ? "page" : "pages"} ·{" "}
+                  {formatBytes(entry.size)}
                 </p>
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => moveEntry(i, -1)}
-                  disabled={i === 0}
-                  className="rounded p-1 text-sm transition-colors hover:bg-gray-100 disabled:opacity-25 dark:hover:bg-white/5"
-                  style={{ color: "var(--kami-text-muted)" }}
-                  title="Move up"
-                >
-                  ↑
-                </button>
-                <button
-                  onClick={() => moveEntry(i, 1)}
-                  disabled={i === entries.length - 1}
-                  className="rounded p-1 text-sm transition-colors hover:bg-gray-100 disabled:opacity-25 dark:hover:bg-white/5"
-                  style={{ color: "var(--kami-text-muted)" }}
-                  title="Move down"
-                >
-                  ↓
-                </button>
-                <button
-                  onClick={() => removeEntry(entry.id)}
-                  className="ml-1 rounded p-1 text-sm transition-colors hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-950/30"
-                  style={{ color: "var(--kami-text-muted)" }}
-                  title="Remove"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-          ))}
 
-          {/* Summary */}
-          <div
-            className="flex items-center justify-between rounded-lg px-4 py-2 text-xs"
-            style={{ color: "var(--kami-text-muted)", background: "var(--kami-input-bg)" }}
-          >
-            <span>
-              {entries.length} {entries.length === 1 ? "file" : "files"} · {totalPages}{" "}
-              {totalPages === 1 ? "page" : "pages"} · {formatBytes(totalSize)}
-            </span>
-            <button
-              onClick={() => {
-                setEntries([]);
-                setMergedUrl(null);
-              }}
-              className="text-xs underline transition-opacity hover:opacity-70"
-            >
-              Clear all
-            </button>
+                <label
+                  className="text-[10px] uppercase tracking-wide"
+                  style={{ color: "var(--kami-text-muted)" }}
+                >
+                  Pages
+                </label>
+                <input
+                  type="text"
+                  value={entry.range}
+                  onChange={(e) => setRange(entry.id, e.target.value)}
+                  placeholder={`1-${entry.pageCount}`}
+                  className="w-full rounded-md border px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                    borderColor: "var(--kami-border)",
+                    color: "var(--kami-text)",
+                  }}
+                />
+
+                <div className="flex items-center justify-between text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                  <span>
+                    {parsePageList(entry.range, entry.pageCount).length} included
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => moveEntry(i, -1)}
+                      disabled={i === 0}
+                      className="tool-shell-icon-btn"
+                      title="Move left"
+                    >
+                      ←
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveEntry(i, 1)}
+                      disabled={i === entries.length - 1}
+                      className="tool-shell-icon-btn"
+                      title="Move right"
+                    >
+                      →
+                    </button>
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Empty state */}
-      {entries.length === 0 && !error && (
-        <div
-          className="mb-6 rounded-xl border px-6 py-8 text-center text-sm"
-          style={{
-            background: "var(--kami-surface)",
-            borderColor: "var(--kami-border)",
-            color: "var(--kami-text-muted)",
-          }}
-        >
-          <p className="mb-2 font-medium">No files added yet</p>
-          <p className="opacity-70">
-            Drop multiple PDFs above or click to browse. Reorder them, then merge into a single
-            file.
+        {entries.length === 1 && (
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            Add at least one more PDF to merge.
           </p>
-        </div>
-      )}
-
-      {/* Actions */}
-      {entries.length >= 2 && (
-        <div className="flex items-center gap-3">
-          <button
-            onClick={merge}
-            disabled={merging}
-            className="rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            style={{ background: "#f43f5e" }}
-          >
-            {merging
-              ? "Merging..."
-              : `Merge ${entries.length} files (${totalPages} pages)`}
-          </button>
-
-          {mergedUrl && (
-            <a
-              href={mergedUrl}
-              download="merged.pdf"
-              className="rounded-lg border px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-80"
-              style={{
-                borderColor: "var(--kami-border)",
-                color: "var(--kami-text)",
-              }}
-            >
-              Download merged.pdf
-            </a>
-          )}
-        </div>
-      )}
-
-      {entries.length === 1 && (
-        <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-          Add at least one more PDF to merge.
-        </p>
-      )}
-    </div>
+        )}
+      </div>
+    </ToolShell>
   );
 }

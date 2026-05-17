@@ -2,7 +2,14 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Select } from "@/components/tools/controls";
+
+const ACCENT_PMM = "#14b8a6";
 
 // ---------------------------------------------------------------------------
 // Data model
@@ -482,67 +489,60 @@ export default function ComparisonTableContent() {
   );
   useKeyboardShortcuts(shortcuts);
 
-  // --- Render ---
-  return (
-    <div className="mx-auto max-w-7xl px-4 py-10">
-      <ToolIntro
-        title="Comparison Table Builder"
-        tagline="Build the classic &quot;us vs. them&quot; feature table - or any comparison grid - and export it as HTML, Markdown, or CSV."
-        description="Start from a template (feature comparison, pricing tiers, integration matrix) or a blank grid. Cells support check / cross / partial / text - perfect for &quot;our product has X, theirs doesn't.&quot; Rearrange rows and columns, highlight your winning column, and export ready-to-paste Markdown or HTML."
-        audience={["PMMs", "Sales", "Content marketers"]}
-        whenToUse={[
-          "Building a competitor comparison page",
-          "Turning a pricing page into a feature-tier grid",
-          "Documenting which integrations each plan includes",
-        ]}
-      />
+  const controls = (
+    <>
+      <ControlGroup label="Template">
+        <Select
+          value={selectedTemplate}
+          onChange={(v) => loadTemplate(v)}
+          options={[
+            { value: "scratch", label: "Blank" },
+            { value: "feature", label: "Feature comparison" },
+            { value: "pricing", label: "Pricing tiers" },
+            { value: "integration", label: "Integration matrix" },
+          ]}
+        />
+      </ControlGroup>
+      <ControlGroup label="Edit">
+        <button onClick={addColumn} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Column</button>
+        <button onClick={addRow} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Row</button>
+        <button onClick={undo} disabled={undoStack.length === 0} className="kc-segment-btn" style={{ minHeight: 40 }}>
+          <span className="inline-flex items-center gap-1.5"><UndoIcon />Undo</span>
+        </button>
+      </ControlGroup>
+      <ControlGroup label="Export">
+        <button onClick={copyAsHtml} className="kc-segment-btn" style={{ minHeight: 40 }}>Copy HTML</button>
+        <button onClick={copyAsMarkdown} className="kc-segment-btn" style={{ minHeight: 40 }}>Copy MD</button>
+        <button onClick={downloadPng} className="kc-segment-btn" style={{ minHeight: 40 }}>Download PNG</button>
+      </ControlGroup>
+    </>
+  );
 
-      {/* Controls bar */}
-      <div
-        className="mb-6 flex flex-wrap items-center gap-3 rounded-xl px-4 py-3"
-        style={{
-          background: "var(--kami-surface)",
-          border: "var(--kami-card-border)",
-          boxShadow: "var(--kami-card-shadow)",
-        }}
-      >
-        <button onClick={addColumn} className="kami-btn-secondary">
-          + Column
-        </button>
-        <button onClick={addRow} className="kami-btn-secondary">
-          + Row
-        </button>
-        <div className="mx-2 h-5 w-px" style={{ background: "var(--kami-border-strong)" }} />
-        <button
-          onClick={undo}
-          disabled={undoStack.length === 0}
-          className="kami-btn-secondary flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed"
-          title="Undo (Ctrl+Z)"
-        >
-          <UndoIcon />
-          Undo
-        </button>
-        <div className="mx-2 h-5 w-px" style={{ background: "var(--kami-border-strong)" }} />
-        <label className="flex items-center gap-2 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-          Template
-          <select
-            value={selectedTemplate}
-            onChange={(e) => loadTemplate(e.target.value)}
-            className="rounded-lg px-3 py-1.5 text-sm"
-            style={{
-              background: "var(--kami-input-bg)",
-              border: "var(--kami-input-border)",
-              borderRadius: "var(--kami-input-radius)",
-              color: "var(--kami-text)",
-            }}
-          >
-            <option value="scratch">Start from scratch</option>
-            <option value="feature">Feature Comparison</option>
-            <option value="pricing">Pricing Comparison</option>
-            <option value="integration">Integration Comparison</option>
-          </select>
-        </label>
-      </div>
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={addRow}>+ Row</ToolActionButton>
+      <ToolActionButton variant="outline" onClick={addColumn}>+ Col</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={copyAsHtml}>Copy HTML</ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Build the classic &quot;us vs. them&quot; feature table. Click a cell to cycle check / cross / partial / text. Rearrange rows & columns with arrows.</p>
+      <p>Export as HTML (paste into a page), Markdown (paste into docs), or PNG (screenshot ready).</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Comparison Table Builder"
+      tagline="Drag-to-reorder · color-coded cells · export HTML / MD / PNG"
+      accent={ACCENT_PMM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
 
       {/* Editable table */}
       <div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
@@ -801,31 +801,16 @@ export default function ComparisonTableContent() {
         </div>
       </div>
 
-      {/* Export buttons */}
-      <div className="flex flex-wrap gap-3">
-        <button onClick={copyAsHtml} className="kami-btn-primary">
-          Copy as HTML
-        </button>
-        <button onClick={copyAsMarkdown} className="kami-btn-primary">
-          Copy as Markdown
-        </button>
-        <button onClick={downloadPng} className="kami-btn-secondary">
-          Download PNG
-        </button>
+        {/* Toast */}
+        {toast && (
+          <div
+            className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
+            style={{ background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }}
+          >
+            {toast}
+          </div>
+        )}
       </div>
-
-      {/* Toast */}
-      {toast && (
-        <div
-          className="fixed bottom-16 left-1/2 z-50 -translate-x-1/2 rounded-lg px-4 py-2 text-sm font-medium shadow-lg"
-          style={{
-            background: "var(--kami-cta-bg)",
-            color: "var(--kami-cta-text)",
-          }}
-        >
-          {toast}
-        </div>
-      )}
-    </div>
+    </ToolShell>
   );
 }

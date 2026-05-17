@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, NumberStepper, Toggle } from "@/components/tools/controls";
 
 // --- Color utilities ---
 
@@ -181,13 +186,28 @@ function toJson(colors: string[]): string {
   return JSON.stringify(colors, null, 2);
 }
 
-type ExportFormat = "css" | "scss" | "tailwind" | "json";
+function toSvg(colors: string[]): string {
+  const w = 200;
+  const h = 200;
+  const rects = colors
+    .map(
+      (c, i) =>
+        `<rect x="${i * w}" y="0" width="${w}" height="${h}" fill="${c}"/>`,
+    )
+    .join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${
+    colors.length * w
+  } ${h}">${rects}</svg>`;
+}
 
-const EXPORT_FORMATS: { id: ExportFormat; label: string }[] = [
-  { id: "css", label: "CSS Variables" },
-  { id: "scss", label: "SCSS" },
-  { id: "tailwind", label: "Tailwind" },
-  { id: "json", label: "JSON" },
+type ExportFormat = "css" | "scss" | "tailwind" | "json" | "svg";
+
+const EXPORT_FORMATS: { value: ExportFormat; label: string }[] = [
+  { value: "css", label: "CSS" },
+  { value: "scss", label: "SCSS" },
+  { value: "tailwind", label: "TW" },
+  { value: "json", label: "JSON" },
+  { value: "svg", label: "SVG" },
 ];
 
 interface PaletteColor {
@@ -208,8 +228,9 @@ export default function PaletteContent() {
     setMounted(true);
   }, []);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("css");
-  const [showExport, setShowExport] = useState(false);
+  const [showAdjacentContrast, setShowAdjacentContrast] = useState(true);
   const [copied, setCopied] = useState<number | null>(null);
+  const [exportCopied, setExportCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const shuffle = useCallback(() => {
@@ -260,6 +281,20 @@ export default function PaletteContent() {
     setColors((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const setCount = (n: number) => {
+    if (n < 2 || n > 10) return;
+    setColors((prev) => {
+      if (n > prev.length) {
+        const extras = generateHarmony(harmony, n - prev.length).map((hex) => ({
+          hex,
+          locked: false,
+        }));
+        return [...prev, ...extras];
+      }
+      return prev.slice(0, n);
+    });
+  };
+
   const handleImageUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -294,6 +329,7 @@ export default function PaletteContent() {
       case "scss": return toScss(hexColors);
       case "tailwind": return toTailwind(hexColors);
       case "json": return toJson(hexColors);
+      case "svg": return toSvg(hexColors);
     }
   })();
 
@@ -305,335 +341,336 @@ export default function PaletteContent() {
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
 
+  const contrastRatio = (a: string, b: string) => {
+    const l1 = luminance(a);
+    const l2 = luminance(b);
+    const lighter = Math.max(l1, l2);
+    const darker = Math.min(l1, l2);
+    return (lighter + 0.05) / (darker + 0.05);
+  };
+
+  const copyExport = () => {
+    navigator.clipboard.writeText(exportText);
+    setExportCopied(true);
+    setTimeout(() => setExportCopied(false), 1200);
+  };
+
+  const downloadPng = () => {
+    const canvas = document.createElement("canvas");
+    const w = colors.length * 200;
+    canvas.width = w;
+    canvas.height = 200;
+    const ctx = canvas.getContext("2d")!;
+    colors.forEach((c, i) => {
+      ctx.fillStyle = c.hex;
+      ctx.fillRect(i * 200, 0, 200, 200);
+    });
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "palette.png";
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  };
+
   if (!mounted) {
     return (
-      <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-        <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Color Palette Generator
-          </h1>
-          <p className="mt-2" style={{ color: "var(--kami-text-muted)" }}>
-            Generate color palettes with harmony modes. Press{" "}
-            <kbd
-              className="px-1.5 py-0.5 text-xs"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                color: "var(--kami-text-muted)",
-              }}
-            >Space</kbd>{" "}
-            to shuffle. Lock colors you like.
-          </p>
+      <ToolShell
+        title="Color Palette Generator"
+        tagline="Generate harmonies you can ship"
+        accent="#8b5cf6"
+      >
+        <div className="flex h-full min-h-[60vh] items-center justify-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
+          Loading palette…
         </div>
-      </div>
+      </ToolShell>
     );
   }
 
+  const harmonyOptions: { value: HarmonyMode; label: string }[] = [
+    { value: "random", label: "Random" },
+    { value: "complementary", label: "Complement" },
+    { value: "analogous", label: "Analogous" },
+    { value: "triadic", label: "Triadic" },
+    { value: "split-complementary", label: "Split" },
+    { value: "tetradic", label: "Tetradic" },
+  ];
+
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Color Palette Generator"
-          tagline="Generate 5-color palettes using color-harmony rules - analogous, complementary, triadic, tetradic, and more."
-          description={`Press spacebar to shuffle a fresh palette. Lock the colors you want to keep and reshuffle the rest. Every palette is built from a harmony rule (not just random) so the colors actually work together. Export as CSS variables, SCSS, Tailwind config, or a Figma-ready JSON.`}
-          audience={["Designers", "Brand teams", "Developers"]}
-          whenToUse={[
-            "Kicking off a new brand or side-project",
-            "Exploring accent colors around a primary brand color",
-            "Generating a neutral scale to pair with a brand color",
-          ]}
-        />
-        <p className="mt-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-          Tip: press{" "}
-          <kbd
-            className="px-1.5 py-0.5 text-xs"
-            style={{
-              background: "var(--kami-surface)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-cta-radius, 0.25rem)",
-              color: "var(--kami-text-muted)",
-            }}
-          >Space</kbd>{" "}
-          to shuffle. Click a swatch to lock it.
-        </p>
+    <ToolShell
+      title="Color Palette Generator"
+      tagline="Five harmony rules · click to lock · export to CSS/Tailwind/SVG"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <ToolActionButton onClick={copyExport} variant="outline">
+            {exportCopied ? "Copied!" : "Copy"}
+          </ToolActionButton>
+          <ToolActionButton onClick={shuffle} variant="solid">
+            New palette
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Harmony">
+            <Segment
+              value={harmony}
+              onChange={setHarmony}
+              options={harmonyOptions}
+              full
+            />
+          </ControlGroup>
 
-        {/* Controls */}
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <select
-            value={harmony}
-            onChange={(e) => setHarmony(e.target.value as HarmonyMode)}
-            className="px-3 py-2 text-sm focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.5rem)",
-            }}
-          >
-            <option value="random">Random</option>
-            <option value="complementary">Complementary</option>
-            <option value="analogous">Analogous</option>
-            <option value="triadic">Triadic</option>
-            <option value="split-complementary">Split-Complementary</option>
-            <option value="tetradic">Tetradic</option>
-          </select>
-          <button
-            onClick={shuffle}
-            className="px-4 py-2 text-sm font-medium transition-colors"
-            style={{
-              background: "var(--kami-cta-bg, #111827)",
-              color: "var(--kami-cta-text, #ffffff)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            }}
-          >
-            Shuffle
-          </button>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="px-3 py-2 text-sm"
-            style={{
-              background: "var(--kami-surface-solid)",
-              color: "var(--kami-text-muted)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            }}
-          >
-            From Image
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          <button
-            onClick={addColor}
-            disabled={colors.length >= 10}
-            className="px-3 py-2 text-sm disabled:opacity-40"
-            style={{
-              background: "var(--kami-surface-solid)",
-              color: "var(--kami-text-muted)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            }}
-          >
-            + Add Color
-          </button>
+          <ControlGroup label="Swatch count">
+            <NumberStepper
+              value={colors.length}
+              onChange={setCount}
+              min={2}
+              max={10}
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Export format">
+            <Segment
+              value={exportFormat}
+              onChange={setExportFormat}
+              options={EXPORT_FORMATS}
+              full
+            />
+          </ControlGroup>
+
+          <ControlGroup>
+            <Toggle
+              checked={showAdjacentContrast}
+              onChange={setShowAdjacentContrast}
+              label="Show contrast"
+              hint="Ratio between adjacent swatches"
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Actions">
+            <div className="flex flex-col gap-2">
+              <ToolActionButton onClick={shuffle} variant="solid">
+                Shuffle (Space)
+              </ToolActionButton>
+              <ToolActionButton onClick={addColor} variant="outline">
+                + Add color
+              </ToolActionButton>
+              <ToolActionButton
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+              >
+                Extract from image
+              </ToolActionButton>
+              <ToolActionButton onClick={downloadPng} variant="ghost">
+                Download PNG
+              </ToolActionButton>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Generate harmonious palettes from a chosen color-theory rule. Press
+            Space to shuffle, click a swatch to lock it, then export to your
+            framework of choice.
+          </p>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+              Made for
+            </div>
+            <p className="mt-1">Designers, brand teams, developers.</p>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+              Reach for it when
+            </div>
+            <ul className="mt-1 space-y-1 text-xs">
+              <li>· Kicking off a new brand or side-project</li>
+              <li>· Exploring accent colors around a primary brand color</li>
+              <li>· Generating a neutral scale</li>
+            </ul>
+          </div>
         </div>
-
-        {/* Palette Display */}
+      }
+    >
+      <div className="flex h-full min-h-[60vh] flex-col gap-3">
+        {/* Palette swatches */}
         <div
-          className="mt-6 flex overflow-hidden"
+          className="flex flex-1 min-h-[260px] flex-col overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
             borderRadius: "var(--kami-card-radius, 0.75rem)",
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          {colors.map((color, i) => (
-            <div
-              key={i}
-              className="group relative flex min-h-[220px] flex-1 flex-col items-center justify-end transition-all"
-              style={{ backgroundColor: color.hex }}
-            >
-              {/* Remove button */}
-              {colors.length > 2 && (
-                <button
-                  onClick={() => removeColor(i)}
-                  className="absolute right-2 top-2 rounded-full bg-black/20 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                  title="Remove"
-                >
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                      d="M3 3l8 8M11 3l-8 8"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-              )}
-
-              {/* Lock button */}
-              <button
-                onClick={() => toggleLock(i)}
-                className={`mb-2 rounded-full p-2 transition-all ${
-                  color.locked
-                    ? "bg-white/90 text-gray-800"
-                    : "bg-black/20 text-white opacity-0 group-hover:opacity-100"
-                }`}
-                title={color.locked ? "Unlock" : "Lock"}
-              >
-                {color.locked ? "🔒" : "🔓"}
-              </button>
-
-              {/* Hex value */}
-              <button
-                onClick={() => copyColor(i)}
-                className={`mb-3 rounded px-2 py-1 text-xs font-mono font-medium transition-colors ${
-                  luminance(color.hex) > 0.5
-                    ? "text-gray-800 bg-black/10 hover:bg-black/20"
-                    : "text-white bg-white/20 hover:bg-white/30"
-                }`}
-              >
-                {copied === i ? "Copied!" : color.hex.toUpperCase()}
-              </button>
-
-              {/* Color picker (hidden, triggered by swatch) */}
-              <input
-                type="color"
-                value={color.hex}
-                onChange={(e) => updateColor(i, e.target.value)}
-                className="absolute bottom-0 left-0 h-6 w-full cursor-pointer opacity-0"
-                title="Pick color"
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Color details row */}
-        <div className="mt-3 flex gap-1">
           {colors.map((color, i) => {
-            const [h, s, l] = hexToHsl(color.hex);
-            const [r, g, b] = hexToRgb(color.hex);
+            const isLight = luminance(color.hex) > 0.5;
             return (
               <div
                 key={i}
-                className="flex-1 text-center text-[10px] leading-tight"
-                style={{ color: "var(--kami-text-dim)" }}
+                className="group relative flex flex-1 flex-col items-center justify-end p-3 transition-all"
+                style={{ backgroundColor: color.hex, minHeight: 120 }}
               >
-                <div>
-                  RGB({r},{g},{b})
-                </div>
-                <div>
-                  HSL({h},{s}%,{l}%)
-                </div>
+                {colors.length > 2 && (
+                  <button
+                    onClick={() => removeColor(i)}
+                    className="absolute right-2 top-2 rounded-full bg-black/30 p-1 text-white opacity-0 transition-opacity group-hover:opacity-100"
+                    title="Remove"
+                    aria-label="Remove color"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <path
+                        d="M3 3l8 8M11 3l-8 8"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </button>
+                )}
+
+                {/* Lock indicator: always visible when locked */}
+                <button
+                  onClick={() => toggleLock(i)}
+                  className={`mb-2 inline-flex h-8 w-8 items-center justify-center rounded-full text-sm transition-all ${
+                    color.locked
+                      ? "bg-white/95 text-gray-900 shadow"
+                      : "bg-black/25 text-white opacity-0 group-hover:opacity-100"
+                  }`}
+                  aria-label={color.locked ? "Unlock color" : "Lock color"}
+                  title={color.locked ? "Unlock" : "Lock"}
+                >
+                  {color.locked ? "\u{1F512}" : "\u{1F513}"}
+                </button>
+
+                <button
+                  onClick={() => copyColor(i)}
+                  className={`mb-2 rounded-md px-2 py-1 text-xs font-mono font-semibold tracking-wide transition-colors ${
+                    isLight
+                      ? "bg-black/15 text-gray-900 hover:bg-black/25"
+                      : "bg-white/20 text-white hover:bg-white/30"
+                  }`}
+                >
+                  {copied === i ? "Copied!" : color.hex.toUpperCase()}
+                </button>
+
+                {(() => {
+                  const [h, s, l] = hexToHsl(color.hex);
+                  return (
+                    <div
+                      className="text-[10px] font-mono leading-tight text-center"
+                      style={{
+                        color: isLight ? "rgba(0,0,0,0.65)" : "rgba(255,255,255,0.8)",
+                      }}
+                    >
+                      <div>HSL {h} {s}% {l}%</div>
+                    </div>
+                  );
+                })()}
+
+                {/* Hidden color picker spanning the cell bottom */}
+                <input
+                  type="color"
+                  value={color.hex}
+                  onChange={(e) => updateColor(i, e.target.value)}
+                  className="absolute bottom-0 left-0 h-6 w-full cursor-pointer opacity-0"
+                  title="Pick color"
+                  aria-label="Pick color"
+                />
               </div>
             );
           })}
         </div>
 
-        {/* Cross-link */}
-        <div className="mt-4 text-sm" style={{ color: "var(--kami-text-dim)" }}>
-          Need to convert individual colors?{" "}
-          <a
-            href="/contrast"
-            className="underline"
-            style={{ color: "var(--kami-text-muted)" }}
+        {/* Adjacent contrast strip */}
+        {showAdjacentContrast && colors.length > 1 && (
+          <div
+            className="grid gap-1 px-1"
+            style={{
+              gridTemplateColumns: `repeat(${colors.length - 1}, minmax(0, 1fr))`,
+            }}
           >
-            Contrast Checker
-          </a>
-        </div>
+            {colors.slice(0, -1).map((c, i) => {
+              const ratio = contrastRatio(c.hex, colors[i + 1].hex);
+              const label =
+                ratio >= 7 ? "AAA" : ratio >= 4.5 ? "AA" : ratio >= 3 ? "AA Lg" : "Low";
+              const tone =
+                ratio >= 4.5
+                  ? "#16a34a"
+                  : ratio >= 3
+                    ? "#a16207"
+                    : "#dc2626";
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-center gap-1 px-2 py-1 text-[10px] font-mono"
+                  style={{
+                    background: "var(--kami-surface)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    color: "var(--kami-text-muted)",
+                  }}
+                  title={`Contrast between swatch ${i + 1} and ${i + 2}`}
+                >
+                  <span style={{ color: tone }}>●</span>
+                  {ratio.toFixed(2)}:1 · {label}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-        {/* Export */}
+        {/* Export preview */}
         <div
-          className="mt-6 p-6"
+          className="overflow-hidden"
           style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
+            background: "var(--kami-overlay-bg, #111827)",
+            color: "var(--kami-overlay-text, #f3f4f6)",
             borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
+            border: "1px solid var(--kami-border-strong)",
           }}
         >
-          <button
-            onClick={() => setShowExport(!showExport)}
-            className="flex w-full items-center justify-between"
-          >
-            <h2 className="text-lg font-semibold">Export</h2>
-            <span className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-              {showExport ? "▲ Hide" : "▼ Show"}
-            </span>
-          </button>
-          {showExport && (
-            <div className="mt-4">
-              <div className="mb-3 flex gap-2">
-                {EXPORT_FORMATS.map((f) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setExportFormat(f.id)}
-                    className="px-3 py-1.5 text-sm"
-                    style={
-                      exportFormat === f.id
-                        ? {
-                            background: "var(--kami-cta-bg, #111827)",
-                            color: "var(--kami-cta-text, #ffffff)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface)",
-                            color: "var(--kami-text-muted)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                    }
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-              <div className="relative">
-                <pre
-                  className="overflow-x-auto p-4 text-sm"
-                  style={{
-                    background: "var(--kami-overlay-bg, #111827)",
-                    color: "var(--kami-overlay-text, #f3f4f6)",
-                    borderRadius: "var(--kami-card-radius, 0.5rem)",
-                  }}
-                >
-                  <code>{exportText}</code>
-                </pre>
-                <button
-                  onClick={() => navigator.clipboard.writeText(exportText)}
-                  className="absolute right-3 top-3 px-2 py-1 text-xs"
-                  style={{
-                    border: "1px solid color-mix(in srgb, var(--kami-overlay-text, #f3f4f6) 30%, transparent)",
-                    color: "var(--kami-overlay-text, #d1d5db)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  Copy
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* PNG swatch export */}
-        <div className="mt-4 flex justify-end">
-          <button
-            onClick={() => {
-              const canvas = document.createElement("canvas");
-              const w = colors.length * 200;
-              canvas.width = w;
-              canvas.height = 200;
-              const ctx = canvas.getContext("2d")!;
-              colors.forEach((c, i) => {
-                ctx.fillStyle = c.hex;
-                ctx.fillRect(i * 200, 0, 200, 200);
-              });
-              canvas.toBlob((blob) => {
-                if (!blob) return;
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "palette.png";
-                a.click();
-                URL.revokeObjectURL(url);
-              });
-            }}
-            className="px-3 py-2 text-sm"
+          <div
+            className="flex items-center justify-between px-3 py-2 text-xs font-mono uppercase tracking-wide"
             style={{
-              background: "var(--kami-surface-solid)",
-              color: "var(--kami-text-muted)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-cta-radius, 0.5rem)",
+              borderBottom:
+                "1px solid color-mix(in srgb, var(--kami-overlay-text, #f3f4f6) 12%, transparent)",
+              color:
+                "color-mix(in srgb, var(--kami-overlay-text, #f3f4f6) 70%, transparent)",
             }}
           >
-            Download PNG Swatch
-          </button>
+            <span>{EXPORT_FORMATS.find((f) => f.value === exportFormat)?.label}</span>
+            <button
+              onClick={copyExport}
+              className="px-2 py-0.5 text-[10px] uppercase tracking-wide"
+              style={{
+                border:
+                  "1px solid color-mix(in srgb, var(--kami-overlay-text, #f3f4f6) 30%, transparent)",
+                color: "var(--kami-overlay-text, #d1d5db)",
+                borderRadius: "var(--kami-cta-radius, 0.25rem)",
+              }}
+            >
+              {exportCopied ? "Copied" : "Copy"}
+            </button>
+          </div>
+          <pre className="overflow-x-auto p-4 text-xs leading-relaxed">
+            <code>{exportText}</code>
+          </pre>
         </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

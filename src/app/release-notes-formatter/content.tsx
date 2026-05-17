@@ -2,8 +2,14 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, NumberStepper } from "@/components/tools/controls";
+
+const ACCENT_PM = "#0ea5e9";
 
 // --- Types ---
 
@@ -275,97 +281,115 @@ export default function ReleaseNotesFormatterContent() {
     return counts;
   }, [items]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Release Notes Formatter"
-          tagline="Paste raw changelog bullets - we auto-sort them into New, Improved, Fixed, and more, then export clean Markdown or HTML."
-          description="Drop unstructured bullets (like a git log summary) into the input. We infer category from keywords (&quot;fixed&quot; → Fixed, &quot;added&quot; → New), let you re-categorize with one click, and emit properly formatted release notes - Keep a Changelog style - ready for GitHub releases, your blog, or an email."
-          audience={["Developers", "PMs", "DevRel"]}
-          whenToUse={[
-            "Shipping a release and need public-facing notes",
-            "Turning a noisy git log into customer-readable copy",
-            "Standardizing release format across a team",
-          ]}
-          quickLinks={[
-            { label: "What goes in each category", href: "#release-categories" },
-          ]}
-        />
+  const semverParts = useMemo(() => {
+    const m = (version || "").match(/^v?(\d+)\.(\d+)\.(\d+)(.*)$/);
+    if (!m) return null;
+    return { major: parseInt(m[1]), minor: parseInt(m[2]), patch: parseInt(m[3]), suffix: m[4], prefix: version.startsWith("v") ? "v" : "" };
+  }, [version]);
+  const bumpSemver = useCallback((part: "major" | "minor" | "patch", delta: number) => {
+    const sp = semverParts ?? { major: 1, minor: 0, patch: 0, suffix: "", prefix: "v" };
+    const next = { ...sp, [part]: Math.max(0, sp[part] + delta) };
+    if (part === "major" && delta > 0) { next.minor = 0; next.patch = 0; }
+    if (part === "minor" && delta > 0) { next.patch = 0; }
+    setVersion(`${next.prefix}${next.major}.${next.minor}.${next.patch}${next.suffix}`);
+  }, [semverParts]);
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  const inputStyle: React.CSSProperties = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.5rem)",
+  };
+
+  const controls = (
+    <>
+      <ControlGroup label="Release info">
+        <input type="text" value={version} onChange={(e) => setVersion(e.target.value)} placeholder="v2.4.0" className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
+        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title (optional)" className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
+      </ControlGroup>
+      <ControlGroup label="Semver bump">
+        <div className="grid grid-cols-3 gap-1.5">
+          {(["major", "minor", "patch"] as const).map((p) => (
+            <NumberStepper
+              key={p}
+              value={(semverParts ? semverParts[p] : 0) as number}
+              onChange={(n) => bumpSemver(p, n - (semverParts ? semverParts[p] : 0))}
+              min={0}
+              label={p}
+            />
+          ))}
+        </div>
+      </ControlGroup>
+      <ControlGroup label="Output format">
+        <Segment
+          value={exportFormat}
+          onChange={setExportFormat}
+          options={[
+            { value: "markdown" as const, label: "MD" },
+            { value: "html" as const, label: "HTML" },
+            { value: "plain" as const, label: "Plain" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="View">
+        <Segment
+          value={showPreview ? "preview" : "source"}
+          onChange={(v) => setShowPreview(v === "preview")}
+          options={[
+            { value: "preview", label: "Preview" },
+            { value: "source", label: "Source" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Stats">
+        <div className="flex flex-wrap gap-1.5">
+          {CATEGORIES.filter((c) => stats[c.value]).map((c) => (
+            <span
+              key={c.value}
+              className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium"
+              style={{ ...categoryBadgeStyle(c.hex), borderRadius: 6 }}
+            >
+              {c.icon} {c.label} · {stats[c.value]}
+            </span>
+          ))}
+        </div>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleParse}>Parse</ToolActionButton>
+      <ToolActionButton variant="outline" onClick={handleDownload}>Download</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy}>
+        {copied ? "Copied" : "Copy"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Paste raw bullets, click parse — we auto-categorize into Added / Changed / Fixed / Removed / Deprecated / Security (Keep a Changelog).</p>
+      <p>Re-categorize any row with the dropdown. Export as Markdown (GitHub releases), HTML (blog), or plain text (email).</p>
+      <p><strong>Tip:</strong> lead with the user-visible change, not the implementation. Keep bullets under ~12 words.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Release Notes Formatter"
+      tagline="Auto-categorize · semver · MD / HTML / plain"
+      accent={ACCENT_PM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-2">
           {/* Left: Input */}
           <div className="space-y-4">
-            {/* Metadata */}
-            <div
-              className="p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h2 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                Release Info
-              </h2>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Version
-                  </label>
-                  <input
-                    type="text"
-                    value={version}
-                    onChange={(e) => setVersion(e.target.value)}
-                    placeholder="v2.4.0"
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="mt-3">
-                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Title (optional)
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Performance and Reliability"
-                  className="w-full px-3 py-2 text-sm focus:outline-none"
-                  style={{
-                    background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-text)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                  }}
-                />
-              </div>
-            </div>
-
             {/* Raw input */}
             <div
               className="p-5"
@@ -506,105 +530,15 @@ export default function ReleaseNotesFormatterContent() {
             )}
           </div>
 
-          {/* Right: Preview & Export */}
-          <div className="space-y-4">
-            {/* Export format selector */}
-            <div
-              className="p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Output</h2>
-                <div className="flex gap-1">
-                  {(["markdown", "html", "plain"] as const).map((fmt) => {
-                    const active = exportFormat === fmt;
-                    return (
-                      <button
-                        key={fmt}
-                        onClick={() => setExportFormat(fmt)}
-                        className="px-3 py-1.5 text-xs font-medium transition-colors"
-                        style={{
-                          background: active ? "var(--kami-cta-bg)" : "var(--kami-surface)",
-                          color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-                          border: active ? "1px solid var(--kami-cta-bg)" : "1px solid var(--kami-border)",
-                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                        }}
-                      >
-                        {fmt === "markdown"
-                          ? "Markdown"
-                          : fmt === "html"
-                          ? "HTML"
-                          : "Plain Text"}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCopy}
-                  className="flex-1 px-4 py-2 text-sm font-medium"
-                  style={{
-                    background: "var(--kami-cta-bg)",
-                    color: "var(--kami-cta-text)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    boxShadow: "var(--kami-cta-shadow, none)",
-                  }}
-                >
-                  {copied ? "Copied!" : "Copy to Clipboard"}
-                </button>
-                <button
-                  onClick={handleDownload}
-                  className="px-4 py-2 text-sm"
-                  style={{
-                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  Download
-                </button>
-              </div>
-            </div>
-
-            {/* Toggle preview/code */}
-            <div
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="flex" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                <button
-                  onClick={() => setShowPreview(true)}
-                  className="flex-1 px-4 py-2.5 text-xs font-medium transition-colors"
-                  style={{
-                    color: showPreview ? "var(--kami-text)" : "var(--kami-text-dim)",
-                    borderBottom: showPreview ? "2px solid var(--kami-text)" : "2px solid transparent",
-                  }}
-                >
-                  Preview
-                </button>
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="flex-1 px-4 py-2.5 text-xs font-medium transition-colors"
-                  style={{
-                    color: !showPreview ? "var(--kami-text)" : "var(--kami-text-dim)",
-                    borderBottom: !showPreview ? "2px solid var(--kami-text)" : "2px solid transparent",
-                  }}
-                >
-                  Source
-                </button>
-              </div>
-
+          {/* Right: Preview / Source */}
+          <div
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
               <div className="max-h-[36rem] overflow-y-auto p-5">
                 {showPreview && items.length > 0 ? (
                   <div className="prose prose-sm max-w-none">
@@ -661,39 +595,8 @@ export default function ReleaseNotesFormatterContent() {
                   </pre>
                 )}
               </div>
-            </div>
           </div>
-        </div>
-
-        <ReferencePanel
-          id="release-categories"
-          title="What goes in each category (Keep a Changelog convention)"
-          summary="The six-category taxonomy used by keepachangelog.com - the de-facto standard."
-          defaultOpen
-        >
-          <div className="space-y-1">
-            <RuleRow rule="Added / New" explanation="Brand-new features or capabilities." example="Added bulk export" />
-            <RuleRow rule="Changed / Improved" explanation="Changes to existing features - performance, UX, behavior." example="Faster search results" />
-            <RuleRow rule="Fixed" explanation="Bug fixes." example="Fixed login redirect" />
-            <RuleRow rule="Removed" explanation="Features that no longer exist." example="Removed legacy API v1" />
-            <RuleRow rule="Deprecated" explanation="Features scheduled for removal but still available." example="Deprecated basic-auth" />
-            <RuleRow rule="Security" explanation="Vulnerability fixes - called out separately so ops teams can triage." example="Patched XSS in comments" />
-          </div>
-          <div
-            className="mt-3 p-3 text-xs"
-            style={{
-              background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
-              color: "var(--kami-text)",
-              border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
-            }}
-          >
-            <strong>Writing tips:</strong> lead with the user-visible change, not the
-            implementation. &quot;Fixed: search now respects saved filters&quot; beats
-            &quot;Refactored SearchQueryBuilder.ts.&quot; Keep each bullet under ~12 words.
-          </div>
-        </ReferencePanel>
       </div>
-    </div>
+    </ToolShell>
   );
 }

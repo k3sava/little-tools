@@ -2,8 +2,13 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ReferencePanel } from "@/components/tools/reference-panel";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+
+const ACCENT_PMM = "#14b8a6";
 
 // --- Types ---
 
@@ -214,122 +219,89 @@ export default function FeatureBenefitMapperContent() {
     return { total: filled.length, valid, needsBenefit, featureSpeak, score };
   }, [rows]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Feature-Benefit Mapper"
-          tagline="Turn every feature into a customer benefit - and get warned when your copy is still 'feature-speak.'"
-          description="List your features in the left column. For each, write the benefit it delivers - what the customer gains, not what the product does. We flag rows that are still technical-sounding (&quot;API endpoint&quot;, &quot;integration&quot;) and suggest verbs that re-frame them as outcomes. Export the mapped table to use in your landing page copy."
-          audience={["PMMs", "Copywriters", "Founders", "Growth"]}
-          whenToUse={[
-            "Rewriting a feature-dense landing page",
-            "Turning a changelog into marketing copy",
-            "Reviewing ad copy for customer-speak",
-          ]}
-          quickLinks={[
-            { label: "Features vs benefits, explained", href: "#feat-vs-benefit" },
-          ]}
-        />
+  const customerLangPrompt = useMemo(() => {
+    const filled = rows.filter((r) => r.feature.trim());
+    if (!filled.length) return "";
+    const features = filled.map((r) => `- ${r.feature}${r.benefit ? ` → ${r.benefit}` : ""}`).join("\n");
+    return `Translate these product features into customer-language benefits. Use concrete outcomes (time saved, money made, risk avoided). One sentence each.\n\n${features}`;
+  }, [rows]);
 
-        {/* Score bar */}
-        <div
-          className="mb-6 p-5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
-              <div className="text-center">
-                <div
-                  className="text-3xl font-bold"
-                  style={{
-                    color:
-                      stats.score >= 80
-                        ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
-                        : stats.score >= 50
-                        ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
-                        : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
-                  }}
-                >
-                  {stats.score}%
-                </div>
-                <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Benefit Coverage</div>
-              </div>
-              <div className="h-10 w-px" style={{ background: "var(--kami-border-strong)" }} />
-              <div className="flex gap-4 text-sm">
-                <span style={{ color: "color-mix(in srgb, #10b981 70%, var(--kami-text))" }}>
-                  {stats.valid} mapped
-                </span>
-                <span style={{ color: "color-mix(in srgb, #f59e0b 70%, var(--kami-text))" }}>
-                  {stats.needsBenefit} missing
-                </span>
-                {stats.featureSpeak > 0 && (
-                  <span style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
-                    {stats.featureSpeak} feature-speak
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={handleCopyMarkdown}
-                className="px-4 py-2 text-sm font-medium"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {copied ? "Copied!" : "Copy Markdown"}
-              </button>
-              <button
-                onClick={handleDownloadCSV}
-                className="px-4 py-2 text-sm"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                CSV
-              </button>
-              <button
-                onClick={clearAll}
-                className="px-4 py-2 text-sm"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                Clear
-              </button>
-            </div>
+  const handleCopyPrompt = useCallback(() => {
+    navigator.clipboard.writeText(customerLangPrompt);
+  }, [customerLangPrompt]);
+
+  const controls = (
+    <>
+      <ControlGroup label="Score">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <span>Benefit coverage</span>
+            <span className="tabular-nums font-bold" style={{ color: "var(--kami-text)" }}>{stats.score}%</span>
           </div>
-          {/* Progress bar */}
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full" style={{ background: "var(--kami-surface)" }}>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
             <div
-              className="h-full rounded-full transition-all duration-500"
               style={{
                 width: `${stats.score}%`,
-                background:
-                  stats.score >= 80
-                    ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
-                    : stats.score >= 50
-                    ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
-                    : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+                height: "100%",
+                background: stats.score >= 80 ? "#10b981" : stats.score >= 50 ? "#f59e0b" : "#ef4444",
               }}
             />
           </div>
         </div>
+        <div className="grid grid-cols-3 gap-2 text-xs mt-2">
+          <div>
+            <span className="block font-bold" style={{ color: "#10b981" }}>{stats.valid}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>mapped</span>
+          </div>
+          <div>
+            <span className="block font-bold" style={{ color: "#f59e0b" }}>{stats.needsBenefit}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>missing</span>
+          </div>
+          <div>
+            <span className="block font-bold" style={{ color: "#ef4444" }}>{stats.featureSpeak}</span>
+            <span style={{ color: "var(--kami-text-dim)" }}>spec-y</span>
+          </div>
+        </div>
+      </ControlGroup>
+      <ControlGroup label="Manage">
+        <button onClick={addRow} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Add row</button>
+        <button onClick={clearAll} className="kc-segment-btn" style={{ minHeight: 40 }}>Reset</button>
+      </ControlGroup>
+      <ControlGroup label="AI prompt">
+        <button onClick={handleCopyPrompt} disabled={!customerLangPrompt} className="kc-segment-btn" style={{ minHeight: 40 }}>
+          Copy &quot;translate to customer language&quot; prompt
+        </button>
+      </ControlGroup>
+    </>
+  );
 
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleDownloadCSV}>CSV</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopyMarkdown}>
+        {copied ? "Copied" : "Copy MD"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Map features → benefits → outcomes. We flag &quot;feature-speak&quot; rows (api/integration/architecture words) and rows missing a benefit.</p>
+      <p><strong>Rewrite formula:</strong> state the feature → ask &quot;so what?&quot; until it hits a human outcome → rewrite as what the customer gains.</p>
+      <p>If you can put &quot;so what?&quot; after your sentence and it still needs an answer, it&apos;s a feature.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Feature-Benefit Mapper"
+      tagline="Feature → benefit → outcome · feature-speak detection · export MD/CSV"
+      accent={ACCENT_PMM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
         {/* Table */}
         <div
           style={{
@@ -483,7 +455,17 @@ export default function FeatureBenefitMapperContent() {
             </button>
           </div>
         </div>
+      </div>
+    </ToolShell>
+  );
+}
 
+// stale legacy markup retained below for reference
+function _unused() { return null; }
+const _stale = (
+  <div style={{ display: "none" }}>
+    {false && (
+      <div>
         {/* Tips */}
         <div
           className="mt-6 p-5"
@@ -539,65 +521,7 @@ export default function FeatureBenefitMapperContent() {
           </div>
         </div>
 
-        <ReferencePanel
-          id="feat-vs-benefit"
-          title="Features vs benefits - the rewrite formula"
-          summary="A three-step translation that works on almost any feature."
-          defaultOpen
-        >
-          <div className="space-y-4 text-sm">
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 1</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>State the feature (what it does)</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;AES-256 encryption at rest and in transit.&quot;</div>
-            </div>
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 2</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Ask &quot;so what?&quot; until it hits a human outcome</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>Encrypted → unreadable if stolen → customer data stays safe → you don&apos;t make the news.</div>
-            </div>
-            <div
-              className="p-3"
-              style={{
-                background: "var(--kami-surface)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-              }}
-            >
-              <div className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>Step 3</div>
-              <div className="mt-1 font-medium" style={{ color: "var(--kami-text)" }}>Rewrite as what the customer gains</div>
-              <div className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>&quot;Your customer data stays private - even if a backup is stolen.&quot;</div>
-            </div>
-            <div
-              className="p-3 text-xs"
-              style={{
-                background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
-                border: "1px solid color-mix(in srgb, #f59e0b 30%, transparent)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-                color: "var(--kami-text)",
-              }}
-            >
-              <strong>Rule of thumb:</strong> if you can put &quot;so what?&quot; after your
-              sentence and it still needs an answer, it&apos;s a feature. If the reader&apos;s
-              reaction is &quot;oh - I want that,&quot; it&apos;s a benefit.
-            </div>
-          </div>
-        </ReferencePanel>
       </div>
-    </div>
-  );
-}
+    )}
+  </div>
+);

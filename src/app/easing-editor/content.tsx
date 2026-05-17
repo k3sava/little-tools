@@ -2,11 +2,17 @@
 
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Slider, Segment } from "@/components/tools/controls";
 
 /* ─── Types ─── */
 
 type EditorMode = "cubic-bezier" | "linear";
+type OutputFormat = "function" | "transition" | "animation" | "linear";
 
 interface CubicBezier {
   x1: number;
@@ -17,7 +23,7 @@ interface CubicBezier {
 
 interface LinearPoint {
   value: number;
-  position: number; // percentage 0-100
+  position: number;
 }
 
 interface Preset {
@@ -40,21 +46,31 @@ const PRESETS: Preset[] = [
   { name: "ease-in-out", bezier: { x1: 0.42, y1: 0, x2: 0.58, y2: 1 } },
   { name: "ease-in-quad", bezier: { x1: 0.55, y1: 0.085, x2: 0.68, y2: 0.53 } },
   { name: "ease-out-cubic", bezier: { x1: 0.215, y1: 0.61, x2: 0.355, y2: 1 } },
-  { name: "ease-in-out-back", bezier: { x1: 0.68, y1: -0.55, x2: 0.265, y2: 1.55 } },
-  { name: "ease-out-back", bezier: { x1: 0.175, y1: 0.885, x2: 0.32, y2: 1.275 } },
-  { name: "ease-in-expo", bezier: { x1: 0.95, y1: 0.05, x2: 0.795, y2: 0.035 } },
-  { name: "ease-out-expo", bezier: { x1: 0.19, y1: 1, x2: 0.22, y2: 1 } },
+  { name: "back-in-out", bezier: { x1: 0.68, y1: -0.55, x2: 0.265, y2: 1.55 } },
+  { name: "back-out", bezier: { x1: 0.175, y1: 0.885, x2: 0.32, y2: 1.275 } },
+  { name: "expo-in", bezier: { x1: 0.95, y1: 0.05, x2: 0.795, y2: 0.035 } },
+  { name: "expo-out", bezier: { x1: 0.19, y1: 1, x2: 0.22, y2: 1 } },
   { name: "snappy", bezier: { x1: 0.5, y1: 0, x2: 0.2, y2: 1 } },
+  { name: "anticipate", bezier: { x1: 0.6, y1: -0.28, x2: 0.735, y2: 0.045 } },
+  { name: "spring", bezier: { x1: 0.5, y1: 1.5, x2: 0.7, y2: 1 } },
+  { name: "bounce", bezier: { x1: 0.6, y1: -0.6, x2: 0.4, y2: 1.6 } },
+];
+
+const SPRING_LINEAR: LinearPoint[] = [
+  { value: 0, position: 0 },
+  { value: 0.7, position: 25 },
+  { value: 1.1, position: 45 },
+  { value: 0.95, position: 65 },
+  { value: 1.02, position: 80 },
+  { value: 1, position: 100 },
 ];
 
 /* ─── Helpers ─── */
 
-/** Convert normalized (0..1 with possible overshoot) to SVG pixel coords */
 function toSVG(nx: number, ny: number): [number, number] {
   return [PAD + nx * INNER, PAD + (1 - ny) * INNER];
 }
 
-/** Convert SVG pixel coords to normalized */
 function fromSVG(sx: number, sy: number): [number, number] {
   return [
     Math.round(((sx - PAD) / INNER) * 1000) / 1000,
@@ -85,18 +101,16 @@ function linearStr(points: LinearPoint[]): string {
 /* ─── Components ─── */
 
 function GridSVG() {
-  const lines = [];
+  const lines: React.ReactNode[] = [];
   for (let i = 0; i <= GRID_LINES; i++) {
     const pos = PAD + (i / GRID_LINES) * INNER;
     lines.push(
-      <line key={`h${i}`} x1={PAD} y1={pos} x2={PAD + INNER} y2={pos} stroke="#e5e7eb" strokeWidth={1} />,
-      <line key={`v${i}`} x1={pos} y1={PAD} x2={pos} y2={PAD + INNER} stroke="#e5e7eb" strokeWidth={1} />,
+      <line key={`h${i}`} x1={PAD} y1={pos} x2={PAD + INNER} y2={pos} stroke="var(--kami-border)" strokeWidth={1} />,
+      <line key={`v${i}`} x1={pos} y1={PAD} x2={pos} y2={PAD + INNER} stroke="var(--kami-border)" strokeWidth={1} />,
     );
   }
   return <>{lines}</>;
 }
-
-/* ─── Bezier Canvas ─── */
 
 function BezierCanvas({
   bezier,
@@ -134,14 +148,10 @@ function BezierCanvas({
     if (!dragging.current) return;
     const [sx, sy] = getSVGPoint(e.nativeEvent);
     const [nx, ny] = fromSVG(sx, sy);
-    // Clamp x to 0..1, allow y overshoot -0.5..1.5 for bounce/back effects
     const cx = Math.max(0, Math.min(1, nx));
     const cy = Math.max(-0.5, Math.min(1.5, ny));
-    if (dragging.current === "p1") {
-      onChange({ ...bezier, x1: cx, y1: cy });
-    } else {
-      onChange({ ...bezier, x2: cx, y2: cy });
-    }
+    if (dragging.current === "p1") onChange({ ...bezier, x1: cx, y1: cy });
+    else onChange({ ...bezier, x2: cx, y2: cy });
   }, [bezier, onChange, getSVGPoint]);
 
   const onPointerUp = useCallback(() => {
@@ -152,28 +162,24 @@ function BezierCanvas({
     <svg
       ref={svgRef}
       viewBox={`0 0 ${CANVAS} ${CANVAS}`}
-      className="w-full max-w-[300px] select-none"
+      className="block h-full w-full max-w-[420px] select-none"
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
+      style={{ touchAction: "none" }}
     >
-      <rect x={0} y={0} width={CANVAS} height={CANVAS} fill="white" rx={12} />
+      <rect x={0} y={0} width={CANVAS} height={CANVAS} fill="var(--kami-surface-solid)" rx={12} />
       <GridSVG />
-      {/* diagonal reference */}
-      <line x1={p0x} y1={p0y} x2={p3x} y2={p3y} stroke="#d1d5db" strokeWidth={1} strokeDasharray="4 4" />
-      {/* control lines */}
-      <line x1={p0x} y1={p0y} x2={p1x} y2={p1y} stroke="#9ca3af" strokeWidth={1} strokeDasharray="3 3" />
-      <line x1={p3x} y1={p3y} x2={p2x} y2={p2y} stroke="#9ca3af" strokeWidth={1} strokeDasharray="3 3" />
-      {/* curve */}
-      <path d={curvePath} fill="none" stroke="#111827" strokeWidth={2.5} strokeLinecap="round" />
-      {/* endpoints */}
-      <circle cx={p0x} cy={p0y} r={4} fill="#6b7280" />
-      <circle cx={p3x} cy={p3y} r={4} fill="#6b7280" />
-      {/* control points */}
+      <line x1={p0x} y1={p0y} x2={p3x} y2={p3y} stroke="var(--kami-border-strong)" strokeWidth={1} strokeDasharray="4 4" />
+      <line x1={p0x} y1={p0y} x2={p1x} y2={p1y} stroke="var(--kami-text-dim)" strokeWidth={1} strokeDasharray="3 3" />
+      <line x1={p3x} y1={p3y} x2={p2x} y2={p2y} stroke="var(--kami-text-dim)" strokeWidth={1} strokeDasharray="3 3" />
+      <path d={curvePath} fill="none" stroke="var(--kami-text)" strokeWidth={2.5} strokeLinecap="round" />
+      <circle cx={p0x} cy={p0y} r={4} fill="var(--kami-text-dim)" />
+      <circle cx={p3x} cy={p3y} r={4} fill="var(--kami-text-dim)" />
       <circle
         cx={p1x}
         cy={p1y}
-        r={7}
+        r={11}
         fill="#3b82f6"
         stroke="white"
         strokeWidth={2}
@@ -183,7 +189,7 @@ function BezierCanvas({
       <circle
         cx={p2x}
         cy={p2y}
-        r={7}
+        r={11}
         fill="#ef4444"
         stroke="white"
         strokeWidth={2}
@@ -193,8 +199,6 @@ function BezierCanvas({
     </svg>
   );
 }
-
-/* ─── Linear Canvas ─── */
 
 function LinearCanvas({
   points,
@@ -266,19 +270,17 @@ function LinearCanvas({
     <svg
       ref={svgRef}
       viewBox={`0 0 ${CANVAS} ${CANVAS}`}
-      className="w-full max-w-[300px] cursor-crosshair select-none"
+      className="block h-full w-full max-w-[420px] cursor-crosshair select-none"
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerLeave={onPointerUp}
       onClick={onCanvasClick}
+      style={{ touchAction: "none" }}
     >
-      <rect x={0} y={0} width={CANVAS} height={CANVAS} fill="white" rx={12} />
+      <rect x={0} y={0} width={CANVAS} height={CANVAS} fill="var(--kami-surface-solid)" rx={12} />
       <GridSVG />
-      {/* diagonal reference */}
-      <line x1={PAD} y1={PAD + INNER} x2={PAD + INNER} y2={PAD} stroke="#d1d5db" strokeWidth={1} strokeDasharray="4 4" />
-      {/* line */}
-      {pathD && <path d={pathD} fill="none" stroke="#111827" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />}
-      {/* points */}
+      <line x1={PAD} y1={PAD + INNER} x2={PAD + INNER} y2={PAD} stroke="var(--kami-border-strong)" strokeWidth={1} strokeDasharray="4 4" />
+      {pathD && <path d={pathD} fill="none" stroke="var(--kami-text)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />}
       {sorted.map((p, i) => {
         const [cx, cy] = toSVG(p.position / 100, p.value);
         const origIdx = points.indexOf(p);
@@ -287,7 +289,7 @@ function LinearCanvas({
             key={i}
             cx={cx}
             cy={cy}
-            r={6}
+            r={9}
             fill="#8b5cf6"
             stroke="white"
             strokeWidth={2}
@@ -304,89 +306,54 @@ function LinearCanvas({
   );
 }
 
-/* ─── Preview ─── */
-
 function AnimationPreview({
   easingCSS,
   duration,
+  playKey,
 }: {
   easingCSS: string;
   duration: number;
+  playKey: number;
 }) {
-  const [playing, setPlaying] = useState(false);
-  const [key, setKey] = useState(0);
-
-  const play = useCallback(() => {
-    setKey((k) => k + 1);
-    setPlaying(true);
-  }, []);
-
-  useEffect(() => {
-    if (!playing) return;
-    const timer = setTimeout(() => setPlaying(false), duration * 1000 + 100);
-    return () => clearTimeout(timer);
-  }, [playing, duration, key]);
-
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <button
-          id="easing-play-btn"
-          onClick={play}
-          className="px-3 py-1.5 text-xs font-medium"
-          style={{
-            background: "var(--kami-cta-bg, #111827)",
-            color: "var(--kami-cta-text, #ffffff)",
-            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-          }}
-        >
-          {playing ? "Playing..." : "Play"}
-        </button>
-        <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{duration}s</span>
-      </div>
-      {/* Custom easing */}
+    <div className="space-y-2">
       <div
-        className="relative h-8 overflow-hidden"
+        className="relative h-10 overflow-hidden"
         style={{
           background: "var(--kami-surface)",
+          border: "1px solid var(--kami-border-strong)",
           borderRadius: "var(--kami-card-radius, 0.5rem)",
+          containerType: "inline-size",
         }}
       >
-        <div className="absolute left-0 top-0 h-full flex items-center px-1">
-          <span className="text-[9px] font-medium" style={{ color: "var(--kami-text-dim)" }}>custom</span>
-        </div>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: "var(--kami-text-dim)" }}>custom</div>
         <div
-          key={`custom-${key}`}
-          className="absolute top-1 left-1 h-6 w-6"
+          key={`custom-${playKey}`}
+          className="absolute top-1 left-1 h-8 w-8 rounded-lg"
           style={{
             background: "var(--kami-cta-bg, #111827)",
-            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-            transform: playing ? "translateX(calc(100cqw - 32px))" : "translateX(0)",
-            transition: playing ? `transform ${duration}s ${easingCSS}` : "none",
-            containIntrinsicSize: "auto",
+            transform: playKey > 0 ? "translateX(calc(100cqw - 40px))" : "translateX(0)",
+            transition: playKey > 0 ? `transform ${duration}s ${easingCSS}` : "none",
           }}
         />
-        <style>{`.relative { container-type: inline-size; }`}</style>
       </div>
-      {/* Linear reference */}
       <div
-        className="relative h-8 overflow-hidden"
+        className="relative h-10 overflow-hidden"
         style={{
           background: "var(--kami-surface)",
+          border: "1px solid var(--kami-border-strong)",
           borderRadius: "var(--kami-card-radius, 0.5rem)",
+          containerType: "inline-size",
         }}
       >
-        <div className="absolute left-0 top-0 h-full flex items-center px-1">
-          <span className="text-[9px] font-medium" style={{ color: "var(--kami-text-dim)" }}>linear</span>
-        </div>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: "var(--kami-text-dim)" }}>linear</div>
         <div
-          key={`linear-${key}`}
-          className="absolute top-1 left-1 h-6 w-6"
+          key={`linear-${playKey}`}
+          className="absolute top-1 left-1 h-8 w-8 rounded-lg"
           style={{
             background: "var(--kami-text-dim, #9ca3af)",
-            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-            transform: playing ? "translateX(calc(100cqw - 32px))" : "translateX(0)",
-            transition: playing ? `transform ${duration}s linear` : "none",
+            transform: playKey > 0 ? "translateX(calc(100cqw - 40px))" : "translateX(0)",
+            transition: playKey > 0 ? `transform ${duration}s linear` : "none",
           }}
         />
       </div>
@@ -406,29 +373,44 @@ export default function EasingEditorContent() {
     { value: 1, position: 100 },
   ]);
   const [duration, setDuration] = useState(0.6);
+  const [outputFmt, setOutputFmt] = useState<OutputFormat>("function");
   const [copied, setCopied] = useState(false);
+  const [playKey, setPlayKey] = useState(0);
 
   const easingCSS = mode === "cubic-bezier" ? bezierStr(bezier) : linearStr(linearPoints);
-  const transitionCSS = `transition-timing-function: ${easingCSS};`;
-  const animationCSS = `animation-timing-function: ${easingCSS};`;
 
-  const copy = useCallback((text: string) => {
-    navigator.clipboard.writeText(text);
+  const outputCode = useMemo(() => {
+    switch (outputFmt) {
+      case "function": return easingCSS;
+      case "transition": return `transition-timing-function: ${easingCSS};`;
+      case "animation": return `animation-timing-function: ${easingCSS};`;
+      case "linear": return linearStr(linearPoints);
+    }
+  }, [outputFmt, easingCSS, linearPoints]);
+
+  const copy = useCallback(() => {
+    navigator.clipboard.writeText(outputCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
+  }, [outputCode]);
+
+  const play = useCallback(() => {
+    setPlayKey(0);
+    requestAnimationFrame(() => setPlayKey((k) => k + 1));
   }, []);
 
-  const copyCSS = useCallback(() => {
-    copy(transitionCSS);
-  }, [copy, transitionCSS]);
+  // Auto-play once on changes
+  useEffect(() => {
+    play();
+  }, [easingCSS, duration, play]);
 
   useKeyboardShortcuts(
     useMemo(
       () => [
-        { key: "Enter", meta: true, action: copyCSS, label: "Copy CSS" },
-        { key: " ", action: () => document.getElementById("easing-play-btn")?.click(), label: "Play preview" },
+        { key: "Enter", meta: true, action: copy, label: "Copy CSS" },
+        { key: " ", action: play, label: "Play preview" },
       ],
-      [copyCSS],
+      [copy, play],
     ),
   );
 
@@ -437,312 +419,185 @@ export default function EasingEditorContent() {
     if (mode !== "cubic-bezier") setMode("cubic-bezier");
   };
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Easing Curve Editor"
-          tagline="Design cubic-bezier() and linear() easing curves visually - drag handles, watch the animation preview, copy the CSS."
-          description="Edit the bezier curve by dragging its control points. A sample ball animates in real time so you feel the motion, not just see the curve. linear() mode unlocks multi-stop easing for spring-like motion (supported in modern browsers). Presets mirror Apple, Material, and popular animation libraries."
-          audience={["Designers", "Motion designers", "Front-end devs"]}
-          whenToUse={[
-            "Tuning the feel of a hover or modal transition",
-            "Matching an easing curve from a design system",
-            "Building a springy / bouncy effect with linear()",
-          ]}
-        />
+  const applySpringLinear = () => {
+    setLinearPoints(SPRING_LINEAR.map((p) => ({ ...p })));
+    if (mode !== "linear") setMode("linear");
+  };
 
-        {/* Mode toggle */}
-        <div className="mt-6 flex gap-2">
-          {(["cubic-bezier", "linear"] as EditorMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className="px-3 py-1.5 text-sm font-mono"
-              style={
-                mode === m
-                  ? {
-                      background: "var(--kami-cta-bg, #111827)",
-                      color: "var(--kami-cta-text, #ffffff)",
-                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    }
-                  : {
-                      background: "var(--kami-surface)",
-                      color: "var(--kami-text-muted)",
-                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    }
-              }
+  return (
+    <ToolShell
+      title="Easing Editor"
+      tagline="cubic-bezier and linear() curves with draggable handles and a live ball preview"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <Segment
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "cubic-bezier", label: "cubic-bezier()" },
+              { value: "linear", label: "linear()" },
+            ]}
+            size="sm"
+          />
+          <ToolActionButton onClick={play} variant="outline">Play</ToolActionButton>
+          <ToolActionButton onClick={copy} variant="solid">{copied ? "Copied!" : "Copy"}</ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          {mode === "cubic-bezier" ? (
+            <>
+              <ControlGroup label="Presets">
+                <div className="grid grid-cols-2 gap-2">
+                  {PRESETS.map((p) => {
+                    const active =
+                      p.bezier.x1 === bezier.x1 &&
+                      p.bezier.y1 === bezier.y1 &&
+                      p.bezier.x2 === bezier.x2 &&
+                      p.bezier.y2 === bezier.y2;
+                    return (
+                      <button
+                        key={p.name}
+                        type="button"
+                        onClick={() => applyPreset(p)}
+                        className="px-2.5 py-2 text-xs font-mono"
+                        style={{
+                          background: active ? "var(--kami-cta-bg)" : "var(--kami-surface)",
+                          color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
+                          border: "1px solid var(--kami-border-strong)",
+                          borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                          minHeight: 40,
+                        }}
+                      >
+                        {p.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </ControlGroup>
+
+              <ControlGroup label="Control point P1 X" hint={fmt(bezier.x1)}>
+                <Slider value={bezier.x1} onChange={(v) => setBezier((b) => ({ ...b, x1: v }))} min={0} max={1} step={0.01} />
+              </ControlGroup>
+              <ControlGroup label="Control point P1 Y" hint={fmt(bezier.y1)}>
+                <Slider value={bezier.y1} onChange={(v) => setBezier((b) => ({ ...b, y1: v }))} min={-0.5} max={1.5} step={0.01} />
+              </ControlGroup>
+              <ControlGroup label="Control point P2 X" hint={fmt(bezier.x2)}>
+                <Slider value={bezier.x2} onChange={(v) => setBezier((b) => ({ ...b, x2: v }))} min={0} max={1} step={0.01} />
+              </ControlGroup>
+              <ControlGroup label="Control point P2 Y" hint={fmt(bezier.y2)}>
+                <Slider value={bezier.y2} onChange={(v) => setBezier((b) => ({ ...b, y2: v }))} min={-0.5} max={1.5} step={0.01} />
+              </ControlGroup>
+            </>
+          ) : (
+            <>
+              <ControlGroup label="Spring preset">
+                <button
+                  type="button"
+                  onClick={applySpringLinear}
+                  className="px-3 py-2 text-sm w-full"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    minHeight: 40,
+                  }}
+                >
+                  Spring overshoot
+                </button>
+              </ControlGroup>
+              <ControlGroup>
+                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  Tap the canvas to add a stop. Double-click a stop to remove it.
+                  Drag to position.
+                </p>
+              </ControlGroup>
+            </>
+          )}
+
+          <ControlGroup label="Duration" hint={`${duration.toFixed(1)}s`}>
+            <Slider value={duration} onChange={setDuration} min={0.2} max={3} step={0.1} unit="s" />
+          </ControlGroup>
+
+          <ControlGroup label="Output format">
+            <Segment
+              value={outputFmt}
+              onChange={setOutputFmt}
+              options={[
+                { value: "function", label: "value" },
+                { value: "transition", label: "trans" },
+                { value: "animation", label: "anim" },
+                { value: "linear", label: "linear()" },
+              ]}
+              full
+              size="sm"
+            />
+          </ControlGroup>
+
+          <ControlGroup label="CSS">
+            <pre
+              className="overflow-x-auto p-3 text-xs"
+              style={{
+                background: "var(--kami-overlay-bg, #0d1117)",
+                color: "var(--kami-overlay-text, #f1f5f9)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                maxHeight: 200,
+              }}
             >
-              {m === "cubic-bezier" ? "cubic-bezier()" : "linear()"}
-            </button>
-          ))}
+              <code>{outputCode}</code>
+            </pre>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Drag the blue and red dots on the cubic-bezier canvas to shape the curve.
+            Y values can overshoot 0..1 for back / bounce effects.
+          </p>
+          <p className="text-xs">
+            linear() mode unlocks multi-stop easing — great for spring motion in modern
+            browsers without JS.
+          </p>
+        </div>
+      }
+    >
+      <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
+        <div
+          className="flex flex-1 flex-col items-center justify-center gap-3 p-4"
+          style={{
+            background: "var(--kami-surface)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          {mode === "cubic-bezier" ? (
+            <BezierCanvas bezier={bezier} onChange={setBezier} />
+          ) : (
+            <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
+          )}
+          <code className="text-xs font-mono" style={{ color: "var(--kami-text-muted)" }}>
+            {easingCSS}
+          </code>
         </div>
 
-        {/* Presets (cubic-bezier only) */}
-        {mode === "cubic-bezier" && (
-          <div className="mt-5">
-            <h2 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Presets</h2>
-            <div className="flex flex-wrap gap-2">
-              {PRESETS.map((p) => {
-                const active =
-                  p.bezier.x1 === bezier.x1 &&
-                  p.bezier.y1 === bezier.y1 &&
-                  p.bezier.x2 === bezier.x2 &&
-                  p.bezier.y2 === bezier.y2;
-                return (
-                  <button
-                    key={p.name}
-                    onClick={() => applyPreset(p)}
-                    className="px-2.5 py-1 text-xs font-mono transition"
-                    style={
-                      active
-                        ? {
-                            background: "var(--kami-cta-bg, #111827)",
-                            color: "var(--kami-cta-text, #ffffff)",
-                            border: "1px solid var(--kami-cta-bg, #111827)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface-solid)",
-                            color: "var(--kami-text-muted)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                    }
-                  >
-                    {p.name}
-                  </button>
-                );
-              })}
-            </div>
+        <div
+          className="p-4"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+          }}
+        >
+          <div className="mb-2 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <span className="font-semibold">Preview</span>
+            <span className="font-mono">{duration.toFixed(1)}s</span>
           </div>
-        )}
-
-        <div className="mt-8 grid gap-6 lg:grid-cols-[auto_1fr]">
-          {/* Canvas */}
-          <div
-            className="p-4"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            {mode === "cubic-bezier" ? (
-              <BezierCanvas bezier={bezier} onChange={setBezier} />
-            ) : (
-              <>
-                <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
-                <p className="mt-2 text-center text-[10px]" style={{ color: "var(--kami-text-dim)" }}>
-                  Click canvas to add points. Double-click a point to remove.
-                </p>
-              </>
-            )}
-
-            {/* Coordinate inputs (cubic-bezier mode) */}
-            {mode === "cubic-bezier" && (
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-[10px] font-medium text-blue-500">P1</label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="number"
-                      step={0.01}
-                      min={0}
-                      max={1}
-                      value={bezier.x1}
-                      onChange={(e) => setBezier((b) => ({ ...b, x1: Math.max(0, Math.min(1, +e.target.value)) }))}
-                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                    <input
-                      type="number"
-                      step={0.01}
-                      min={-0.5}
-                      max={1.5}
-                      value={bezier.y1}
-                      onChange={(e) => setBezier((b) => ({ ...b, y1: Math.max(-0.5, Math.min(1.5, +e.target.value)) }))}
-                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[10px] font-medium text-red-500">P2</label>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="number"
-                      step={0.01}
-                      min={0}
-                      max={1}
-                      value={bezier.x2}
-                      onChange={(e) => setBezier((b) => ({ ...b, x2: Math.max(0, Math.min(1, +e.target.value)) }))}
-                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                    <input
-                      type="number"
-                      step={0.01}
-                      min={-0.5}
-                      max={1.5}
-                      value={bezier.y2}
-                      onChange={(e) => setBezier((b) => ({ ...b, y2: Math.max(-0.5, Math.min(1.5, +e.target.value)) }))}
-                      className="w-full px-2 py-1 text-xs font-mono focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right panel */}
-          <div className="space-y-4">
-            {/* Preview */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Preview</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>Duration</span>
-                  <input
-                    type="range"
-                    min={0.2}
-                    max={3}
-                    step={0.1}
-                    value={duration}
-                    onChange={(e) => setDuration(+e.target.value)}
-                    className="h-1 w-24 cursor-pointer appearance-none rounded-full"
-                    style={{
-                      background: "var(--kami-border)",
-                      accentColor: "var(--kami-text)",
-                    }}
-                  />
-                  <span className="w-8 text-right text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{duration}s</span>
-                </div>
-              </div>
-              <div id="easing-play-btn-wrapper">
-                <AnimationPreview easingCSS={easingCSS} duration={duration} />
-              </div>
-            </div>
-
-            {/* CSS Output */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>CSS Output</h2>
-                <button
-                  onClick={() => copy(transitionCSS)}
-                  className="px-2 py-1 text-xs"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  {copied ? "Copied!" : "Copy"}
-                </button>
-              </div>
-              <div className="space-y-2">
-                <pre
-                  className="overflow-x-auto p-3 text-xs"
-                  style={{
-                    background: "var(--kami-overlay-bg, #111827)",
-                    color: "var(--kami-overlay-text, #f3f4f6)",
-                    borderRadius: "var(--kami-card-radius, 0.5rem)",
-                  }}
-                >
-                  <code>{transitionCSS}</code>
-                </pre>
-                <pre
-                  className="overflow-x-auto p-3 text-xs"
-                  style={{
-                    background: "var(--kami-overlay-bg, #111827)",
-                    color: "var(--kami-overlay-text, #f3f4f6)",
-                    borderRadius: "var(--kami-card-radius, 0.5rem)",
-                  }}
-                >
-                  <code>{animationCSS}</code>
-                </pre>
-              </div>
-            </div>
-
-            {/* Value only */}
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</h2>
-                <button
-                  onClick={() => copy(easingCSS)}
-                  className="px-2 py-1 text-xs"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                  }}
-                >
-                  Copy
-                </button>
-              </div>
-              <pre
-                className="overflow-x-auto p-3 text-xs font-mono"
-                style={{
-                  background: "var(--kami-surface)",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.5rem)",
-                }}
-              >
-                <code>{easingCSS}</code>
-              </pre>
-            </div>
-          </div>
+          <AnimationPreview easingCSS={easingCSS} duration={duration} playKey={playKey} />
         </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

@@ -1,9 +1,14 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle, Select } from "@/components/tools/controls";
 
 // --- Types ---
 
@@ -17,6 +22,7 @@ interface DecodedJwt {
 }
 
 type Tab = "decode" | "builder" | "diff";
+type VerifyState = "idle" | "verifying" | "valid" | "invalid" | "unsupported";
 
 interface SecurityIssue {
   severity: "critical" | "warning" | "info";
@@ -140,6 +146,23 @@ function base64UrlDecode(str: string): string {
   } catch {
     return atob(base64);
   }
+}
+
+function base64UrlToBytes(str: string): Uint8Array {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  const pad = base64.length % 4;
+  if (pad === 2) base64 += "==";
+  else if (pad === 3) base64 += "=";
+  const binary = atob(base64);
+  const out = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
+  return out;
+}
+
+function bytesToBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 function buildSampleToken(
@@ -275,7 +298,43 @@ function analyzeSecurityIssues(decoded: DecodedJwt, rawToken: string): SecurityI
   return issues;
 }
 
-// --- Inline SVG Icons ---
+// --- HMAC verification via WebCrypto ---
+
+async function verifyHmac(
+  token: string,
+  secret: string,
+  alg: string
+): Promise<{ ok: boolean; reason?: string }> {
+  const parts = token.split(".");
+  if (parts.length !== 3) return { ok: false, reason: "Token must have 3 parts" };
+
+  const hashMap: Record<string, string> = {
+    HS256: "SHA-256",
+    HS384: "SHA-384",
+    HS512: "SHA-512",
+  };
+  const hashName = hashMap[alg];
+  if (!hashName) return { ok: false, reason: `${alg} is not an HMAC algorithm (supported: HS256/HS384/HS512)` };
+
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(secret),
+      { name: "HMAC", hash: hashName },
+      false,
+      ["sign", "verify"]
+    );
+    const signingInput = enc.encode(`${parts[0]}.${parts[1]}`);
+    const expectedSig = await crypto.subtle.sign("HMAC", key, signingInput);
+    const expectedB64 = bytesToBase64Url(new Uint8Array(expectedSig));
+    return { ok: expectedB64 === parts[2] };
+  } catch (e) {
+    return { ok: false, reason: (e as Error).message };
+  }
+}
+
+// --- Icons ---
 
 function CopyIcon() {
   return (
@@ -312,44 +371,17 @@ function InfoIcon() {
   );
 }
 
-function ChevronIcon({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`transition-transform ${open ? "rotate-90" : ""}`}
-    >
-      <polyline points="9 18 15 12 9 6" />
-    </svg>
-  );
-}
-
-// --- Sub-components ---
+// --- Subcomponents ---
 
 function CopyButton({ copied, onCopy, label = "Copy" }: { copied: boolean; onCopy: () => void; label?: string }) {
   return (
     <button
+      type="button"
       onClick={onCopy}
-      className="flex items-center gap-1 text-xs transition-colors"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="flex items-center gap-1 text-xs transition-colors px-2 py-1 rounded"
+      style={{ color: "var(--kami-text-dim)", minHeight: 32 }}
     >
-      {copied ? (
-        <>
-          <CheckIcon />
-          Copied
-        </>
-      ) : (
-        <>
-          <CopyIcon />
-          {label}
-        </>
-      )}
+      {copied ? (<><CheckIcon /> Copied</>) : (<><CopyIcon /> {label}</>)}
     </button>
   );
 }
@@ -357,6 +389,7 @@ function CopyButton({ copied, onCopy, label = "Copy" }: { copied: boolean; onCop
 function TimestampValue({ unix, toggled, onToggle }: { unix: number; toggled: boolean; onToggle: () => void }) {
   return (
     <button
+      type="button"
       onClick={onToggle}
       className="case-preserve inline text-left rounded px-0.5 -mx-0.5 transition-colors cursor-pointer"
       title="Click to toggle between unix and human-readable"
@@ -367,7 +400,10 @@ function TimestampValue({ unix, toggled, onToggle }: { unix: number; toggled: bo
           <span className="text-xs ml-1" style={{ color: "var(--kami-text-dim)" }}>({relativeTime(unix)})</span>
         </span>
       ) : (
-        <span style={{ color: "var(--kami-text)" }}>{unix}</span>
+        <span style={{ color: "var(--kami-text)" }}>
+          {unix}
+          <span className="text-xs ml-1" style={{ color: "var(--kami-text-dim)" }}>({relativeTime(unix)})</span>
+        </span>
       )}
     </button>
   );
@@ -383,13 +419,7 @@ function ClaimDescription({ claimKey }: { claimKey: string }) {
   );
 }
 
-function PayloadValue({
-  value,
-  depth = 0,
-}: {
-  value: unknown;
-  depth?: number;
-}) {
+function PayloadValue({ value }: { value: unknown }) {
   if (value === null) return <span style={{ color: "var(--kami-text-dim)" }}>null</span>;
   if (value === undefined) return <span style={{ color: "var(--kami-text-dim)" }}>undefined</span>;
   if (typeof value === "boolean") return <span className="text-blue-600">{String(value)}</span>;
@@ -404,7 +434,7 @@ function PayloadValue({
         <span className="text-xs ml-1" style={{ color: "var(--kami-text-dim)" }}>({value.length} items)</span>
         {value.map((item, i) => (
           <div key={i} className="pl-4">
-            <PayloadValue value={item} depth={depth + 1} />
+            <PayloadValue value={item} />
             {i < value.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
           </div>
         ))}
@@ -423,7 +453,7 @@ function PayloadValue({
           <div key={k} className="pl-4">
             <span className="text-purple-400">&quot;{k}&quot;</span>
             <span style={{ color: "var(--kami-text-dim)" }}>: </span>
-            <PayloadValue value={v} depth={depth + 1} />
+            <PayloadValue value={v} />
             {i < entries.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
           </div>
         ))}
@@ -434,6 +464,20 @@ function PayloadValue({
 
   return <span style={{ color: "var(--kami-text)" }}>{String(value)}</span>;
 }
+
+const cardStyle: React.CSSProperties = {
+  background: "var(--kami-surface-solid)",
+  border: "1px solid var(--kami-border-strong)",
+  borderRadius: "var(--kami-card-radius, 0.75rem)",
+  boxShadow: "var(--kami-card-shadow, none)",
+};
+
+const inputStyle: React.CSSProperties = {
+  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+  color: "var(--kami-text)",
+  border: "1px solid var(--kami-border-strong)",
+  borderRadius: "var(--kami-input-radius, 0.5rem)",
+};
 
 function SecurityPanel({ issues }: { issues: SecurityIssue[] }) {
   if (issues.length === 0) {
@@ -456,14 +500,7 @@ function SecurityPanel({ issues }: { issues: SecurityIssue[] }) {
   }
 
   return (
-    <div
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
+    <div style={cardStyle}>
       <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
         <ShieldIcon />
         <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Security Analysis</span>
@@ -507,14 +544,7 @@ function ClaimInspector({
   if (entries.length === 0) return null;
 
   return (
-    <div
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
+    <div style={cardStyle}>
       <div className="flex items-center gap-2 px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
         <InfoIcon />
         <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Claim Inspector</span>
@@ -553,18 +583,24 @@ function ClaimInspector({
   );
 }
 
-// --- Decode Tab ---
+// --- Decode workspace ---
 
-function DecodeTab({
+function DecodeWorkspace({
   input,
   setInput,
   copiedSection,
   handleCopy,
+  secret,
+  verifyState,
+  verifyMessage,
 }: {
   input: string;
   setInput: (v: string) => void;
   copiedSection: string | null;
   handleCopy: (section: string, text: string) => void;
+  secret: string;
+  verifyState: VerifyState;
+  verifyMessage: string;
 }) {
   const [toggledTimestamps, setToggledTimestamps] = useState<Set<string>>(new Set());
   const [showSamples, setShowSamples] = useState(false);
@@ -598,24 +634,6 @@ function DecodeTab({
     });
   }, []);
 
-  const handleToggleAllTimestamps = useCallback(() => {
-    if (!decoded) return;
-    const timestampKeys = Object.keys(decoded.payload).filter(
-      (k) => TIMESTAMP_CLAIMS.has(k) && typeof decoded.payload[k] === "number"
-    );
-    setToggledTimestamps((prev) => {
-      const allToggled = timestampKeys.every((k) => prev.has(k));
-      if (allToggled) return new Set();
-      return new Set(timestampKeys);
-    });
-  }, [decoded]);
-
-  const hasTimestamps = decoded
-    ? Object.keys(decoded.payload).some(
-        (k) => TIMESTAMP_CLAIMS.has(k) && typeof decoded.payload[k] === "number"
-      )
-    : false;
-
   return (
     <div className="space-y-4">
       {/* Token input */}
@@ -624,21 +642,17 @@ function DecodeTab({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste your JWT here... e.g. eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgN..."
-          className={`w-full px-4 py-3 text-base font-mono focus:outline-none ${
-            input.trim() && error ? "focus:ring-2 focus:ring-red-100" : ""
-          }`}
+          className="w-full px-4 py-3 text-base font-mono focus:outline-none"
           style={{
-            background: "var(--kami-input-bg, var(--kami-surface-solid))",
-            color: "var(--kami-text)",
+            ...inputStyle,
             border: `1px solid ${input.trim() && error ? "#fca5a5" : "var(--kami-border-strong)"}`,
-            borderRadius: "var(--kami-input-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
+            minHeight: 96,
           }}
           rows={4}
           autoFocus
           spellCheck={false}
         />
-        <div className="mt-1.5 flex items-center justify-between text-xs">
+        <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-3">
             {error && <span className="text-red-500">{error}</span>}
             {decoded && !error && (
@@ -652,14 +666,15 @@ function DecodeTab({
           </div>
           <div className="flex items-center gap-3">
             <button
+              type="button"
               onClick={() => setShowSamples(!showSamples)}
               className="transition-colors"
-              style={{ color: "var(--kami-text-dim)" }}
+              style={{ color: "var(--kami-text-dim)", minHeight: 32 }}
             >
               {showSamples ? "Hide samples" : "Load sample"}
             </button>
             {input && (
-              <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
+              <button type="button" onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)", minHeight: 32 }}>
                 Clear
               </button>
             )}
@@ -669,20 +684,13 @@ function DecodeTab({
 
       {/* Sample tokens */}
       {showSamples && (
-        <div
-          className="p-4"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
+        <div className="p-4" style={cardStyle}>
           <p className="text-xs font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>Sample Tokens</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {SAMPLE_TOKENS.map((sample) => (
               <button
                 key={sample.name}
+                type="button"
                 onClick={() => {
                   setInput(sample.token);
                   setShowSamples(false);
@@ -692,6 +700,7 @@ function DecodeTab({
                   background: "var(--kami-surface)",
                   border: "1px solid var(--kami-border)",
                   borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  minHeight: 56,
                 }}
               >
                 <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>{sample.name}</p>
@@ -705,15 +714,7 @@ function DecodeTab({
       {decoded && (
         <>
           {/* Color-coded token preview */}
-          <div
-            className="px-4 py-3 overflow-auto"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
+          <div className="px-4 py-3 overflow-auto" style={cardStyle}>
             <span className="text-xs font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Encoded Token</span>
             <p className="font-mono text-sm break-all leading-relaxed">
               <span className="text-red-500">{decoded.headerRaw}</span>
@@ -727,7 +728,7 @@ function DecodeTab({
           {/* Expiration status */}
           {expStatus && (
             <div
-              className="flex items-center gap-3 px-4 py-3"
+              className="flex items-center gap-3 px-4 py-3 flex-wrap"
               style={{
                 background:
                   expStatus.status === "valid"
@@ -760,166 +761,181 @@ function DecodeTab({
             </div>
           )}
 
+          {/* HMAC verify result banner */}
+          {verifyState !== "idle" && (
+            <div
+              className="flex items-center gap-3 px-4 py-3"
+              style={{
+                background:
+                  verifyState === "valid"
+                    ? "color-mix(in srgb, #16a34a 10%, var(--kami-surface))"
+                    : verifyState === "invalid"
+                    ? "color-mix(in srgb, #dc2626 10%, var(--kami-surface))"
+                    : "var(--kami-surface)",
+                border: `1px solid ${
+                  verifyState === "valid"
+                    ? "color-mix(in srgb, #16a34a 30%, transparent)"
+                    : verifyState === "invalid"
+                    ? "color-mix(in srgb, #dc2626 30%, transparent)"
+                    : "var(--kami-border-strong)"
+                }`,
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+              }}
+            >
+              <ShieldIcon />
+              <div className="text-sm" style={{ color: "var(--kami-text)" }}>
+                {verifyState === "verifying" && "Verifying..."}
+                {verifyState === "valid" && "Signature verified with provided secret"}
+                {verifyState === "invalid" && (
+                  <>
+                    Signature does NOT match
+                    {verifyMessage && <span className="ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>({verifyMessage})</span>}
+                  </>
+                )}
+                {verifyState === "unsupported" && (
+                  <>
+                    {verifyMessage || "Unsupported algorithm for in-browser verification"}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Security analysis */}
           <SecurityPanel issues={securityIssues} />
 
-          {/* Header section */}
-          <div
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-red-500" />
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Header</span>
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>JOSE</span>
-              </div>
-              <CopyButton
-                copied={copiedSection === "header"}
-                onCopy={() => handleCopy("header", JSON.stringify(decoded.header, null, 2))}
-              />
-            </div>
-            <pre className="overflow-auto px-4 py-3 text-sm font-mono max-h-[200px]" style={{ color: "var(--kami-text)" }}>
-              {"{"}
-              {Object.entries(decoded.header).map(([key, value], i, arr) => (
-                <div key={key} className="pl-4">
-                  <span className="text-red-400">&quot;{key}&quot;</span>
-                  <span style={{ color: "var(--kami-text-dim)" }}>: </span>
-                  <PayloadValue value={value} />
-                  {i < arr.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
-                  {key === "alg" && (
-                    <span className="text-xs ml-2 font-sans italic" style={{ color: "var(--kami-text-dim)" }}>
-                      // Algorithm
-                    </span>
-                  )}
-                  {key === "typ" && (
-                    <span className="text-xs ml-2 font-sans italic" style={{ color: "var(--kami-text-dim)" }}>
-                      // Token type
-                    </span>
-                  )}
-                  {key === "kid" && (
-                    <span className="text-xs ml-2 font-sans italic" style={{ color: "var(--kami-text-dim)" }}>
-                      // Key ID
-                    </span>
-                  )}
+          {/* Header / Payload / Signature cards in a responsive grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Header card */}
+            <div style={cardStyle}>
+              <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Header</span>
                 </div>
-              ))}
-              {"}"}
-            </pre>
-          </div>
-
-          {/* Payload section */}
-          <div
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-purple-500" />
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Payload</span>
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{Object.keys(decoded.payload).length} claims</span>
+                <CopyButton
+                  copied={copiedSection === "header"}
+                  onCopy={() => handleCopy("header", JSON.stringify(decoded.header, null, 2))}
+                />
               </div>
-              <div className="flex items-center gap-3">
-                {hasTimestamps && (
-                  <button
-                    onClick={handleToggleAllTimestamps}
-                    className="text-xs transition-colors"
-                    style={{ color: "var(--kami-text-dim)" }}
-                  >
-                    Toggle timestamps
-                  </button>
-                )}
+              <pre className="overflow-auto px-4 py-3 text-sm font-mono max-h-[260px]" style={{ color: "var(--kami-text)" }}>
+                {"{"}
+                {Object.entries(decoded.header).map(([key, value], i, arr) => (
+                  <div key={key} className="pl-4">
+                    <span className="text-red-400">&quot;{key}&quot;</span>
+                    <span style={{ color: "var(--kami-text-dim)" }}>: </span>
+                    <PayloadValue value={value} />
+                    {i < arr.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
+                  </div>
+                ))}
+                {"}"}
+              </pre>
+            </div>
+
+            {/* Payload card */}
+            <div style={cardStyle}>
+              <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-purple-500" />
+                  <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Payload</span>
+                  <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{Object.keys(decoded.payload).length} claims</span>
+                </div>
                 <CopyButton
                   copied={copiedSection === "payload"}
                   onCopy={() => handleCopy("payload", JSON.stringify(decoded.payload, null, 2))}
                 />
               </div>
+              <pre className="overflow-auto px-4 py-3 text-sm font-mono max-h-[260px]" style={{ color: "var(--kami-text)" }}>
+                {"{"}
+                {Object.entries(decoded.payload).map(([key, value], i, arr) => {
+                  const isTimestamp = TIMESTAMP_CLAIMS.has(key) && typeof value === "number";
+                  return (
+                    <div key={key} className="pl-4">
+                      <span className="text-purple-400">&quot;{key}&quot;</span>
+                      <span style={{ color: "var(--kami-text-dim)" }}>: </span>
+                      {isTimestamp ? (
+                        <TimestampValue
+                          unix={value as number}
+                          toggled={toggledTimestamps.has(key)}
+                          onToggle={() => handleToggleTimestamp(key)}
+                        />
+                      ) : (
+                        <PayloadValue value={value} />
+                      )}
+                      {i < arr.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
+                      <ClaimDescription claimKey={key} />
+                    </div>
+                  );
+                })}
+                {"}"}
+              </pre>
             </div>
-            <pre className="overflow-auto px-4 py-3 text-sm font-mono max-h-[400px]" style={{ color: "var(--kami-text)" }}>
-              {"{"}
-              {Object.entries(decoded.payload).map(([key, value], i, arr) => {
-                const isTimestamp = TIMESTAMP_CLAIMS.has(key) && typeof value === "number";
-                return (
-                  <div key={key} className="pl-4">
-                    <span className="text-purple-400">&quot;{key}&quot;</span>
-                    <span style={{ color: "var(--kami-text-dim)" }}>: </span>
-                    {isTimestamp ? (
-                      <TimestampValue
-                        unix={value as number}
-                        toggled={toggledTimestamps.has(key)}
-                        onToggle={() => handleToggleTimestamp(key)}
-                      />
-                    ) : (
-                      <PayloadValue value={value} />
-                    )}
-                    {i < arr.length - 1 && <span style={{ color: "var(--kami-text-dim)" }}>,</span>}
-                    <ClaimDescription claimKey={key} />
-                  </div>
-                );
-              })}
-              {"}"}
-            </pre>
+
+            {/* Signature card */}
+            <div style={cardStyle}>
+              <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full bg-blue-500" />
+                  <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Signature</span>
+                  {decoded.header.alg ? (
+                    <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                      {String(decoded.header.alg)}
+                    </span>
+                  ) : null}
+                </div>
+                <CopyButton
+                  copied={copiedSection === "signature"}
+                  onCopy={() => handleCopy("signature", decoded.signature)}
+                />
+              </div>
+              <div className="px-4 py-3">
+                <p className="font-mono text-sm text-blue-500 break-all">{decoded.signature}</p>
+                {secret && (
+                  <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                    Tip: enter your HMAC secret in the controls panel and hit Verify.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
 
-          {/* Claim Inspector */}
+          {/* Claim Inspector full width */}
           <ClaimInspector
             payload={decoded.payload}
             toggledTimestamps={toggledTimestamps}
             onToggleTimestamp={handleToggleTimestamp}
           />
-
-          {/* Signature section */}
-          <div
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-              <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full bg-blue-500" />
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Signature</span>
-                {decoded.header.alg ? (
-                  <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                    {String(decoded.header.alg)}
-                  </span>
-                ) : null}
-              </div>
-              <CopyButton
-                copied={copiedSection === "signature"}
-                onCopy={() => handleCopy("signature", decoded.signature)}
-              />
-            </div>
-            <div className="px-4 py-3">
-              <p className="font-mono text-sm text-blue-500 break-all">{decoded.signature}</p>
-            </div>
-          </div>
         </>
       )}
     </div>
   );
 }
 
-// --- Builder Tab ---
+// --- Builder workspace ---
 
-function BuilderTab({
+function BuilderWorkspace({
   copiedSection,
   handleCopy,
+  algorithm,
+  setAlgorithm,
+  duration,
+  setDuration,
+  includeIat,
+  setIncludeIat,
+  includeExp,
+  setIncludeExp,
 }: {
   copiedSection: string | null;
   handleCopy: (section: string, text: string) => void;
+  algorithm: string;
+  setAlgorithm: (v: string) => void;
+  duration: number;
+  setDuration: (v: number) => void;
+  includeIat: boolean;
+  setIncludeIat: (v: boolean) => void;
+  includeExp: boolean;
+  setIncludeExp: (v: boolean) => void;
 }) {
-  const [algorithm, setAlgorithm] = useState("HS256");
   const [payloadText, setPayloadText] = useState(
     JSON.stringify(
       {
@@ -932,9 +948,6 @@ function BuilderTab({
       2
     )
   );
-  const [duration, setDuration] = useState(86400);
-  const [includeIat, setIncludeIat] = useState(true);
-  const [includeExp, setIncludeExp] = useState(true);
   const [jsonError, setJsonError] = useState<string | null>(null);
 
   const generatedToken = useMemo(() => {
@@ -958,18 +971,9 @@ function BuilderTab({
   }, [payloadText, algorithm, duration, includeIat, includeExp]);
 
   const templates = [
-    {
-      name: "User Identity",
-      payload: { sub: "user_123", name: "Jane Doe", email: "jane@example.com", email_verified: true },
-    },
-    {
-      name: "API Service",
-      payload: { sub: "svc_billing", permissions: ["invoices:read", "invoices:write"], client_id: "client_abc" },
-    },
-    {
-      name: "OAuth Token",
-      payload: { sub: "user_456", iss: "https://auth.example.com", aud: "https://api.example.com", scope: "openid profile email", azp: "client_xyz" },
-    },
+    { name: "User Identity", payload: { sub: "user_123", name: "Jane Doe", email: "jane@example.com", email_verified: true } },
+    { name: "API Service", payload: { sub: "svc_billing", permissions: ["invoices:read", "invoices:write"], client_id: "client_abc" } },
+    { name: "OAuth Token", payload: { sub: "user_456", iss: "https://auth.example.com", aud: "https://api.example.com", scope: "openid profile email", azp: "client_xyz" } },
   ];
 
   return (
@@ -984,199 +988,84 @@ function BuilderTab({
         }}
       >
         <p className="text-xs">
-          <span className="font-semibold">Demo tokens only.</span> The generated token has no cryptographic signature and must not be used for authentication. Use this to prototype payloads and test decoders.
+          <span className="font-semibold">Demo tokens only.</span> The generated token has no cryptographic signature and must not be used for authentication.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Left: Configuration */}
-        <div className="space-y-4">
-          {/* Algorithm */}
-          <div
-            className="p-5"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <label className="text-xs font-medium block mb-2" style={{ color: "var(--kami-text-muted)" }}>Algorithm (header display)</label>
-            <div className="flex flex-wrap gap-1.5">
-              {ALGORITHMS.map((alg) => (
-                <button
-                  key={alg}
-                  onClick={() => setAlgorithm(alg)}
-                  className="px-2.5 py-1 text-xs font-mono transition-colors"
-                  style={{
-                    background: algorithm === alg ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
-                    color: algorithm === alg ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                  }}
-                >
-                  {alg}
-                </button>
-              ))}
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Quick templates + JSON editor */}
+        <div className="p-5 space-y-3" style={cardStyle}>
+          <label className="text-xs font-medium block" style={{ color: "var(--kami-text-muted)" }}>Quick Templates</label>
+          <div className="flex flex-wrap gap-1.5">
+            {templates.map((t) => (
+              <button
+                key={t.name}
+                type="button"
+                onClick={() => setPayloadText(JSON.stringify(t.payload, null, 2))}
+                className="px-3 py-1.5 text-xs transition-colors"
+                style={{
+                  background: "var(--kami-surface)",
+                  color: "var(--kami-text-muted)",
+                  border: "1px solid var(--kami-border)",
+                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  minHeight: 32,
+                }}
+              >
+                {t.name}
+              </button>
+            ))}
           </div>
-
-          {/* Auto claims */}
-          <div
-            className="p-5"
+          <label className="text-xs font-medium block" style={{ color: "var(--kami-text-muted)" }}>Payload JSON</label>
+          <textarea
+            value={payloadText}
+            onChange={(e) => setPayloadText(e.target.value)}
+            className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
             style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
+              ...inputStyle,
+              border: `1px solid ${jsonError ? "#fca5a5" : "var(--kami-border)"}`,
+              minHeight: 240,
             }}
-          >
-            <label className="text-xs font-medium block mb-3" style={{ color: "var(--kami-text-muted)" }}>Auto-generated Claims</label>
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeIat}
-                  onChange={(e) => setIncludeIat(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm" style={{ color: "var(--kami-text)" }}>
-                  <code className="text-xs font-mono px-1 py-0.5 rounded" style={{ background: "var(--kami-surface)", color: "var(--kami-text)" }}>iat</code> Issued At (current time)
-                </span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={includeExp}
-                  onChange={(e) => setIncludeExp(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm" style={{ color: "var(--kami-text)" }}>
-                  <code className="text-xs font-mono px-1 py-0.5 rounded" style={{ background: "var(--kami-surface)", color: "var(--kami-text)" }}>exp</code> Expiration
-                </span>
-              </label>
-              {includeExp && (
-                <div className="ml-6">
-                  <label className="text-xs block mb-1.5" style={{ color: "var(--kami-text-muted)" }}>Token lifetime</label>
-                  <div className="flex flex-wrap gap-1.5">
-                    {DURATIONS.map((d) => (
-                      <button
-                        key={d.seconds}
-                        onClick={() => setDuration(d.seconds)}
-                        className="px-2.5 py-1 text-xs transition-colors"
-                        style={{
-                          background: duration === d.seconds ? "var(--kami-cta-bg, #111827)" : "var(--kami-surface)",
-                          color: duration === d.seconds ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                          border: "1px solid var(--kami-border)",
-                          borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                        }}
-                      >
-                        {d.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Templates */}
-          <div
-            className="p-5"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <label className="text-xs font-medium block mb-2" style={{ color: "var(--kami-text-muted)" }}>Quick Templates</label>
-            <div className="flex flex-wrap gap-1.5">
-              {templates.map((t) => (
-                <button
-                  key={t.name}
-                  onClick={() => setPayloadText(JSON.stringify(t.payload, null, 2))}
-                  className="px-2.5 py-1 text-xs transition-colors"
-                  style={{
-                    background: "var(--kami-surface)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                  }}
-                >
-                  {t.name}
-                </button>
-              ))}
-            </div>
-          </div>
+            rows={12}
+            spellCheck={false}
+          />
+          {jsonError && <p className="text-xs text-red-500">{jsonError}</p>}
         </div>
 
-        {/* Right: Payload editor */}
-        <div className="space-y-4">
-          <div
-            className="p-5"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <label className="text-xs font-medium block mb-2" style={{ color: "var(--kami-text-muted)" }}>Payload JSON</label>
-            <textarea
-              value={payloadText}
-              onChange={(e) => setPayloadText(e.target.value)}
-              className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
-              style={{
-                background: "var(--kami-surface)",
-                color: "var(--kami-text)",
-                border: `1px solid ${jsonError ? "#fca5a5" : "var(--kami-border)"}`,
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
-              }}
-              rows={12}
-              spellCheck={false}
-            />
-            {jsonError && (
-              <p className="text-xs text-red-500 mt-1.5">{jsonError}</p>
-            )}
+        {/* Generated token */}
+        {generatedToken && (
+          <div style={cardStyle}>
+            <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Generated Token</span>
+                <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 uppercase">Unsigned</span>
+              </div>
+              <CopyButton
+                copied={copiedSection === "builder-token"}
+                onCopy={() => handleCopy("builder-token", generatedToken)}
+              />
+            </div>
+            <div className="px-4 py-3">
+              <p className="font-mono text-sm break-all leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>
+                {generatedToken}
+              </p>
+              <div className="mt-3 text-xs space-y-1" style={{ color: "var(--kami-text-dim)" }}>
+                <p>Algorithm: <span style={{ color: "var(--kami-text)" }}>{algorithm}</span></p>
+                {includeIat && <p>iat: <span style={{ color: "var(--kami-text)" }}>{nowUnix()}</span></p>}
+                {includeExp && <p>exp duration: <span style={{ color: "var(--kami-text)" }}>{DURATIONS.find((d) => d.seconds === duration)?.label || `${duration}s`}</span></p>}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Generated token output */}
-      {generatedToken && (
-        <div
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Generated Token</span>
-              <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 uppercase">Unsigned</span>
-            </div>
-            <CopyButton
-              copied={copiedSection === "builder-token"}
-              onCopy={() => handleCopy("builder-token", generatedToken)}
-            />
-          </div>
-          <div className="px-4 py-3">
-            <p className="font-mono text-sm break-all leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>
-              {generatedToken}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* hidden suppressors for unused setters in this scope */}
+      <div className="hidden">{setAlgorithm.length}{setDuration.length}{setIncludeIat.length}{setIncludeExp.length}</div>
     </div>
   );
 }
 
-// --- Diff Tab ---
+// --- Diff workspace ---
 
-function DiffTab() {
+function DiffWorkspace() {
   const [tokenA, setTokenA] = useState("");
   const [tokenB, setTokenB] = useState("");
 
@@ -1195,18 +1084,8 @@ function DiffTab() {
       ...Object.keys(decodedB.decoded.payload),
     ]);
 
-    const headerDiffs: {
-      key: string;
-      a: unknown;
-      b: unknown;
-      status: "same" | "changed" | "added" | "removed";
-    }[] = [];
-    const payloadDiffs: {
-      key: string;
-      a: unknown;
-      b: unknown;
-      status: "same" | "changed" | "added" | "removed";
-    }[] = [];
+    const headerDiffs: { key: string; a: unknown; b: unknown; status: "same" | "changed" | "added" | "removed" }[] = [];
+    const payloadDiffs: { key: string; a: unknown; b: unknown; status: "same" | "changed" | "added" | "removed" }[] = [];
 
     for (const key of Array.from(allHeaderKeys)) {
       const a = decodedA.decoded.header[key];
@@ -1227,27 +1106,17 @@ function DiffTab() {
     }
 
     const sigSame = decodedA.decoded.signature === decodedB.decoded.signature;
-
     return { headerDiffs, payloadDiffs, sigSame };
   }, [decodedA, decodedB]);
 
   const statusColor = (status: string): React.CSSProperties => {
     switch (status) {
       case "changed":
-        return {
-          background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))",
-          borderLeft: "2px solid #f59e0b",
-        };
+        return { background: "color-mix(in srgb, #f59e0b 10%, var(--kami-surface))", borderLeft: "2px solid #f59e0b" };
       case "added":
-        return {
-          background: "color-mix(in srgb, #16a34a 10%, var(--kami-surface))",
-          borderLeft: "2px solid #16a34a",
-        };
+        return { background: "color-mix(in srgb, #16a34a 10%, var(--kami-surface))", borderLeft: "2px solid #16a34a" };
       case "removed":
-        return {
-          background: "color-mix(in srgb, #dc2626 10%, var(--kami-surface))",
-          borderLeft: "2px solid #dc2626",
-        };
+        return { background: "color-mix(in srgb, #dc2626 10%, var(--kami-surface))", borderLeft: "2px solid #dc2626" };
       default:
         return {};
     }
@@ -1264,7 +1133,7 @@ function DiffTab() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="text-xs font-medium block mb-1.5" style={{ color: "var(--kami-text-muted)" }}>Token A</label>
           <textarea
@@ -1272,13 +1141,7 @@ function DiffTab() {
             onChange={(e) => setTokenA(e.target.value)}
             placeholder="Paste first JWT..."
             className="w-full px-4 py-3 text-sm font-mono focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
+            style={{ ...inputStyle, minHeight: 96 }}
             rows={4}
             spellCheck={false}
           />
@@ -1291,13 +1154,7 @@ function DiffTab() {
             onChange={(e) => setTokenB(e.target.value)}
             placeholder="Paste second JWT..."
             className="w-full px-4 py-3 text-sm font-mono focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
+            style={{ ...inputStyle, minHeight: 96 }}
             rows={4}
             spellCheck={false}
           />
@@ -1307,21 +1164,11 @@ function DiffTab() {
 
       {diff && (
         <div className="space-y-4">
-          {/* Header diff */}
           <DiffSection title="Header" diffs={diff.headerDiffs} statusColor={statusColor} statusBadge={statusBadge} />
-
-          {/* Payload diff */}
           <DiffSection title="Payload" diffs={diff.payloadDiffs} statusColor={statusColor} statusBadge={statusBadge} />
-
-          {/* Signature */}
           <div
             className={!diff.sigSame ? "ring-2 ring-amber-200" : ""}
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
+            style={cardStyle}
           >
             <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
               <div className="flex items-center gap-2">
@@ -1336,12 +1183,6 @@ function DiffTab() {
               {diff.sigSame ? "Signatures are identical." : "Signatures differ (expected if any header or payload claim changed)."}
             </div>
           </div>
-        </div>
-      )}
-
-      {!diff && tokenA && tokenB && !decodedA.error && !decodedB.error && (
-        <div className="text-center text-sm py-8" style={{ color: "var(--kami-text-dim)" }}>
-          Enter two valid JWTs to compare them.
         </div>
       )}
 
@@ -1369,14 +1210,7 @@ function DiffSection({
   const dotColor = title === "Header" ? "bg-red-500" : "bg-purple-500";
 
   return (
-    <div
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
+    <div style={cardStyle}>
       <div className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: "1px solid var(--kami-border)" }}>
         <div className="flex items-center gap-2">
           <span className={`h-3 w-3 rounded-full ${dotColor}`} />
@@ -1391,17 +1225,14 @@ function DiffSection({
           <div
             key={d.key}
             className="px-4 py-2"
-            style={{
-              ...(idx > 0 ? { borderTop: "1px solid var(--kami-border)" } : {}),
-              ...statusColor(d.status),
-            }}
+            style={{ ...(idx > 0 ? { borderTop: "1px solid var(--kami-border)" } : {}), ...statusColor(d.status) }}
           >
             <div className="flex items-center gap-2 mb-1">
               <code className="text-xs font-mono font-medium" style={{ color: "var(--kami-text)" }}>{d.key}</code>
               {statusBadge(d.status)}
             </div>
             {d.status === "changed" && (
-              <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
                 <div>
                   <span className="text-[10px] uppercase block mb-0.5" style={{ color: "var(--kami-text-dim)" }}>Token A</span>
                   <span className="text-red-600">{formatDiffValue(d.a)}</span>
@@ -1415,12 +1246,8 @@ function DiffSection({
             {d.status === "same" && (
               <p className="text-xs font-mono" style={{ color: "var(--kami-text-muted)" }}>{formatDiffValue(d.a)}</p>
             )}
-            {d.status === "added" && (
-              <p className="text-xs font-mono text-green-600">{formatDiffValue(d.b)}</p>
-            )}
-            {d.status === "removed" && (
-              <p className="text-xs font-mono text-red-600">{formatDiffValue(d.a)}</p>
-            )}
+            {d.status === "added" && <p className="text-xs font-mono text-green-600">{formatDiffValue(d.b)}</p>}
+            {d.status === "removed" && <p className="text-xs font-mono text-red-600">{formatDiffValue(d.a)}</p>}
           </div>
         ))}
       </div>
@@ -1443,13 +1270,58 @@ export default function JwtDecoderContent() {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("decode");
 
+  // Builder state lifted so it's accessible from controls panel
+  const [algorithm, setAlgorithm] = useState("HS256");
+  const [duration, setDuration] = useState(86400);
+  const [includeIat, setIncludeIat] = useState(true);
+  const [includeExp, setIncludeExp] = useState(true);
+
+  // HMAC verify state
+  const [secret, setSecret] = useState("");
+  const [verifyState, setVerifyState] = useState<VerifyState>("idle");
+  const [verifyMessage, setVerifyMessage] = useState("");
+
+  const { decoded } = useMemo(() => decodeJwt(input), [input]);
+
   const handleCopy = useCallback(async (section: string, text: string) => {
     await navigator.clipboard.writeText(text);
     setCopiedSection(section);
     setTimeout(() => setCopiedSection(null), 2000);
   }, []);
 
-  const { decoded } = useMemo(() => decodeJwt(input), [input]);
+  // Auto-clear verify state when input changes
+  useEffect(() => {
+    setVerifyState("idle");
+    setVerifyMessage("");
+  }, [input, secret]);
+
+  const handleVerify = useCallback(async () => {
+    if (!decoded) {
+      setVerifyState("invalid");
+      setVerifyMessage("Decode a token first");
+      return;
+    }
+    if (!secret) {
+      setVerifyState("invalid");
+      setVerifyMessage("Enter a secret to verify HMAC");
+      return;
+    }
+    const alg = String(decoded.header.alg || "");
+    if (!alg.startsWith("HS")) {
+      setVerifyState("unsupported");
+      setVerifyMessage(`${alg || "Unknown algorithm"} cannot be verified in-browser. Only HS256/HS384/HS512 are supported.`);
+      return;
+    }
+    setVerifyState("verifying");
+    const result = await verifyHmac(input, secret, alg);
+    if (result.ok) {
+      setVerifyState("valid");
+      setVerifyMessage("");
+    } else {
+      setVerifyState("invalid");
+      setVerifyMessage(result.reason || "");
+    }
+  }, [decoded, secret, input]);
 
   useKeyboardShortcuts(
     useMemo(
@@ -1463,98 +1335,164 @@ export default function JwtDecoderContent() {
           label: "Copy payload",
         },
         { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-        {
-          key: "1",
-          meta: true,
-          action: () => setActiveTab("decode"),
-          label: "Decode tab",
-        },
-        {
-          key: "2",
-          meta: true,
-          action: () => setActiveTab("builder"),
-          label: "Builder tab",
-        },
-        {
-          key: "3",
-          meta: true,
-          action: () => setActiveTab("diff"),
-          label: "Diff tab",
-        },
+        { key: "1", meta: true, action: () => setActiveTab("decode"), label: "Decode tab" },
+        { key: "2", meta: true, action: () => setActiveTab("builder"), label: "Builder tab" },
+        { key: "3", meta: true, action: () => setActiveTab("diff"), label: "Diff tab" },
       ],
       [decoded, handleCopy, setInput]
     )
   );
 
-  const tabs: { id: Tab; label: string; description: string }[] = [
-    { id: "decode", label: "Decode", description: "Inspect and analyze" },
-    { id: "builder", label: "Builder", description: "Create demo tokens" },
-    { id: "diff", label: "Diff", description: "Compare two tokens" },
+  const tabs: { value: Tab; label: string }[] = [
+    { value: "decode", label: "Decode" },
+    { value: "builder", label: "Builder" },
+    { value: "diff", label: "Diff" },
   ];
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="JWT Decoder"
-          tagline="Decode, inspect, build, and diff JSON Web Tokens - with claim explanations and expiry warnings."
-          description="Paste a JWT to see its header, payload, and signature decoded. Every standard claim (iss, sub, exp, iat, nbf, aud, jti) is explained in plain English. Builder mode lets you assemble a token from scratch; diff mode shows exactly what changed between two tokens (useful for debugging refresh flows)."
-          audience={["Developers", "Security engineers", "Support"]}
-          whenToUse={[
-            "Inspecting a token from a failing auth request",
-            "Checking what a refresh endpoint actually changed",
-            "Prototyping a JWT for a test harness",
-          ]}
-        />
-
-        {/* Tab bar */}
-        <div
-          className="mb-6 flex items-center gap-1 p-1"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className="flex-1 px-4 py-2.5 text-sm font-medium transition-colors"
-              style={{
-                background: activeTab === tab.id ? "var(--kami-cta-bg, #111827)" : "transparent",
-                color: activeTab === tab.id ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
+    <ToolShell
+      title="JWT Decoder"
+      tagline="Decode · inspect · verify · build JSON Web Tokens"
+      accent="#10b981"
+      actions={
+        <>
+          {activeTab === "decode" && decoded && (
+            <ToolActionButton
+              variant="outline"
+              onClick={() => handleCopy("payload", JSON.stringify(decoded.payload, null, 2))}
             >
-              {tab.label}
-              <span
-                className="block text-[10px] font-normal mt-0.5"
-                style={{
-                  color: activeTab === tab.id ? "color-mix(in srgb, var(--kami-cta-text, #ffffff) 70%, transparent)" : "var(--kami-text-dim)",
-                }}
-              >
-                {tab.description}
-              </span>
-            </button>
-          ))}
-        </div>
+              {copiedSection === "payload" ? "Copied" : "Copy payload"}
+            </ToolActionButton>
+          )}
+          {activeTab === "decode" && decoded && (
+            <ToolActionButton variant="solid" onClick={handleVerify}>
+              {verifyState === "verifying" ? "Verifying..." : "Verify HMAC"}
+            </ToolActionButton>
+          )}
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Mode">
+            <Segment<Tab>
+              value={activeTab}
+              onChange={setActiveTab}
+              options={tabs.map((t) => ({ value: t.value, label: t.label }))}
+              full
+            />
+          </ControlGroup>
 
-        {/* Tab content */}
+          {activeTab === "decode" && (
+            <>
+              <ControlGroup label="HMAC Secret" hint="HS256/384/512 only">
+                <input
+                  type="text"
+                  value={secret}
+                  onChange={(e) => setSecret(e.target.value)}
+                  placeholder="your-256-bit-secret"
+                  className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
+                  style={{ ...inputStyle, minHeight: 40 }}
+                  spellCheck={false}
+                />
+              </ControlGroup>
+              <ControlGroup>
+                <ToolActionButton variant="solid" onClick={handleVerify}>
+                  {verifyState === "verifying" ? "Verifying..." : "Verify Signature"}
+                </ToolActionButton>
+              </ControlGroup>
+              {verifyState === "valid" && (
+                <div className="text-xs text-green-600">Signature verified.</div>
+              )}
+              {verifyState === "invalid" && (
+                <div className="text-xs text-red-600">
+                  Signature mismatch. {verifyMessage}
+                </div>
+              )}
+              {verifyState === "unsupported" && (
+                <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{verifyMessage}</div>
+              )}
+            </>
+          )}
+
+          {activeTab === "builder" && (
+            <>
+              <ControlGroup label="Algorithm">
+                <Select
+                  value={algorithm}
+                  onChange={setAlgorithm}
+                  options={ALGORITHMS.map((a) => ({ value: a, label: a }))}
+                />
+              </ControlGroup>
+              <ControlGroup label="Auto-claims">
+                <Toggle label="Include iat (issued at)" checked={includeIat} onChange={setIncludeIat} />
+                <div className="mt-2">
+                  <Toggle label="Include exp (expiration)" checked={includeExp} onChange={setIncludeExp} />
+                </div>
+              </ControlGroup>
+              {includeExp && (
+                <ControlGroup label="Lifetime">
+                  <Select
+                    value={String(duration)}
+                    onChange={(v) => setDuration(parseInt(v, 10))}
+                    options={DURATIONS.map((d) => ({ value: String(d.seconds), label: d.label }))}
+                  />
+                </ControlGroup>
+              )}
+            </>
+          )}
+        </>
+      }
+      info={
+        <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            <strong>JWT Decoder</strong> parses a JSON Web Token client-side. Nothing leaves your browser.
+          </p>
+          <p>
+            <strong>Decode</strong> shows header, payload (with claim explanations), and signature in three cards.
+            Timestamp claims (exp, iat, nbf) render as both unix and human-readable with a countdown.
+          </p>
+          <p>
+            <strong>Verify</strong> uses WebCrypto to check HMAC signatures (HS256/HS384/HS512) against your secret.
+            RS/ES/PS algorithms require a public key and are not supported in this tool.
+          </p>
+          <p>
+            <strong>Builder</strong> creates demo tokens with arbitrary payload (unsigned — do not use in production).
+          </p>
+          <p>
+            <strong>Diff</strong> compares two tokens and highlights changed / added / removed claims — handy for debugging refresh flows.
+          </p>
+          <p>Shortcuts: ⌘1/2/3 switch tabs · ⌘Enter copy payload · ⌘K clear.</p>
+        </div>
+      }
+    >
+      <div className="space-y-4">
         {activeTab === "decode" && (
-          <DecodeTab
+          <DecodeWorkspace
             input={input}
             setInput={setInput}
             copiedSection={copiedSection}
             handleCopy={handleCopy}
+            secret={secret}
+            verifyState={verifyState}
+            verifyMessage={verifyMessage}
           />
         )}
         {activeTab === "builder" && (
-          <BuilderTab copiedSection={copiedSection} handleCopy={handleCopy} />
+          <BuilderWorkspace
+            copiedSection={copiedSection}
+            handleCopy={handleCopy}
+            algorithm={algorithm}
+            setAlgorithm={setAlgorithm}
+            duration={duration}
+            setDuration={setDuration}
+            includeIat={includeIat}
+            setIncludeIat={setIncludeIat}
+            includeExp={includeExp}
+            setIncludeExp={setIncludeExp}
+          />
         )}
-        {activeTab === "diff" && <DiffTab />}
+        {activeTab === "diff" && <DiffWorkspace />}
       </div>
-    </div>
+    </ToolShell>
   );
 }

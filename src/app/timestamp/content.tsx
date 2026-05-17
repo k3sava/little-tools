@@ -3,7 +3,12 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Select, Toggle } from "@/components/tools/controls";
 
 // --- Timezones ---
 
@@ -83,6 +88,7 @@ function formatSQL(date: Date): string {
 }
 function formatUnixS(date: Date): string { return String(Math.floor(date.getTime() / 1000)); }
 function formatUnixMs(date: Date): string { return String(date.getTime()); }
+function formatUnixUs(date: Date): string { return String(date.getTime() * 1000); }
 
 // --- Date math ---
 
@@ -90,13 +96,11 @@ function parseDateMath(input: string, baseDate: Date): Date | null {
   const d = new Date(baseDate);
   const lower = input.trim().toLowerCase();
 
-  // "now" shortcuts
   if (lower === "now") return d;
   if (lower === "today") { d.setHours(0, 0, 0, 0); return d; }
   if (lower === "tomorrow") { d.setDate(d.getDate() + 1); d.setHours(0, 0, 0, 0); return d; }
   if (lower === "yesterday") { d.setDate(d.getDate() - 1); d.setHours(0, 0, 0, 0); return d; }
 
-  // "start/end of" shortcuts
   if (lower === "start of day") { d.setHours(0, 0, 0, 0); return d; }
   if (lower === "end of day") { d.setHours(23, 59, 59, 999); return d; }
   if (lower === "start of week") { d.setDate(d.getDate() - d.getDay()); d.setHours(0, 0, 0, 0); return d; }
@@ -106,7 +110,6 @@ function parseDateMath(input: string, baseDate: Date): Date | null {
   if (lower === "start of year") { d.setMonth(0, 1); d.setHours(0, 0, 0, 0); return d; }
   if (lower === "end of year") { d.setMonth(11, 31); d.setHours(23, 59, 59, 999); return d; }
 
-  // "+3 days", "-2 hours", "+1 week" etc.
   const mathMatch = lower.match(/^([+-])\s*(\d+)\s*(seconds?|minutes?|hours?|days?|weeks?|months?|years?)$/);
   if (mathMatch) {
     const sign = mathMatch[1] === "+" ? 1 : -1;
@@ -124,7 +127,6 @@ function parseDateMath(input: string, baseDate: Date): Date | null {
     return d;
   }
 
-  // "next Monday", "last Friday"
   const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const nextLastMatch = lower.match(/^(next|last)\s+(\w+)$/);
   if (nextLastMatch) {
@@ -158,6 +160,17 @@ const PRESETS = [
   { label: "Start of year", math: "start of year" },
 ];
 
+// Common epoch presets
+const EPOCH_PRESETS = [
+  { label: "Unix epoch (1970)", value: 0 },
+  { label: "Y2K (Jan 1 2000)", value: 946684800 },
+  { label: "Jan 1 2010", value: 1262304000 },
+  { label: "Jan 1 2020", value: 1577836800 },
+  { label: "Jan 1 2030", value: 1893456000 },
+] as const;
+
+type Granularity = "s" | "ms" | "us";
+
 // --- Component ---
 
 export default function TimestampContent() {
@@ -169,12 +182,15 @@ export default function TimestampContent() {
   const [timezone, setTimezone] = useState("UTC");
   const [showMultiTz, setShowMultiTz] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [granularity, setGranularity] = useState<Granularity>("s");
 
   // Live clock
   useEffect(() => {
+    if (!autoRefresh) return;
     const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [autoRefresh]);
 
   const handleCopy = useCallback(async (text: string, key: string) => {
     await navigator.clipboard.writeText(text);
@@ -202,12 +218,13 @@ export default function TimestampContent() {
 
   const allFormats = tsDate ? [
     { label: "ISO 8601", value: formatISO(tsDate), key: "iso" },
-    { label: "Locale (" + timezone.split("/").pop()?.replace(/_/g, " ") + ")", value: formatInTimezone(tsDate, timezone), key: "locale" },
+    { label: "Locale (" + (timezone.split("/").pop()?.replace(/_/g, " ") ?? timezone) + ")", value: formatInTimezone(tsDate, timezone), key: "locale" },
     { label: "UTC String", value: tsDate.toUTCString(), key: "utc" },
     { label: "RFC 2822", value: formatRFC2822(tsDate), key: "rfc" },
     { label: "SQL Datetime", value: formatSQL(tsDate), key: "sql" },
     { label: "Seconds", value: formatUnixS(tsDate), key: "s" },
     { label: "Milliseconds", value: formatUnixMs(tsDate), key: "ms" },
+    { label: "Microseconds", value: formatUnixUs(tsDate), key: "us" },
     { label: "Relative", value: relativeTime(tsMs!), key: "relative" },
   ] : [];
 
@@ -221,22 +238,18 @@ export default function TimestampContent() {
     return parseDateMath(dateMathInput, new Date());
   }, [dateMathInput]);
 
+  // Display current "now" by granularity
+  const nowDisplay = useMemo(() => {
+    if (granularity === "ms") return String(now * 1000);
+    if (granularity === "us") return String(now * 1000 * 1000);
+    return String(now);
+  }, [now, granularity]);
+
   const cardStyle = {
     background: "var(--kami-surface-solid)",
     border: "1px solid var(--kami-border-strong)",
     borderRadius: "var(--kami-card-radius, 0.75rem)",
     boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  } as const;
-  const ghostBtnStyle = {
-    background: "var(--kami-surface-solid)",
-    color: "var(--kami-text-muted)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
   } as const;
   const inputStyle = {
     background: "var(--kami-input-bg, var(--kami-surface-solid))",
@@ -251,130 +264,151 @@ export default function TimestampContent() {
   } as const;
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Timestamp Converter"
-          tagline="Convert between Unix timestamps, ISO 8601, and human dates - with timezone comparison and date math."
-          description="Paste a Unix timestamp (seconds or milliseconds), an ISO date, or a human-readable date, and see all other formats at once. Compare the same moment across multiple timezones. Use the date-math mode to add / subtract days, hours, or weeks from any date."
-          audience={["Developers", "SREs", "Data engineers"]}
-          whenToUse={[
-            "Decoding a timestamp from a log line",
-            "Checking what time a UTC event fires in your local zone",
-            "Computing a date N days before/after another",
-          ]}
-        />
-
+    <ToolShell
+      title="Timestamp Converter"
+      tagline="Epoch ↔ ISO · timezone picker · date math"
+      accent="#10b981"
+      actions={
+        <>
+          <ToolActionButton onClick={() => handleCopy(nowDisplay, "now")} variant="outline">
+            {copied === "now" ? "Copied" : `Copy ${granularity}`}
+          </ToolActionButton>
+          <ToolActionButton onClick={setNowInputs} variant="solid">Use now</ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Timezone">
+            <Select<string>
+              value={timezone}
+              onChange={setTimezone}
+              options={TIMEZONES.map((t) => ({ value: t.tz, label: t.label }))}
+            />
+          </ControlGroup>
+          <ControlGroup label="Granularity">
+            <Segment<Granularity>
+              value={granularity}
+              onChange={setGranularity}
+              options={[
+                { value: "s", label: "Seconds" },
+                { value: "ms", label: "Millis" },
+                { value: "us", label: "Micros" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <Toggle
+            label="Live now"
+            hint="Auto-refresh the current timestamp every second"
+            checked={autoRefresh}
+            onChange={setAutoRefresh}
+          />
+          <Toggle
+            label="All timezones"
+            hint="Show the moment across every timezone"
+            checked={showMultiTz}
+            onChange={setShowMultiTz}
+          />
+          <ControlGroup label="Common epochs">
+            <div className="flex flex-wrap gap-1.5">
+              {EPOCH_PRESETS.map((e) => (
+                <button
+                  key={e.label}
+                  type="button"
+                  onClick={() => setTsInput(String(e.value))}
+                  className="px-2 py-1 text-xs"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
+                  }}
+                >
+                  {e.label}
+                </button>
+              ))}
+            </div>
+          </ControlGroup>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
         {/* Live Clock */}
         <div className="p-5" style={cardStyle}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
-                Current Unix Timestamp
+                Current Unix Timestamp {autoRefresh ? "" : "(paused)"}
               </p>
-              <p className="mt-1 font-mono text-2xl font-bold tabular-nums">{now}</p>
-              <p className="mt-0.5 font-mono text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>{now * 1000} ms</p>
+              <p className="mt-1 font-mono text-2xl font-bold tabular-nums">{nowDisplay}</p>
+              <p className="mt-0.5 font-mono text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
+                s={now} · ms={now * 1000}
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setTsInput(String(now))}
-                className="px-3 py-2 text-sm font-medium transition-colors"
-                style={ghostBtnStyle}
-              >
-                Use
-              </button>
-              <button
-                onClick={() => handleCopy(String(now), "now")}
-                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition-colors"
-                style={ctaStyle}
-              >
-                {copied === "now" ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
-              </button>
+              <ToolActionButton onClick={() => setTsInput(String(now))} variant="ghost">Use</ToolActionButton>
+              <ToolActionButton onClick={() => handleCopy(nowDisplay, "now")} variant="solid">
+                {copied === "now" ? "Copied" : "Copy"}
+              </ToolActionButton>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           {/* Timestamp -> Date */}
           <div>
-            <h2 className="mb-3 text-lg font-semibold">Timestamp &rarr; Date</h2>
-            <div className="p-5" style={cardStyle}>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={tsInput}
-                  onChange={(e) => setTsInput(e.target.value)}
-                  placeholder="e.g. 1700000000"
-                  className="flex-1 px-3 py-2 text-sm font-mono focus:outline-none"
-                  style={inputStyle}
-                />
-                <select
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  className="px-2 py-2 text-sm focus:outline-none"
-                  style={inputStyle}
-                >
-                  {TIMEZONES.map((tz) => (
-                    <option key={tz.tz} value={tz.tz}>{tz.label}</option>
-                  ))}
-                </select>
-              </div>
+            <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Timestamp → Date</h2>
+            <div className="p-4 flex flex-col gap-3" style={cardStyle}>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={tsInput}
+                onChange={(e) => setTsInput(e.target.value)}
+                placeholder="e.g. 1700000000"
+                className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+                style={{ ...inputStyle, minHeight: 40 }}
+              />
 
               {tsInput.trim() && !tsValid && (
-                <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
-                  Invalid timestamp. Enter seconds or milliseconds.
+                <p className="text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
+                  Invalid timestamp. Enter seconds, milliseconds, or microseconds.
                 </p>
               )}
 
               {allFormats.length > 0 && (
-                <div className="mt-4 space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   {allFormats.map(({ label, value, key }) => (
-                    <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
+                    <div key={key} className="flex items-center justify-between px-3 py-2" style={rowStyle}>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                         <p className="font-mono text-sm truncate">{value}</p>
                       </div>
-                      <button
-                        onClick={() => handleCopy(value, key)}
-                        className="ml-2 flex-shrink-0 p-1 transition-colors"
-                        style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
-                        title="Copy"
-                      >
-                        {copied === key ? <CheckIcon /> : <CopyIcon />}
-                      </button>
+                      <ToolActionButton onClick={() => handleCopy(value, key)} variant="ghost">
+                        {copied === key ? "✓" : "Copy"}
+                      </ToolActionButton>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Multi-TZ comparison */}
-              {tsDate && (
-                <div className="mt-3">
-                  <button
-                    onClick={() => setShowMultiTz(!showMultiTz)}
-                    className="text-xs"
-                    style={{ color: "var(--kami-text-dim)" }}
-                  >
-                    {showMultiTz ? "Hide" : "Show"} all timezones
-                  </button>
-                  {showMultiTz && (
-                    <div className="mt-2 grid grid-cols-2 gap-1">
-                      {TIMEZONES.map((tz) => (
-                        <div
-                          key={tz.tz}
-                          className="flex items-center justify-between px-2.5 py-1.5"
-                          style={{
-                            background: "var(--kami-surface)",
-                            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                          }}
-                        >
-                          <span className="text-xs truncate" style={{ color: "var(--kami-text-muted)" }}>{tz.label}</span>
-                          <span className="font-mono text-xs" style={{ color: "var(--kami-text)" }}>{formatInTimezone(tsDate, tz.tz, "short")}</span>
-                        </div>
-                      ))}
+              {tsDate && showMultiTz && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                  {TIMEZONES.map((tz) => (
+                    <div
+                      key={tz.tz}
+                      className="flex items-center justify-between px-2.5 py-1.5"
+                      style={{
+                        background: "var(--kami-surface)",
+                        borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                      }}
+                    >
+                      <span className="text-xs truncate" style={{ color: "var(--kami-text-muted)" }}>{tz.label}</span>
+                      <span className="font-mono text-xs" style={{ color: "var(--kami-text)" }}>
+                        {formatInTimezone(tsDate, tz.tz, "short")}
+                      </span>
                     </div>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
@@ -382,45 +416,35 @@ export default function TimestampContent() {
 
           {/* Date -> Timestamp */}
           <div>
-            <h2 className="mb-3 text-lg font-semibold">Date &rarr; Timestamp</h2>
-            <div className="p-5" style={cardStyle}>
-              <div className="flex gap-2">
+            <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Date → Timestamp</h2>
+            <div className="p-4 flex flex-col gap-3" style={cardStyle}>
+              <div className="flex flex-col md:flex-row gap-2">
                 <input
                   type="datetime-local"
                   value={dateInput}
                   onChange={(e) => setDateInput(e.target.value)}
                   className="flex-1 px-3 py-2 text-sm focus:outline-none"
-                  style={inputStyle}
+                  style={{ ...inputStyle, minHeight: 40 }}
                 />
-                <button
-                  onClick={setNowInputs}
-                  className="px-3 py-2 text-sm font-medium transition-colors"
-                  style={ghostBtnStyle}
-                >
-                  Now
-                </button>
+                <ToolActionButton onClick={setNowInputs} variant="outline">Now</ToolActionButton>
               </div>
 
               {dateValid && (
-                <div className="mt-4 space-y-1.5">
+                <div className="flex flex-col gap-1.5">
                   {[
                     { label: "Seconds", value: String(dateTs), key: "date-s" },
                     { label: "Milliseconds", value: String(dateTs! * 1000), key: "date-ms" },
                     { label: "ISO 8601", value: new Date(dateTs! * 1000).toISOString(), key: "date-iso" },
                     { label: "Relative", value: relativeTime(dateTs! * 1000), key: "date-rel" },
                   ].map(({ label, value, key }) => (
-                    <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
+                    <div key={key} className="flex items-center justify-between px-3 py-2" style={rowStyle}>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                         <p className="font-mono text-sm">{value}</p>
                       </div>
-                      <button
-                        onClick={() => handleCopy(value, key)}
-                        className="ml-2 flex-shrink-0 p-1 transition-colors"
-                        style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
-                      >
-                        {copied === key ? <CheckIcon /> : <CopyIcon />}
-                      </button>
+                      <ToolActionButton onClick={() => handleCopy(value, key)} variant="ghost">
+                        {copied === key ? "✓" : "Copy"}
+                      </ToolActionButton>
                     </div>
                   ))}
                 </div>
@@ -430,28 +454,29 @@ export default function TimestampContent() {
         </div>
 
         {/* Date Math */}
-        <div className="mt-8">
-          <h2 className="mb-3 text-lg font-semibold">Date Math</h2>
-          <div className="p-5" style={cardStyle}>
+        <div>
+          <h2 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Date math</h2>
+          <div className="p-4 flex flex-col gap-3" style={cardStyle}>
             <input
               type="text"
               value={dateMathInput}
               onChange={(e) => setDateMathInput(e.target.value)}
               placeholder="Try: +3 days, -2 hours, next monday, start of month, tomorrow..."
-              className="w-full px-4 py-2.5 text-sm font-mono focus:outline-none"
-              style={inputStyle}
+              className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+              style={{ ...inputStyle, minHeight: 40 }}
             />
-            <div className="mt-2 flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {PRESETS.map((p) => (
                 <button
                   key={p.label}
                   onClick={() => setDateMathInput(p.math)}
-                  className="px-2 py-0.5 text-xs"
+                  className="px-2 py-1 text-xs"
                   style={{
                     background: "var(--kami-surface)",
                     color: "var(--kami-text-muted)",
                     border: "1px solid var(--kami-border)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
                   }}
                 >
                   {p.label}
@@ -460,7 +485,7 @@ export default function TimestampContent() {
             </div>
 
             {dateMathResult && (
-              <div className="mt-4 space-y-1.5">
+              <div className="flex flex-col gap-1.5">
                 {[
                   { label: "Result", value: dateMathResult.toISOString(), key: "math-iso" },
                   { label: "Unix (seconds)", value: formatUnixS(dateMathResult), key: "math-s" },
@@ -468,51 +493,26 @@ export default function TimestampContent() {
                   { label: "Relative", value: relativeTime(dateMathResult.getTime()), key: "math-rel" },
                   { label: "Locale", value: formatInTimezone(dateMathResult, timezone), key: "math-locale" },
                 ].map(({ label, value, key }) => (
-                  <div key={key} className="group flex items-center justify-between px-3 py-2" style={rowStyle}>
+                  <div key={key} className="flex items-center justify-between px-3 py-2" style={rowStyle}>
                     <div className="min-w-0 flex-1">
                       <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</p>
                       <p className="font-mono text-sm">{value}</p>
                     </div>
-                    <button
-                      onClick={() => handleCopy(value, key)}
-                      className="ml-2 flex-shrink-0 p-1 transition-colors"
-                      style={{ color: "var(--kami-text-dim)", borderRadius: "var(--kami-cta-radius, 0.375rem)" }}
-                    >
-                      {copied === key ? <CheckIcon /> : <CopyIcon />}
-                    </button>
+                    <ToolActionButton onClick={() => handleCopy(value, key)} variant="ghost">
+                      {copied === key ? "✓" : "Copy"}
+                    </ToolActionButton>
                   </div>
                 ))}
               </div>
             )}
             {dateMathInput.trim() && !dateMathResult && (
-              <p className="mt-3 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
                 Examples: &quot;+3 days&quot;, &quot;-2 hours&quot;, &quot;next friday&quot;, &quot;start of month&quot;, &quot;end of year&quot;
               </p>
             )}
           </div>
         </div>
-
-        {/* Footer */}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }

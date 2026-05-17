@@ -3,10 +3,20 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import {
+  NumberStepper,
+  Segment,
+  Toggle,
+  Select,
+} from "@/components/tools/controls";
 
 // Common English stop words
-const DEFAULT_STOP_WORDS = [
+const STOPWORDS_EN = [
   "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
   "of", "with", "by", "from", "is", "it", "as", "was", "are", "be",
   "been", "being", "have", "has", "had", "do", "does", "did", "will",
@@ -20,6 +30,28 @@ const DEFAULT_STOP_WORDS = [
   "about", "up", "out", "into", "over", "after", "before", "between",
 ];
 
+const STOPWORDS_ES = [
+  "el", "la", "los", "las", "un", "una", "unos", "unas", "y", "o",
+  "pero", "en", "a", "de", "del", "por", "para", "con", "sin", "es",
+  "son", "fue", "fueron", "ser", "estar", "está", "están", "tener",
+  "haber", "no", "si", "que", "como", "más", "muy", "ya", "yo", "tú",
+  "él", "ella", "nosotros", "vosotros", "ellos", "ellas", "mi", "tu", "su",
+];
+
+const STOPWORDS_FR = [
+  "le", "la", "les", "un", "une", "des", "et", "ou", "mais", "donc",
+  "or", "ni", "car", "à", "de", "du", "en", "dans", "par", "pour",
+  "sans", "sur", "sous", "est", "sont", "était", "être", "avoir", "ne",
+  "pas", "que", "qui", "quoi", "comme", "plus", "moins", "très", "je",
+  "tu", "il", "elle", "nous", "vous", "ils", "elles", "mon", "ton", "son",
+];
+
+const STOPWORD_LISTS: Record<string, string[]> = {
+  en: STOPWORDS_EN,
+  es: STOPWORDS_ES,
+  fr: STOPWORDS_FR,
+};
+
 type WordEntry = { word: string; count: number; pct: number };
 type NgramTab = "words" | "bigrams" | "trigrams";
 
@@ -28,20 +60,19 @@ function analyzeWords(
   caseSensitive: boolean,
   excludeStopWords: boolean,
   minCount: number,
+  minLength: number,
   stopWords: Set<string>
 ): WordEntry[] {
   if (!text.trim()) return [];
-
   const words = text.match(/[\w']+/g);
   if (!words) return [];
-
   const freq = new Map<string, number>();
   for (const raw of words) {
     const w = caseSensitive ? raw : raw.toLowerCase();
+    if (w.length < minLength) continue;
     if (excludeStopWords && stopWords.has(w.toLowerCase())) continue;
     freq.set(w, (freq.get(w) || 0) + 1);
   }
-
   const total = Array.from(freq.values()).reduce((s, c) => s + c, 0);
   return Array.from(freq.entries())
     .map(([word, count]) => ({ word, count, pct: (count / total) * 100 }))
@@ -58,26 +89,18 @@ function analyzeNgrams(
   stopWords: Set<string>
 ): WordEntry[] {
   if (!text.trim()) return [];
-
   const rawWords = text.match(/[\w']+/g);
   if (!rawWords || rawWords.length < n) return [];
-
   const words = rawWords.map((w) => (caseSensitive ? w : w.toLowerCase()));
-
-  // For n-grams, filter out any n-gram that contains a stop word (if enabled)
   const freq = new Map<string, number>();
   for (let i = 0; i <= words.length - n; i++) {
     const gram = words.slice(i, i + n);
-    if (excludeStopWords && gram.some((w) => stopWords.has(w.toLowerCase()))) {
-      continue;
-    }
+    if (excludeStopWords && gram.some((w) => stopWords.has(w.toLowerCase()))) continue;
     const key = gram.join(" ");
     freq.set(key, (freq.get(key) || 0) + 1);
   }
-
   const total = Array.from(freq.values()).reduce((s, c) => s + c, 0);
   if (total === 0) return [];
-
   return Array.from(freq.entries())
     .map(([word, count]) => ({ word, count, pct: (count / total) * 100 }))
     .filter((e) => e.count >= minCount)
@@ -110,48 +133,35 @@ export default function WordFrequencyContent() {
   const [caseSensitive, setCaseSensitive] = useState(false);
   const [excludeStopWords, setExcludeStopWords] = useState(true);
   const [minCount, setMinCount] = useState(1);
+  const [minLength, setMinLength] = useState(1);
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<NgramTab>("words");
-  const [stopWordsText, setStopWordsText] = useState(
-    DEFAULT_STOP_WORDS.join(", ")
-  );
-  const [showStopWords, setShowStopWords] = useState(false);
+  const [stopWordLang, setStopWordLang] = useState<string>("en");
+  const [search, setSearch] = useState("");
 
   const stopWordsSet = useMemo(() => {
-    return new Set(
-      stopWordsText
-        .split(/[,\n]+/)
-        .map((w) => w.trim().toLowerCase())
-        .filter(Boolean)
-    );
-  }, [stopWordsText]);
+    return new Set((STOPWORD_LISTS[stopWordLang] ?? STOPWORDS_EN).map((w) => w.toLowerCase()));
+  }, [stopWordLang]);
 
   const entries = useMemo(() => {
     if (activeTab === "words") {
-      return analyzeWords(
-        input,
-        caseSensitive,
-        excludeStopWords,
-        minCount,
-        stopWordsSet
-      );
+      return analyzeWords(input, caseSensitive, excludeStopWords, minCount, minLength, stopWordsSet);
     }
     const n = activeTab === "bigrams" ? 2 : 3;
-    return analyzeNgrams(
-      input,
-      n,
-      caseSensitive,
-      excludeStopWords,
-      minCount,
-      stopWordsSet
-    );
-  }, [input, caseSensitive, excludeStopWords, minCount, activeTab, stopWordsSet]);
+    return analyzeNgrams(input, n, caseSensitive, excludeStopWords, minCount, stopWordsSet);
+  }, [input, caseSensitive, excludeStopWords, minCount, minLength, activeTab, stopWordsSet]);
 
-  const top20 = entries.slice(0, 20);
+  const filteredEntries = useMemo(() => {
+    if (!search.trim()) return entries;
+    const q = search.toLowerCase();
+    return entries.filter((e) => e.word.toLowerCase().includes(q));
+  }, [entries, search]);
+
+  const top20 = filteredEntries.slice(0, 20);
   const maxCount = top20.length > 0 ? top20[0].count : 1;
 
   const handleExportCSV = useCallback(() => {
-    const csv = exportCSV(entries);
+    const csv = exportCSV(filteredEntries);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -159,10 +169,10 @@ export default function WordFrequencyContent() {
     a.download = "word-frequency.csv";
     a.click();
     URL.revokeObjectURL(url);
-  }, [entries]);
+  }, [filteredEntries]);
 
   const handleExportJSON = useCallback(() => {
-    const json = exportJSON(entries);
+    const json = exportJSON(filteredEntries);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -170,323 +180,217 @@ export default function WordFrequencyContent() {
     a.download = "word-frequency.json";
     a.click();
     URL.revokeObjectURL(url);
-  }, [entries]);
+  }, [filteredEntries]);
 
   const handleCopy = useCallback(async () => {
-    await navigator.clipboard.writeText(exportCSV(entries));
+    await navigator.clipboard.writeText(exportCSV(filteredEntries));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }, [entries]);
+  }, [filteredEntries]);
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => { handleCopy(); }, label: "Copy CSV" },
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-  ], [handleCopy]));
+  ], [handleCopy, setInput]));
 
   const tabLabel = activeTab === "words" ? "words" : "phrases";
 
-  const inputBg = "var(--kami-input-bg, var(--kami-surface-solid))";
-  const inputBorder = "1px solid var(--kami-border-strong)";
-  const inputRadius = "var(--kami-input-radius, 0.75rem)";
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
   const cardStyle = {
     background: "var(--kami-surface-solid)",
     border: "1px solid var(--kami-border-strong)",
     borderRadius: "var(--kami-card-radius, 0.75rem)",
     boxShadow: "var(--kami-card-shadow, none)",
   } as const;
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  } as const;
-  const ghostBtnStyle = {
-    background: "var(--kami-surface-solid)",
-    color: "var(--kami-text-muted)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  } as const;
+
+  const controls = (
+    <>
+      <ControlGroup label="Counting">
+        <Segment
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { value: "words", label: "Words" },
+            { value: "bigrams", label: "2-grams" },
+            { value: "trigrams", label: "3-grams" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Filters">
+        <Toggle checked={excludeStopWords} onChange={setExcludeStopWords} label="Exclude stopwords" />
+        <Toggle checked={caseSensitive} onChange={setCaseSensitive} label="Case sensitive" />
+        <NumberStepper
+          value={minCount}
+          onChange={(n) => setMinCount(Math.max(1, n))}
+          min={1}
+          label="Min count"
+        />
+        {activeTab === "words" && (
+          <NumberStepper
+            value={minLength}
+            onChange={(n) => setMinLength(Math.max(1, n))}
+            min={1}
+            label="Min length"
+            unit="chars"
+          />
+        )}
+      </ControlGroup>
+      {excludeStopWords && (
+        <ControlGroup label="Stopword list">
+          <Select
+            value={stopWordLang}
+            onChange={setStopWordLang}
+            options={[
+              { value: "en", label: `English (${STOPWORDS_EN.length})` },
+              { value: "es", label: `Español (${STOPWORDS_ES.length})` },
+              { value: "fr", label: `Français (${STOPWORDS_FR.length})` },
+            ]}
+          />
+        </ControlGroup>
+      )}
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleExportCSV} disabled={!filteredEntries.length}>
+        CSV
+      </ToolActionButton>
+      <ToolActionButton variant="outline" onClick={handleExportJSON} disabled={!filteredEntries.length}>
+        JSON
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy} disabled={!filteredEntries.length}>
+        {copied ? "Copied" : "Copy CSV"}
+      </ToolActionButton>
+    </>
+  );
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Word Frequency Counter"
-          tagline="See which words, bigrams, and trigrams dominate your copy - with stop-word filtering and CSV export."
-          description="Paste any text and we count how often each word (or 2-word / 3-word phrase) appears. Toggle stop-words (the, and, a…) to see what actually matters. Useful for SEO keyword density, content audits, or figuring out what a transcript is really about."
-          audience={["SEOs", "Writers", "Content strategists", "Researchers"]}
-          whenToUse={[
-            "Auditing keyword density on a blog post",
-            "Finding filler words you over-use",
-            "Summarizing the themes in a transcript or review dump",
-          ]}
-        />
-
-        {/* Controls */}
-        <div className="mb-4 flex flex-wrap items-center gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={excludeStopWords}
-              onChange={(e) => setExcludeStopWords(e.target.checked)}
-              className="h-4 w-4"
-              style={{ accentColor: "var(--kami-text)" }}
-            />
-            Exclude common words
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={caseSensitive}
-              onChange={(e) => setCaseSensitive(e.target.checked)}
-              className="h-4 w-4"
-              style={{ accentColor: "var(--kami-text)" }}
-            />
-            Case sensitive
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            Min count:
-            <input
-              type="number"
-              min={1}
-              value={minCount}
-              onChange={(e) =>
-                setMinCount(Math.max(1, parseInt(e.target.value) || 1))
-              }
-              className="w-16 px-2 py-1 text-sm focus:outline-none"
-              style={{
-                background: inputBg,
-                color: "var(--kami-text)",
-                border: inputBorder,
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            />
-          </label>
-        </div>
-
-        {/* Customizable stop words */}
-        {excludeStopWords && (
-          <div className="mb-4">
-            <button
-              onClick={() => setShowStopWords(!showStopWords)}
-              className="flex items-center gap-1.5 text-sm transition-colors"
-              style={{ color: "var(--kami-text-muted)" }}
-            >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className={`transition-transform ${showStopWords ? "rotate-90" : ""}`}
-              >
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-              Edit stop words ({stopWordsSet.size} words)
-            </button>
-            {showStopWords && (
-              <div className="mt-2">
-                <textarea
-                  value={stopWordsText}
-                  onChange={(e) => setStopWordsText(e.target.value)}
-                  className="w-full px-3 py-2 text-xs font-mono focus:outline-none"
-                  style={{
-                    background: inputBg,
-                    color: "var(--kami-text-muted)",
-                    border: inputBorder,
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    boxShadow: "var(--kami-card-shadow, none)",
-                  }}
-                  rows={4}
-                  placeholder="Enter comma-separated stop words..."
-                />
-                <button
-                  onClick={() =>
-                    setStopWordsText(DEFAULT_STOP_WORDS.join(", "))
-                  }
-                  className="mt-1 text-xs transition-colors"
-                  style={{ color: "var(--kami-text-dim)" }}
-                >
-                  Reset to default
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Input */}
+    <ToolShell
+      title="Word Frequency"
+      tagline="Words · bigrams · trigrams · stopword filter · CSV/JSON export"
+      accent="#6366f1"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-3 p-4 md:p-6">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste your text here..."
           className="w-full px-4 py-3 text-base focus:outline-none"
-          style={{
-            background: inputBg,
-            color: "var(--kami-text)",
-            border: inputBorder,
-            borderRadius: inputRadius,
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
+          style={{ ...inputStyle, minHeight: 140 }}
           rows={6}
           autoFocus
         />
 
-        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+        <div
+          className="flex items-center justify-between text-xs"
+          style={{ color: "var(--kami-text-dim)" }}
+        >
           <span>
-            {entries.length} unique {entries.length === 1 ? tabLabel.replace(/s$/, "") : tabLabel}
-            {" "}found
+            {entries.length} unique {tabLabel}
           </span>
           {input && (
-            <button onClick={() => setInput("")}>
+            <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
               Clear
             </button>
           )}
         </div>
 
-        {/* N-gram tabs */}
-        <div
-          className="mt-6 flex gap-1 p-1"
-          style={{
-            background: "var(--kami-surface)",
-            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-            border: "1px solid var(--kami-border)",
-          }}
-        >
-          {([
-            { key: "words" as NgramTab, label: "Words" },
-            { key: "bigrams" as NgramTab, label: "2-word phrases" },
-            { key: "trigrams" as NgramTab, label: "3-word phrases" },
-          ]).map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className="flex-1 px-3 py-1.5 text-sm font-medium transition-colors"
-              style={
-                activeTab === tab.key
-                  ? {
-                      background: "var(--kami-surface-solid)",
-                      color: "var(--kami-text)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                      boxShadow: "var(--kami-card-shadow, none)",
-                    }
-                  : {
-                      color: "var(--kami-text-muted)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    }
-              }
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Results */}
+        {/* Search within results */}
         {entries.length > 0 && (
-          <div className="mt-6">
-            {/* Bar chart of top 20 */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Top {Math.min(20, entries.length)} {tabLabel}
-                </span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                    style={ghostBtnStyle}
-                  >
-                    {copied ? "Copied!" : "Copy CSV"}
-                  </button>
-                  <button
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                    style={ghostBtnStyle}
-                  >
-                    Export CSV
-                  </button>
-                  <button
-                    onClick={handleExportJSON}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                    style={ctaStyle}
-                  >
-                    Export JSON
-                  </button>
-                </div>
-              </div>
-              <div className="space-y-1">
-                {top20.map((e) => (
-                  <div key={e.word} className="flex items-center gap-3 text-sm">
-                    <span className="w-28 truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
-                      {e.word}
-                    </span>
-                    <div
-                      className="flex-1 h-5 overflow-hidden"
-                      style={{
-                        background: "var(--kami-surface)",
-                        borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                      }}
-                    >
-                      <div
-                        className="h-full transition-all"
-                        style={{
-                          width: `${(e.count / maxCount) * 100}%`,
-                          background: "var(--kami-text-muted)",
-                          borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                        }}
-                      />
-                    </div>
-                    <span className="w-10 text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
-                      {e.count}
-                    </span>
-                    <span className="w-14 text-right text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                      {e.pct.toFixed(1)}%
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={`Filter ${tabLabel} (e.g. "ing")`}
+            className="w-full px-3 py-2 text-sm focus:outline-none"
+            style={inputStyle}
+          />
+        )}
 
-            {/* Full table */}
-            <div className="overflow-hidden" style={cardStyle}>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      {activeTab === "words" ? "Word" : "Phrase"}
-                    </th>
-                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Count
-                    </th>
-                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Percentage
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {entries.map((e) => (
-                    <tr
-                      key={e.word}
-                      style={{ borderBottom: "1px solid var(--kami-border)" }}
-                    >
-                      <td className="px-4 py-2 font-mono">{e.word}</td>
-                      <td className="px-4 py-2 text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
-                        {e.count}
-                      </td>
-                      <td className="px-4 py-2 text-right" style={{ color: "var(--kami-text-muted)" }}>
-                        {e.pct.toFixed(2)}%
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* Bar chart of top 20 */}
+        {filteredEntries.length > 0 && (
+          <div
+            className="px-4 py-4"
+            style={cardStyle}
+          >
+            <div className="text-xs font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>
+              Top {Math.min(20, filteredEntries.length)} {tabLabel}
+            </div>
+            <div className="space-y-1.5">
+              {top20.map((e) => (
+                <div key={e.word} className="grid grid-cols-[minmax(80px,auto)_1fr_auto_auto] items-center gap-2 text-sm">
+                  <span className="truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
+                    {e.word}
+                  </span>
+                  <div
+                    className="h-4 overflow-hidden"
+                    style={{ background: "var(--kami-surface)", borderRadius: 4 }}
+                  >
+                    <div
+                      className="h-full"
+                      style={{
+                        width: `${(e.count / maxCount) * 100}%`,
+                        background: "#6366f1",
+                        borderRadius: 4,
+                      }}
+                    />
+                  </div>
+                  <span className="w-10 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                    {e.count}
+                  </span>
+                  <span className="w-12 text-right text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
+                    {e.pct.toFixed(1)}%
+                  </span>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Footer */}
+        {/* Full table */}
+        {filteredEntries.length > 0 && (
+          <div className="overflow-auto max-h-96" style={cardStyle}>
+            <table className="w-full text-sm">
+              <thead className="sticky top-0" style={{ background: "var(--kami-surface-solid)" }}>
+                <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                  <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    {activeTab === "words" ? "Word" : "Phrase"}
+                  </th>
+                  <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    Count
+                  </th>
+                  <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEntries.map((e) => (
+                  <tr key={e.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <td className="px-4 py-1.5 font-mono">{e.word}</td>
+                    <td className="px-4 py-1.5 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                      {e.count}
+                    </td>
+                    <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                      {e.pct.toFixed(2)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
+    </ToolShell>
   );
 }

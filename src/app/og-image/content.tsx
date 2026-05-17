@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Select, SwatchGrid } from "@/components/tools/controls";
 
 // --- Types ---
 
@@ -19,8 +24,10 @@ interface Template {
 }
 
 type BgType = "solid" | "gradient" | "pattern" | "image";
+type LayoutType = "centered" | "split" | "footer-bar" | "hero";
 type Tab = "editor" | "preview" | "validator";
 type ExportFormat = "png" | "jpeg";
+type FontFamily = "Inter" | "JetBrains Mono" | "DM Sans" | "Cormorant Garamond";
 
 // --- Templates ---
 
@@ -122,6 +129,15 @@ const PATTERNS = [
   { name: "Waves", id: "waves" },
 ];
 
+const SOLID_SWATCHES = ["#1a1a2e", "#0f172a", "#ffffff", "#000000", "#6366f1", "#ec4899", "#f59e0b", "#10b981"];
+
+const FONT_STACKS: Record<FontFamily, string> = {
+  Inter: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+  "JetBrains Mono": "'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, monospace",
+  "DM Sans": "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif",
+  "Cormorant Garamond": "'Cormorant Garamond', 'Georgia', serif",
+};
+
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 
@@ -217,7 +233,8 @@ function wrapText(
   y: number,
   maxWidth: number,
   lineHeight: number,
-  maxLines: number
+  maxLines: number,
+  align: CanvasTextAlign = "left"
 ): number {
   const words = text.split(" ");
   let line = "";
@@ -229,7 +246,7 @@ function wrapText(
     if (metrics.width > maxWidth && line) {
       linesDrawn++;
       if (linesDrawn > maxLines) break;
-      ctx.fillText(line, x, y);
+      drawLineAligned(ctx, line, x, y, maxWidth, align);
       y += lineHeight;
       line = words[i];
     } else {
@@ -241,28 +258,46 @@ function wrapText(
     if (linesDrawn === maxLines && line.length > 60) {
       line = line.slice(0, 57) + "...";
     }
-    ctx.fillText(line, x, y);
+    drawLineAligned(ctx, line, x, y, maxWidth, align);
     y += lineHeight;
   }
   return y;
 }
 
-function drawOgImage(
-  canvas: HTMLCanvasElement,
-  opts: {
-    title: string;
-    subtitle: string;
-    author: string;
-    domain: string;
-    bgType: BgType;
-    bgColor: string;
-    bgGradient: string;
-    bgPattern: string;
-    bgImageData: string | null;
-    logoData: string | null;
-    template: Template;
-  }
+function drawLineAligned(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  align: CanvasTextAlign
 ) {
+  if (align === "center") {
+    ctx.fillText(text, x + maxWidth / 2, y);
+  } else if (align === "right") {
+    ctx.fillText(text, x + maxWidth, y);
+  } else {
+    ctx.fillText(text, x, y);
+  }
+}
+
+interface DrawOpts {
+  title: string;
+  subtitle: string;
+  author: string;
+  domain: string;
+  bgType: BgType;
+  bgColor: string;
+  bgGradient: string;
+  bgPattern: string;
+  bgImageData: string | null;
+  logoData: string | null;
+  template: Template;
+  layout: LayoutType;
+  fontFamily: FontFamily;
+}
+
+function drawOgImage(canvas: HTMLCanvasElement, opts: DrawOpts) {
   const ctx = canvas.getContext("2d");
   if (!ctx) return;
   const w = OG_WIDTH;
@@ -275,7 +310,6 @@ function drawOgImage(
     const img = new Image();
     img.onload = () => {
       ctx.drawImage(img, 0, 0, w, h);
-      // Dark overlay for text readability
       ctx.fillStyle = "rgba(0,0,0,0.45)";
       ctx.fillRect(0, 0, w, h);
       drawContent(ctx, opts, w, h);
@@ -298,15 +332,7 @@ function drawOgImage(
 
 function drawContent(
   ctx: CanvasRenderingContext2D,
-  opts: {
-    title: string;
-    subtitle: string;
-    author: string;
-    domain: string;
-    bgType: BgType;
-    template: Template;
-    logoData: string | null;
-  },
+  opts: DrawOpts,
   w: number,
   h: number
 ) {
@@ -317,12 +343,9 @@ function drawContent(
   const domainColor = opts.bgType === "image" ? "#aaaaaa" : t.domainColor;
   const accentColor = opts.bgType === "image" ? "#ffffff" : t.accentColor;
 
+  const fontStack = FONT_STACKS[opts.fontFamily];
   const pad = 80;
   const contentW = w - pad * 2;
-
-  // Accent bar
-  ctx.fillStyle = accentColor;
-  ctx.fillRect(pad, pad, 60, 5);
 
   // Logo
   let logoSize = 0;
@@ -337,42 +360,166 @@ function drawContent(
     }
   }
 
-  // Title
-  let y = pad + 40;
-  ctx.font = "bold 52px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-  ctx.fillStyle = titleColor;
-  ctx.textBaseline = "top";
-  y = wrapText(ctx, opts.title || "Your Title Here", pad, y, contentW - logoSize - 20, 64, 3);
+  if (opts.layout === "centered") {
+    // Title + subtitle centered both axes
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
 
-  // Subtitle
-  if (opts.subtitle) {
-    y += 12;
-    ctx.font = "400 28px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = subtitleColor;
-    wrapText(ctx, opts.subtitle, pad, y, contentW, 36, 2);
-  }
+    // Calculate vertical centering
+    const titleSize = 64;
+    const titleLineH = 76;
+    const subtitleSize = 28;
+    const subtitleLineH = 36;
+    const approxBlockH = titleLineH * 2 + (opts.subtitle ? subtitleLineH * 2 + 16 : 0);
+    let y = (h - approxBlockH) / 2;
 
-  // Bottom section: author + domain
-  const bottomY = h - pad - 30;
+    ctx.font = `bold ${titleSize}px ${fontStack}`;
+    ctx.fillStyle = titleColor;
+    y = wrapText(ctx, opts.title || "Your Title Here", pad, y, contentW, titleLineH, 2, "center");
 
-  if (opts.author) {
-    ctx.font = "500 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = authorColor;
+    if (opts.subtitle) {
+      y += 16;
+      ctx.font = `400 ${subtitleSize}px ${fontStack}`;
+      ctx.fillStyle = subtitleColor;
+      wrapText(ctx, opts.subtitle, pad, y, contentW, subtitleLineH, 2, "center");
+    }
+
+    // Footer
+    ctx.textAlign = "left";
+    const bottomY = h - pad;
+    if (opts.author) {
+      ctx.font = `500 22px ${fontStack}`;
+      ctx.fillStyle = authorColor;
+      ctx.textBaseline = "bottom";
+      ctx.fillText(opts.author, pad, bottomY);
+    }
+    if (opts.domain) {
+      ctx.font = `400 20px ${fontStack}`;
+      ctx.fillStyle = domainColor;
+      ctx.textBaseline = "bottom";
+      const domW = ctx.measureText(opts.domain).width;
+      ctx.fillText(opts.domain, w - pad - domW, bottomY);
+    }
+  } else if (opts.layout === "split") {
+    // Accent bar on left, title vertically centered
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(pad, pad, 6, h - pad * 2);
+
+    const innerPad = pad + 30;
+    const innerW = w - innerPad - pad - logoSize - 20;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    const titleSize = 56;
+    const titleLineH = 68;
+    const approxH = titleLineH * 2 + (opts.subtitle ? 36 * 2 + 16 : 0);
+    let y = (h - approxH) / 2;
+
+    ctx.font = `bold ${titleSize}px ${fontStack}`;
+    ctx.fillStyle = titleColor;
+    y = wrapText(ctx, opts.title || "Your Title Here", innerPad, y, innerW, titleLineH, 3, "left");
+
+    if (opts.subtitle) {
+      y += 12;
+      ctx.font = `400 26px ${fontStack}`;
+      ctx.fillStyle = subtitleColor;
+      wrapText(ctx, opts.subtitle, innerPad, y, innerW, 34, 2, "left");
+    }
+
+    // Bottom author/domain
+    const bottomY = h - pad;
     ctx.textBaseline = "bottom";
-    ctx.fillText(opts.author, pad, bottomY);
-  }
+    if (opts.author) {
+      ctx.font = `500 22px ${fontStack}`;
+      ctx.fillStyle = authorColor;
+      ctx.fillText(opts.author, innerPad, bottomY);
+    }
+    if (opts.domain) {
+      ctx.font = `400 20px ${fontStack}`;
+      ctx.fillStyle = domainColor;
+      const domW = ctx.measureText(opts.domain).width;
+      ctx.fillText(opts.domain, w - pad - domW, bottomY);
+    }
+  } else if (opts.layout === "footer-bar") {
+    // Title at top, big footer bar with author/domain
+    const barH = 90;
+    const titleAreaH = h - barH;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
 
-  if (opts.domain) {
-    ctx.font = "400 20px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-    ctx.fillStyle = domainColor;
+    // Accent bar
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(pad, pad, 60, 5);
+
+    let y = pad + 40;
+    ctx.font = `bold 56px ${fontStack}`;
+    ctx.fillStyle = titleColor;
+    y = wrapText(ctx, opts.title || "Your Title Here", pad, y, contentW - logoSize - 20, 68, 3);
+
+    if (opts.subtitle) {
+      y += 12;
+      ctx.font = `400 26px ${fontStack}`;
+      ctx.fillStyle = subtitleColor;
+      wrapText(ctx, opts.subtitle, pad, y, contentW, 34, 2);
+    }
+
+    // Footer bar
+    ctx.fillStyle = accentColor + "20";
+    ctx.fillRect(0, titleAreaH, w, barH);
+
+    const barCenter = titleAreaH + barH / 2;
+    ctx.textBaseline = "middle";
+    if (opts.author) {
+      ctx.font = `600 22px ${fontStack}`;
+      ctx.fillStyle = authorColor;
+      ctx.fillText(opts.author, pad, barCenter);
+    }
+    if (opts.domain) {
+      ctx.font = `400 20px ${fontStack}`;
+      ctx.fillStyle = domainColor;
+      const domW = ctx.measureText(opts.domain).width;
+      ctx.fillText(opts.domain, w - pad - domW, barCenter);
+    }
+  } else {
+    // hero
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    // Accent bar
+    ctx.fillStyle = accentColor;
+    ctx.fillRect(pad, pad, 60, 5);
+
+    // Title
+    let y = pad + 40;
+    ctx.font = `bold 72px ${fontStack}`;
+    ctx.fillStyle = titleColor;
+    y = wrapText(ctx, opts.title || "Your Title Here", pad, y, contentW - logoSize - 20, 86, 2);
+
+    // Subtitle
+    if (opts.subtitle) {
+      y += 12;
+      ctx.font = `400 30px ${fontStack}`;
+      ctx.fillStyle = subtitleColor;
+      wrapText(ctx, opts.subtitle, pad, y, contentW, 40, 2);
+    }
+
+    // Bottom
+    const bottomY = h - pad - 30;
     ctx.textBaseline = "bottom";
-    const domW = ctx.measureText(opts.domain).width;
-    ctx.fillText(opts.domain, w - pad - domW, bottomY);
+    if (opts.author) {
+      ctx.font = `500 24px ${fontStack}`;
+      ctx.fillStyle = authorColor;
+      ctx.fillText(opts.author, pad, bottomY);
+    }
+    if (opts.domain) {
+      ctx.font = `400 20px ${fontStack}`;
+      ctx.fillStyle = domainColor;
+      const domW = ctx.measureText(opts.domain).width;
+      ctx.fillText(opts.domain, w - pad - domW, bottomY);
+    }
+    ctx.fillStyle = accentColor + "40";
+    ctx.fillRect(pad, h - pad - 2, contentW, 2);
   }
-
-  // Bottom accent line
-  ctx.fillStyle = accentColor + "40";
-  ctx.fillRect(pad, h - pad - 2, contentW, 2);
 }
 
 // --- Platform preview dimensions ---
@@ -393,28 +540,13 @@ interface OgTagResult {
   message?: string;
 }
 
-const REQUIRED_OG_TAGS = [
-  "og:title",
-  "og:description",
-  "og:image",
-  "og:url",
-  "og:type",
-];
-
-const RECOMMENDED_OG_TAGS = [
-  "og:site_name",
-  "og:locale",
-  "twitter:card",
-  "twitter:title",
-  "twitter:description",
-  "twitter:image",
-];
+const REQUIRED_OG_TAGS = ["og:title", "og:description", "og:image", "og:url", "og:type"];
+const RECOMMENDED_OG_TAGS = ["og:site_name", "og:locale", "twitter:card", "twitter:title", "twitter:description", "twitter:image"];
 
 function parseOgTags(html: string): OgTagResult[] {
   const results: OgTagResult[] = [];
   const found = new Map<string, string>();
 
-  // Match meta tags with property or name attributes
   const metaRegex =
     /<meta\s+(?:[^>]*?)(?:property|name)=["']([^"']+)["']\s+content=["']([^"']*)["'][^>]*>/gi;
   const metaRegex2 =
@@ -428,17 +560,13 @@ function parseOgTags(html: string): OgTagResult[] {
     found.set(match[2].toLowerCase(), match[1]);
   }
 
-  // Check required tags
   for (const tag of REQUIRED_OG_TAGS) {
     const content = found.get(tag);
     if (content) {
       const warnings: string[] = [];
-      if (tag === "og:title" && content.length > 70)
-        warnings.push("Title exceeds 70 characters");
-      if (tag === "og:description" && content.length > 200)
-        warnings.push("Description exceeds 200 characters");
-      if (tag === "og:image" && !content.startsWith("http"))
-        warnings.push("Image URL should be absolute");
+      if (tag === "og:title" && content.length > 70) warnings.push("Title exceeds 70 characters");
+      if (tag === "og:description" && content.length > 200) warnings.push("Description exceeds 200 characters");
+      if (tag === "og:image" && !content.startsWith("http")) warnings.push("Image URL should be absolute");
 
       results.push({
         tag,
@@ -447,31 +575,19 @@ function parseOgTags(html: string): OgTagResult[] {
         message: warnings.join("; "),
       });
     } else {
-      results.push({
-        tag,
-        content: "",
-        status: "missing",
-        message: `Required tag "${tag}" is missing`,
-      });
+      results.push({ tag, content: "", status: "missing", message: `Required tag "${tag}" is missing` });
     }
   }
 
-  // Check recommended tags
   for (const tag of RECOMMENDED_OG_TAGS) {
     const content = found.get(tag);
     if (content) {
       results.push({ tag, content, status: "present" });
     } else {
-      results.push({
-        tag,
-        content: "",
-        status: "warning",
-        message: `Recommended tag "${tag}" is not set`,
-      });
+      results.push({ tag, content: "", status: "warning", message: `Recommended tag "${tag}" is not set` });
     }
   }
 
-  // Additional found tags
   found.forEach((content, tag) => {
     if (
       (tag.startsWith("og:") || tag.startsWith("twitter:")) &&
@@ -484,6 +600,22 @@ function parseOgTags(html: string): OgTagResult[] {
 
   return results;
 }
+
+// --- Styles ---
+
+const cardStyle: React.CSSProperties = {
+  background: "var(--kami-surface-solid)",
+  border: "1px solid var(--kami-border-strong)",
+  borderRadius: "var(--kami-card-radius, 0.75rem)",
+  boxShadow: "var(--kami-card-shadow, none)",
+};
+
+const inputStyle: React.CSSProperties = {
+  background: "var(--kami-input-bg, var(--kami-surface-solid))",
+  color: "var(--kami-text)",
+  border: "1px solid var(--kami-border-strong)",
+  borderRadius: "var(--kami-input-radius, 0.5rem)",
+};
 
 // --- Main Component ---
 
@@ -504,21 +636,18 @@ export default function OgImageContent() {
   const [bgPattern, setBgPattern] = useState("dots");
   const [bgImageData, setBgImageData] = useState<string | null>(null);
   const [logoData, setLogoData] = useState<string | null>(null);
+  const [layout, setLayout] = useState<LayoutType>("hero");
+  const [fontFamily, setFontFamily] = useState<FontFamily>("Inter");
 
-  // Tab state
   const [activeTab, setActiveTab] = useState<Tab>("editor");
-
-  // Export
   const [copied, setCopied] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
 
-  // Validator
   const [validatorInput, setValidatorInput] = useState("");
   const [validatorResults, setValidatorResults] = useState<OgTagResult[]>([]);
 
   const template = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
 
-  // Apply template
   const applyTemplate = useCallback((t: Template) => {
     setTemplateId(t.id);
     setBgType(t.bgType);
@@ -526,7 +655,6 @@ export default function OgImageContent() {
     else if (t.bgType === "solid") setBgColor(t.bgValue);
   }, []);
 
-  // Redraw canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -542,22 +670,11 @@ export default function OgImageContent() {
       bgImageData,
       logoData,
       template,
+      layout,
+      fontFamily,
     });
-  }, [
-    title,
-    subtitle,
-    author,
-    domain,
-    bgType,
-    bgColor,
-    bgGradient,
-    bgPattern,
-    bgImageData,
-    logoData,
-    template,
-  ]);
+  }, [title, subtitle, author, domain, bgType, bgColor, bgGradient, bgPattern, bgImageData, logoData, template, layout, fontFamily, activeTab]);
 
-  // File handlers
   const handleBgImage = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -577,7 +694,6 @@ export default function OgImageContent() {
     reader.readAsDataURL(file);
   }, []);
 
-  // Export
   const handleExport = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -608,7 +724,6 @@ export default function OgImageContent() {
     setTimeout(() => setCopied(false), 2000);
   }, [title, subtitle]);
 
-  // Validator
   const runValidator = useCallback(() => {
     if (!validatorInput.trim()) return;
     setValidatorResults(parseOgTags(validatorInput));
@@ -619,461 +734,200 @@ export default function OgImageContent() {
   ], [handleExport]));
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="OG Image Generator"
-          tagline="Design the 1200×630 social-share image that appears when your link is posted to Twitter, LinkedIn, Slack, or Facebook."
-          description="Pick a template, swap the title, add a subtitle or logo, tweak colors - we render a 1200×630 PNG ready to drop into your <meta property='og:image'> tag. Every template is designed to stay legible when the card is shrunk to a feed thumbnail."
-          audience={["Content marketers", "Writers", "Developers", "Designers"]}
-          whenToUse={[
-            "Publishing a blog post that needs a custom social preview",
-            "A/B testing which card drives more clicks on Twitter",
-            "Shipping a product launch with matching OG cards",
-          ]}
-        /><div className="mb-8 text-center">
-        </div>
+    <ToolShell
+      title="OG Image Generator"
+      tagline="1200x630 social cards · live preview · platform validator"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <ToolActionButton variant="outline" onClick={handleCopyMetaTags}>
+            {copied ? "Copied" : "Copy meta tags"}
+          </ToolActionButton>
+          <ToolActionButton variant="solid" onClick={handleExport}>
+            Download {exportFormat.toUpperCase()}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Mode">
+            <Segment<Tab>
+              value={activeTab}
+              onChange={setActiveTab}
+              options={[
+                { value: "editor", label: "Editor" },
+                { value: "preview", label: "Preview" },
+                { value: "validator", label: "Validator" },
+              ]}
+              full
+            />
+          </ControlGroup>
 
-        {/* Tabs */}
-        <div
-          className="mb-6 flex items-center justify-center gap-1 p-1 w-fit mx-auto"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.5rem)",
-          }}
-        >
-          {(["editor", "preview", "validator"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className="px-4 py-2 text-sm font-medium transition-colors"
-              style={
-                activeTab === tab
-                  ? {
-                      background: "var(--kami-cta-bg, #111827)",
-                      color: "var(--kami-cta-text, #ffffff)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    }
-                  : {
-                      color: "var(--kami-text-muted)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    }
-              }
-            >
-              {tab === "editor"
-                ? "Editor"
-                : tab === "preview"
-                  ? "Platform Preview"
-                  : "OG Tag Validator"}
-            </button>
-          ))}
-        </div>
-
-        {/* Editor Tab */}
-        {activeTab === "editor" && (
-          <div className="grid gap-6 lg:grid-cols-[1fr,380px]">
-            {/* Canvas Preview */}
-            <div>
-              <div
-                className="p-4"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <canvas
-                  ref={canvasRef}
-                  width={OG_WIDTH}
-                  height={OG_HEIGHT}
-                  className="w-full rounded-lg"
-                  style={{ aspectRatio: "1200/630" }}
-                />
-              </div>
-
-              {/* Export controls */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <div
-                  className="flex items-center gap-1 px-2 py-1"
-                  style={{
-                    background: "var(--kami-surface-solid)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Format:</span>
-                  {(["png", "jpeg"] as ExportFormat[]).map((fmt) => (
-                    <button
-                      key={fmt}
-                      onClick={() => setExportFormat(fmt)}
-                      className="px-2 py-0.5 text-xs font-medium transition-colors"
-                      style={
-                        exportFormat === fmt
-                          ? {
-                              background: "var(--kami-cta-bg, #111827)",
-                              color: "var(--kami-cta-text, #ffffff)",
-                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                            }
-                          : {
-                              color: "var(--kami-text-muted)",
-                              borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                            }
-                      }
-                    >
-                      {fmt.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={handleExport}
-                  className="px-4 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-cta-bg, #111827)",
-                    color: "var(--kami-cta-text, #ffffff)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  Download {exportFormat.toUpperCase()}
-                </button>
-                <button
-                  onClick={handleCopyMetaTags}
-                  className="px-4 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: "var(--kami-surface-solid)",
-                    color: "var(--kami-text-muted)",
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  {copied ? "Copied!" : "Copy Meta Tags"}
-                </button>
-                <span className="ml-auto text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                  1200 x 630px
-                </span>
-              </div>
-            </div>
-
-            {/* Controls Panel */}
-            <div className="space-y-5">
-              {/* Templates */}
-              <div
-                className="p-4"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Templates
-                </h3>
-                <div className="grid grid-cols-4 gap-2">
+          {activeTab === "editor" && (
+            <>
+              <ControlGroup label="Template">
+                <div className="grid grid-cols-2 gap-2">
                   {TEMPLATES.map((t) => (
                     <button
                       key={t.id}
+                      type="button"
                       onClick={() => applyTemplate(t)}
-                      className="p-2 text-center text-xs font-medium transition-all"
-                      style={
-                        templateId === t.id
-                          ? {
-                              boxShadow: "0 0 0 2px var(--kami-text)",
-                              borderRadius: "var(--kami-card-radius, 0.5rem)",
-                            }
-                          : {
-                              border: "1px solid var(--kami-border-strong)",
-                              borderRadius: "var(--kami-card-radius, 0.5rem)",
-                            }
-                      }
+                      className="p-2 text-left transition-all"
+                      style={{
+                        background: "var(--kami-surface)",
+                        boxShadow:
+                          templateId === t.id
+                            ? "0 0 0 2px var(--kami-text)"
+                            : "0 0 0 1px var(--kami-border)",
+                        borderRadius: "var(--kami-card-radius, 0.5rem)",
+                        minHeight: 56,
+                      }}
                     >
-                      <div
-                        className="mx-auto mb-1.5 h-6 w-full rounded"
-                        style={{
-                          background:
-                            t.bgType === "gradient"
-                              ? t.bgValue
-                              : t.bgValue,
-                        }}
-                      />
-                      <span style={{ color: "var(--kami-text-muted)" }}>{t.name}</span>
+                      <div className="mb-1 h-5 w-full rounded" style={{ background: t.bgValue }} />
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{t.name}</span>
                     </button>
                   ))}
                 </div>
-              </div>
+              </ControlGroup>
 
-              {/* Text Fields */}
-              <div
-                className="p-4"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Content
-                </h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      className="w-full px-3 py-2 text-sm focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                      placeholder="Your title here"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                      Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      value={subtitle}
-                      onChange={(e) => setSubtitle(e.target.value)}
-                      className="w-full px-3 py-2 text-sm focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                      placeholder="A brief description"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                        Author
-                      </label>
-                      <input
-                        type="text"
-                        value={author}
-                        onChange={(e) => setAuthor(e.target.value)}
-                        className="w-full px-3 py-2 text-sm focus:outline-none"
-                        style={{
-                          background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                          color: "var(--kami-text)",
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-input-radius, 0.5rem)",
-                        }}
-                        placeholder="Author name"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                        Domain
-                      </label>
-                      <input
-                        type="text"
-                        value={domain}
-                        onChange={(e) => setDomain(e.target.value)}
-                        className="w-full px-3 py-2 text-sm focus:outline-none"
-                        style={{
-                          background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                          color: "var(--kami-text)",
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-input-radius, 0.5rem)",
-                        }}
-                        placeholder="example.com"
-                      />
-                    </div>
-                  </div>
+              <ControlGroup label="Layout">
+                <Segment<LayoutType>
+                  value={layout}
+                  onChange={setLayout}
+                  options={[
+                    { value: "centered", label: "Center" },
+                    { value: "split", label: "Split" },
+                    { value: "footer-bar", label: "Footer" },
+                    { value: "hero", label: "Hero" },
+                  ]}
+                  full
+                />
+              </ControlGroup>
+
+              <ControlGroup label="Font">
+                <Select<FontFamily>
+                  value={fontFamily}
+                  onChange={setFontFamily}
+                  options={[
+                    { value: "Inter", label: "Inter" },
+                    { value: "JetBrains Mono", label: "JetBrains Mono" },
+                    { value: "DM Sans", label: "DM Sans" },
+                    { value: "Cormorant Garamond", label: "Cormorant Garamond" },
+                  ]}
+                />
+              </ControlGroup>
+
+              <ControlGroup label="Title">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ ...inputStyle, minHeight: 40 }}
+                  placeholder="Your title here"
+                />
+              </ControlGroup>
+
+              <ControlGroup label="Subtitle">
+                <input
+                  type="text"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ ...inputStyle, minHeight: 40 }}
+                  placeholder="A brief description"
+                />
+              </ControlGroup>
+
+              <ControlGroup label="Author / Domain">
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="text"
+                    value={author}
+                    onChange={(e) => setAuthor(e.target.value)}
+                    placeholder="Author name"
+                    className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                    style={{ ...inputStyle, minHeight: 40 }}
+                  />
+                  <input
+                    type="text"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                    placeholder="example.com"
+                    className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                    style={{ ...inputStyle, minHeight: 40 }}
+                  />
                 </div>
-              </div>
+              </ControlGroup>
 
-              {/* Background */}
-              <div
-                className="p-4"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Background
-                </h3>
-                <div
-                  className="mb-3 flex gap-1 p-0.5"
-                  style={{
-                    border: "1px solid var(--kami-border-strong)",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  {(["gradient", "solid", "pattern", "image"] as BgType[]).map(
-                    (bt) => (
-                      <button
-                        key={bt}
-                        onClick={() => setBgType(bt)}
-                        className="flex-1 px-2 py-1.5 text-xs font-medium transition-colors"
-                        style={
-                          bgType === bt
-                            ? {
-                                background: "var(--kami-cta-bg, #111827)",
-                                color: "var(--kami-cta-text, #ffffff)",
-                                borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                              }
-                            : {
-                                color: "var(--kami-text-muted)",
-                                borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                              }
-                        }
-                      >
-                        {bt.charAt(0).toUpperCase() + bt.slice(1)}
-                      </button>
-                    )
-                  )}
-                </div>
-
+              <ControlGroup label="Background">
+                <Segment<BgType>
+                  value={bgType}
+                  onChange={setBgType}
+                  options={[
+                    { value: "gradient", label: "Gradient" },
+                    { value: "solid", label: "Solid" },
+                    { value: "pattern", label: "Pattern" },
+                    { value: "image", label: "Image" },
+                  ]}
+                  full
+                />
                 {bgType === "solid" && (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="h-8 w-8 cursor-pointer"
-                      style={{
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.25rem)",
-                      }}
-                    />
-                    <input
-                      type="text"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="flex-1 px-3 py-1.5 text-sm font-mono focus:outline-none"
-                      style={{
-                        background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                        color: "var(--kami-text)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                    />
+                  <div className="mt-2">
+                    <SwatchGrid value={bgColor} onChange={setBgColor} colors={SOLID_SWATCHES} />
                   </div>
                 )}
-
                 {bgType === "gradient" && (
-                  <div className="space-y-2">
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {TEMPLATES.filter((t) => t.bgType === "gradient").map(
-                        (t) => (
-                          <button
-                            key={t.id}
-                            onClick={() => setBgGradient(t.bgValue)}
-                            className="h-8 transition-all"
-                            style={
-                              bgGradient === t.bgValue
-                                ? {
-                                    background: t.bgValue,
-                                    boxShadow: "0 0 0 2px var(--kami-text), 0 0 0 3px var(--kami-surface-solid)",
-                                    borderRadius: "var(--kami-card-radius, 0.375rem)",
-                                  }
-                                : {
-                                    background: t.bgValue,
-                                    boxShadow: "0 0 0 1px var(--kami-border-strong)",
-                                    borderRadius: "var(--kami-card-radius, 0.375rem)",
-                                  }
-                            }
-                          />
-                        )
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {bgType === "pattern" && (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={bgColor}
-                        onChange={(e) => setBgColor(e.target.value)}
-                        className="h-8 w-8 cursor-pointer"
+                  <div className="mt-2 grid grid-cols-4 gap-1.5">
+                    {TEMPLATES.filter((t) => t.bgType === "gradient").map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setBgGradient(t.bgValue)}
+                        aria-label={`Use ${t.name} gradient`}
+                        className="h-10 transition-all"
                         style={{
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-input-radius, 0.25rem)",
+                          background: t.bgValue,
+                          boxShadow:
+                            bgGradient === t.bgValue
+                              ? "0 0 0 2px var(--kami-text), 0 0 0 3px var(--kami-surface-solid)"
+                              : "0 0 0 1px var(--kami-border-strong)",
+                          borderRadius: "var(--kami-card-radius, 0.375rem)",
+                          minHeight: 40,
                         }}
                       />
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Base color</span>
-                    </div>
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {PATTERNS.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => setBgPattern(p.id)}
-                          className="px-2 py-1.5 text-xs font-medium transition-all"
-                          style={
-                            bgPattern === p.id
-                              ? {
-                                  background: "var(--kami-cta-bg, #111827)",
-                                  color: "var(--kami-cta-text, #ffffff)",
-                                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                                }
-                              : {
-                                  border: "1px solid var(--kami-border-strong)",
-                                  color: "var(--kami-text-muted)",
-                                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                                }
-                          }
-                        >
-                          {p.name}
-                        </button>
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 )}
-
+                {bgType === "pattern" && (
+                  <div className="mt-2 space-y-2">
+                    <SwatchGrid value={bgColor} onChange={setBgColor} colors={SOLID_SWATCHES} />
+                    <Segment
+                      value={bgPattern}
+                      onChange={setBgPattern}
+                      options={PATTERNS.map((p) => ({ value: p.id, label: p.name }))}
+                      full
+                      size="sm"
+                    />
+                  </div>
+                )}
                 {bgType === "image" && (
-                  <div>
-                    <label
-                      className="flex cursor-pointer items-center justify-center px-4 py-6 text-sm transition-colors"
-                      style={{
-                        border: "2px dashed var(--kami-border-strong)",
-                        color: "var(--kami-text-muted)",
-                        borderRadius: "var(--kami-card-radius, 0.5rem)",
-                      }}
-                    >
-                      {bgImageData
-                        ? "Image loaded - click to change"
-                        : "Click to upload background image"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleBgImage}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
+                  <label
+                    className="mt-2 flex cursor-pointer items-center justify-center px-4 py-3 text-sm transition-colors"
+                    style={{
+                      border: "2px dashed var(--kami-border-strong)",
+                      color: "var(--kami-text-muted)",
+                      borderRadius: "var(--kami-card-radius, 0.5rem)",
+                      minHeight: 56,
+                    }}
+                  >
+                    {bgImageData ? "Image loaded — change" : "Upload background"}
+                    <input type="file" accept="image/*" onChange={handleBgImage} className="hidden" />
+                  </label>
                 )}
-              </div>
+              </ControlGroup>
 
-              {/* Logo upload */}
-              <div
-                className="p-4"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
-                <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Logo
-                </h3>
+              <ControlGroup label="Logo">
                 <div className="flex items-center gap-3">
                   <label
                     className="flex cursor-pointer items-center justify-center px-4 py-2 text-xs transition-colors"
@@ -1081,251 +935,214 @@ export default function OgImageContent() {
                       border: "1px solid var(--kami-border-strong)",
                       color: "var(--kami-text-muted)",
                       borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                      minHeight: 40,
                     }}
                   >
                     {logoData ? "Change logo" : "Upload logo"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogo}
-                      className="hidden"
-                    />
+                    <input type="file" accept="image/*" onChange={handleLogo} className="hidden" />
                   </label>
                   {logoData && (
                     <button
+                      type="button"
                       onClick={() => setLogoData(null)}
                       className="text-xs"
-                      style={{ color: "var(--kami-text-dim)" }}
+                      style={{ color: "var(--kami-text-dim)", minHeight: 32 }}
                     >
                       Remove
                     </button>
                   )}
                 </div>
+              </ControlGroup>
+
+              <ControlGroup label="Export format">
+                <Segment<ExportFormat>
+                  value={exportFormat}
+                  onChange={setExportFormat}
+                  options={[
+                    { value: "png", label: "PNG" },
+                    { value: "jpeg", label: "JPEG" },
+                  ]}
+                  full
+                />
+              </ControlGroup>
+            </>
+          )}
+        </>
+      }
+      info={
+        <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            <strong>OG Image Generator</strong> renders a 1200×630 social-share image entirely in your browser
+            using HTML canvas — nothing is uploaded.
+          </p>
+          <p>
+            <strong>Layouts:</strong> Hero (big title), Centered, Split (accent bar), Footer-bar (info pinned to bottom).
+          </p>
+          <p>
+            <strong>Backgrounds:</strong> solid colors, eight curated gradients, four geometric patterns,
+            or a custom photo with a dark overlay for legibility.
+          </p>
+          <p>
+            <strong>Validator</strong> parses HTML source and lists which OG/Twitter meta tags are present,
+            missing, or worth adding.
+          </p>
+          <p>Shortcut: ⌘Enter to download.</p>
+        </div>
+      }
+    >
+      {/* Live canvas — visible across all tabs so platform previews can read it */}
+      <div className="flex flex-col gap-4">
+        {activeTab === "editor" && (
+          <div className="p-3 sm:p-4" style={cardStyle}>
+            <canvas
+              ref={canvasRef}
+              width={OG_WIDTH}
+              height={OG_HEIGHT}
+              className="w-full rounded-lg"
+              style={{ aspectRatio: "1200/630", display: "block" }}
+            />
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                1200 × 630 px · {fontFamily}
+              </span>
+              <div className="flex items-center gap-2">
+                <ToolActionButton variant="outline" onClick={handleCopyMetaTags}>
+                  {copied ? "Copied" : "Copy meta tags"}
+                </ToolActionButton>
+                <ToolActionButton variant="solid" onClick={handleExport}>
+                  Download {exportFormat.toUpperCase()}
+                </ToolActionButton>
               </div>
             </div>
           </div>
         )}
 
-        {/* Preview Tab */}
         {activeTab === "preview" && (
-          <div className="space-y-6">
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <canvas
-                ref={activeTab === "preview" ? undefined : canvasRef}
-                className="hidden"
-              />
-              <div className="grid gap-6 md:grid-cols-2">
-                {PLATFORMS.map((platform) => (
-                  <div key={platform.name}>
-                    <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                      {platform.name}
-                    </h3>
-                    <div
-                      className="overflow-hidden border border-gray-200 bg-gray-100"
-                      style={{ borderRadius: platform.radius }}
-                    >
-                      <canvas
-                        ref={(el) => {
-                          if (!el) return;
-                          const srcCanvas = canvasRef.current;
-                          if (!srcCanvas) return;
-                          el.width = platform.width * 2;
-                          el.height = platform.height * 2;
-                          el.style.width = `${platform.width}px`;
-                          el.style.height = `${platform.height}px`;
-                          const ctx = el.getContext("2d");
-                          if (ctx) {
-                            ctx.drawImage(
-                              srcCanvas,
-                              0,
-                              0,
-                              el.width,
-                              el.height
-                            );
-                          }
-                        }}
-                        style={{
-                          width: platform.width,
-                          height: platform.height,
-                        }}
-                        className="w-full"
-                      />
-                      <div className="bg-white px-3 py-2">
-                        <div className="text-xs text-gray-400">{domain}</div>
-                        <div className="text-sm font-semibold text-gray-900 truncate">
-                          {title || "Your Title Here"}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {subtitle}
-                        </div>
+          <div className="p-3 sm:p-4 space-y-4" style={cardStyle}>
+            <canvas
+              ref={canvasRef}
+              width={OG_WIDTH}
+              height={OG_HEIGHT}
+              className="w-full rounded-lg mb-4"
+              style={{ aspectRatio: "1200/630", display: "block" }}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {PLATFORMS.map((platform) => (
+                <div key={platform.name}>
+                  <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                    {platform.name}
+                  </h3>
+                  <div
+                    className="overflow-hidden border border-gray-200 bg-gray-100"
+                    style={{ borderRadius: platform.radius }}
+                  >
+                    <canvas
+                      ref={(el) => {
+                        if (!el) return;
+                        const srcCanvas = canvasRef.current;
+                        if (!srcCanvas) return;
+                        el.width = platform.width * 2;
+                        el.height = platform.height * 2;
+                        el.style.width = "100%";
+                        el.style.height = "auto";
+                        const ctx = el.getContext("2d");
+                        if (ctx) {
+                          ctx.drawImage(srcCanvas, 0, 0, el.width, el.height);
+                        }
+                      }}
+                      className="w-full block"
+                    />
+                    <div className="bg-white px-3 py-2">
+                      <div className="text-xs text-gray-400">{domain}</div>
+                      <div className="text-sm font-semibold text-gray-900 truncate">
+                        {title || "Your Title Here"}
                       </div>
+                      <div className="text-xs text-gray-500 truncate">{subtitle}</div>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* Validator Tab */}
         {activeTab === "validator" && (
-          <div className="space-y-4">
-            <div
-              className="p-4"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h3 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+          <>
+            <canvas ref={canvasRef} className="hidden" />
+            <div className="p-4 space-y-3" style={cardStyle}>
+              <h3 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
                 OG Tag Validator
               </h3>
-              <p className="mb-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                Paste HTML source code to check which Open Graph tags are
-                present.
+              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                Paste HTML source code to check which Open Graph tags are present.
               </p>
               <textarea
                 value={validatorInput}
                 onChange={(e) => setValidatorInput(e.target.value)}
                 placeholder='Paste HTML here... e.g. <meta property="og:title" content="My Page" />'
                 className="w-full px-3 py-2.5 text-sm font-mono focus:outline-none"
-                style={{
-                  background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-text)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-input-radius, 0.5rem)",
-                }}
+                style={{ ...inputStyle, minHeight: 140 }}
                 rows={6}
                 spellCheck={false}
               />
-              <button
-                onClick={runValidator}
-                disabled={!validatorInput.trim()}
-                className="mt-2 px-4 py-1.5 text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{
-                  background: "var(--kami-cta-bg, #111827)",
-                  color: "var(--kami-cta-text, #ffffff)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
+              <ToolActionButton variant="solid" onClick={runValidator} disabled={!validatorInput.trim()}>
                 Validate
-              </button>
+              </ToolActionButton>
             </div>
 
             {validatorResults.length > 0 && (
-              <div
-                className="overflow-hidden"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                }}
-              >
+              <div className="overflow-hidden" style={cardStyle}>
                 <div
-                  className="px-4 py-3 flex items-center gap-3"
+                  className="px-4 py-3 flex flex-wrap items-center gap-3"
                   style={{ borderBottom: "1px solid var(--kami-border)" }}
                 >
-                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                    Results
-                  </span>
+                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Results</span>
                   <span className="text-xs text-green-600">
-                    {
-                      validatorResults.filter((r) => r.status === "present")
-                        .length
-                    }{" "}
-                    present
+                    {validatorResults.filter((r) => r.status === "present").length} present
                   </span>
                   <span className="text-xs text-amber-600">
-                    {
-                      validatorResults.filter((r) => r.status === "warning")
-                        .length
-                    }{" "}
-                    warnings
+                    {validatorResults.filter((r) => r.status === "warning").length} warnings
                   </span>
                   <span className="text-xs text-red-600">
-                    {
-                      validatorResults.filter((r) => r.status === "missing")
-                        .length
-                    }{" "}
-                    missing
+                    {validatorResults.filter((r) => r.status === "missing").length} missing
                   </span>
                 </div>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                        Status
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                        Tag
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                        Content
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {validatorResults.map((r, i) => (
-                      <tr
-                        key={i}
-                        style={{ borderBottom: "1px solid var(--kami-border)" }}
-                      >
-                        <td className="px-4 py-2">
-                          {r.status === "present" && (
-                            <span className="text-green-600 text-xs font-medium">
-                              OK
-                            </span>
-                          )}
-                          {r.status === "warning" && (
-                            <span className="text-amber-600 text-xs font-medium">
-                              WARN
-                            </span>
-                          )}
-                          {r.status === "missing" && (
-                            <span className="text-red-600 text-xs font-medium">
-                              MISS
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2 font-mono text-xs" style={{ color: "var(--kami-text)" }}>
-                          {r.tag}
-                        </td>
-                        <td className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                          {r.content ? (
-                            <span className="break-all">{r.content}</span>
-                          ) : (
-                            <span className="italic" style={{ color: "var(--kami-text-dim)" }}>
-                              {r.message}
-                            </span>
-                          )}
-                          {r.content && r.message && (
-                            <div className="text-amber-500 mt-0.5">
-                              {r.message}
-                            </div>
-                          )}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Tag</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Content</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {validatorResults.map((r, i) => (
+                        <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                          <td className="px-4 py-2">
+                            {r.status === "present" && <span className="text-green-600 text-xs font-medium">OK</span>}
+                            {r.status === "warning" && <span className="text-amber-600 text-xs font-medium">WARN</span>}
+                            {r.status === "missing" && <span className="text-red-600 text-xs font-medium">MISS</span>}
+                          </td>
+                          <td className="px-4 py-2 font-mono text-xs" style={{ color: "var(--kami-text)" }}>{r.tag}</td>
+                          <td className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                            {r.content ? (
+                              <span className="break-all">{r.content}</span>
+                            ) : (
+                              <span className="italic" style={{ color: "var(--kami-text-dim)" }}>{r.message}</span>
+                            )}
+                            {r.content && r.message && <div className="text-amber-500 mt-0.5">{r.message}</div>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-          </div>
+          </>
         )}
-
-        {/* Footer */}
       </div>
-    </div>
+    </ToolShell>
   );
 }

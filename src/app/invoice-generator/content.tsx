@@ -3,7 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { jsPDF } from "jspdf";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment } from "@/components/tools/controls";
+
+const ACCENT = "#f43f5e";
 
 // --- Types ---
 
@@ -523,97 +530,97 @@ export default function InvoiceGeneratorContent() {
 
   if (!loaded) return null;
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Invoice Generator"
-          tagline="Create an invoice, quote, or credit note - fill in the fields, export as a clean PDF. No signup, nothing saved to a server."
-          description="Fill in your business info once (saved locally for next time), enter line items with quantities and rates, add tax and discount, pick a currency. Live preview updates as you type. Switch between invoice / quote / credit-note layouts. Export a print-ready PDF with a single click."
-          audience={["Freelancers", "Small business owners", "Contractors"]}
-          whenToUse={[
-            "Invoicing a client without a full accounting app",
-            "Sending a quote before starting work",
-            "Issuing a credit note for a refund",
-          ]}
+  const actions = (
+    <>
+      <ToolActionButton variant="ghost" onClick={handleNewInvoice}>
+        + New
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleExport}>
+        Download PDF
+      </ToolActionButton>
+    </>
+  );
+
+  const controls = (
+    <>
+      <ControlGroup label="Document">
+        <Segment<DocumentType>
+          value={invoice.documentType}
+          onChange={handleDocTypeChange}
+          options={(Object.keys(documentTypeLabels) as DocumentType[]).map((dt) => ({
+            value: dt,
+            label: documentTypeLabels[dt].label,
+          }))}
+          full
         />
+      </ControlGroup>
 
-        {/* Document type selector */}
-        <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-            Document Type
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(documentTypeLabels) as DocumentType[]).map((dt) => {
-              const active = invoice.documentType === dt;
-              return (
-                <button
-                  key={dt}
-                  onClick={() => handleDocTypeChange(dt)}
-                  className="px-4 py-2 text-sm font-medium transition-all"
-                  style={{
-                    background: active ? "var(--kami-cta-bg)" : "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: active ? "var(--kami-cta-text)" : "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: active
-                      ? "1px solid var(--kami-cta-bg)"
-                      : "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    boxShadow: active ? "var(--kami-cta-shadow, none)" : "none",
-                  }}
-                >
-                  {documentTypeLabels[dt].label}
-                </button>
-              );
-            })}
-            <div className="flex-1" />
+      <ControlGroup label="Template">
+        <div className="grid grid-cols-2 gap-1.5">
+          {(Object.keys(templateStyles) as TemplateName[]).map((tn) => (
             <button
-              onClick={handleNewInvoice}
-              className="px-4 py-2 text-sm transition-colors"
-              style={{
-                color: "var(--kami-text-muted)",
-                border: "1px dashed var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
+              key={tn}
+              type="button"
+              onClick={() => update("template", tn)}
+              className="tool-action-btn"
+              data-variant={invoice.template === tn ? "solid" : "outline"}
             >
-              + New {documentTypeLabels[invoice.documentType].label}
+              <span
+                className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: templateStyles[tn].accent }}
+              />
+              {templateStyles[tn].label}
             </button>
+          ))}
+        </div>
+      </ControlGroup>
+
+      <ControlGroup label="Totals">
+        <div
+          className="rounded-lg border p-3 text-sm"
+          style={{ background: "var(--kami-input-bg)", borderColor: "var(--kami-border)" }}
+        >
+          <div className="flex justify-between">
+            <span style={{ color: "var(--kami-text-muted)" }}>Subtotal</span>
+            <span>{formatMoney(subtotal, invoice.currency)}</span>
+          </div>
+          {invoice.discountRate > 0 && (
+            <div className="flex justify-between" style={{ color: "#dc2626" }}>
+              <span>Discount ({invoice.discountRate}%)</span>
+              <span>-{formatMoney(discountAmt, invoice.currency)}</span>
+            </div>
+          )}
+          {invoice.taxRate > 0 && (
+            <div className="flex justify-between">
+              <span style={{ color: "var(--kami-text-muted)" }}>Tax ({invoice.taxRate}%)</span>
+              <span>{formatMoney(taxAmt, invoice.currency)}</span>
+            </div>
+          )}
+          <div
+            className="mt-2 flex justify-between pt-2 text-base font-bold"
+            style={{ borderTop: "1px solid var(--kami-border)" }}
+          >
+            <span>Total</span>
+            <span style={isCreditNote ? { color: "#dc2626" } : undefined}>
+              {displayTotal < 0 ? "-" : ""}
+              {formatMoney(total, invoice.currency)}
+            </span>
           </div>
         </div>
+      </ControlGroup>
+    </>
+  );
 
-        {/* Template selector */}
-        <div className="mb-6">
-          <label className="mb-2 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-            Template
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {(Object.keys(templateStyles) as TemplateName[]).map((t) => {
-              const active = invoice.template === t;
-              return (
-                <button
-                  key={t}
-                  onClick={() => update("template", t)}
-                  className="px-4 py-2 text-sm font-medium transition-all"
-                  style={{
-                    background: active ? "var(--kami-cta-bg)" : "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: active ? "var(--kami-cta-text)" : "var(--kami-cta2-text, var(--kami-text-muted))",
-                    border: active
-                      ? "1px solid var(--kami-cta-bg)"
-                      : "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    boxShadow: active ? "var(--kami-cta-shadow, none)" : "none",
-                  }}
-                >
-                  <span
-                    className="mr-2 inline-block h-3 w-3 rounded-full"
-                    style={{ backgroundColor: templateStyles[t].accent }}
-                  />
-                  {templateStyles[t].label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
+  return (
+    <ToolShell
+      title="Invoice Generator"
+      tagline="Invoice, quote, or credit note - export to PDF."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Settings"
+    >
+      <div className="flex flex-col gap-6">
         <div className="grid gap-6 lg:grid-cols-2">
           {/* From */}
           <fieldset
@@ -1011,25 +1018,8 @@ export default function InvoiceGeneratorContent() {
           </div>
         </div>
 
-        {/* Export button */}
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={handleExport}
-            className="px-8 py-3 text-sm font-semibold transition-all active:scale-[0.98]"
-            style={{
-              background: "var(--kami-cta-bg)",
-              color: "var(--kami-cta-text)",
-              borderRadius: "var(--kami-cta-radius, 0.75rem)",
-              boxShadow: "var(--kami-cta-shadow, var(--kami-card-shadow, none))",
-            }}
-          >
-            Download PDF
-          </button>
-        </div>
-
-        {/* Footer */}
       </div>
-    </div>
+    </ToolShell>
   );
 }
 

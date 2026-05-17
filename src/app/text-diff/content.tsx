@@ -3,7 +3,12 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 // --- Simple LCS-based diff ---
 
@@ -32,7 +37,6 @@ function computeDiff(a: string[], b: string[]): DiffEntry[] {
   const result: DiffEntry[] = [];
   let i = a.length;
   let j = b.length;
-
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && a[i - 1] === b[j - 1]) {
       result.push({ op: "equal", value: a[i - 1] });
@@ -46,7 +50,6 @@ function computeDiff(a: string[], b: string[]): DiffEntry[] {
       i--;
     }
   }
-
   return result.reverse();
 }
 
@@ -58,9 +61,7 @@ function diffWords(original: string, modified: string): DiffEntry[] {
   const origLines = original.split("\n");
   const modLines = modified.split("\n");
   const lineDiff = computeDiff(origLines, modLines);
-
   const result: DiffEntry[] = [];
-  // Collect consecutive remove/add entries to diff at word level
   let removes: string[] = [];
   let adds: string[] = [];
 
@@ -68,7 +69,6 @@ function diffWords(original: string, modified: string): DiffEntry[] {
     if (removes.length > 0 || adds.length > 0) {
       const removeText = removes.join("\n");
       const addText = adds.join("\n");
-      // Split into words preserving whitespace tokens
       const removeWords = removeText.split(/(\s+)/);
       const addWords = addText.split(/(\s+)/);
       const wordDiff = computeDiff(removeWords, addWords);
@@ -95,18 +95,17 @@ function diffWords(original: string, modified: string): DiffEntry[] {
 }
 
 function diffChars(original: string, modified: string): DiffEntry[] {
-  const a = original.split("");
-  const b = modified.split("");
-  return computeDiff(a, b);
+  return computeDiff(original.split(""), modified.split(""));
 }
-
-// --- Preprocessing for ignore options ---
 
 function preprocessText(
   text: string,
-  options: { ignoreWhitespace: boolean; ignoreCase: boolean; ignoreBlankLines: boolean }
+  options: { ignoreWhitespace: boolean; ignoreCase: boolean; ignoreBlankLines: boolean; ignoreLineEndings: boolean }
 ): string {
   let result = text;
+  if (options.ignoreLineEndings) {
+    result = result.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  }
   if (options.ignoreBlankLines) {
     result = result
       .split("\n")
@@ -125,12 +124,9 @@ function preprocessText(
   return result;
 }
 
-// --- Levenshtein distance ---
-
 function levenshteinDistance(a: string, b: string): number {
   const m = a.length;
   const n = b.length;
-  // Use two rows to save memory
   let prev = new Array(n + 1);
   let curr = new Array(n + 1);
   for (let j = 0; j <= n; j++) prev[j] = j;
@@ -151,75 +147,15 @@ function levenshteinDistance(a: string, b: string): number {
 type ViewMode = "inline" | "side-by-side";
 type DiffMode = "line" | "word" | "char";
 
-function DiffStats({ diff }: { diff: DiffEntry[] }) {
-  const added = diff.filter((d) => d.op === "add").length;
-  const removed = diff.filter((d) => d.op === "remove").length;
-  const unchanged = diff.filter((d) => d.op === "equal").length;
-
-  return (
-    <div className="flex gap-4 text-sm">
-      <span style={{ color: "#16a34a" }}>+{added} added</span>
-      <span style={{ color: "#ef4444" }}>-{removed} removed</span>
-      <span style={{ color: "var(--kami-text-muted)" }}>{unchanged} unchanged</span>
-    </div>
-  );
-}
-
-function SimilarityStats({
-  original,
-  modified,
-  diff,
-  diffMode,
-}: {
-  original: string;
-  modified: string;
-  diff: DiffEntry[];
-  diffMode: DiffMode;
-}) {
-  const { similarity, levDist } = useMemo(() => {
-    const equal = diff.filter((d) => d.op === "equal").length;
-    const total = diff.length;
-    const sim = total > 0 ? Math.round((equal / total) * 10000) / 100 : 100;
-    // Levenshtein at character level
-    const lev = levenshteinDistance(original, modified);
-    return { similarity: sim, levDist: lev };
-  }, [original, modified, diff]);
-
-  return (
-    <div
-      className="flex flex-wrap gap-4 text-sm px-4 py-3"
-      style={{
-        background: "var(--kami-surface-solid)",
-        border: "1px solid var(--kami-border-strong)",
-        borderRadius: "var(--kami-card-radius, 0.75rem)",
-        boxShadow: "var(--kami-card-shadow, none)",
-      }}
-    >
-      <div>
-        <span style={{ color: "var(--kami-text-muted)" }}>Similarity: </span>
-        <span className="font-medium" style={{ color: "var(--kami-text)" }}>{similarity}%</span>
-        <span className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-          ({diffMode}-level)
-        </span>
-      </div>
-      <div className="pl-4" style={{ borderLeft: "1px solid var(--kami-border-strong)" }}>
-        <span style={{ color: "var(--kami-text-muted)" }}>Levenshtein distance: </span>
-        <span className="font-medium" style={{ color: "var(--kami-text)" }}>
-          {levDist.toLocaleString()}
-        </span>
-        <span className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>(char-level)</span>
-      </div>
-    </div>
-  );
-}
-
 function InlineDiffView({
   diff,
   diffMode,
+  showLineNumbers,
   changeRefs,
 }: {
   diff: DiffEntry[];
   diffMode: DiffMode;
+  showLineNumbers: boolean;
   changeRefs: React.MutableRefObject<(HTMLElement | null)[]>;
 }) {
   const containerStyle = {
@@ -256,34 +192,17 @@ function InlineDiffView({
               if (isChange) changeIdx++;
               const ci = changeIdx;
               if (entry.op === "equal") {
-                return (
-                  <span key={i} style={{ color: "var(--kami-text-muted)" }}>
-                    {entry.value}
-                  </span>
-                );
+                return <span key={i} style={{ color: "var(--kami-text-muted)" }}>{entry.value}</span>;
               }
               if (entry.op === "add") {
                 return (
-                  <span
-                    key={i}
-                    ref={(el) => {
-                      changeRefs.current[ci] = el;
-                    }}
-                    style={addStrongStyle}
-                  >
+                  <span key={i} ref={(el) => { changeRefs.current[ci] = el; }} style={addStrongStyle}>
                     {entry.value}
                   </span>
                 );
               }
               return (
-                <span
-                  key={i}
-                  ref={(el) => {
-                    changeRefs.current[ci] = el;
-                  }}
-                  className="line-through"
-                  style={removeStrongStyle}
-                >
+                <span key={i} ref={(el) => { changeRefs.current[ci] = el; }} className="line-through" style={removeStrongStyle}>
                   {entry.value}
                 </span>
               );
@@ -295,6 +214,7 @@ function InlineDiffView({
   }
 
   let changeIdx = -1;
+  let lineNum = 0;
   return (
     <div className="overflow-hidden" style={containerStyle}>
       <div className="overflow-x-auto">
@@ -303,9 +223,19 @@ function InlineDiffView({
             const isChange = entry.op !== "equal";
             if (isChange) changeIdx++;
             const ci = changeIdx;
+            lineNum++;
+            const lineMarker = showLineNumbers ? (
+              <span
+                className="select-none mr-2 tabular-nums"
+                style={{ color: "var(--kami-text-dim)", width: 36, display: "inline-block", textAlign: "right" }}
+              >
+                {lineNum}
+              </span>
+            ) : null;
             if (entry.op === "equal") {
               return (
                 <div key={i} style={{ color: "var(--kami-text-muted)" }}>
+                  {lineMarker}
                   {"  "}
                   {entry.value}
                 </div>
@@ -313,25 +243,15 @@ function InlineDiffView({
             }
             if (entry.op === "add") {
               return (
-                <div
-                  key={i}
-                  ref={(el) => {
-                    changeRefs.current[ci] = el;
-                  }}
-                  style={addStyle}
-                >
+                <div key={i} ref={(el) => { changeRefs.current[ci] = el; }} style={addStyle}>
+                  {lineMarker}
                   + {entry.value}
                 </div>
               );
             }
             return (
-              <div
-                key={i}
-                ref={(el) => {
-                  changeRefs.current[ci] = el;
-                }}
-                style={removeStyle}
-              >
+              <div key={i} ref={(el) => { changeRefs.current[ci] = el; }} style={removeStyle}>
+                {lineMarker}
                 - {entry.value}
               </div>
             );
@@ -344,14 +264,15 @@ function InlineDiffView({
 
 function SideBySideDiffView({
   diff,
+  showLineNumbers,
   changeRefs,
 }: {
   diff: DiffEntry[];
+  showLineNumbers: boolean;
   changeRefs: React.MutableRefObject<(HTMLElement | null)[]>;
 }) {
   const left: { value: string; op: DiffOp }[] = [];
   const right: { value: string; op: DiffOp }[] = [];
-  // Track which rows in left/right correspond to a change for ref assignment
   const leftChangeIndices: (number | null)[] = [];
   const rightChangeIndices: (number | null)[] = [];
 
@@ -419,7 +340,7 @@ function SideBySideDiffView({
   } as const;
 
   return (
-    <div className="grid grid-cols-2 gap-2">
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
       <div className="overflow-hidden" style={panelStyle}>
         <div className="px-3 py-2 text-xs font-medium" style={headerStyle}>
           Original
@@ -439,15 +360,25 @@ function SideBySideDiffView({
                 key={i}
                 ref={
                   ci !== null
-                    ? (el) => {
-                        changeRefs.current[ci] = el;
-                      }
+                    ? (el) => { changeRefs.current[ci] = el; }
                     : undefined
                 }
-                className={isEmpty && line.op !== "remove" ? "select-none" : ""}
                 style={lineStyle}
               >
-                {line.value || "\u00A0"}
+                {showLineNumbers && (
+                  <span
+                    className="select-none mr-2 tabular-nums"
+                    style={{
+                      color: "var(--kami-text-dim)",
+                      width: 36,
+                      display: "inline-block",
+                      textAlign: "right",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                )}
+                {line.value || " "}
               </div>
             );
           })}
@@ -472,145 +403,29 @@ function SideBySideDiffView({
                 key={i}
                 ref={
                   ci !== null
-                    ? (el) => {
-                        changeRefs.current[ci] = el;
-                      }
+                    ? (el) => { changeRefs.current[ci] = el; }
                     : undefined
                 }
-                className={isEmpty && line.op !== "add" ? "select-none" : ""}
                 style={lineStyle}
               >
-                {line.value || "\u00A0"}
+                {showLineNumbers && (
+                  <span
+                    className="select-none mr-2 tabular-nums"
+                    style={{
+                      color: "var(--kami-text-dim)",
+                      width: 36,
+                      display: "inline-block",
+                      textAlign: "right",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                )}
+                {line.value || " "}
               </div>
             );
           })}
         </pre>
-      </div>
-    </div>
-  );
-}
-
-// --- Drag-drop text area ---
-
-function DragDropTextarea({
-  value,
-  onChange,
-  placeholder,
-  label,
-  autoFocus,
-}: {
-  value: string;
-  onChange: (val: string) => void;
-  placeholder: string;
-  label: string;
-  autoFocus?: boolean;
-}) {
-  const [dragging, setDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFile = useCallback(
-    (file: File) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const text = e.target?.result;
-        if (typeof text === "string") {
-          onChange(text);
-        }
-      };
-      reader.readAsText(file);
-    },
-    [onChange]
-  );
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setDragging(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    },
-    [handleFile]
-  );
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-  }, []);
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1.5">
-        <label className="block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-          {label}
-        </label>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="text-xs transition-colors px-2 py-0.5"
-          style={{
-            color: "var(--kami-text-dim)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-cta-radius, 0.375rem)",
-          }}
-        >
-          Upload
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".txt,text/plain"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFile(file);
-            e.target.value = "";
-          }}
-        />
-      </div>
-      <div
-        className="relative transition-all"
-        style={{
-          background: dragging ? "var(--kami-surface)" : "var(--kami-surface-solid)",
-          border: dragging
-            ? "1px solid var(--kami-text-muted)"
-            : "1px solid var(--kami-border-strong)",
-          borderRadius: "var(--kami-input-radius, 0.75rem)",
-          boxShadow: "var(--kami-card-shadow, none)",
-        }}
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-      >
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          className="w-full bg-transparent px-4 py-3 text-base focus:outline-none font-mono text-sm resize-y"
-          style={{
-            color: "var(--kami-text)",
-            borderRadius: "var(--kami-input-radius, 0.75rem)",
-          }}
-          rows={8}
-          autoFocus={autoFocus}
-        />
-        {dragging && (
-          <div
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-            style={{
-              background: "color-mix(in srgb, var(--kami-surface) 80%, transparent)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-            }}
-          >
-            <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Drop file here
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -626,44 +441,33 @@ export default function TextDiffContent() {
   const [diffMode, setDiffMode] = useState<DiffMode>("line");
   const [copied, setCopied] = useState(false);
 
-  // Ignore options
   const [ignoreWhitespace, setIgnoreWhitespace] = useState(false);
   const [ignoreCase, setIgnoreCase] = useState(false);
   const [ignoreBlankLines, setIgnoreBlankLines] = useState(false);
+  const [ignoreLineEndings, setIgnoreLineEndings] = useState(true);
+  const [showLineNumbers, setShowLineNumbers] = useState(true);
 
-  // Change navigation
   const [currentChangeIdx, setCurrentChangeIdx] = useState(0);
   const changeRefs = useRef<(HTMLElement | null)[]>([]);
 
   const diff = useMemo(() => {
     if (!original && !modified) return [];
-
-    const procOriginal = preprocessText(original, {
-      ignoreWhitespace,
-      ignoreCase,
-      ignoreBlankLines,
-    });
-    const procModified = preprocessText(modified, {
-      ignoreWhitespace,
-      ignoreCase,
-      ignoreBlankLines,
-    });
-
-    if (diffMode === "char") {
-      return diffChars(procOriginal, procModified);
-    }
-    if (diffMode === "word") {
-      return diffWords(procOriginal, procModified);
-    }
+    const procOriginal = preprocessText(original, { ignoreWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings });
+    const procModified = preprocessText(modified, { ignoreWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings });
+    if (diffMode === "char") return diffChars(procOriginal, procModified);
+    if (diffMode === "word") return diffWords(procOriginal, procModified);
     return diffLines(procOriginal, procModified);
-  }, [original, modified, diffMode, ignoreWhitespace, ignoreCase, ignoreBlankLines]);
+  }, [original, modified, diffMode, ignoreWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings]);
 
-  const totalChanges = useMemo(
-    () => diff.filter((d) => d.op !== "equal").length,
-    [diff]
-  );
+  const totalChanges = useMemo(() => diff.filter((d) => d.op !== "equal").length, [diff]);
+  const addedCount = useMemo(() => diff.filter((d) => d.op === "add").length, [diff]);
+  const removedCount = useMemo(() => diff.filter((d) => d.op === "remove").length, [diff]);
+  const similarity = useMemo(() => {
+    const equal = diff.filter((d) => d.op === "equal").length;
+    return diff.length > 0 ? Math.round((equal / diff.length) * 1000) / 10 : 100;
+  }, [diff]);
+  const levDist = useMemo(() => levenshteinDistance(original, modified), [original, modified]);
 
-  // Reset refs array size and current index when diff changes
   useEffect(() => {
     changeRefs.current = new Array(totalChanges).fill(null);
     setCurrentChangeIdx(0);
@@ -676,7 +480,6 @@ export default function TextDiffContent() {
       const el = changeRefs.current[idx];
       if (el) {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Brief highlight flash
         el.style.outline = "2px solid var(--kami-text)";
         el.style.outlineOffset = "1px";
         setTimeout(() => {
@@ -708,6 +511,17 @@ export default function TextDiffContent() {
       .join(diffMode === "char" ? "" : "\n");
   }, [diff, diffMode]);
 
+  const gitPatch = useMemo(() => {
+    if (diffMode !== "line") return diffText;
+    const lines: string[] = [`--- original`, `+++ modified`];
+    for (const d of diff) {
+      if (d.op === "equal") lines.push(` ${d.value}`);
+      else if (d.op === "add") lines.push(`+${d.value}`);
+      else lines.push(`-${d.value}`);
+    }
+    return lines.join("\n");
+  }, [diff, diffMode, diffText]);
+
   const handleCopy = useCallback(async () => {
     if (!diffText) return;
     await navigator.clipboard.writeText(diffText);
@@ -715,219 +529,158 @@ export default function TextDiffContent() {
     setTimeout(() => setCopied(false), 2000);
   }, [diffText]);
 
+  const handleExportPatch = useCallback(async () => {
+    if (!gitPatch) return;
+    const blob = new Blob([gitPatch], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "changes.patch";
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [gitPatch]);
+
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => { handleCopy(); }, label: "Copy diff" },
     { key: "k", meta: true, action: () => { setOriginal(""); setModified(""); }, label: "Clear" },
-  ], [handleCopy]));
+  ], [handleCopy, setOriginal, setModified]));
+
+  const inputStyle = {
+    background: "var(--kami-input-bg, var(--kami-surface-solid))",
+    color: "var(--kami-text)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-input-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
+
+  const controls = (
+    <>
+      <ControlGroup label="View">
+        <Segment
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { value: "inline", label: "Inline" },
+            { value: "side-by-side", label: "Split" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Granularity">
+        <Segment
+          value={diffMode}
+          onChange={setDiffMode}
+          options={[
+            { value: "line", label: "Line" },
+            { value: "word", label: "Word" },
+            { value: "char", label: "Char" },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Ignore">
+        <Toggle checked={ignoreWhitespace} onChange={setIgnoreWhitespace} label="Whitespace" />
+        <Toggle checked={ignoreCase} onChange={setIgnoreCase} label="Case" />
+        <Toggle checked={ignoreBlankLines} onChange={setIgnoreBlankLines} label="Blank lines" />
+        <Toggle checked={ignoreLineEndings} onChange={setIgnoreLineEndings} label="Line endings" hint="CRLF → LF" />
+      </ControlGroup>
+      <ControlGroup label="Display">
+        <Toggle checked={showLineNumbers} onChange={setShowLineNumbers} label="Line numbers" />
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleExportPatch} disabled={!diff.length}>
+        Export .patch
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy} disabled={!diff.length}>
+        {copied ? "Copied" : "Copy diff"}
+      </ToolActionButton>
+    </>
+  );
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Text Diff"
-          tagline="Paste two versions of anything - docs, emails, code - and see a line-by-line diff with word-level highlighting."
-          description="Side-by-side or unified view, word-level diffs (not just lines), case-insensitive and whitespace-insensitive toggles, and stats showing how many lines were added, removed, or changed. Works on any text - copy/pasted docs, SQL, JSON, email drafts, chapter revisions."
-          audience={["Developers", "Writers", "Editors", "Lawyers"]}
-          whenToUse={[
-            "Reviewing edits to a document",
-            "Comparing two SQL queries or config files",
-            "Spotting subtle changes before publishing a revision",
-          ]}
-        />
-
-        {/* Input textareas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <DragDropTextarea
-            value={original}
-            onChange={setOriginal}
-            placeholder="Paste original text or drop a .txt file..."
-            label="Original"
-            autoFocus
-          />
-          <DragDropTextarea
-            value={modified}
-            onChange={setModified}
-            placeholder="Paste modified text or drop a .txt file..."
-            label="Modified"
-          />
-        </div>
-
-        {/* Ignore options */}
-        <div className="flex flex-wrap items-center gap-4 mb-4">
-          <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Ignore:</span>
-          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-            <input
-              type="checkbox"
-              checked={ignoreWhitespace}
-              onChange={(e) => setIgnoreWhitespace(e.target.checked)}
-              className="h-3.5 w-3.5"
-              style={{ accentColor: "var(--kami-text)" }}
-            />
-            Whitespace
-          </label>
-          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-            <input
-              type="checkbox"
-              checked={ignoreCase}
-              onChange={(e) => setIgnoreCase(e.target.checked)}
-              className="h-3.5 w-3.5"
-              style={{ accentColor: "var(--kami-text)" }}
-            />
-            Case
-          </label>
-          <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none" style={{ color: "var(--kami-text-muted)" }}>
-            <input
-              type="checkbox"
-              checked={ignoreBlankLines}
-              onChange={(e) => setIgnoreBlankLines(e.target.checked)}
-              className="h-3.5 w-3.5"
-              style={{ accentColor: "var(--kami-text)" }}
-            />
-            Blank lines
-          </label>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-4">
-            {/* View mode toggle */}
-            <div
-              className="flex overflow-hidden"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              <button
-                onClick={() => setViewMode("inline")}
-                className="px-3 py-1.5 text-sm font-medium transition-colors"
-                style={
-                  viewMode === "inline"
-                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
-                    : { color: "var(--kami-text-muted)" }
-                }
-              >
-                Inline
-              </button>
-              <button
-                onClick={() => setViewMode("side-by-side")}
-                className="px-3 py-1.5 text-sm font-medium transition-colors"
-                style={
-                  viewMode === "side-by-side"
-                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
-                    : { color: "var(--kami-text-muted)" }
-                }
-              >
-                Side by side
-              </button>
+    <ToolShell
+      title="Text Diff"
+      tagline="LCS · word + char level · ignore whitespace/case/CRLF · patch export"
+      accent="#10b981"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-3 p-4 md:p-6">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div>
+            <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              Original
             </div>
-
-            {/* Diff mode toggle */}
-            <div
-              className="flex overflow-hidden"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              <button
-                onClick={() => setDiffMode("line")}
-                className="px-3 py-1.5 text-sm font-medium transition-colors"
-                style={
-                  diffMode === "line"
-                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
-                    : { color: "var(--kami-text-muted)" }
-                }
-              >
-                Line
-              </button>
-              <button
-                onClick={() => setDiffMode("word")}
-                className="px-3 py-1.5 text-sm font-medium transition-colors"
-                style={
-                  diffMode === "word"
-                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
-                    : { color: "var(--kami-text-muted)" }
-                }
-              >
-                Word
-              </button>
-              <button
-                onClick={() => setDiffMode("char")}
-                className="px-3 py-1.5 text-sm font-medium transition-colors"
-                style={
-                  diffMode === "char"
-                    ? { background: "var(--kami-cta-bg)", color: "var(--kami-cta-text)" }
-                    : { color: "var(--kami-text-muted)" }
-                }
-              >
-                Char
-              </button>
-            </div>
+            <textarea
+              value={original}
+              onChange={(e) => setOriginal(e.target.value)}
+              placeholder="Paste original text..."
+              className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+              style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
+              rows={6}
+              autoFocus
+            />
           </div>
-
-          <div className="flex items-center gap-3">
-            {diff.length > 0 && <DiffStats diff={diff} />}
-            {diff.length > 0 && (
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {copied ? "Copied!" : "Copy diff"}
-              </button>
-            )}
+          <div>
+            <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              Modified
+            </div>
+            <textarea
+              value={modified}
+              onChange={(e) => setModified(e.target.value)}
+              placeholder="Paste modified text..."
+              className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+              style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
+              rows={6}
+            />
           </div>
         </div>
 
-        {/* Similarity & Levenshtein stats */}
+        {/* Stats row */}
         {diff.length > 0 && (
-          <div className="mb-4">
-            <SimilarityStats
-              original={original}
-              modified={modified}
-              diff={diff}
-              diffMode={diffMode}
-            />
-          </div>
-        )}
-
-        {/* Change navigation */}
-        {totalChanges > 0 && (
-          <div className="flex items-center gap-3 mb-4">
-            <button
-              onClick={handlePrevChange}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={{
-                background: "var(--kami-surface-solid)",
-                color: "var(--kami-text-muted)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              &larr; Prev
-            </button>
-            <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-              Change {currentChangeIdx + 1} of {totalChanges}
+          <div
+            className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <span style={{ color: "#16a34a" }}>+{addedCount}</span>
+            <span style={{ color: "#ef4444" }}>−{removedCount}</span>
+            <span style={{ color: "var(--kami-text-muted)" }}>
+              Similarity {similarity}%
             </span>
-            <button
-              onClick={handleNextChange}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={{
-                background: "var(--kami-surface-solid)",
-                color: "var(--kami-text-muted)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              Next &rarr;
-            </button>
+            <span style={{ color: "var(--kami-text-muted)" }}>
+              Levenshtein {levDist}
+            </span>
+            {totalChanges > 0 && (
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  onClick={handlePrevChange}
+                  className="kc-segment-btn"
+                  style={{ minHeight: 32, minWidth: 36 }}
+                  aria-label="Previous change"
+                >
+                  ←
+                </button>
+                <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  {currentChangeIdx + 1}/{totalChanges}
+                </span>
+                <button
+                  onClick={handleNextChange}
+                  className="kc-segment-btn"
+                  style={{ minHeight: 32, minWidth: 36 }}
+                  aria-label="Next change"
+                >
+                  →
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -937,20 +690,26 @@ export default function TextDiffContent() {
             <InlineDiffView
               diff={diff}
               diffMode={diffMode}
+              showLineNumbers={showLineNumbers && diffMode === "line"}
               changeRefs={changeRefs}
             />
           ) : (
-            <SideBySideDiffView diff={diff} changeRefs={changeRefs} />
+            <SideBySideDiffView
+              diff={diff}
+              showLineNumbers={showLineNumbers && diffMode === "line"}
+              changeRefs={changeRefs}
+            />
           ))}
 
         {(original || modified) && diff.length === 0 && (
-          <div className="text-center py-8 text-sm" style={{ color: "var(--kami-text-dim)" }}>
+          <div
+            className="text-center py-8 text-sm"
+            style={{ color: "var(--kami-text-dim)" }}
+          >
             Texts are identical.
           </div>
         )}
-
-        {/* Footer */}
       </div>
-    </div>
+    </ToolShell>
   );
 }

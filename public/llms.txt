@@ -2,7 +2,7 @@
 
 > Free, ad-free, privacy-first browser tools by Kesava. All processing happens client-side. No accounts, no data collection.
 
-Counts: 54 tools across 8 collections.
+Counts: 56 tools across 8 collections.
 
 ## Index
 
@@ -128,6 +128,8 @@ Counts: 54 tools across 8 collections.
 - [Meta Tag Generator](https://tools.iamkesava.com/meta-tag-generator/): Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.
 - [Schema Generator](https://tools.iamkesava.com/schema-generator/): Build JSON-LD structured data for Articles, FAQs, Products, and more.
 - [SEO Content Analyzer](https://tools.iamkesava.com/seo-content-analyzer/): Analyze content for keyword density, heading structure, readability, and SEO score.
+- [AEO Readiness Scorer](https://tools.iamkesava.com/aeo-readiness-scorer/): Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.
+- [Passage Audit](https://tools.iamkesava.com/passage-audit/): Score every passage on your page for AI retrievability. Catches thin copy that disappears when an AI chunks the page.
 - [Readability Scorer](https://tools.iamkesava.com/readability-scorer/): Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.
 - [UTM Builder](https://tools.iamkesava.com/utm-builder/): Build campaign URLs with UTM parameters, presets, and bulk generation.
 - [A/B Test Calculator](https://tools.iamkesava.com/ab-test-calculator/): Statistical significance calculator for A/B tests. Sample size planner and results analyzer.

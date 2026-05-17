@@ -2,7 +2,14 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Select } from "@/components/tools/controls";
+
+const ACCENT_SEO = "#3b82f6";
 
 // --- Types ---
 
@@ -319,93 +326,73 @@ export default function ContentBriefBuilderContent() {
     boxShadow: "var(--kami-card-shadow, none)",
   };
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Content Brief Builder"
-          tagline="Produce a writer-ready content brief in minutes - target keyword, audience, intent, outline, links, and CTAs."
-          description="Fill in the audience and intent fields, sketch a heading outline, link any reference articles, and we package it all into a single brief your writer (internal or freelance) can execute against. Export as Markdown, plain text, or copy-friendly HTML for Notion / Docs."
-          audience={["Content marketers", "SEO managers", "Editors"]}
-          whenToUse={[
-            "Commissioning a piece from a freelancer",
-            "Aligning a writer before they start drafting",
-            "Standardizing briefs across a content team",
-          ]}
-        />
-
-        {/* Top bar */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="px-3 py-1.5 text-sm font-medium"
-              style={{
-                background:
-                  completeness >= 80
-                    ? "color-mix(in srgb, #10b981 12%, var(--kami-surface))"
-                    : completeness >= 50
-                      ? "color-mix(in srgb, #f59e0b 12%, var(--kami-surface))"
-                      : "var(--kami-surface)",
-                color:
-                  completeness >= 80
-                    ? "color-mix(in srgb, #10b981 70%, var(--kami-text))"
-                    : completeness >= 50
-                      ? "color-mix(in srgb, #f59e0b 70%, var(--kami-text))"
-                      : "var(--kami-text-muted)",
-                border: `1px solid ${
-                  completeness >= 80
-                    ? "color-mix(in srgb, #10b981 30%, transparent)"
-                    : completeness >= 50
-                      ? "color-mix(in srgb, #f59e0b 30%, transparent)"
-                      : "var(--kami-border-strong)"
-                }`,
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              {completeness}% complete
-            </div>
+  const controls = (
+    <>
+      <ControlGroup label="Completeness">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <span>Brief filled</span>
+            <span className="tabular-nums font-bold" style={{ color: "var(--kami-text)" }}>{completeness}%</span>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleCopy}
-              className="px-4 py-2 text-sm font-medium"
-              style={{
-                background: "var(--kami-cta-bg)",
-                color: "var(--kami-cta-text)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                boxShadow: "var(--kami-cta-shadow, none)",
-              }}
-            >
-              {copied ? "Copied!" : "Copy Markdown"}
-            </button>
-            <button
-              onClick={handleDownload}
-              className="px-4 py-2 text-sm"
-              style={{
-                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              Download
-            </button>
-            <button
-              onClick={handleClear}
-              className="px-4 py-2 text-sm"
-              style={{
-                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              Clear
-            </button>
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
+            <div style={{ width: `${completeness}%`, height: "100%", background: completeness >= 80 ? "#10b981" : completeness >= 50 ? "#f59e0b" : ACCENT_SEO }} />
           </div>
         </div>
+      </ControlGroup>
+      <ControlGroup label="Intent">
+        <Select
+          value={brief.searchIntent}
+          onChange={(v) => update("searchIntent", v as SearchIntent)}
+          options={INTENTS.map((i) => ({ value: i.value as string, label: i.label }))}
+        />
+      </ControlGroup>
+      <ControlGroup label="Content type">
+        <Select
+          value={brief.contentType}
+          onChange={(v) => update("contentType", v as ContentType)}
+          options={CONTENT_TYPES.map((t) => ({ value: t.value as string, label: t.label }))}
+        />
+      </ControlGroup>
+      <ControlGroup label="Tone">
+        <Select
+          value={brief.tone}
+          onChange={(v) => update("tone", v)}
+          options={[{ value: "", label: "—" }, ...TONES.map((t) => ({ value: t, label: t }))]}
+        />
+      </ControlGroup>
+      <ControlGroup label="Manage">
+        <button onClick={addSection} className="kc-segment-btn" style={{ minHeight: 40 }}>+ Add section</button>
+        <button onClick={handleClear} className="kc-segment-btn" style={{ minHeight: 40 }}>Clear all</button>
+      </ControlGroup>
+    </>
+  );
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleDownload}>Download .md</ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy}>
+        {copied ? "Copied" : "Copy MD"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Produce a writer-ready content brief: target keyword, audience, intent, outline, links, CTAs. Auto-saves to localStorage.</p>
+      <p>Export as Markdown to paste into Notion / Docs / Linear. Completeness score helps you spot gaps before handing off.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Content Brief Builder"
+      tagline="Structured fields · outline · auto-save · export to Markdown"
+      accent={ACCENT_SEO}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-3">
           {/* Left column: form */}
           <div className="space-y-4 lg:col-span-2">
             {/* Core */}
@@ -453,64 +440,6 @@ export default function ContentBriefBuilderContent() {
                       className={inputClass}
                       style={inputStyle}
                     />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className={labelClass} style={labelStyle}>Search Intent</label>
-                    <select
-                      value={brief.searchIntent}
-                      onChange={(e) =>
-                        update(
-                          "searchIntent",
-                          e.target.value as SearchIntent
-                        )
-                      }
-                      className={inputClass}
-                      style={inputStyle}
-                    >
-                      {INTENTS.map((i) => (
-                        <option key={i.value} value={i.value}>
-                          {i.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass} style={labelStyle}>Content Type</label>
-                    <select
-                      value={brief.contentType}
-                      onChange={(e) =>
-                        update(
-                          "contentType",
-                          e.target.value as ContentType
-                        )
-                      }
-                      className={inputClass}
-                      style={inputStyle}
-                    >
-                      {CONTENT_TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                          {t.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className={labelClass} style={labelStyle}>Tone</label>
-                    <select
-                      value={brief.tone}
-                      onChange={(e) => update("tone", e.target.value)}
-                      className={inputClass}
-                      style={inputStyle}
-                    >
-                      <option value="">Select tone</option>
-                      {TONES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
-                    </select>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -808,8 +737,7 @@ export default function ContentBriefBuilderContent() {
               </div>
             </div>
           </div>
-        </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

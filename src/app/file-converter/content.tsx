@@ -3,7 +3,12 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Slider, Toggle, NumberStepper } from "@/components/tools/controls";
 
 type OutputFormat = "image/png" | "image/jpeg" | "image/webp";
 
@@ -18,7 +23,10 @@ interface QueuedFile {
   convertedUrl: string;
   convertedSize: number;
   error: string;
+  sourceExt: string;
 }
+
+const ACCENT = "#f43f5e";
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -38,12 +46,38 @@ function formatLabel(mime: OutputFormat): string {
   }
 }
 
+function getExt(name: string): string {
+  const m = name.match(/\.([^.]+)$/);
+  return m ? m[1].toUpperCase() : "?";
+}
+
+function suggestTarget(srcExt: string): OutputFormat {
+  const e = srcExt.toLowerCase();
+  if (e === "jpg" || e === "jpeg") return "image/webp"; // smaller modern
+  if (e === "png" || e === "svg") return "image/webp";
+  if (e === "webp") return "image/jpeg";
+  if (e === "bmp" || e === "gif") return "image/png";
+  return "image/png";
+}
+
+const SUPPORTED: { from: string; to: string; note?: string }[] = [
+  { from: "PNG", to: "JPG", note: "Photo → smaller" },
+  { from: "PNG", to: "WebP", note: "Smaller, lossy" },
+  { from: "JPG", to: "PNG", note: "Lossless" },
+  { from: "JPG", to: "WebP", note: "Modern web" },
+  { from: "WebP", to: "PNG", note: "Compatibility" },
+  { from: "WebP", to: "JPG", note: "Compatibility" },
+  { from: "BMP", to: "PNG" },
+  { from: "GIF", to: "PNG", note: "First frame" },
+  { from: "SVG", to: "PNG", note: "Raster" },
+];
+
 export default function FileConverterContent() {
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("image/png");
-  const [quality, setQuality] = useState(0.85);
-  const [resizeWidth, setResizeWidth] = useState("");
-  const [resizeHeight, setResizeHeight] = useState("");
+  const [quality, setQuality] = useState(85);
+  const [resizeWidth, setResizeWidth] = useState(0);
+  const [resizeHeight, setResizeHeight] = useState(0);
   const [lockAspect, setLockAspect] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isConverting, setIsConverting] = useState(false);
@@ -53,7 +87,6 @@ export default function FileConverterContent() {
 
   const supportsQuality = outputFormat !== "image/png";
 
-  // Cleanup object URLs on unmount
   useEffect(() => {
     return () => {
       files.forEach((f) => {
@@ -65,9 +98,7 @@ export default function FileConverterContent() {
   }, []);
 
   const addFiles = useCallback((incoming: FileList | File[]) => {
-    const imageFiles = Array.from(incoming).filter((f) =>
-      f.type.startsWith("image/")
-    );
+    const imageFiles = Array.from(incoming).filter((f) => f.type.startsWith("image/"));
     if (imageFiles.length === 0) return;
 
     const newQueued: QueuedFile[] = imageFiles.map((file) => ({
@@ -81,14 +112,16 @@ export default function FileConverterContent() {
       convertedUrl: "",
       convertedSize: 0,
       error: "",
+      sourceExt: getExt(file.name),
     }));
 
-    setFiles((prev) => {
-      const updated = [...prev, ...newQueued];
-      return updated;
-    });
+    setFiles((prev) => [...prev, ...newQueued]);
 
-    // Load the first image to get aspect ratio for resize
+    // Auto-suggest target based on first file
+    if (imageFiles.length > 0 && files.length === 0) {
+      setOutputFormat(suggestTarget(getExt(imageFiles[0].name)));
+    }
+
     if (imageFiles.length > 0) {
       const img = new Image();
       img.onload = () => {
@@ -97,37 +130,31 @@ export default function FileConverterContent() {
       };
       img.src = URL.createObjectURL(imageFiles[0]);
     }
-  }, []);
+  }, [files.length]);
 
   const handleFileDrop = useCallback(
     (files: File[]) => {
-      if (files.length > 0) {
-        addFiles(files);
-      }
+      if (files.length > 0) addFiles(files);
     },
     [addFiles]
   );
 
-  const handleWidthChange = (val: string) => {
+  const handleWidthChange = (val: number) => {
     setResizeWidth(val);
     if (lockAspect && aspectRatioRef.current && val && !suppressRef.current) {
       suppressRef.current = true;
-      setResizeHeight(
-        String(Math.round(parseInt(val) / aspectRatioRef.current))
-      );
+      setResizeHeight(Math.round(val / aspectRatioRef.current));
       requestAnimationFrame(() => {
         suppressRef.current = false;
       });
     }
   };
 
-  const handleHeightChange = (val: string) => {
+  const handleHeightChange = (val: number) => {
     setResizeHeight(val);
     if (lockAspect && aspectRatioRef.current && val && !suppressRef.current) {
       suppressRef.current = true;
-      setResizeWidth(
-        String(Math.round(parseInt(val) * aspectRatioRef.current))
-      );
+      setResizeWidth(Math.round(val * aspectRatioRef.current));
       requestAnimationFrame(() => {
         suppressRef.current = false;
       });
@@ -142,8 +169,8 @@ export default function FileConverterContent() {
           let targetW = img.naturalWidth;
           let targetH = img.naturalHeight;
 
-          const rw = parseInt(resizeWidth);
-          const rh = parseInt(resizeHeight);
+          const rw = resizeWidth;
+          const rh = resizeHeight;
 
           if (rw > 0 && rh > 0) {
             targetW = rw;
@@ -164,11 +191,7 @@ export default function FileConverterContent() {
 
           const ctx = canvas.getContext("2d");
           if (!ctx) {
-            resolve({
-              ...queued,
-              status: "error",
-              error: "Canvas context unavailable",
-            });
+            resolve({ ...queued, status: "error", error: "Canvas context unavailable" });
             return;
           }
 
@@ -182,14 +205,9 @@ export default function FileConverterContent() {
           canvas.toBlob(
             (blob) => {
               if (!blob) {
-                resolve({
-                  ...queued,
-                  status: "error",
-                  error: "Conversion failed",
-                });
+                resolve({ ...queued, status: "error", error: "Conversion failed" });
                 return;
               }
-
               const convertedUrl = URL.createObjectURL(blob);
               resolve({
                 ...queued,
@@ -201,16 +219,12 @@ export default function FileConverterContent() {
               });
             },
             outputFormat,
-            supportsQuality ? quality : undefined
+            supportsQuality ? quality / 100 : undefined
           );
         };
 
         img.onerror = () => {
-          resolve({
-            ...queued,
-            status: "error",
-            error: "Failed to load image",
-          });
+          resolve({ ...queued, status: "error", error: "Failed to load image" });
         };
 
         img.src = queued.previewUrl;
@@ -223,13 +237,8 @@ export default function FileConverterContent() {
     if (files.length === 0) return;
     setIsConverting(true);
 
-    // Mark all pending
     setFiles((prev) =>
-      prev.map((f) =>
-        f.status !== "done"
-          ? { ...f, status: "pending" as const, error: "" }
-          : f
-      )
+      prev.map((f) => (f.status !== "done" ? { ...f, status: "pending" as const, error: "" } : f))
     );
 
     for (let i = 0; i < files.length; i++) {
@@ -237,13 +246,10 @@ export default function FileConverterContent() {
       if (current.status === "done") continue;
 
       setFiles((prev) =>
-        prev.map((f) =>
-          f.id === current.id ? { ...f, status: "converting" as const } : f
-        )
+        prev.map((f) => (f.id === current.id ? { ...f, status: "converting" as const } : f))
       );
 
       const result = await convertSingle(current);
-
       setFiles((prev) => prev.map((f) => (f.id === result.id ? result : f)));
     }
 
@@ -275,8 +281,7 @@ export default function FileConverterContent() {
         if (target.previewUrl) URL.revokeObjectURL(target.previewUrl);
         if (target.convertedUrl) URL.revokeObjectURL(target.convertedUrl);
       }
-      const updated = prev.filter((f) => f.id !== id);
-      return updated;
+      return prev.filter((f) => f.id !== id);
     });
     setSelectedIndex((prev) => Math.min(prev, Math.max(0, files.length - 2)));
   };
@@ -289,366 +294,183 @@ export default function FileConverterContent() {
     setFiles([]);
     setSelectedIndex(0);
     aspectRatioRef.current = null;
-    setResizeWidth("");
-    setResizeHeight("");
+    setResizeWidth(0);
+    setResizeHeight(0);
   };
 
-  useKeyboardShortcuts(useMemo(() => [
-    { key: "Enter", meta: true, action: () => convertAll(), label: "Convert" },
-  ], [convertAll]));
+  useKeyboardShortcuts(
+    useMemo(
+      () => [{ key: "Enter", meta: true, action: () => convertAll(), label: "Convert" }],
+      [convertAll]
+    )
+  );
 
   const selected = files[selectedIndex] ?? null;
   const doneCount = files.filter((f) => f.status === "done").length;
+  const detectedExt = files[0]?.sourceExt;
+
+  const actions = (
+    <>
+      {files.length > 0 && (
+        <ToolActionButton variant="ghost" onClick={clearAll}>
+          Clear
+        </ToolActionButton>
+      )}
+      {doneCount > 0 && (
+        <ToolActionButton variant="outline" onClick={downloadAll}>
+          Download all
+        </ToolActionButton>
+      )}
+      <ToolActionButton
+        variant="solid"
+        onClick={convertAll}
+        disabled={isConverting || files.length === 0}
+      >
+        {isConverting ? "Converting..." : `Convert ${files.length || ""}`.trim()}
+      </ToolActionButton>
+    </>
+  );
+
+  const controls = (
+    <>
+      <ControlGroup
+        label="Target format"
+        hint={detectedExt ? `Source: ${detectedExt}` : undefined}
+      >
+        <Segment<OutputFormat>
+          value={outputFormat}
+          onChange={setOutputFormat}
+          options={[
+            { value: "image/png", label: "PNG" },
+            { value: "image/jpeg", label: "JPG" },
+            { value: "image/webp", label: "WebP" },
+          ]}
+          full
+        />
+      </ControlGroup>
+
+      <ControlGroup label={supportsQuality ? "Quality" : "Quality (PNG: lossless)"}>
+        <Slider value={quality} onChange={setQuality} min={10} max={100} unit="%" />
+      </ControlGroup>
+
+      <ControlGroup label="Resize" hint={lockAspect ? "Aspect locked" : "Free"}>
+        <div className="flex items-end gap-2">
+          <div style={{ flex: 1 }}>
+            <NumberStepper value={resizeWidth} onChange={handleWidthChange} min={0} step={10} label="W" unit="px" />
+          </div>
+          <span className="pb-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>×</span>
+          <div style={{ flex: 1 }}>
+            <NumberStepper value={resizeHeight} onChange={handleHeightChange} min={0} step={10} label="H" unit="px" />
+          </div>
+        </div>
+        <Toggle checked={lockAspect} onChange={setLockAspect} label="Lock aspect ratio" />
+      </ControlGroup>
+
+      <ControlGroup label="Supported conversions">
+        <div className="grid grid-cols-2 gap-2">
+          {SUPPORTED.map((s) => (
+            <div
+              key={`${s.from}-${s.to}`}
+              className="rounded-md border px-2 py-1 text-[10px]"
+              style={{
+                background: "var(--kami-input-bg)",
+                borderColor: "var(--kami-border)",
+                color: "var(--kami-text-muted)",
+              }}
+            >
+              <span className="font-semibold">{s.from}</span> →{" "}
+              <span className="font-semibold">{s.to}</span>
+              {s.note && <div className="opacity-70">{s.note}</div>}
+            </div>
+          ))}
+        </div>
+      </ControlGroup>
+    </>
+  );
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="File Converter"
-          tagline="Convert images between PNG, JPG, and WebP - resize and re-compress in a single pass."
-          description="Drop one or many images. Pick a target format (PNG for lossless / transparency, JPG for photos, WebP for modern web), optionally resize to a specific width or height, and choose a quality level. Everything runs in your browser - files are never uploaded."
-          audience={["Everyone", "Designers", "Developers"]}
-          whenToUse={[
-            "Converting a batch of iPhone HEICs to JPG",
-            "Re-saving PNG photos as smaller WebP",
-            "Downsizing an image to fit upload limits",
-          ]}
-        />
-
-        {/* Drop Zone */}
+    <ToolShell
+      title="File Converter"
+      tagline="Convert images between PNG, JPG, and WebP."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Settings"
+    >
+      <div className="flex flex-col gap-4">
         <FileDropZone
           accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
           onFiles={handleFileDrop}
           label="Drop images here or click to browse"
-          hint="PNG, JPG, WebP, GIF, BMP, SVG supported"
+          hint="PNG, JPG, WebP, GIF, BMP, SVG"
           multiple={true}
         />
 
         {files.length > 0 && (
-          <>
-            {/* Settings */}
-            <div
-              className="mt-6 p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                Conversion Settings
-              </h2>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {/* Output Format */}
-                <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Output Format
-                  </label>
-                  <select
-                    value={outputFormat}
-                    onChange={(e) =>
-                      setOutputFormat(e.target.value as OutputFormat)
-                    }
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    <option value="image/png">PNG</option>
-                    <option value="image/jpeg">JPG</option>
-                    <option value="image/webp">WebP</option>
-                  </select>
-                </div>
-
-                {/* Quality */}
-                <div>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Quality{" "}
-                    {supportsQuality ? (
-                      <span style={{ color: "var(--kami-text-dim)" }}>
-                        ({Math.round(quality * 100)}%)
-                      </span>
-                    ) : (
-                      <span style={{ color: "var(--kami-text-dim)" }}>(N/A for PNG)</span>
-                    )}
-                  </label>
-                  <input
-                    type="range"
-                    min="0.1"
-                    max="1"
-                    step="0.05"
-                    value={quality}
-                    onChange={(e) => setQuality(parseFloat(e.target.value))}
-                    disabled={!supportsQuality}
-                    className="mt-1 w-full"
-                    style={{ accentColor: "var(--kami-text)" }}
-                  />
-                </div>
-              </div>
-
-              {/* Resize */}
-              <div className="mt-4">
-                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Resize (optional)
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    placeholder="Width"
-                    value={resizeWidth}
-                    onChange={(e) => handleWidthChange(e.target.value)}
-                    className="w-28 px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                  <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>×</span>
-                  <input
-                    type="number"
-                    placeholder="Height"
-                    value={resizeHeight}
-                    onChange={(e) => handleHeightChange(e.target.value)}
-                    className="w-28 px-3 py-2 text-sm focus:outline-none"
-                    style={{
-                      background: "var(--kami-input-bg, var(--kami-surface-solid))",
-                      color: "var(--kami-text)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  />
-                  <button
-                    onClick={() => setLockAspect((prev) => !prev)}
-                    className="px-3 py-1.5 text-sm"
-                    style={
-                      lockAspect
-                        ? {
-                            background: "var(--kami-cta-bg)",
-                            color: "var(--kami-cta-text)",
-                            border: "1px solid var(--kami-cta-bg)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface-solid)",
-                            color: "var(--kami-text-muted)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                    }
-                    title={
-                      lockAspect
-                        ? "Aspect ratio locked"
-                        : "Aspect ratio unlocked"
-                    }
-                  >
-                    {lockAspect ? "🔒" : "🔓"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* File Queue */}
-            <div
-              className="mt-6 p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Files ({files.length})
-                </h2>
-                <div className="flex gap-2">
-                  {doneCount > 0 && (
-                    <button
-                      onClick={downloadAll}
-                      className="px-3 py-1.5 text-sm"
-                      style={{
-                        background: "var(--kami-surface-solid)",
-                        color: "var(--kami-text-muted)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                      }}
-                    >
-                      Download All ({doneCount})
-                    </button>
-                  )}
-                  <button
-                    onClick={clearAll}
-                    className="px-3 py-1.5 text-sm"
-                    style={{
-                      background: "var(--kami-surface-solid)",
-                      color: "var(--kami-text-muted)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-60 space-y-1 overflow-y-auto">
-                {files.map((f, i) => (
-                  <div
-                    key={f.id}
-                    onClick={() => setSelectedIndex(i)}
-                    className="flex cursor-pointer items-center justify-between px-3 py-2 text-sm transition-colors"
-                    style={{
-                      background: i === selectedIndex ? "var(--kami-surface)" : "transparent",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    <div className="flex min-w-0 items-center gap-2">
-                      <span className="flex-shrink-0 text-xs">
-                        {f.status === "pending" && "⏳"}
-                        {f.status === "converting" && "⚙️"}
-                        {f.status === "done" && "✅"}
-                        {f.status === "error" && "❌"}
-                      </span>
-                      <span className="truncate">{f.name}</span>
-                      <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                        {formatSize(f.originalSize)}
-                        {f.status === "done" &&
-                          ` → ${formatSize(f.convertedSize)}`}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {f.status === "done" && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadFile(f);
-                          }}
-                          className="px-3 py-1.5 text-sm"
-                          style={{
-                            background: "var(--kami-surface-solid)",
-                            color: "var(--kami-text-muted)",
-                            border: "1px solid var(--kami-border-strong)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }}
-                        >
-                          Save
-                        </button>
-                      )}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeFile(f.id);
-                        }}
-                        className="rounded px-1.5 py-0.5 text-xs"
-                        style={{ color: "var(--kami-text-dim)" }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Convert Button */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {files.map((f, i) => (
               <button
-                onClick={convertAll}
-                disabled={isConverting || files.length === 0}
-                className="mt-4 w-full px-4 py-2 text-sm font-medium disabled:opacity-50"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {isConverting
-                  ? "Converting..."
-                  : `Convert All to ${formatLabel(outputFormat)}`}
-              </button>
-            </div>
-
-            {/* Preview */}
-            {selected && (
-              <div
-                className="mt-6 p-5"
+                key={f.id}
+                onClick={() => setSelectedIndex(i)}
+                className="group relative flex flex-col items-stretch overflow-hidden rounded-lg border"
                 style={{
                   background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
+                  borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
                 }}
               >
-                <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Preview - {selected.name}
-                </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Original ({formatSize(selected.originalSize)})
-                    </p>
-                    <div
-                      className="flex items-center justify-center p-2"
-                      style={{
-                        border: "1px solid var(--kami-border)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={selected.previewUrl}
-                        alt="Original"
-                        className="max-h-64 max-w-full object-contain"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Converted
-                      {selected.status === "done"
-                        ? ` (${formatSize(selected.convertedSize)})`
-                        : ""}
-                    </p>
-                    <div
-                      className="flex items-center justify-center p-2"
-                      style={{
-                        border: "1px solid var(--kami-border)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                    >
-                      {selected.status === "done" && selected.convertedUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={selected.convertedUrl}
-                          alt="Converted"
-                          className="max-h-64 max-w-full object-contain"
-                        />
-                      ) : selected.status === "converting" ? (
-                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                          Converting...
-                        </p>
-                      ) : selected.status === "error" ? (
-                        <p className="py-16 text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
-                          {selected.error}
-                        </p>
-                      ) : (
-                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                          Click &quot;Convert All&quot; to see result
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                <div className="aspect-square w-full overflow-hidden" style={{ background: "var(--kami-surface)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.previewUrl}
+                    alt={f.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-              </div>
-            )}
-          </>
+                <div className="flex items-center justify-between gap-1 p-2 text-left text-[10px]">
+                  <span className="truncate" title={f.name}>
+                    {f.name}
+                  </span>
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFile(f.id);
+                    }}
+                    role="button"
+                    style={{ color: "var(--kami-text-muted)" }}
+                  >
+                    ✕
+                  </span>
+                </div>
+                <div className="px-2 pb-2 text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                  {formatSize(f.originalSize)}
+                  {f.status === "done" && (
+                    <> → {formatSize(f.convertedSize)}</>
+                  )}
+                  {f.status === "converting" && " · converting..."}
+                  {f.status === "error" && " · error"}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {selected && selected.status === "done" && (
+          <div
+            className="rounded-xl border p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              borderColor: "var(--kami-border-strong)",
+            }}
+          >
+            <p className="mb-3 text-sm font-medium">
+              {selected.name} → {formatLabel(outputFormat)}
+            </p>
+            <button onClick={() => downloadFile(selected)} className="tool-action-btn" data-variant="outline">
+              Download
+            </button>
+          </div>
         )}
       </div>
-    </div>
+    </ToolShell>
   );
 }

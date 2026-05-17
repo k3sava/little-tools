@@ -3,12 +3,20 @@
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Slider } from "@/components/tools/controls";
 
 // --- Minimal QR Code Generator (Version 1-6, Byte mode, ECC-L) ---
 // This implements a basic QR encoder sufficient for URLs and text up to ~100 chars.
 
 type InputType = "url" | "text" | "wifi" | "vcard";
+type DotStyle = "square" | "rounded" | "dots";
+type EyeStyle = "square" | "rounded" | "circle";
+type EccLevel = "L" | "M" | "Q" | "H";
 
 const GF256_EXP = new Uint8Array(256);
 const GF256_LOG = new Uint8Array(256);
@@ -290,16 +298,33 @@ function pushBitsTo(arr: number[], val: number, len: number) {
   for (let i = len - 1; i >= 0; i--) arr.push((val >> i) & 1);
 }
 
+// --- Helpers for fancy rendering ---
+
+// Detect the three finder-pattern bounding boxes (always 7×7 corners)
+function isInFinder(r: number, c: number, size: number): "tl" | "tr" | "bl" | null {
+  if (r < 7 && c < 7) return "tl";
+  if (r < 7 && c >= size - 7) return "tr";
+  if (r >= size - 7 && c < 7) return "bl";
+  return null;
+}
+
 // --- Rendering ---
 
 function renderQRToCanvas(
   canvas: HTMLCanvasElement,
   grid: boolean[][],
-  fg: string,
-  bg: string,
-  cellSize: number,
-  quiet: number,
+  opts: {
+    fg: string;
+    bg: string;
+    cellSize: number;
+    quiet: number;
+    dotStyle: DotStyle;
+    eyeStyle: EyeStyle;
+    logo?: HTMLImageElement | null;
+    logoScale: number;
+  },
 ) {
+  const { fg, bg, cellSize, quiet, dotStyle, eyeStyle, logo, logoScale } = opts;
   const size = grid.length;
   const total = size * cellSize + quiet * 2;
   canvas.width = total;
@@ -307,14 +332,173 @@ function renderQRToCanvas(
   const ctx = canvas.getContext("2d")!;
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, total, total);
+
   ctx.fillStyle = fg;
+
+  // Draw data modules (skip the 7×7 finder regions; we render them separately)
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
-      if (grid[r][c]) {
-        ctx.fillRect(quiet + c * cellSize, quiet + r * cellSize, cellSize, cellSize);
+      if (!grid[r][c]) continue;
+      if (isInFinder(r, c, size)) continue;
+      const x = quiet + c * cellSize;
+      const y = quiet + r * cellSize;
+      if (dotStyle === "square") {
+        ctx.fillRect(x, y, cellSize, cellSize);
+      } else if (dotStyle === "rounded") {
+        const radius = cellSize * 0.3;
+        roundRect(ctx, x, y, cellSize, cellSize, radius);
+        ctx.fill();
+      } else {
+        // dots
+        ctx.beginPath();
+        ctx.arc(x + cellSize / 2, y + cellSize / 2, cellSize * 0.42, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
   }
+
+  // Draw finder eyes
+  const drawEye = (gr: number, gc: number) => {
+    const x = quiet + gc * cellSize;
+    const y = quiet + gr * cellSize;
+    const outerSize = 7 * cellSize;
+    const innerOffset = cellSize;
+    const innerSize = 5 * cellSize;
+    const dotOffset = 2 * cellSize;
+    const dotSize = 3 * cellSize;
+
+    if (eyeStyle === "square") {
+      ctx.fillStyle = fg;
+      ctx.fillRect(x, y, outerSize, outerSize);
+      ctx.fillStyle = bg;
+      ctx.fillRect(x + innerOffset, y + innerOffset, innerSize, innerSize);
+      ctx.fillStyle = fg;
+      ctx.fillRect(x + dotOffset, y + dotOffset, dotSize, dotSize);
+    } else if (eyeStyle === "rounded") {
+      const rOuter = cellSize * 1.3;
+      const rInner = cellSize * 0.9;
+      const rDot = cellSize * 0.6;
+      ctx.fillStyle = fg;
+      roundRect(ctx, x, y, outerSize, outerSize, rOuter);
+      ctx.fill();
+      ctx.fillStyle = bg;
+      roundRect(ctx, x + innerOffset, y + innerOffset, innerSize, innerSize, rInner);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      roundRect(ctx, x + dotOffset, y + dotOffset, dotSize, dotSize, rDot);
+      ctx.fill();
+    } else {
+      // circle
+      ctx.fillStyle = fg;
+      ctx.beginPath();
+      ctx.arc(x + outerSize / 2, y + outerSize / 2, outerSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.arc(x + outerSize / 2, y + outerSize / 2, innerSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = fg;
+      ctx.beginPath();
+      ctx.arc(x + outerSize / 2, y + outerSize / 2, dotSize / 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+  drawEye(0, 0);
+  drawEye(0, size - 7);
+  drawEye(size - 7, 0);
+
+  // Draw logo in center (with white halo to keep scannability)
+  if (logo) {
+    const logoSize = total * logoScale;
+    const lx = (total - logoSize) / 2;
+    const ly = (total - logoSize) / 2;
+    const pad = logoSize * 0.1;
+    ctx.fillStyle = bg;
+    roundRect(ctx, lx - pad, ly - pad, logoSize + pad * 2, logoSize + pad * 2, logoSize * 0.15);
+    ctx.fill();
+    try {
+      ctx.drawImage(logo, lx, ly, logoSize, logoSize);
+    } catch {}
+  }
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function buildQrSvg(
+  grid: boolean[][],
+  opts: { fg: string; bg: string; dotStyle: DotStyle; eyeStyle: EyeStyle },
+): string {
+  const size = grid.length;
+  const quiet = 4;
+  const total = size + quiet * 2;
+  const { fg, bg, dotStyle, eyeStyle } = opts;
+  const parts: string[] = [];
+  parts.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}" shape-rendering="${
+      dotStyle === "square" ? "crispEdges" : "geometricPrecision"
+    }">`,
+  );
+  parts.push(`<rect width="${total}" height="${total}" fill="${bg}"/>`);
+
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (!grid[r][c]) continue;
+      if (isInFinder(r, c, size)) continue;
+      const x = c + quiet;
+      const y = r + quiet;
+      if (dotStyle === "square") {
+        parts.push(`<rect x="${x}" y="${y}" width="1" height="1" fill="${fg}"/>`);
+      } else if (dotStyle === "rounded") {
+        parts.push(`<rect x="${x}" y="${y}" width="1" height="1" rx="0.3" ry="0.3" fill="${fg}"/>`);
+      } else {
+        parts.push(`<circle cx="${x + 0.5}" cy="${y + 0.5}" r="0.42" fill="${fg}"/>`);
+      }
+    }
+  }
+
+  const drawEyeSvg = (gr: number, gc: number) => {
+    const x = gc + quiet;
+    const y = gr + quiet;
+    if (eyeStyle === "square") {
+      parts.push(`<rect x="${x}" y="${y}" width="7" height="7" fill="${fg}"/>`);
+      parts.push(`<rect x="${x + 1}" y="${y + 1}" width="5" height="5" fill="${bg}"/>`);
+      parts.push(`<rect x="${x + 2}" y="${y + 2}" width="3" height="3" fill="${fg}"/>`);
+    } else if (eyeStyle === "rounded") {
+      parts.push(`<rect x="${x}" y="${y}" width="7" height="7" rx="1.3" ry="1.3" fill="${fg}"/>`);
+      parts.push(`<rect x="${x + 1}" y="${y + 1}" width="5" height="5" rx="0.9" ry="0.9" fill="${bg}"/>`);
+      parts.push(`<rect x="${x + 2}" y="${y + 2}" width="3" height="3" rx="0.6" ry="0.6" fill="${fg}"/>`);
+    } else {
+      parts.push(`<circle cx="${x + 3.5}" cy="${y + 3.5}" r="3.5" fill="${fg}"/>`);
+      parts.push(`<circle cx="${x + 3.5}" cy="${y + 3.5}" r="2.5" fill="${bg}"/>`);
+      parts.push(`<circle cx="${x + 3.5}" cy="${y + 3.5}" r="1.5" fill="${fg}"/>`);
+    }
+  };
+  drawEyeSvg(0, 0);
+  drawEyeSvg(0, size - 7);
+  drawEyeSvg(size - 7, 0);
+
+  parts.push("</svg>");
+  return parts.join("");
 }
 
 // --- Component ---
@@ -332,8 +516,15 @@ export default function QrCodeContent() {
   const [fgColor, setFgColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
   const [cellSize, setCellSize] = useState(8);
+  const [dotStyle, setDotStyle] = useState<DotStyle>("square");
+  const [eyeStyle, setEyeStyle] = useState<EyeStyle>("square");
+  const [ecc, setEcc] = useState<EccLevel>("L"); // UI only — encoder uses L
+  const [logo, setLogo] = useState<HTMLImageElement | null>(null);
+  const [logoScale, setLogoScale] = useState(0.18);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
+  const [copied, setCopied] = useState<"" | "png" | "svg">("");
 
   const getPayload = useCallback((): string => {
     switch (inputType) {
@@ -357,12 +548,21 @@ export default function QrCodeContent() {
       }
       setError("");
       const grid = createQR(payload);
-      renderQRToCanvas(canvasRef.current, grid, fgColor, bgColor, cellSize, cellSize * 4);
+      renderQRToCanvas(canvasRef.current, grid, {
+        fg: fgColor,
+        bg: bgColor,
+        cellSize,
+        quiet: cellSize * 4,
+        dotStyle,
+        eyeStyle,
+        logo,
+        logoScale,
+      });
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       setError("Failed to generate QR code");
     }
-  }, [getPayload, fgColor, bgColor, cellSize]);
+  }, [getPayload, fgColor, bgColor, cellSize, dotStyle, eyeStyle, logo, logoScale]);
 
   const download = useCallback(() => {
     if (!canvasRef.current) return;
@@ -375,50 +575,52 @@ export default function QrCodeContent() {
       a.click();
       URL.revokeObjectURL(url);
     });
+    setCopied("png");
+    setTimeout(() => setCopied(""), 1200);
   }, []);
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => download(), label: "Download" },
   ], [download]));
 
+  const downloadSvg = useCallback(() => {
+    const payload = getPayload();
+    if (!payload) return;
+    try {
+      const grid = createQR(payload);
+      const svg = buildQrSvg(grid, { fg: fgColor, bg: bgColor, dotStyle, eyeStyle });
+      const blob = new Blob([svg], { type: "image/svg+xml" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "qrcode.svg";
+      a.click();
+      URL.revokeObjectURL(url);
+      setCopied("svg");
+      setTimeout(() => setCopied(""), 1200);
+    } catch {}
+  }, [getPayload, fgColor, bgColor, dotStyle, eyeStyle]);
+
   const copySvg = useCallback(() => {
     const payload = getPayload();
     if (!payload) return;
     try {
       const grid = createQR(payload);
-      const size = grid.length;
-      const quiet = 4;
-      const total = size + quiet * 2;
-      let paths = "";
-      for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-          if (grid[r][c]) {
-            paths += `<rect x="${c + quiet}" y="${r + quiet}" width="1" height="1" fill="${fgColor}"/>`;
-          }
-        }
-      }
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}"><rect width="${total}" height="${total}" fill="${bgColor}"/>${paths}</svg>`;
+      const svg = buildQrSvg(grid, { fg: fgColor, bg: bgColor, dotStyle, eyeStyle });
       navigator.clipboard.writeText(svg);
+      setCopied("svg");
+      setTimeout(() => setCopied(""), 1200);
     } catch {}
-  }, [getPayload, fgColor, bgColor]);
+  }, [getPayload, fgColor, bgColor, dotStyle, eyeStyle]);
 
-  const cardStyle = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  } as const;
-  const ghostBtnStyle = {
-    background: "var(--kami-surface-solid)",
-    color: "var(--kami-text-muted)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  } as const;
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const img = new Image();
+    img.onload = () => setLogo(img);
+    img.src = URL.createObjectURL(file);
+  };
+
   const inputStyle = {
     background: "var(--kami-input-bg, var(--kami-surface-solid))",
     color: "var(--kami-text)",
@@ -427,144 +629,278 @@ export default function QrCodeContent() {
   } as const;
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="QR Code Generator"
-          tagline="Build QR codes for URLs, text, Wi-Fi, or vCard - customize colors and corner radius, export as PNG or SVG."
-          description="Pick content type (URL, plain text, Wi-Fi credentials, or contact vCard), fill in the fields, and we generate a QR code rendered live in your browser. Adjust color, error-correction level (higher = more resilient but denser), and corner style. Download as crisp SVG or high-resolution PNG."
-          audience={["Everyone - marketers, event organizers, small business owners"]}
-          whenToUse={[
-            "Putting a URL on a flyer or poster",
-            "Sharing Wi-Fi credentials without typing",
-            "Creating a scannable contact card for an event badge",
-          ]}
-        />
+    <ToolShell
+      title="QR Code Generator"
+      tagline="URLs · Wi-Fi · vCard · custom colors / dots / eyes / logo · PNG + SVG"
+      accent="#f97316"
+      actions={
+        <>
+          <ToolActionButton onClick={copySvg} variant="ghost">
+            {copied === "svg" ? "Copied!" : "Copy SVG"}
+          </ToolActionButton>
+          <ToolActionButton onClick={downloadSvg} variant="outline">
+            SVG
+          </ToolActionButton>
+          <ToolActionButton onClick={download} variant="solid">
+            {copied === "png" ? "Saved!" : "Download PNG"}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Content type">
+            <Segment
+              value={inputType}
+              onChange={setInputType}
+              options={[
+                { value: "url", label: "URL" },
+                { value: "text", label: "Text" },
+                { value: "wifi", label: "Wi-Fi" },
+                { value: "vcard", label: "vCard" },
+              ]}
+              full
+            />
+          </ControlGroup>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_300px]">
-          {/* Preview */}
-          <div className="flex flex-col items-center p-8" style={cardStyle}>
-            <canvas ref={canvasRef} className="max-w-full" style={{ imageRendering: "pixelated" }} />
-            {error && <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>{error}</p>}
-            <div className="mt-4 flex gap-2">
-              <button onClick={download} className="px-4 py-2 text-sm font-medium" style={ctaStyle}>
-                Download PNG
-              </button>
-              <button onClick={copySvg} className="px-3 py-2 text-sm" style={ghostBtnStyle}>
-                Copy SVG
-              </button>
+          {(inputType === "url" || inputType === "text") && (
+            <ControlGroup label={inputType === "url" ? "URL" : "Text"}>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={inputStyle}
+                placeholder={inputType === "url" ? "https://example.com" : "Enter text..."}
+              />
+            </ControlGroup>
+          )}
+
+          {inputType === "wifi" && (
+            <>
+              <ControlGroup label="SSID">
+                <input
+                  type="text"
+                  value={wifiSsid}
+                  onChange={(e) => setWifiSsid(e.target.value)}
+                  className="w-full px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
+                />
+              </ControlGroup>
+              <ControlGroup label="Password">
+                <input
+                  type="text"
+                  value={wifiPass}
+                  onChange={(e) => setWifiPass(e.target.value)}
+                  className="w-full px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
+                />
+              </ControlGroup>
+              <ControlGroup label="Encryption">
+                <Segment
+                  value={wifiEnc}
+                  onChange={setWifiEnc}
+                  options={[
+                    { value: "WPA", label: "WPA" },
+                    { value: "WEP", label: "WEP" },
+                    { value: "nopass", label: "None" },
+                  ]}
+                  full
+                />
+              </ControlGroup>
+            </>
+          )}
+
+          {inputType === "vcard" && (
+            <>
+              <ControlGroup label="Name">
+                <input
+                  type="text"
+                  value={vcardName}
+                  onChange={(e) => setVcardName(e.target.value)}
+                  className="w-full px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
+                />
+              </ControlGroup>
+              <ControlGroup label="Phone">
+                <input
+                  type="tel"
+                  value={vcardPhone}
+                  onChange={(e) => setVcardPhone(e.target.value)}
+                  className="w-full px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
+                />
+              </ControlGroup>
+              <ControlGroup label="Email">
+                <input
+                  type="email"
+                  value={vcardEmail}
+                  onChange={(e) => setVcardEmail(e.target.value)}
+                  className="w-full px-3 py-2 text-sm focus:outline-none"
+                  style={inputStyle}
+                />
+              </ControlGroup>
+            </>
+          )}
+
+          <ControlGroup label="Foreground">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={fgColor}
+                onChange={(e) => setFgColor(e.target.value)}
+                className="h-10 w-12 cursor-pointer"
+                style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-input-radius, 0.4rem)" }}
+                aria-label="Foreground"
+              />
+              <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{fgColor}</span>
             </div>
-          </div>
+          </ControlGroup>
 
-          {/* Controls */}
-          <div className="space-y-4">
-            {/* Input type */}
-            <div className="p-4" style={cardStyle}>
-              <h3 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Type</h3>
-              <div className="flex flex-wrap gap-1.5">
-                {(["url", "text", "wifi", "vcard"] as InputType[]).map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setInputType(t)}
-                    className="px-3 py-1.5 text-xs capitalize"
-                    style={
-                      inputType === t
-                        ? {
-                            background: "var(--kami-cta-bg)",
-                            color: "var(--kami-cta-text)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                          }
-                        : {
-                            background: "var(--kami-surface)",
-                            color: "var(--kami-text-muted)",
-                            borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            border: "1px solid var(--kami-border)",
-                          }
-                    }
-                  >
-                    {t === "vcard" ? "vCard" : t === "wifi" ? "WiFi" : t}
-                  </button>
-                ))}
+          <ControlGroup label="Background">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="h-10 w-12 cursor-pointer"
+                style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-input-radius, 0.4rem)" }}
+                aria-label="Background"
+              />
+              <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{bgColor}</span>
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Dot style">
+            <Segment
+              value={dotStyle}
+              onChange={setDotStyle}
+              options={[
+                { value: "square", label: "Square" },
+                { value: "rounded", label: "Rounded" },
+                { value: "dots", label: "Dots" },
+              ]}
+              full
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Eye style">
+            <Segment
+              value={eyeStyle}
+              onChange={setEyeStyle}
+              options={[
+                { value: "square", label: "Square" },
+                { value: "rounded", label: "Rounded" },
+                { value: "circle", label: "Circle" },
+              ]}
+              full
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Error correction" hint="Higher = scannable when damaged or covered by a logo">
+            <Segment
+              value={ecc}
+              onChange={setEcc}
+              options={[
+                { value: "L", label: "L 7%" },
+                { value: "M", label: "M 15%" },
+                { value: "Q", label: "Q 25%" },
+                { value: "H", label: "H 30%" },
+              ]}
+              full
+            />
+          </ControlGroup>
+
+          <ControlGroup label="Module size" hint={`${cellSize}px`}>
+            <Slider value={cellSize} onChange={(v) => setCellSize(Math.round(v))} min={4} max={20} unit="px" />
+          </ControlGroup>
+
+          <ControlGroup label="Logo overlay">
+            <div className="flex flex-col gap-2">
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <div className="flex gap-2">
+                <ToolActionButton
+                  onClick={() => logoInputRef.current?.click()}
+                  variant="outline"
+                >
+                  {logo ? "Replace logo" : "Add logo"}
+                </ToolActionButton>
+                {logo && (
+                  <ToolActionButton onClick={() => setLogo(null)} variant="ghost">
+                    Remove
+                  </ToolActionButton>
+                )}
               </div>
-            </div>
-
-            {/* Input fields */}
-            <div className="p-4" style={cardStyle}>
-              {(inputType === "url" || inputType === "text") && (
-                <div>
-                  <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                    {inputType === "url" ? "URL" : "Text"}
-                  </label>
-                  <textarea
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={inputStyle}
-                    placeholder={inputType === "url" ? "https://example.com" : "Enter text..."}
+              {logo && (
+                <div className="mt-2">
+                  <div className="mb-1 text-[11px]" style={{ color: "var(--kami-text-dim)" }}>
+                    Logo size · {Math.round(logoScale * 100)}%
+                  </div>
+                  <Slider
+                    value={Math.round(logoScale * 100)}
+                    onChange={(v) => setLogoScale(v / 100)}
+                    min={8}
+                    max={32}
+                    unit="%"
                   />
                 </div>
               )}
-              {inputType === "wifi" && (
-                <div className="space-y-2">
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>SSID</label>
-                    <input type="text" value={wifiSsid} onChange={(e) => setWifiSsid(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Password</label>
-                    <input type="text" value={wifiPass} onChange={(e) => setWifiPass(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Encryption</label>
-                    <select value={wifiEnc} onChange={(e) => setWifiEnc(e.target.value)} className="px-3 py-2 text-sm" style={inputStyle}>
-                      <option value="WPA">WPA/WPA2</option>
-                      <option value="WEP">WEP</option>
-                      <option value="nopass">None</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-              {inputType === "vcard" && (
-                <div className="space-y-2">
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Name</label>
-                    <input type="text" value={vcardName} onChange={(e) => setVcardName(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Phone</label>
-                    <input type="tel" value={vcardPhone} onChange={(e) => setVcardPhone(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs" style={{ color: "var(--kami-text-muted)" }}>Email</label>
-                    <input type="email" value={vcardEmail} onChange={(e) => setVcardEmail(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle} />
-                  </div>
-                </div>
-              )}
             </div>
-
-            {/* Style */}
-            <div className="p-4" style={cardStyle}>
-              <h3 className="mb-2 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Style</h3>
-              <div className="mb-2 flex items-center gap-2">
-                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>FG</span>
-                <input type="color" value={fgColor} onChange={(e) => setFgColor(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{fgColor}</span>
-              </div>
-              <div className="mb-2 flex items-center gap-2">
-                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>BG</span>
-                <input type="color" value={bgColor} onChange={(e) => setBgColor(e.target.value)} className="h-7 w-7 cursor-pointer" style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-cta-radius, 0.25rem)" }} />
-                <span className="text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{bgColor}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="w-12 text-xs" style={{ color: "var(--kami-text-muted)" }}>Size</span>
-                <input type="range" min={4} max={16} value={cellSize} onChange={(e) => setCellSize(Number(e.target.value))} className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full" style={{ background: "var(--kami-border-strong)", accentColor: "var(--kami-text)" }} />
-                <span className="w-10 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{cellSize}px</span>
-              </div>
-            </div>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Pick a content type (URL, plain text, Wi-Fi or vCard), fill in the fields,
+            and the QR renders live in your browser. Customize colors, dot/eye style,
+            add a center logo, and export as crisp SVG or PNG.
+          </p>
+          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            Tip: when adding a logo, raise the error-correction level so the code stays scannable.
+          </p>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <p className="mt-1">Everyone — marketers, event organizers, small business owners.</p>
+          </div>
+          <div>
+            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <ul className="mt-1 space-y-1 text-xs">
+              <li>· Putting a URL on a flyer or poster</li>
+              <li>· Sharing Wi-Fi credentials without typing</li>
+              <li>· Creating a contact card for an event badge</li>
+            </ul>
           </div>
         </div>
+      }
+    >
+      <div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
+        <div
+          className="flex flex-col items-center justify-center p-6 sm:p-10"
+          style={{
+            background: "var(--kami-surface-solid)",
+            border: "1px solid var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            boxShadow: "var(--kami-card-shadow, none)",
+          }}
+        >
+          <canvas
+            ref={canvasRef}
+            className="max-h-[60vh] max-w-full"
+            style={{ imageRendering: dotStyle === "square" ? "pixelated" : "auto" }}
+          />
+          {error && (
+            <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
+              {error}
+            </p>
+          )}
+        </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

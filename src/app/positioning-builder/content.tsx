@@ -2,11 +2,15 @@
 
 import { useState, useCallback, useMemo, useRef } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ExampleGallery } from "@/components/tools/example-gallery";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment } from "@/components/tools/controls";
 import { InfoTip } from "@/components/tools/info-tip";
-import { HowToSteps } from "@/components/tools/how-to-steps";
-import { ReferencePanel } from "@/components/tools/reference-panel";
+
+const ACCENT_PMM = "#14b8a6";
 
 // --- Types ---
 
@@ -473,117 +477,84 @@ export default function PositioningBuilderContent() {
     }));
   }, [activeFramework, framework.sample]);
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-4xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Positioning Statement Builder"
-          tagline="Draft a sharp positioning statement in five minutes using proven frameworks."
-          description="Pick a framework (Moore, Dunford, Blank, or a simple internal template), answer a guided set of questions, and watch a positioning statement assemble itself. Each framework forces you to think about a slightly different angle - pick the one that matches your situation, or fill in multiple and compare."
-          audience={["PMMs", "Founders", "PMs", "Product marketers"]}
-          whenToUse={[
-            "Kicking off a launch or rebrand",
-            "Sharpening a pitch that feels vague",
-            "Aligning a team on what the product actually is",
-          ]}
-          quickLinks={[
-            { label: "Which framework should I pick?", href: "#framework-guide" },
-            { label: "How to write a good answer", href: "#writing-tips" },
-          ]}
-        />
+  const aiPrompt = useMemo(() => {
+    return `Tighten this positioning statement. Make it sharper, more specific, remove fluffy language. Keep the same framework structure.\n\nFramework: ${framework.name} by ${framework.author}\nStatement:\n${plainText}`;
+  }, [framework.name, framework.author, plainText]);
 
-        <HowToSteps
-          steps={[
-            { title: "Pick a framework below", body: "Not sure? Scroll to 'Which framework should I pick?' - we explain when each one fits." },
-            { title: "Answer each question in plain language", body: "Hints and examples sit under every field. Press 'Load sample' to see a fully-filled statement you can edit." },
-            { title: "Watch the live preview assemble", body: "Filled answers appear bold; [bracketed placeholders] show what's still missing." },
-            { title: "Copy or compare", body: "Copy as plain text or markdown. Fill in a second framework and click 'Compare all' to see which sounds sharpest." },
-          ]}
-        />
+  const handleCopyPrompt = useCallback(() => {
+    navigator.clipboard.writeText(aiPrompt);
+  }, [aiPrompt]);
 
-        <div className="mb-6">
-          <div className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-            Pick a framework
-          </div>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {FRAMEWORKS.map((fw) => {
-              const active = activeFramework === fw.id && viewMode === "edit";
-              return (
-                <button
-                  key={fw.id}
-                  onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                  className="p-3 text-left transition-all"
-                  style={
-                    active
-                      ? {
-                          background: "var(--kami-cta-bg)",
-                          color: "var(--kami-cta-text)",
-                          border: "1px solid var(--kami-cta-bg)",
-                          borderRadius: "var(--kami-card-radius, 0.75rem)",
-                          boxShadow: "var(--kami-card-shadow, none)",
-                        }
-                      : {
-                          background: "var(--kami-surface-solid)",
-                          border: "1px solid var(--kami-border-strong)",
-                          borderRadius: "var(--kami-card-radius, 0.75rem)",
-                        }
-                  }
-                >
-                  <div className="text-sm font-semibold" style={{ color: active ? "var(--kami-cta-text)" : "var(--kami-text)" }}>
-                    {fw.name}
-                  </div>
-                  <div className="text-xs" style={{ color: active ? "var(--kami-overlay-text-dim)" : "var(--kami-text-muted)" }}>
-                    {fw.author}
-                  </div>
-                  <div className="mt-1 text-xs" style={{ color: active ? "var(--kami-overlay-text-dim)" : "var(--kami-text-muted)" }}>
-                    {fw.tagline}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-            <div className="flex-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-              <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {framework.bestFor}
-            </div>
-            {framework.sample && (
-              <button
-                onClick={loadSample}
-                className="px-3 py-1 text-xs font-medium"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "999px",
-                }}
-              >
-                Load sample
-              </button>
-            )}
-            {filledFrameworks.length > 0 && (
-              <button
-                onClick={() => setViewMode(viewMode === "compare" ? "edit" : "compare")}
-                className="px-3 py-1 text-xs font-medium transition-colors"
-                style={
-                  viewMode === "compare"
-                    ? {
-                        background: "var(--kami-cta-bg)",
-                        color: "var(--kami-cta-text)",
-                        borderRadius: "999px",
-                      }
-                    : {
-                        background: "var(--kami-surface-solid)",
-                        color: "var(--kami-text-muted)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "999px",
-                      }
-                }
-              >
-                {viewMode === "compare" ? "Back to edit" : `Compare all (${filledFrameworks.length})`}
-              </button>
-            )}
-          </div>
+  const controls = (
+    <>
+      <ControlGroup label="Framework">
+        <div className="grid grid-cols-2 gap-2">
+          {FRAMEWORKS.map((fw) => (
+            <button
+              key={fw.id}
+              onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
+              data-active={activeFramework === fw.id && viewMode === "edit"}
+              className="kc-segment-btn"
+              style={{ minHeight: 40 }}
+            >
+              {fw.name}
+            </button>
+          ))}
         </div>
+        <p className="text-xs mt-2" style={{ color: "var(--kami-text-muted)" }}>
+          {framework.tagline}
+        </p>
+      </ControlGroup>
+      <ControlGroup label="View">
+        <Segment
+          value={viewMode}
+          onChange={setViewMode}
+          options={[
+            { value: "edit" as ViewMode, label: "Edit" },
+            { value: "compare" as ViewMode, label: `Compare (${filledFrameworks.length})` },
+          ]}
+          full
+        />
+      </ControlGroup>
+      <ControlGroup label="Actions">
+        {framework.sample && (
+          <button onClick={loadSample} className="kc-segment-btn" style={{ minHeight: 40 }}>Load sample</button>
+        )}
+        <button onClick={clearForm} disabled={!hasAnyValue} className="kc-segment-btn" style={{ minHeight: 40 }}>Clear form</button>
+        <button onClick={handleCopyPrompt} className="kc-segment-btn" style={{ minHeight: 40 }}>Copy AI tighten-prompt</button>
+      </ControlGroup>
+    </>
+  );
+
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={handleCopyFormatted}>
+        {copiedFormatted ? "Copied MD" : "Copy MD"}
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopyPlain}>
+        {copiedPlain ? "Copied" : "Copy"}
+      </ToolActionButton>
+    </>
+  );
+
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Draft a positioning statement using one of four frameworks. Filled answers are bold; bracketed placeholders mark gaps.</p>
+      <p><strong>Moore:</strong> seven explicit slots.<br /><strong>Dunford:</strong> Obviously Awesome — frame markets & unique attributes.<br /><strong>Blank:</strong> elevator pitch.<br /><strong>Simple:</strong> one-line internal.</p>
+      <p>Be specific, name real alternatives, defensible differentiator. &quot;Copy AI tighten-prompt&quot; gives you a ready prompt for ChatGPT/Claude.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="Positioning Statement Builder"
+      tagline="Moore · Dunford · Blank · Simple · live preview · compare"
+      accent={ACCENT_PMM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-4 p-4 md:p-6">
 
         {/* Comparison view */}
         {viewMode === "compare" && (
@@ -792,152 +763,8 @@ export default function PositioningBuilderContent() {
           </p>
         </div>
 
-        {/* Output section */}
-        <div
-          className="p-6"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
-            Export
-          </h2>
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={handleCopyPlain}
-              className="px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-colors"
-              style={{
-                background: "var(--kami-cta-bg)",
-                color: "var(--kami-cta-text)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              {copiedPlain ? <CheckIcon /> : <CopyIcon />}
-              {copiedPlain ? "Copied" : "Copy as plain text"}
-            </button>
-            <button
-              onClick={handleCopyFormatted}
-              className="px-4 py-2 text-sm font-medium flex items-center gap-1.5 transition-colors"
-              style={{
-                background: "var(--kami-surface-solid)",
-                color: "var(--kami-text-muted)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              {copiedFormatted ? <CheckIcon /> : <CopyIcon />}
-              {copiedFormatted ? "Copied" : "Copy as formatted"}
-            </button>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {FRAMEWORKS.filter((fw) => fw.id !== activeFramework).map((fw) => (
-              <button
-                key={fw.id}
-                onClick={() => setActiveFramework(fw.id)}
-                className="text-sm underline underline-offset-2 transition-colors"
-                style={{ color: "var(--kami-text-muted)" }}
-              >
-                Try {fw.name} framework
-              </button>
-            ))}
-          </div>
-        </div>
         </>}
-
-        <ReferencePanel
-          id="framework-guide"
-          title="Which framework should I pick?"
-          summary="A short decision guide for the four frameworks in this tool."
-          defaultOpen
-        >
-          <div className="space-y-4">
-            {FRAMEWORKS.map((fw) => (
-              <div
-                key={fw.id}
-                className="p-3"
-                style={{
-                  background: "var(--kami-surface)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.5rem)",
-                }}
-              >
-                <div className="flex items-baseline justify-between gap-2">
-                  <div>
-                    <div className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{fw.name}</div>
-                    <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{fw.author}</div>
-                  </div>
-                  <button
-                    onClick={() => { setActiveFramework(fw.id); setViewMode("edit"); }}
-                    className="text-xs font-medium underline underline-offset-2"
-                    style={{ color: "var(--kami-text-muted)" }}
-                  >
-                    Use this →
-                  </button>
-                </div>
-                <p className="mt-1 text-xs" style={{ color: "var(--kami-text)" }}>{fw.tagline}</p>
-                <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  <span className="font-medium" style={{ color: "var(--kami-text)" }}>Best for:</span> {fw.bestFor}
-                </p>
-              </div>
-            ))}
-          </div>
-        </ReferencePanel>
-
-        <ReferencePanel
-          id="writing-tips"
-          title="How to write an answer that actually lands"
-          summary="Common pitfalls and how to avoid them."
-          defaultOpen={false}
-        >
-          <ul className="space-y-3">
-            <li>
-              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Be specific, not aspirational.</div>
-              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                &quot;B2B SaaS teams with 500+ accounts&quot; beats &quot;enterprise customers.&quot;
-                &quot;Reduce churn by 30%&quot; beats &quot;improve retention.&quot;
-              </div>
-            </li>
-            <li>
-              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Name your real alternatives.</div>
-              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                The competitor field isn&apos;t just direct competitors - it&apos;s the spreadsheet,
-                the intern, or the status quo. If you skip this, your positioning has no edge.
-              </div>
-            </li>
-            <li>
-              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Differentiators must be defensible.</div>
-              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                &quot;Easy to use&quot; and &quot;fast&quot; aren&apos;t differentiators - everyone claims them.
-                Look for something that requires specific data, tech, or expertise alternatives lack.
-              </div>
-            </li>
-            <li>
-              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Category frames the value.</div>
-              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                The category you pick changes who compares you to what. &quot;Email tool&quot; competes
-                with Gmail; &quot;sales engagement platform&quot; competes with Outreach. Pick the
-                frame that makes your differentiation obvious.
-              </div>
-            </li>
-            <li>
-              <div className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>Test it out loud.</div>
-              <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                Read the final statement to a target customer. If they say &quot;so what?&quot;, the
-                value isn&apos;t concrete enough. If they say &quot;sounds like everyone,&quot; the
-                differentiator isn&apos;t sharp enough.
-              </div>
-            </li>
-          </ul>
-        </ReferencePanel>
-
-        <div className="mt-6 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
-          ⌘Enter copies the statement · ⌘K clears the form · Runs entirely in
-          your browser - nothing is saved to a server.
-        </div>
       </div>
-    </div>
+    </ToolShell>
   );
 }

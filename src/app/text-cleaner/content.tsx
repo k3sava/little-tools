@@ -3,7 +3,12 @@
 import { useState, useCallback, useMemo } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Toggle } from "@/components/tools/controls";
 
 // --- Cleaning operations ---
 
@@ -22,53 +27,53 @@ type CleanOp =
 const OPERATIONS: { value: CleanOp; label: string; description: string }[] = [
   {
     value: "extraSpaces",
-    label: "Remove extra spaces",
-    description: "Collapse multiple spaces into one",
+    label: "Collapse extra spaces",
+    description: "Multiple spaces → one",
   },
   {
     value: "extraLineBreaks",
-    label: "Remove extra line breaks",
-    description: "Collapse multiple blank lines into one",
+    label: "Remove extra blank lines",
+    description: "Collapse 3+ newlines",
   },
   {
     value: "specialChars",
-    label: "Remove special characters",
-    description: "Strip non-alphanumeric characters (keeps spaces and newlines)",
+    label: "Strip special characters",
+    description: "Keep alphanumeric only",
   },
   {
     value: "trimLines",
-    label: "Trim whitespace per line",
-    description: "Remove leading and trailing spaces from each line",
+    label: "Trim each line",
+    description: "Drop leading/trailing spaces",
   },
   {
     value: "duplicateLines",
     label: "Remove duplicate lines",
-    description: "Keep only the first occurrence of each line",
+    description: "First occurrence wins",
   },
   {
     value: "sortLines",
-    label: "Sort lines alphabetically",
-    description: "Sort all non-empty lines A \u2192 Z",
+    label: "Sort lines A → Z",
+    description: "Alphabetical order",
   },
   {
     value: "stripHtml",
     label: "Strip HTML tags",
-    description: "Remove all HTML tags, keep inner text",
+    description: "Keep inner text only",
   },
   {
     value: "smartQuotes",
-    label: "Smart quotes \u2192 straight quotes",
-    description: 'Convert \u201c\u201d\u2018\u2019 to straight " and \'',
+    label: "Smart → straight quotes",
+    description: '“”‘’ → " and \'',
   },
   {
     value: "normalizeUnicode",
     label: "Normalize Unicode",
-    description: "Replace em dash, en dash, ellipsis, bullet with ASCII equivalents",
+    description: "Em/en dashes, ellipsis → ASCII",
   },
   {
     value: "removeUrlsEmails",
     label: "Remove URLs & emails",
-    description: "Strip http/https links and email addresses",
+    description: "Strip links and email addresses",
   },
 ];
 
@@ -82,26 +87,26 @@ function cleanText(text: string, ops: Set<CleanOp>): string {
 
   if (ops.has("smartQuotes")) {
     result = result
-      .replace(/[\u201C\u201D]/g, '"')
-      .replace(/[\u2018\u2019]/g, "'");
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'");
   }
 
   if (ops.has("normalizeUnicode")) {
     result = result
-      .replace(/\u2014/g, "--")   // em dash
-      .replace(/\u2013/g, "-")    // en dash
-      .replace(/\u2026/g, "...")   // ellipsis
-      .replace(/\u2022/g, "*")    // bullet
-      .replace(/\u00A0/g, " ")    // non-breaking space
-      .replace(/\u2019/g, "'")    // right single quote (as apostrophe)
-      .replace(/\u201A/g, ",")    // single low-9 quote
-      .replace(/\u00AB/g, "<<")   // left guillemet
-      .replace(/\u00BB/g, ">>")   // right guillemet
-      .replace(/\u2010/g, "-")    // hyphen
-      .replace(/\u2011/g, "-")    // non-breaking hyphen
-      .replace(/\u2012/g, "-")    // figure dash
-      .replace(/\u00B7/g, "*")    // middle dot
-      .replace(/\u2027/g, "*");   // hyphenation point
+      .replace(/—/g, "--")
+      .replace(/–/g, "-")
+      .replace(/…/g, "...")
+      .replace(/•/g, "*")
+      .replace(/ /g, " ")
+      .replace(/’/g, "'")
+      .replace(/‚/g, ",")
+      .replace(/«/g, "<<")
+      .replace(/»/g, ">>")
+      .replace(/‐/g, "-")
+      .replace(/‑/g, "-")
+      .replace(/‒/g, "-")
+      .replace(/·/g, "*")
+      .replace(/‧/g, "*");
   }
 
   if (ops.has("removeUrlsEmails")) {
@@ -164,7 +169,6 @@ function computeInlineDiff(original: string, modified: string): DiffSegment[] {
   const a = original.length > maxLen ? original.slice(0, maxLen) : original;
   const b = modified.length > maxLen ? modified.slice(0, maxLen) : modified;
 
-  // Build LCS table
   const m = a.length;
   const n = b.length;
   const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
@@ -179,7 +183,6 @@ function computeInlineDiff(original: string, modified: string): DiffSegment[] {
     }
   }
 
-  // Trace back
   const ops: Array<{ type: "same" | "removed" | "added"; char: string }> = [];
   let ai = m;
   let bi = n;
@@ -200,7 +203,6 @@ function computeInlineDiff(original: string, modified: string): DiffSegment[] {
 
   ops.reverse();
 
-  // Merge consecutive
   const segments: DiffSegment[] = [];
   for (const op of ops) {
     if (segments.length > 0 && segments[segments.length - 1].type === op.type) {
@@ -215,6 +217,8 @@ function computeInlineDiff(original: string, modified: string): DiffSegment[] {
 
 // --- UI ---
 
+type View = "diff" | "before" | "after";
+
 export default function TextCleanerContent() {
   const [{ q: input }, setToolState] = useToolState({ q: "" });
   const setInput = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
@@ -222,6 +226,7 @@ export default function TextCleanerContent() {
     new Set<CleanOp>(["extraSpaces", "extraLineBreaks", "trimLines"])
   );
   const [copied, setCopied] = useState(false);
+  const [view, setView] = useState<View>("diff");
 
   const toggleOp = useCallback((op: CleanOp) => {
     setOps((prev) => {
@@ -236,6 +241,7 @@ export default function TextCleanerContent() {
 
   const lineCount = input ? input.split("\n").length : 0;
   const charCount = input.length;
+  const removedBytes = input.length - output.length;
   const hasChanges = input && output !== input;
 
   const handleCopy = useCallback(async () => {
@@ -248,21 +254,14 @@ export default function TextCleanerContent() {
   useKeyboardShortcuts(useMemo(() => [
     { key: "Enter", meta: true, action: () => { handleCopy(); }, label: "Copy" },
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
-  ], [handleCopy]));
+  ], [handleCopy, setInput]));
 
-  // Diff segments
   const diffSegments = useMemo(() => {
     if (!hasChanges) return null;
     if (input.length > 5000) return null;
     return computeInlineDiff(input, output);
   }, [input, output, hasChanges]);
 
-  const cardStyle = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  } as const;
   const inputStyle = {
     background: "var(--kami-input-bg, var(--kami-surface-solid))",
     color: "var(--kami-text)",
@@ -270,186 +269,173 @@ export default function TextCleanerContent() {
     borderRadius: "var(--kami-input-radius, 0.75rem)",
     boxShadow: "var(--kami-card-shadow, none)",
   } as const;
-  const ctaStyle = {
-    background: "var(--kami-cta-bg)",
-    color: "var(--kami-cta-text)",
-    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-  };
+  const cardStyle = {
+    background: "var(--kami-surface-solid)",
+    border: "1px solid var(--kami-border-strong)",
+    borderRadius: "var(--kami-card-radius, 0.75rem)",
+    boxShadow: "var(--kami-card-shadow, none)",
+  } as const;
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Text Cleaner"
-          tagline="One-click fixes for messy pasted text - smart quotes, double spaces, zero-width characters, weird line endings."
-          description="Paste text from anywhere (a PDF, a Word doc, a chat log) and toggle the fixes you want: convert smart quotes to straight, collapse multiple spaces, remove zero-width characters, normalize line endings, strip markdown, and more. Preview updates live; copy the cleaned output with one click."
-          audience={["Writers", "Editors", "Developers", "Support"]}
-          whenToUse={[
-            "Pasting copy from Word or a PDF into a CMS",
-            "Scrubbing invisible characters from a support ticket",
-            "Normalizing line breaks before diffing two files",
+  const enableAll = () => setOps(new Set(OPERATIONS.map((o) => o.value)));
+  const disableAll = () => setOps(new Set());
+
+  const controls = (
+    <>
+      <ControlGroup label="View">
+        <Segment
+          value={view}
+          onChange={setView}
+          options={[
+            { value: "before", label: "Before" },
+            { value: "after", label: "After" },
+            { value: "diff", label: "Diff" },
           ]}
+          full
         />
-
-        {/* Operation toggles */}
-        <div className="mb-4 space-y-2">
+      </ControlGroup>
+      <ControlGroup
+        label="Cleaning rules"
+        hint={`${ops.size}/${OPERATIONS.length} on`}
+      >
+        <div className="flex flex-col gap-2">
           {OPERATIONS.map((op) => (
-            <label
+            <Toggle
               key={op.value}
-              className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={ops.has(op.value)}
-                onChange={() => toggleOp(op.value)}
-                className="mt-0.5 h-4 w-4"
-                style={{ accentColor: "var(--kami-text)" }}
-              />
-              <div>
-                <span className="text-sm font-medium">{op.label}</span>
-                <span className="ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                  {op.description}
-                </span>
-              </div>
-            </label>
+              checked={ops.has(op.value)}
+              onChange={() => toggleOp(op.value)}
+              label={op.label}
+              hint={op.description}
+            />
           ))}
         </div>
+        <div className="mt-3 flex gap-2">
+          <button
+            type="button"
+            onClick={enableAll}
+            className="kc-segment-btn"
+            style={{ flex: 1, minHeight: 40 }}
+          >
+            Enable all
+          </button>
+          <button
+            type="button"
+            onClick={disableAll}
+            className="kc-segment-btn"
+            style={{ flex: 1, minHeight: 40 }}
+          >
+            Disable all
+          </button>
+        </div>
+      </ControlGroup>
+    </>
+  );
 
-        {/* Input */}
+  const actions = (
+    <>
+      <ToolActionButton variant="outline" onClick={() => setInput("")}>
+        Clear
+      </ToolActionButton>
+      <ToolActionButton variant="solid" onClick={handleCopy} disabled={!output}>
+        {copied ? "Copied" : "Copy"}
+      </ToolActionButton>
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Text Cleaner"
+      tagline="Smart quotes · whitespace · HTML strip · unicode normalize"
+      accent="#6366f1"
+      actions={actions}
+      controls={controls}
+    >
+      <div className="flex flex-col gap-3 p-4 md:p-6">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste your messy text here..."
-          className="w-full px-4 py-3 text-base focus:outline-none"
-          style={inputStyle}
+          className="w-full px-4 py-3 text-base focus:outline-none font-mono"
+          style={{ ...inputStyle, minHeight: 160 }}
           rows={6}
           autoFocus
         />
 
-        {/* Stats */}
-        <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+        <div
+          className="flex items-center justify-between text-xs"
+          style={{ color: "var(--kami-text-dim)" }}
+        >
           <span>
-            {lineCount} {lineCount === 1 ? "line" : "lines"} · {charCount}{" "}
-            {charCount === 1 ? "character" : "characters"}
+            {lineCount} {lineCount === 1 ? "line" : "lines"} · {charCount} chars
           </span>
-          {input && (
-            <button onClick={() => setInput("")}>
-              Clear
-            </button>
+          {removedBytes !== 0 && (
+            <span
+              style={{
+                color:
+                  removedBytes > 0
+                    ? "color-mix(in srgb, #16a34a 70%, var(--kami-text))"
+                    : "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+              }}
+            >
+              {removedBytes > 0 ? `−${removedBytes}` : `+${Math.abs(removedBytes)}`} bytes
+            </span>
           )}
         </div>
 
-        {/* Output */}
-        {output && input && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Cleaned result
-              </span>
-              <button
-                onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-colors"
-                style={ctaStyle}
-              >
-                {copied ? (
-                  <>
-                    <CheckIcon />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon />
-                    Copy
-                  </>
-                )}
-              </button>
-            </div>
-            <div className="whitespace-pre-wrap px-4 py-3 text-base" style={cardStyle}>
-              {output}
-            </div>
+        {/* Output area */}
+        {input && (view === "after" || (!hasChanges && view === "diff")) && (
+          <div
+            className="whitespace-pre-wrap px-4 py-3 text-base overflow-auto"
+            style={{ ...cardStyle, minHeight: 160 }}
+          >
+            {output}
           </div>
         )}
-
-        {/* Preview diff */}
-        {hasChanges && diffSegments && (
-          <div className="mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                Changes
-                <span className="ml-2 text-xs font-normal" style={{ color: "var(--kami-text-dim)" }}>
-                  removed / added
-                </span>
-              </span>
-            </div>
-            <div className="whitespace-pre-wrap px-4 py-3 text-base max-h-64 overflow-y-auto" style={cardStyle}>
-              {diffSegments.map((seg, i) => {
-                if (seg.type === "removed") {
-                  return (
-                    <span
-                      key={i}
-                      className="bg-red-100 text-red-700 line-through"
-                    >
-                      {seg.text}
-                    </span>
-                  );
-                }
-                if (seg.type === "added") {
-                  return (
-                    <span key={i} className="bg-green-100 text-green-700">
-                      {seg.text}
-                    </span>
-                  );
-                }
-                return <span key={i}>{seg.text}</span>;
-              })}
-            </div>
+        {input && view === "before" && (
+          <div
+            className="whitespace-pre-wrap px-4 py-3 text-base overflow-auto font-mono"
+            style={{ ...cardStyle, minHeight: 160 }}
+          >
+            {input}
           </div>
         )}
-
-        {/* Footer */}
+        {hasChanges && view === "diff" && diffSegments && (
+          <div
+            className="whitespace-pre-wrap px-4 py-3 text-base overflow-auto"
+            style={{ ...cardStyle, minHeight: 160 }}
+          >
+            {diffSegments.map((seg, i) => {
+              if (seg.type === "removed") {
+                return (
+                  <span
+                    key={i}
+                    className="line-through"
+                    style={{
+                      background: "color-mix(in srgb, #ef4444 22%, var(--kami-surface-solid))",
+                      color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))",
+                    }}
+                  >
+                    {seg.text}
+                  </span>
+                );
+              }
+              if (seg.type === "added") {
+                return (
+                  <span
+                    key={i}
+                    style={{
+                      background: "color-mix(in srgb, #16a34a 22%, var(--kami-surface-solid))",
+                      color: "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+                    }}
+                  >
+                    {seg.text}
+                  </span>
+                );
+              }
+              return <span key={i}>{seg.text}</span>;
+            })}
+          </div>
+        )}
       </div>
-    </div>
-  );
-}
-
-// Inline SVG icons
-
-function CopyIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
+    </ToolShell>
   );
 }

@@ -2,8 +2,14 @@
 
 import { useState, useCallback, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
-import { ReferencePanel, RuleRow } from "@/components/tools/reference-panel";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Slider } from "@/components/tools/controls";
+
+const ACCENT_PMM = "#14b8a6";
 
 // ---------------------------------------------------------------------------
 // Statistical helpers
@@ -294,109 +300,108 @@ export default function ABTestCalculatorContent() {
     ),
   );
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="A/B Test Calculator"
-          tagline="Check if your experiment is statistically significant, or plan the sample size you'll need before you start."
-          description="Two modes: (1) Significance - paste visitor and conversion counts for control + variant, see if the difference is real or noise (p-value, confidence interval, and a plain-English verdict). (2) Sample size - set your baseline rate, target lift, and power, we tell you how many visitors you need."
-          audience={["Growth", "PMMs", "PMs", "Marketers"]}
-          whenToUse={[
-            "Calling an experiment winner (or not)",
-            "Planning a test before launching it",
-            "Defending a result to a skeptical stakeholder",
+  const controls = (
+    <>
+      <ControlGroup label="Mode">
+        <Segment
+          value={tab}
+          onChange={setTab}
+          options={[
+            { value: "results", label: "Significance" },
+            { value: "planner", label: "Sample size" },
           ]}
-          quickLinks={[
-            { label: "Stats terms, decoded", href: "#stats-glossary" },
-            { label: "Common pitfalls", href: "#ab-pitfalls" },
-          ]}
+          full
         />
+      </ControlGroup>
+      {tab === "results" ? (
+        <ControlGroup label="Confidence level">
+          <Segment
+            value={resultsSignificance}
+            onChange={setResultsSignificance}
+            options={[
+              { value: 0.9, label: "90%" },
+              { value: 0.95, label: "95%" },
+              { value: 0.99, label: "99%" },
+            ]}
+            full
+          />
+        </ControlGroup>
+      ) : (
+        <>
+          <ControlGroup label="Significance">
+            <Segment
+              value={plannerInput.significance}
+              onChange={(v) => updatePlanner("significance", v)}
+              options={[
+                { value: 0.9, label: "90%" },
+                { value: 0.95, label: "95%" },
+                { value: 0.99, label: "99%" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <ControlGroup label="Power">
+            <Segment
+              value={plannerInput.power}
+              onChange={(v) => updatePlanner("power", v)}
+              options={[
+                { value: 0.8, label: "80%" },
+                { value: 0.9, label: "90%" },
+              ]}
+              full
+            />
+          </ControlGroup>
+          <ControlGroup label="MDE (relative lift)">
+            <Slider
+              value={parseFloat(plannerInput.mde) || 0}
+              onChange={(v) => updatePlanner("mde", String(v))}
+              min={1}
+              max={100}
+              step={1}
+              unit="%"
+            />
+          </ControlGroup>
+        </>
+      )}
+    </>
+  );
 
-        {/* Tabs */}
-        <div className="mb-8 flex justify-center">
-          <div
-            className="inline-flex p-1"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-            }}
-          >
-            <button
-              onClick={() => setTab("results")}
-              className="px-4 py-2 text-sm font-medium transition-colors"
-              style={{
-                background: tab === "results" ? "var(--kami-cta-bg, #111827)" : "transparent",
-                color: tab === "results" ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                borderRadius: "var(--kami-cta-radius, 0.375rem)",
-              }}
-            >
-              Results Analyzer
-            </button>
-            <button
-              onClick={() => setTab("planner")}
-              className="px-4 py-2 text-sm font-medium transition-colors"
-              style={{
-                background: tab === "planner" ? "var(--kami-cta-bg, #111827)" : "transparent",
-                color: tab === "planner" ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                borderRadius: "var(--kami-cta-radius, 0.375rem)",
-              }}
-            >
-              Sample Size Planner
-            </button>
-          </div>
-        </div>
+  const actions = null;
 
+  const info = (
+    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+      <p>Two modes: Significance (paste visitor + conversion counts to see if the lift is real) and Sample size (plan how many visitors you need).</p>
+      <ul className="space-y-1">
+        <li><strong>p-value:</strong> probability the difference is random.</li>
+        <li><strong>Power:</strong> ability to detect a real effect. 80% is standard.</li>
+        <li><strong>MDE:</strong> smallest lift you can reliably catch.</li>
+      </ul>
+      <p><strong>Tip:</strong> never peek; never test 20 metrics; run for a full week minimum.</p>
+    </div>
+  );
+
+  return (
+    <ToolShell
+      title="A/B Test Calculator"
+      tagline="Significance · sample size · confidence interval · power"
+      accent={ACCENT_PMM}
+      actions={actions}
+      controls={controls}
+      info={info}
+    >
+      <div className="flex flex-col gap-5 p-4 md:p-6">
         {tab === "results" ? (
           <ResultsAnalyzer
             input={resultsInput}
             significance={resultsSignificance}
             output={resultsOutput}
             onUpdateInput={updateResults}
-            onUpdateSignificance={setResultsSignificance}
           />
         ) : (
-          <SampleSizePlanner
-            input={plannerInput}
-            output={plannerOutput}
-            onUpdate={updatePlanner}
-          />
+          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} />
         )}
-
-        <ReferencePanel
-          id="stats-glossary"
-          title="Stats terms, in plain English"
-          summary="The five terms that appear in every A/B test readout."
-          defaultOpen
-        >
-          <div className="space-y-1">
-            <RuleRow rule="p-value" explanation="Probability your difference is random noise. <0.05 = &quot;unlikely to be luck.&quot;" example="p = 0.02 → significant" />
-            <RuleRow rule="Confidence level" explanation="How sure you are of the result. 95% is standard." example="1 − α" />
-            <RuleRow rule="Statistical power" explanation="Your ability to detect a real difference. 80% is standard." example="1 − β" />
-            <RuleRow rule="Minimum detectable effect" explanation="The smallest lift your test can reliably catch given your sample." example="MDE = 5%" />
-            <RuleRow rule="Confidence interval" explanation="The range where the true lift probably sits. Narrow = precise; wide = noisy." example="+3% [−1%, +7%]" />
-          </div>
-        </ReferencePanel>
-
-        <ReferencePanel
-          id="ab-pitfalls"
-          title="Common A/B testing mistakes"
-          summary="If you're about to call a winner, read this first."
-          defaultOpen={false}
-        >
-          <ul className="space-y-3 text-xs">
-            <li><strong>Peeking.</strong> Checking results early and stopping the moment you see significance inflates false positives. Decide sample size before you start, and wait.</li>
-            <li><strong>Too-small samples.</strong> A 10% lift on 200 visitors is noise. Use the sample-size calculator to set a floor.</li>
-            <li><strong>Not accounting for weekly cycles.</strong> Run tests for at least a full week - ideally two - to cover weekday/weekend differences.</li>
-            <li><strong>Testing too many metrics.</strong> Pick ONE primary metric. If you test 20 secondary metrics, one will look significant by chance.</li>
-            <li><strong>Ignoring practical significance.</strong> A 0.1% lift can be statistically significant with enough data, but irrelevant to the business.</li>
-            <li><strong>SRM (Sample Ratio Mismatch).</strong> If your control and variant visitor counts differ much more than expected (say 48%/52% vs. 50%/50%), your test infrastructure is probably broken - results are untrustworthy.</li>
-          </ul>
-        </ReferencePanel>
       </div>
-    </div>
+    </ToolShell>
   );
 }
 
@@ -406,16 +411,13 @@ export default function ABTestCalculatorContent() {
 
 function ResultsAnalyzer({
   input,
-  significance,
   output,
   onUpdateInput,
-  onUpdateSignificance,
 }: {
   input: ResultsInput;
   significance: number;
   output: ResultsOutput | null;
   onUpdateInput: (key: keyof ResultsInput, value: string) => void;
-  onUpdateSignificance: (v: number) => void;
 }) {
   return (
     <div className="space-y-6">
@@ -541,35 +543,6 @@ function ResultsAnalyzer({
               />
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Confidence level selector */}
-      <div className="flex items-center gap-3">
-        <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Confidence level:</span>
-        <div
-          className="inline-flex p-0.5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.5rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          {[0.9, 0.95, 0.99].map((level) => (
-            <button
-              key={level}
-              onClick={() => onUpdateSignificance(level)}
-              className="px-3 py-1.5 text-sm font-medium transition-colors"
-              style={{
-                background: significance === level ? "var(--kami-cta-bg, #111827)" : "transparent",
-                color: significance === level ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                borderRadius: "var(--kami-cta-radius, 0.375rem)",
-              }}
-            >
-              {(level * 100).toFixed(0)}%
-            </button>
-          ))}
         </div>
       </div>
 
@@ -963,67 +936,6 @@ function SampleSizePlanner({
             <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
               Relative change you want to detect (e.g. 20% means 3% to 3.6%)
             </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
-              Statistical Significance
-            </label>
-            <div
-              className="inline-flex p-0.5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              {[0.9, 0.95, 0.99].map((level) => (
-                <button
-                  key={level}
-                  onClick={() => onUpdate("significance", level)}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: input.significance === level ? "var(--kami-cta-bg, #111827)" : "transparent",
-                    color: input.significance === level ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                  }}
-                >
-                  {(level * 100).toFixed(0)}%
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
-              Statistical Power
-            </label>
-            <div
-              className="inline-flex p-0.5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              {[0.8, 0.9].map((level) => (
-                <button
-                  key={level}
-                  onClick={() => onUpdate("power", level)}
-                  className="px-3 py-1.5 text-sm font-medium transition-colors"
-                  style={{
-                    background: input.power === level ? "var(--kami-cta-bg, #111827)" : "transparent",
-                    color: input.power === level ? "var(--kami-cta-text, #ffffff)" : "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                  }}
-                >
-                  {(level * 100).toFixed(0)}%
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 

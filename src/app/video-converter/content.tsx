@@ -3,9 +3,12 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { FileDropZone } from "@/components/tools/file-drop-zone";
-import { ToolIntro } from "@/components/tools/tool-intro";
-
-// --- Types ---
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+} from "@/components/tools/tool-shell";
+import { Segment, Slider, Toggle } from "@/components/tools/controls";
 
 type OutputFormat = "mp4" | "webm";
 
@@ -26,7 +29,7 @@ interface QueuedVideo {
   error: string;
 }
 
-// --- Helpers ---
+const ACCENT = "#f43f5e";
 
 function formatSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -62,40 +65,36 @@ function getVideoMeta(file: File): Promise<{ duration: number; width: number; he
   });
 }
 
-// --- Canvas-based conversion fallback ---
-// Uses MediaRecorder + Canvas to re-encode video when WebCodecs is unavailable
-// or for simpler browser-native conversion
-
 async function convertWithCanvas(
   file: File,
   outputFormat: OutputFormat,
+  options: { bitrate: number; fps: number; muteAudio: boolean; resolutionScale: number },
   onProgress: (p: number) => void
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const video = document.createElement("video");
-    video.muted = true;
+    video.muted = options.muteAudio;
     video.playsInline = true;
 
     video.onloadedmetadata = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = Math.max(2, Math.floor(video.videoWidth * options.resolutionScale));
+      canvas.height = Math.max(2, Math.floor(video.videoHeight * options.resolutionScale));
       const ctx = canvas.getContext("2d")!;
 
       const mimeType = outputFormat === "mp4" ? "video/mp4" : "video/webm";
-      const fallbackMime = "video/webm"; // Most browsers support webm recording
+      const fallbackMime = "video/webm";
 
-      // Check if the target mime is supported by MediaRecorder
       const recordMime = MediaRecorder.isTypeSupported(mimeType)
         ? mimeType
         : MediaRecorder.isTypeSupported(fallbackMime)
         ? fallbackMime
         : "video/webm";
 
-      const stream = canvas.captureStream(30);
+      const stream = canvas.captureStream(options.fps);
       const recorder = new MediaRecorder(stream, {
         mimeType: recordMime,
-        videoBitsPerSecond: 5_000_000,
+        videoBitsPerSecond: options.bitrate,
       });
 
       const chunks: Blob[] = [];
@@ -112,7 +111,7 @@ async function convertWithCanvas(
         reject(new Error("MediaRecorder error during conversion"));
       };
 
-      recorder.start(100); // collect data every 100ms
+      recorder.start(100);
 
       const duration = video.duration;
       let rafId: number;
@@ -148,22 +147,22 @@ async function convertWithCanvas(
   });
 }
 
-// --- Component ---
-
 export default function VideoConverterContent() {
   const [files, setFiles] = useState<QueuedVideo[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("mp4");
+  const [bitrate, setBitrate] = useState(5); // Mbps
+  const [fps, setFps] = useState(30);
+  const [resolutionScale, setResolutionScale] = useState(100); // %
+  const [muteAudio, setMuteAudio] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isConverting, setIsConverting] = useState(false);
   const abortRef = useRef(false);
 
-  // Check WebCodecs support
   const [hasWebCodecs, setHasWebCodecs] = useState(false);
   useEffect(() => {
     setHasWebCodecs(typeof VideoDecoder !== "undefined" && typeof VideoEncoder !== "undefined");
   }, []);
 
-  // Cleanup URLs on unmount
   useEffect(() => {
     return () => {
       files.forEach((f) => {
@@ -175,8 +174,8 @@ export default function VideoConverterContent() {
   }, []);
 
   const addFiles = useCallback(async (incoming: File[]) => {
-    const videoFiles = incoming.filter((f) =>
-      f.type.startsWith("video/") || /\.(webm|mp4|mov|avi|mkv|m4v|ogv)$/i.test(f.name)
+    const videoFiles = incoming.filter(
+      (f) => f.type.startsWith("video/") || /\.(webm|mp4|mov|avi|mkv|m4v|ogv)$/i.test(f.name)
     );
     if (videoFiles.length === 0) return;
 
@@ -217,12 +216,14 @@ export default function VideoConverterContent() {
         const blob = await convertWithCanvas(
           queued.file,
           outputFormat,
+          {
+            bitrate: bitrate * 1_000_000,
+            fps,
+            muteAudio,
+            resolutionScale: resolutionScale / 100,
+          },
           (progress) => {
-            setFiles((prev) =>
-              prev.map((f) =>
-                f.id === queued.id ? { ...f, progress } : f
-              )
-            );
+            setFiles((prev) => prev.map((f) => (f.id === queued.id ? { ...f, progress } : f)));
           }
         );
 
@@ -244,7 +245,7 @@ export default function VideoConverterContent() {
         };
       }
     },
-    [outputFormat]
+    [outputFormat, bitrate, fps, muteAudio, resolutionScale]
   );
 
   const convertAll = useCallback(async () => {
@@ -252,12 +253,9 @@ export default function VideoConverterContent() {
     setIsConverting(true);
     abortRef.current = false;
 
-    // Reset pending files
     setFiles((prev) =>
       prev.map((f) =>
-        f.status !== "done"
-          ? { ...f, status: "pending" as const, error: "", progress: 0 }
-          : f
+        f.status !== "done" ? { ...f, status: "pending" as const, error: "", progress: 0 } : f
       )
     );
 
@@ -267,11 +265,7 @@ export default function VideoConverterContent() {
       if (current.status === "done") continue;
 
       setFiles((prev) =>
-        prev.map((f) =>
-          f.id === current.id
-            ? { ...f, status: "converting" as const, progress: 0 }
-            : f
-        )
+        prev.map((f) => (f.id === current.id ? { ...f, status: "converting" as const, progress: 0 } : f))
       );
 
       const result = await convertSingle(current);
@@ -324,14 +318,7 @@ export default function VideoConverterContent() {
 
   useKeyboardShortcuts(
     useMemo(
-      () => [
-        {
-          key: "Enter",
-          meta: true,
-          action: () => convertAll(),
-          label: "Convert",
-        },
-      ],
+      () => [{ key: "Enter", meta: true, action: () => convertAll(), label: "Convert" }],
       [convertAll]
     )
   );
@@ -339,369 +326,245 @@ export default function VideoConverterContent() {
   const selected = files[selectedIndex] ?? null;
   const doneCount = files.filter((f) => f.status === "done").length;
 
-  return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:py-16">
-        <ToolIntro
-          title="Video Converter"
-          tagline="Convert between MP4 and WebM without uploading - everything runs in your browser using WebCodecs."
-          description="Drop a video, pick output format (MP4 for compatibility or WebM for smaller web files), optionally resize resolution or tweak bitrate. Conversion happens entirely in-browser - your video never leaves your device, so it's safe for personal or confidential footage. Works best with modern browsers; very large files may run out of memory on low-end devices."
-          audience={["Everyone", "Content creators", "Developers"]}
-          whenToUse={[
-            "Converting a phone video for web embedding",
-            "Making a smaller file for email or Slack",
-            "Moving a clip between devices that want different formats",
+  const actions = (
+    <>
+      {files.length > 0 && (
+        <ToolActionButton variant="ghost" onClick={clearAll}>
+          Clear
+        </ToolActionButton>
+      )}
+      {doneCount > 0 && (
+        <ToolActionButton variant="outline" onClick={downloadAll}>
+          Download all
+        </ToolActionButton>
+      )}
+      <ToolActionButton
+        variant="solid"
+        onClick={convertAll}
+        disabled={isConverting || files.length === 0}
+      >
+        {isConverting ? "Converting..." : `Convert ${files.length || ""}`.trim()}
+      </ToolActionButton>
+    </>
+  );
+
+  const controls = (
+    <>
+      <ControlGroup label="Format">
+        <Segment<OutputFormat>
+          value={outputFormat}
+          onChange={setOutputFormat}
+          options={[
+            { value: "mp4", label: "MP4" },
+            { value: "webm", label: "WebM" },
           ]}
+          full
         />
+      </ControlGroup>
 
-        {/* Browser support notice */}
-        {!hasWebCodecs && (
-          <div
-            className="mb-4 px-5 py-3 text-sm"
-            style={{
-              background: "color-mix(in srgb, #f59e0b 12%, var(--kami-surface-solid))",
-              color: "color-mix(in srgb, #92400e 70%, var(--kami-text))",
-              border: "1px solid color-mix(in srgb, #f59e0b 30%, var(--kami-border-strong))",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-            }}
-          >
-            Your browser uses Canvas-based conversion (slower). For best
-            performance, use Chrome 94+ or Edge 94+.
-          </div>
-        )}
+      <ControlGroup label="Bitrate">
+        <Slider value={bitrate} onChange={setBitrate} min={1} max={20} step={1} unit=" Mbps" />
+      </ControlGroup>
 
-        {/* Drop Zone */}
+      <ControlGroup label="Resolution scale">
+        <Slider value={resolutionScale} onChange={setResolutionScale} min={25} max={100} step={5} unit="%" />
+      </ControlGroup>
+
+      <ControlGroup label="Frame rate">
+        <Slider value={fps} onChange={setFps} min={15} max={60} step={1} unit=" fps" />
+      </ControlGroup>
+
+      <ControlGroup>
+        <Toggle checked={muteAudio} onChange={setMuteAudio} label="Mute audio" hint="Smaller output" />
+      </ControlGroup>
+
+      {!hasWebCodecs && (
+        <ControlGroup>
+          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            Canvas-based conversion. Use Chrome 94+ for hardware acceleration.
+          </p>
+        </ControlGroup>
+      )}
+    </>
+  );
+
+  return (
+    <ToolShell
+      title="Video Converter"
+      tagline="Convert MP4 ↔ WebM in your browser - private, no upload."
+      accent={ACCENT}
+      actions={actions}
+      controls={controls}
+      controlsLabel="Settings"
+    >
+      <div className="flex flex-col gap-4">
         <FileDropZone
           accept={[".webm", ".mp4", ".mov", ".avi", ".mkv", ".m4v", ".ogv"]}
           onFiles={handleFileDrop}
           label="Drop video files here or click to browse"
-          hint="WebM, MP4, MOV, AVI, MKV supported"
+          hint="WebM, MP4, MOV, AVI, MKV"
           multiple={true}
         />
 
         {files.length > 0 && (
-          <>
-            {/* Settings */}
-            <div
-              className="mt-6 p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                Conversion Settings
-              </h2>
-              <div>
-                <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Output Format
-                </label>
-                <div className="flex gap-2">
-                  {(["mp4", "webm"] as const).map((fmt) => (
-                    <button
-                      key={fmt}
-                      onClick={() => setOutputFormat(fmt)}
-                      className="px-4 py-2 text-sm font-medium transition-colors"
-                      style={
-                        outputFormat === fmt
-                          ? {
-                              background: "var(--kami-cta-bg)",
-                              color: "var(--kami-cta-text)",
-                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            }
-                          : {
-                              background: "var(--kami-surface-solid)",
-                              color: "var(--kami-text-muted)",
-                              border: "1px solid var(--kami-border-strong)",
-                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            }
-                      }
-                    >
-                      {fmt.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* File Queue */}
-            <div
-              className="mt-6 p-5"
-              style={{
-                background: "var(--kami-surface-solid)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.75rem)",
-                boxShadow: "var(--kami-card-shadow, none)",
-              }}
-            >
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Files ({files.length})
-                </h2>
-                <div className="flex gap-2">
-                  {doneCount > 0 && (
-                    <button
-                      onClick={downloadAll}
-                      className="px-3 py-1.5 text-sm"
-                      style={{
-                        background: "var(--kami-surface-solid)",
-                        color: "var(--kami-text-muted)",
-                        border: "1px solid var(--kami-border-strong)",
-                        borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                      }}
-                    >
-                      Download All ({doneCount})
-                    </button>
-                  )}
-                  <button
-                    onClick={clearAll}
-                    className="px-3 py-1.5 text-sm"
-                    style={{
-                      background: "var(--kami-surface-solid)",
-                      color: "var(--kami-text-muted)",
-                      border: "1px solid var(--kami-border-strong)",
-                      borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                    }}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              <div className="max-h-72 space-y-1.5 overflow-y-auto">
-                {files.map((f, i) => (
-                  <div
-                    key={f.id}
-                    onClick={() => setSelectedIndex(i)}
-                    className="relative cursor-pointer overflow-hidden px-3 py-2.5 text-sm transition-colors"
-                    style={{
-                      background: i === selectedIndex ? "var(--kami-surface)" : "transparent",
-                      borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    }}
-                  >
-                    {/* Progress bar background */}
-                    {f.status === "converting" && (
-                      <div
-                        className="absolute inset-0 transition-all duration-300"
-                        style={{
-                          width: `${f.progress}%`,
-                          background: "color-mix(in srgb, var(--kami-accent, #2563eb) 14%, transparent)",
-                        }}
-                      />
-                    )}
-                    <div className="relative flex items-center justify-between">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="flex-shrink-0 text-xs">
-                          {f.status === "pending" && "⏳"}
-                          {f.status === "converting" && "⚙️"}
-                          {f.status === "done" && "✅"}
-                          {f.status === "error" && "❌"}
-                        </span>
-                        <span className="truncate font-medium">{f.name}</span>
-                        <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                          {formatSize(f.originalSize)}
-                          {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
-                          {f.width > 0 && ` · ${f.width}×${f.height}`}
-                        </span>
-                        {f.status === "converting" && (
-                          <span className="flex-shrink-0 text-xs font-medium" style={{ color: "var(--kami-accent, #2563eb)" }}>
-                            {f.progress}%
-                          </span>
-                        )}
-                        {f.status === "done" && (
-                          <span className="flex-shrink-0 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-                            → {formatSize(f.convertedSize)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {f.status === "done" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              downloadFile(f);
-                            }}
-                            className="px-3 py-1 text-xs"
-                            style={{
-                              background: "var(--kami-surface-solid)",
-                              color: "var(--kami-text-muted)",
-                              border: "1px solid var(--kami-border-strong)",
-                              borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                            }}
-                          >
-                            Save
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeFile(f.id);
-                          }}
-                          className="rounded px-1.5 py-0.5 text-xs"
-                          style={{ color: "var(--kami-text-dim)" }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    </div>
-                    {f.status === "error" && (
-                      <p className="relative mt-1 text-xs" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
-                        {f.error}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Convert Button */}
-              <button
-                onClick={convertAll}
-                disabled={isConverting || files.length === 0}
-                className="mt-4 w-full px-4 py-2.5 text-sm font-medium disabled:opacity-50"
-                style={{
-                  background: "var(--kami-cta-bg)",
-                  color: "var(--kami-cta-text)",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                {isConverting
-                  ? "Converting..."
-                  : `Convert All to ${outputFormat.toUpperCase()}`}
-              </button>
-            </div>
-
-            {/* Preview */}
-            {selected && (
+          <div className="flex flex-col gap-2">
+            {files.map((f, i) => (
               <div
-                className="mt-6 p-5"
+                key={f.id}
+                onClick={() => setSelectedIndex(i)}
+                className="relative cursor-pointer overflow-hidden rounded-lg border px-3 py-2.5"
                 style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
+                  background:
+                    i === selectedIndex ? "var(--kami-surface)" : "var(--kami-surface-solid)",
+                  borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
                 }}
               >
-                <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                  Preview - {selected.name}
-                </h2>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Original ({formatSize(selected.originalSize)})
-                    </p>
-                    <div
-                      className="flex items-center justify-center p-2"
-                      style={{
-                        background: "var(--kami-surface)",
-                        border: "1px solid var(--kami-border)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
-                      }}
-                    >
-                      <video
-                        src={selected.previewUrl}
-                        controls
-                        className="max-h-64 max-w-full rounded"
-                        preload="metadata"
-                      />
-                    </div>
+                {f.status === "converting" && (
+                  <div
+                    className="absolute inset-0 transition-all duration-300"
+                    style={{
+                      width: `${f.progress}%`,
+                      background: `color-mix(in srgb, ${ACCENT} 14%, transparent)`,
+                    }}
+                  />
+                )}
+                <div className="relative flex items-center justify-between gap-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span aria-hidden className="text-xs">
+                      {f.status === "pending" && "⏳"}
+                      {f.status === "converting" && "⚙️"}
+                      {f.status === "done" && "✓"}
+                      {f.status === "error" && "✕"}
+                    </span>
+                    <span className="truncate text-sm font-medium">{f.name}</span>
+                    <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      {formatSize(f.originalSize)}
+                      {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
+                      {f.width > 0 && ` · ${f.width}×${f.height}`}
+                    </span>
+                    {f.status === "converting" && (
+                      <span className="text-xs font-medium" style={{ color: ACCENT }}>
+                        {f.progress}%
+                      </span>
+                    )}
+                    {f.status === "done" && (
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        → {formatSize(f.convertedSize)}
+                      </span>
+                    )}
                   </div>
-                  <div>
-                    <p className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                      Converted
-                      {selected.status === "done"
-                        ? ` (${formatSize(selected.convertedSize)})`
-                        : ""}
-                    </p>
-                    <div
-                      className="flex items-center justify-center p-2"
-                      style={{
-                        background: "var(--kami-surface)",
-                        border: "1px solid var(--kami-border)",
-                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                  <div className="flex items-center gap-1">
+                    {f.status === "done" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadFile(f);
+                        }}
+                        className="tool-action-btn"
+                        data-variant="outline"
+                      >
+                        Save
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(f.id);
                       }}
+                      className="tool-shell-icon-btn"
+                      title="Remove"
                     >
-                      {selected.status === "done" && selected.convertedUrl ? (
-                        <video
-                          src={selected.convertedUrl}
-                          controls
-                          className="max-h-64 max-w-full rounded"
-                          preload="metadata"
-                        />
-                      ) : selected.status === "converting" ? (
-                        <div className="py-16 text-center">
-                          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                            Converting... {selected.progress}%
-                          </p>
-                          <div
-                            className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full"
-                            style={{ background: "var(--kami-border)" }}
-                          >
-                            <div
-                              className="h-full rounded-full transition-all duration-300"
-                              style={{
-                                width: `${selected.progress}%`,
-                                background: "var(--kami-accent, #2563eb)",
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ) : selected.status === "error" ? (
-                        <p className="py-16 text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
-                          {selected.error}
-                        </p>
-                      ) : (
-                        <p className="py-16 text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                          Click &quot;Convert All&quot; to see result
-                        </p>
-                      )}
-                    </div>
+                      ✕
+                    </button>
                   </div>
                 </div>
+                {f.status === "error" && (
+                  <p
+                    className="relative mt-1 text-xs"
+                    style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
+                  >
+                    {f.error}
+                  </p>
+                )}
               </div>
-            )}
-          </>
+            ))}
+          </div>
         )}
 
-        {/* Info */}
-        <div
-          className="mt-6 p-5"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <h2 className="mb-3 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-            How it works
-          </h2>
-          <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3" style={{ color: "var(--kami-text-muted)" }}>
-            <div>
-              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>100% Private</p>
-              <p>
-                Your videos are processed entirely in your browser. Nothing is
-                uploaded to any server.
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>No Limits</p>
-              <p>
-                No file size limits, no watermarks, no signup. Convert as many
-                videos as you need.
-              </p>
-            </div>
-            <div>
-              <p className="mb-1 font-medium" style={{ color: "var(--kami-text)" }}>Fast</p>
-              <p>
-                Uses hardware-accelerated WebCodecs when available for near-native
-                conversion speed.
-              </p>
+        {selected && (
+          <div
+            className="rounded-xl border p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              borderColor: "var(--kami-border-strong)",
+            }}
+          >
+            <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              {selected.name}
+            </p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  Original ({formatSize(selected.originalSize)})
+                </p>
+                <div
+                  className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
+                  style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
+                >
+                  <video
+                    src={selected.previewUrl}
+                    controls
+                    className="max-h-full max-w-full"
+                    preload="metadata"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  Converted
+                  {selected.status === "done" ? ` (${formatSize(selected.convertedSize)})` : ""}
+                </p>
+                <div
+                  className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
+                  style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
+                >
+                  {selected.status === "done" && selected.convertedUrl ? (
+                    <video
+                      src={selected.convertedUrl}
+                      controls
+                      className="max-h-full max-w-full"
+                      preload="metadata"
+                    />
+                  ) : selected.status === "converting" ? (
+                    <div className="text-center">
+                      <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                        Converting... {selected.progress}%
+                      </p>
+                      <div
+                        className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full"
+                        style={{ background: "var(--kami-border)" }}
+                      >
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ width: `${selected.progress}%`, background: ACCENT }}
+                        />
+                      </div>
+                    </div>
+                  ) : selected.status === "error" ? (
+                    <p className="text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
+                      {selected.error}
+                    </p>
+                  ) : (
+                    <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                      Click Convert
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
-    </div>
+    </ToolShell>
   );
 }

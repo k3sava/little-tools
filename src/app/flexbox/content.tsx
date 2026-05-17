@@ -2,7 +2,13 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
-import { ToolIntro } from "@/components/tools/tool-intro";
+import {
+  ToolShell,
+  ControlGroup,
+  ToolActionButton,
+  ToolIconButton,
+} from "@/components/tools/tool-shell";
+import { Slider, Segment, Select } from "@/components/tools/controls";
 
 /* ─── Types ─── */
 interface FlexChild {
@@ -38,15 +44,8 @@ const COLORS = ["#6366f1", "#ec4899", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"
 const JUSTIFY = ["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"];
 const ALIGN_ITEMS = ["stretch", "flex-start", "flex-end", "center", "baseline"];
 const ALIGN_CONTENT = ["stretch", "flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"];
-const DIRECTION = ["row", "row-reverse", "column", "column-reverse"];
-const WRAP = ["nowrap", "wrap", "wrap-reverse"];
 const ALIGN_SELF = ["auto", "flex-start", "flex-end", "center", "stretch", "baseline"];
 const BASIS_OPTIONS = ["auto", "0", "50px", "100px", "150px", "200px", "25%", "33.33%", "50%", "100%"];
-const VIEWPORTS = [
-  { label: "Mobile", width: 320 },
-  { label: "Tablet", width: 768 },
-  { label: "Desktop", width: 0 },
-] as const;
 
 type OutputTab = "css" | "tailwind" | "react";
 
@@ -99,12 +98,10 @@ const PRESETS: Preset[] = [
       { flexGrow: 0, flexBasis: "200px", label: "Card 2" },
       { flexGrow: 0, flexBasis: "200px", label: "Card 3" },
       { flexGrow: 0, flexBasis: "200px", label: "Card 4" },
-      { flexGrow: 0, flexBasis: "200px", label: "Card 5" },
-      { flexGrow: 0, flexBasis: "200px", label: "Card 6" },
     ],
   },
   {
-    name: "Sidebar Layout",
+    name: "Sidebar",
     desc: "Fixed sidebar + fluid main",
     container: { direction: "row", wrap: "nowrap", justify: "flex-start", alignItems: "stretch", rowGap: 0, colGap: 0 },
     children: [
@@ -140,7 +137,7 @@ const PRESETS: Preset[] = [
     ],
   },
   {
-    name: "Equal Columns",
+    name: "Equal Cols",
     desc: "Equal-height, equal-width columns",
     container: { direction: "row", wrap: "nowrap", justify: "flex-start", alignItems: "stretch", rowGap: 0, colGap: 12 },
     children: [
@@ -164,23 +161,6 @@ function gapToTw(px: number): string {
   return map[px] ?? `[${px}px]`;
 }
 
-/* ─── Copy icon SVGs ─── */
-function CopyIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-      <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-    </svg>
-  );
-}
-function CheckIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  );
-}
-
 /* ─── Main Component ─── */
 export default function FlexboxContent() {
   const [container, setContainer] = useState<ContainerState>({
@@ -191,7 +171,6 @@ export default function FlexboxContent() {
   const [selected, setSelected] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
   const [outputTab, setOutputTab] = useState<OutputTab>("css");
-  const [viewport, setViewport] = useState(0); // 0 = desktop (full)
 
   const setC = (updates: Partial<ContainerState>) => setContainer((prev) => ({ ...prev, ...updates }));
   const addChild = () => setChildren((prev) => [...prev, makeChild()]);
@@ -230,6 +209,12 @@ export default function FlexboxContent() {
     setSelected(null);
   };
 
+  const reset = () => {
+    nextId = 1;
+    setChildren([makeChild(), makeChild(), makeChild()]);
+    setSelected(null);
+  };
+
   /* ─── Output generation ─── */
   const gapCSS = container.rowGap === container.colGap
     ? `gap: ${container.rowGap}px;`
@@ -237,7 +222,6 @@ export default function FlexboxContent() {
 
   const cssOutput = useMemo(() => {
     const lines = [
-      "/* Container */",
       ".flex-container {",
       "  display: flex;",
       `  flex-direction: ${container.direction};`,
@@ -247,17 +231,14 @@ export default function FlexboxContent() {
       ...(container.wrap !== "nowrap" ? [`  align-content: ${container.alignContent};`] : []),
       `  ${gapCSS}`,
       "}",
-      "",
-      "/* Children */",
     ];
     children.forEach((c, i) => {
-      const shorthand = `${c.flexGrow} ${c.flexShrink} ${c.flexBasis}`;
+      lines.push("");
       lines.push(`.flex-item-${i + 1} {`);
-      lines.push(`  flex: ${shorthand};`);
+      lines.push(`  flex: ${c.flexGrow} ${c.flexShrink} ${c.flexBasis};`);
       if (c.order !== 0) lines.push(`  order: ${c.order};`);
       if (c.alignSelf !== "auto") lines.push(`  align-self: ${c.alignSelf};`);
       lines.push("}");
-      if (i < children.length - 1) lines.push("");
     });
     return lines.join("\n");
   }, [container, children, gapCSS]);
@@ -278,7 +259,6 @@ export default function FlexboxContent() {
       containerClasses.push(`gap-y-${gapToTw(container.rowGap)}`);
     }
     const lines = [
-      "<!-- Container -->",
       `<div class="${containerClasses.filter(Boolean).join(" ")}">`,
     ];
     children.forEach((c, i) => {
@@ -287,7 +267,7 @@ export default function FlexboxContent() {
       else if (c.flexGrow === 0 && c.flexShrink === 1 && c.flexBasis === "auto") cls.push("flex-initial");
       else if (c.flexGrow === 0 && c.flexShrink === 0) cls.push("flex-none");
       else {
-        if (c.flexGrow > 0) cls.push(`grow-${c.flexGrow === 1 ? "" : `[${c.flexGrow}]`}`.replace(/-$/, "").replace("grow-", c.flexGrow === 1 ? "grow" : `grow-[${c.flexGrow}]`));
+        if (c.flexGrow > 0) cls.push(c.flexGrow === 1 ? "grow" : `grow-[${c.flexGrow}]`);
         else cls.push("grow-0");
         if (c.flexShrink === 0) cls.push("shrink-0");
         else if (c.flexShrink > 1) cls.push(`shrink-[${c.flexShrink}]`);
@@ -317,10 +297,8 @@ export default function FlexboxContent() {
       styleObj.columnGap = container.colGap;
     }
     const lines = [
-      "// Container style",
       `const containerStyle: React.CSSProperties = ${JSON.stringify(styleObj, null, 2)};`,
       "",
-      "// Children styles",
     ];
     children.forEach((c, i) => {
       const s: Record<string, string | number> = {
@@ -349,330 +327,238 @@ export default function FlexboxContent() {
   const selectedIdx = selectedChild ? children.indexOf(selectedChild) : -1;
 
   const isVertical = container.direction.startsWith("column");
-  const axisLabel = isVertical ? "Main: vertical" : "Main: horizontal";
-  const crossLabel = isVertical ? "Cross: horizontal" : "Cross: vertical";
-
-  const cardStyle: React.CSSProperties = {
-    background: "var(--kami-surface-solid)",
-    border: "1px solid var(--kami-border-strong)",
-    borderRadius: "var(--kami-card-radius, 0.75rem)",
-    boxShadow: "var(--kami-card-shadow, none)",
-  };
 
   return (
-    <div className="min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
-        <ToolIntro
-          title="Flexbox Playground"
-          tagline="Learn and generate flexbox layouts interactively - every property labeled with what it actually does."
-          description="Toggle direction, justify-content, align-items, wrap, and gap on a live preview. Hover any option to see a plain-English description (justify-content: space-between = pushes first and last items to the edges, equal gaps between). Add/remove child items to test how flex-grow and flex-shrink behave. Export as CSS, Tailwind, or an inline style object."
-          audience={["Front-end developers", "Designers learning CSS"]}
-          whenToUse={[
-            "Building a nav bar, card row, or centered dialog",
-            "Learning the difference between justify / align",
-            "Copy-pasting a working flex recipe into a project",
-          ]}
-        />
-
-        {/* ─── Presets ─── */}
-        <div className="mt-6 p-4" style={cardStyle}>
-          <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Layout Presets</h3>
-          <div className="flex flex-wrap gap-2">
-            {PRESETS.map((p) => (
-              <button
-                key={p.name}
-                onClick={() => applyPreset(p)}
-                className="px-3 py-1.5 text-xs transition-colors"
-                style={{
-                  background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                  border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-                title={p.desc}
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ─── Viewport toggle ─── */}
-        <div className="mt-4 flex items-center gap-1">
-          <span className="mr-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>Preview width:</span>
-          {VIEWPORTS.map((v) => {
-            const active = viewport === v.width;
-            return (
-              <button
-                key={v.label}
-                onClick={() => setViewport(v.width)}
-                className="px-2.5 py-1 text-xs transition-colors"
-                style={{
-                  background: active ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
-                  color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-                  border: `1px solid ${active ? "var(--kami-cta-bg)" : "var(--kami-border-strong)"}`,
-                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                }}
-              >
-                {v.label}{v.width > 0 ? ` (${v.width}px)` : ""}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 grid gap-6 lg:grid-cols-[1fr_300px]">
-          {/* ─── Preview ─── */}
-          <div className="p-5" style={cardStyle}>
-            {/* Axis indicators */}
-            <div className="mb-3 flex items-center gap-4 text-xs" style={{ color: "var(--kami-text-dim)" }}>
-              <span className="flex items-center gap-1">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  {isVertical ? <path d="M7 2v10M4 9l3 3 3-3" /> : <path d="M2 7h10M9 4l3 3-3 3" />}
-                </svg>
-                {axisLabel}
-              </span>
-              <span className="flex items-center gap-1">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 2">
-                  {isVertical ? <path d="M2 7h10M9 4l3 3-3 3" /> : <path d="M7 2v10M4 9l3 3 3-3" />}
-                </svg>
-                {crossLabel}
-              </span>
-            </div>
-
-            <div
-              className="mx-auto overflow-auto p-4 transition-all"
-              style={{
-                maxWidth: viewport > 0 ? viewport : "none",
-                minHeight: 300,
-                border: "2px dashed var(--kami-border-strong)",
-                borderRadius: "var(--kami-card-radius, 0.5rem)",
-                display: "flex",
-                flexDirection: container.direction as React.CSSProperties["flexDirection"],
-                flexWrap: container.wrap as React.CSSProperties["flexWrap"],
-                justifyContent: container.justify,
-                alignItems: container.alignItems,
-                alignContent: container.wrap !== "nowrap" ? container.alignContent : undefined,
-                rowGap: container.rowGap,
-                columnGap: container.colGap,
-              }}
-            >
-              {children.map((child) => (
-                <div
-                  key={child.id}
-                  onClick={() => setSelected(child.id === selected ? null : child.id)}
-                  className={`flex min-h-[60px] min-w-[48px] cursor-pointer items-center justify-center rounded-lg text-white text-xs font-medium transition-all select-none ${child.id === selected ? "ring-2 ring-offset-2" : "hover:opacity-90"}`}
-                  style={{
-                    backgroundColor: child.color,
-                    order: child.order,
-                    flexGrow: child.flexGrow,
-                    flexShrink: child.flexShrink,
-                    flexBasis: child.flexBasis,
-                    alignSelf: child.alignSelf as React.CSSProperties["alignSelf"],
-                    padding: "12px 14px",
-                    ...(child.id === selected
-                      ? ({ "--tw-ring-color": "var(--kami-text)" } as React.CSSProperties)
-                      : {}),
-                  }}
-                >
-                  {child.label}
-                </div>
-              ))}
-            </div>
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={addChild}
-                className="px-3 py-1.5 text-xs"
-                style={{
-                  background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                  color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                  border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                  borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                }}
-              >
-                + Add Item
-              </button>
-              {children.length > 0 && (
+    <ToolShell
+      title="Flexbox"
+      tagline="Live playground for direction, wrap, justify, align and per-item flex"
+      accent="#8b5cf6"
+      actions={
+        <>
+          <Segment
+            value={outputTab}
+            onChange={setOutputTab}
+            options={[
+              { value: "css", label: "CSS" },
+              { value: "tailwind", label: "TW" },
+              { value: "react", label: "React" },
+            ]}
+            size="sm"
+          />
+          <ToolActionButton onClick={copy} variant="solid">
+            {copied ? "Copied!" : "Copy"}
+          </ToolActionButton>
+        </>
+      }
+      controls={
+        <>
+          <ControlGroup label="Presets">
+            <div className="grid grid-cols-2 gap-2">
+              {PRESETS.map((p) => (
                 <button
-                  onClick={() => { nextId = 1; setChildren([makeChild(), makeChild(), makeChild()]); setSelected(null); }}
-                  className="px-3 py-1.5 text-xs"
-                  style={{
-                    background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                    color: "var(--kami-text-dim)",
-                    border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                  }}
-                >
-                  Reset
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* ─── Controls Panel ─── */}
-          <div className="space-y-4">
-            {/* Container props */}
-            <div className="p-4" style={cardStyle}>
-              <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Container</h3>
-              <SelectControl label="Direction" value={container.direction} options={DIRECTION} onChange={(v) => setC({ direction: v })} />
-              <SelectControl label="Wrap" value={container.wrap} options={WRAP} onChange={(v) => setC({ wrap: v })} />
-              <SelectControl label="Justify" value={container.justify} options={JUSTIFY} onChange={(v) => setC({ justify: v })} />
-              <SelectControl label="Align Items" value={container.alignItems} options={ALIGN_ITEMS} onChange={(v) => setC({ alignItems: v })} />
-              {container.wrap !== "nowrap" && (
-                <SelectControl label="Align Content" value={container.alignContent} options={ALIGN_CONTENT} onChange={(v) => setC({ alignContent: v })} />
-              )}
-              <GapControl label="Row Gap" value={container.rowGap} onChange={(v) => setC({ rowGap: v })} />
-              <GapControl label="Col Gap" value={container.colGap} onChange={(v) => setC({ colGap: v })} />
-            </div>
-
-            {/* Child props */}
-            {selectedChild && (
-              <div className="p-4" style={cardStyle}>
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Item {selectedIdx + 1}</h3>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => moveChild(selectedChild.id, -1)} disabled={selectedIdx === 0} className="rounded p-0.5 text-xs disabled:opacity-30" style={{ color: "var(--kami-text-dim)" }} title="Move up">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 8l4-4 4 4" /></svg>
-                    </button>
-                    <button onClick={() => moveChild(selectedChild.id, 1)} disabled={selectedIdx === children.length - 1} className="rounded p-0.5 text-xs disabled:opacity-30" style={{ color: "var(--kami-text-dim)" }} title="Move down">
-                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6l4 4 4-4" /></svg>
-                    </button>
-                    {children.length > 1 && (
-                      <button onClick={() => removeChild(selectedChild.id)} className="ml-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>Remove</button>
-                    )}
-                  </div>
-                </div>
-                <NumControl label="Order" value={selectedChild.order} min={-10} max={10} onChange={(v) => updateChild(selectedChild.id, { order: v })} />
-                <NumControl label="Flex Grow" value={selectedChild.flexGrow} min={0} max={10} onChange={(v) => updateChild(selectedChild.id, { flexGrow: v })} />
-                <NumControl label="Flex Shrink" value={selectedChild.flexShrink} min={0} max={10} onChange={(v) => updateChild(selectedChild.id, { flexShrink: v })} />
-                <SelectControl label="Flex Basis" value={selectedChild.flexBasis} options={BASIS_OPTIONS} onChange={(v) => updateChild(selectedChild.id, { flexBasis: v })} />
-                <SelectControl label="Align Self" value={selectedChild.alignSelf} options={ALIGN_SELF} onChange={(v) => updateChild(selectedChild.id, { alignSelf: v })} />
-                <div
-                  className="mt-2 px-2.5 py-1.5 font-mono text-xs"
+                  key={p.name}
+                  type="button"
+                  onClick={() => applyPreset(p)}
+                  title={p.desc}
+                  className="px-2 py-2 text-xs"
                   style={{
                     background: "var(--kami-surface)",
                     color: "var(--kami-text-muted)",
-                    borderRadius: "var(--kami-input-radius, 0.375rem)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    minHeight: 40,
                   }}
                 >
-                  flex: {selectedChild.flexGrow} {selectedChild.flexShrink} {selectedChild.flexBasis}
-                </div>
-              </div>
-            )}
-            {!selectedChild && (
-              <div className="p-4 text-center text-sm" style={{ ...cardStyle, color: "var(--kami-text-dim)" }}>
-                Click an item to edit its properties
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ─── Output ─── */}
-        <div className="mt-6 p-4" style={cardStyle}>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {(["css", "tailwind", "react"] as OutputTab[]).map((tab) => {
-                const active = outputTab === tab;
-                return (
-                  <button
-                    key={tab}
-                    onClick={() => setOutputTab(tab)}
-                    className="px-2.5 py-1 text-xs font-medium transition-colors"
-                    style={{
-                      background: active ? "var(--kami-cta-bg)" : "transparent",
-                      color: active ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
-                      borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    }}
-                  >
-                    {tab === "css" ? "CSS" : tab === "tailwind" ? "Tailwind" : "React"}
-                  </button>
-                );
-              })}
+                  {p.name}
+                </button>
+              ))}
             </div>
-            <button
-              onClick={copy}
-              className="flex items-center gap-1.5 px-2 py-1 text-xs transition-colors"
+          </ControlGroup>
+
+          <ControlGroup label="Items" hint={`${children.length}`}>
+            <div className="flex flex-wrap gap-1.5">
+              {children.map((c, i) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setSelected(c.id === selected ? null : c.id)}
+                  className="px-2.5 py-1.5 text-xs font-mono"
+                  style={{
+                    background: c.id === selected ? "var(--kami-cta-bg)" : c.color,
+                    color: c.id === selected ? "var(--kami-cta-text)" : "#ffffff",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                    minHeight: 32,
+                    minWidth: 32,
+                  }}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <ToolActionButton onClick={addChild} variant="outline">+ Item</ToolActionButton>
+              <ToolActionButton onClick={reset} variant="ghost">Reset</ToolActionButton>
+            </div>
+          </ControlGroup>
+
+          <ControlGroup label="Direction">
+            <Segment
+              value={container.direction}
+              onChange={(v) => setC({ direction: v })}
+              options={[
+                { value: "row", label: "row" },
+                { value: "row-reverse", label: "row-rev" },
+                { value: "column", label: "col" },
+                { value: "column-reverse", label: "col-rev" },
+              ]}
+              full
+              size="sm"
+            />
+          </ControlGroup>
+          <ControlGroup label="Wrap">
+            <Segment
+              value={container.wrap}
+              onChange={(v) => setC({ wrap: v })}
+              options={[
+                { value: "nowrap", label: "nowrap" },
+                { value: "wrap", label: "wrap" },
+                { value: "wrap-reverse", label: "wrap-rev" },
+              ]}
+              full
+              size="sm"
+            />
+          </ControlGroup>
+          <ControlGroup label="Justify">
+            <Select
+              value={container.justify}
+              onChange={(v) => setC({ justify: v })}
+              options={JUSTIFY.map((j) => ({ value: j, label: j }))}
+            />
+          </ControlGroup>
+          <ControlGroup label="Align items">
+            <Select
+              value={container.alignItems}
+              onChange={(v) => setC({ alignItems: v })}
+              options={ALIGN_ITEMS.map((j) => ({ value: j, label: j }))}
+            />
+          </ControlGroup>
+          {container.wrap !== "nowrap" && (
+            <ControlGroup label="Align content">
+              <Select
+                value={container.alignContent}
+                onChange={(v) => setC({ alignContent: v })}
+                options={ALIGN_CONTENT.map((j) => ({ value: j, label: j }))}
+              />
+            </ControlGroup>
+          )}
+          <ControlGroup label="Row gap" hint={`${container.rowGap}px`}>
+            <Slider value={container.rowGap} onChange={(v) => setC({ rowGap: v })} min={0} max={40} unit="px" />
+          </ControlGroup>
+          <ControlGroup label="Column gap" hint={`${container.colGap}px`}>
+            <Slider value={container.colGap} onChange={(v) => setC({ colGap: v })} min={0} max={40} unit="px" />
+          </ControlGroup>
+
+          {selectedChild && (
+            <ControlGroup label={`Item ${selectedIdx + 1}`} hint={`flex: ${selectedChild.flexGrow} ${selectedChild.flexShrink} ${selectedChild.flexBasis}`}>
+              <div className="mb-2 flex flex-wrap gap-1.5">
+                <ToolIconButton label="Move up" onClick={() => moveChild(selectedChild.id, -1)} disabled={selectedIdx === 0}>↑</ToolIconButton>
+                <ToolIconButton label="Move down" onClick={() => moveChild(selectedChild.id, 1)} disabled={selectedIdx === children.length - 1}>↓</ToolIconButton>
+                <ToolIconButton label="Remove" onClick={() => removeChild(selectedChild.id)} disabled={children.length <= 1}>×</ToolIconButton>
+              </div>
+              <Slider label="Order" value={selectedChild.order} onChange={(v) => updateChild(selectedChild.id, { order: v })} min={-10} max={10} />
+              <Slider label="Grow" value={selectedChild.flexGrow} onChange={(v) => updateChild(selectedChild.id, { flexGrow: v })} min={0} max={10} />
+              <Slider label="Shrink" value={selectedChild.flexShrink} onChange={(v) => updateChild(selectedChild.id, { flexShrink: v })} min={0} max={10} />
+              <Select
+                label="Basis"
+                value={selectedChild.flexBasis}
+                onChange={(v) => updateChild(selectedChild.id, { flexBasis: v })}
+                options={BASIS_OPTIONS.map((b) => ({ value: b, label: b }))}
+              />
+              <Select
+                label="Align self"
+                value={selectedChild.alignSelf}
+                onChange={(v) => updateChild(selectedChild.id, { alignSelf: v })}
+                options={ALIGN_SELF.map((a) => ({ value: a, label: a }))}
+              />
+            </ControlGroup>
+          )}
+
+          <ControlGroup label="Output">
+            <pre
+              className="overflow-x-auto p-3 text-xs"
               style={{
-                background: "var(--kami-cta2-bg, var(--kami-surface-solid))",
-                color: "var(--kami-cta2-text, var(--kami-text-muted))",
-                border: "1px solid var(--kami-cta2-border, var(--kami-border-strong))",
-                borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                background: "var(--kami-overlay-bg, #0d1117)",
+                color: "var(--kami-overlay-text, #f1f5f9)",
+                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                maxHeight: 240,
               }}
             >
-              {copied ? <><CheckIcon /> Copied</> : <><CopyIcon /> Copy</>}
-            </button>
-          </div>
-          <pre
-            className="overflow-x-auto p-4 text-sm leading-relaxed"
-            style={{
-              background: "var(--kami-overlay-bg, #111827)",
-              color: "var(--kami-overlay-text, #f3f4f6)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
-            }}
-          >
-            <code>{currentOutput}</code>
-          </pre>
+              <code>{currentOutput}</code>
+            </pre>
+          </ControlGroup>
+        </>
+      }
+      info={
+        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p>
+            Tap an item in the preview (or pill in the panel) to edit per-item flex
+            properties. Use the reorder arrows in the item panel to change DOM order.
+          </p>
+          <p className="text-xs">
+            Main axis is {isVertical ? "vertical" : "horizontal"}; the cross axis runs
+            perpendicular.
+          </p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── Reusable Controls ─── */
-function SelectControl({ label, value, options, onChange }: { label: string; value: string; options: string[]; onChange: (v: string) => void }) {
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="flex-1 px-2 py-1 text-xs focus:outline-none"
+      }
+    >
+      <div
+        className="flex h-full min-h-[60vh] w-full flex-col gap-2 p-4"
         style={{
-          background: "var(--kami-input-bg, var(--kami-surface-solid))",
-          color: "var(--kami-text)",
+          background: "var(--kami-surface)",
+          borderRadius: "var(--kami-card-radius, 0.75rem)",
           border: "1px solid var(--kami-border-strong)",
-          borderRadius: "var(--kami-input-radius, 0.25rem)",
         }}
       >
-        {options.map((o) => (
-          <option key={o} value={o}>{o}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function NumControl({ label, value, min, max, onChange }: { label: string; value: number; min: number; max: number; onChange: (v: number) => void }) {
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-      <input
-        type="range" min={min} max={max} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
-        style={{
-          background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
-          accentColor: "var(--kami-text)",
-        }}
-      />
-      <span className="w-8 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}</span>
-    </div>
-  );
-}
-
-function GapControl({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
-  return (
-    <div className="mb-2 flex items-center gap-2">
-      <span className="w-24 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-      <input
-        type="range" min={0} max={40} value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full"
-        style={{
-          background: "color-mix(in srgb, var(--kami-text-dim) 30%, transparent)",
-          accentColor: "var(--kami-text)",
-        }}
-      />
-      <span className="w-10 text-right text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>{value}px</span>
-    </div>
+        <div
+          className="flex-1 overflow-auto p-3"
+          style={{
+            border: "2px dashed var(--kami-border-strong)",
+            borderRadius: "var(--kami-card-radius, 0.5rem)",
+            display: "flex",
+            flexDirection: container.direction as React.CSSProperties["flexDirection"],
+            flexWrap: container.wrap as React.CSSProperties["flexWrap"],
+            justifyContent: container.justify,
+            alignItems: container.alignItems,
+            alignContent: container.wrap !== "nowrap" ? container.alignContent : undefined,
+            rowGap: container.rowGap,
+            columnGap: container.colGap,
+            minHeight: 280,
+          }}
+        >
+          {children.map((child) => (
+            <button
+              key={child.id}
+              type="button"
+              onClick={() => setSelected(child.id === selected ? null : child.id)}
+              className="flex min-h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-lg text-xs font-medium text-white transition-all"
+              style={{
+                backgroundColor: child.color,
+                order: child.order,
+                flexGrow: child.flexGrow,
+                flexShrink: child.flexShrink,
+                flexBasis: child.flexBasis,
+                alignSelf: child.alignSelf as React.CSSProperties["alignSelf"],
+                padding: "12px 14px",
+                outline: child.id === selected ? "3px solid var(--kami-text)" : "none",
+                outlineOffset: 2,
+              }}
+            >
+              {child.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </ToolShell>
   );
 }
