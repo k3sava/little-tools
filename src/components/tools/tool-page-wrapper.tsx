@@ -1,12 +1,12 @@
 "use client";
 
 import { useContext, useEffect, useRef, useState } from "react";
-import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { RelatedTools } from "./related-tools";
 import { allTools, getPrimaryCollection } from "@/data/tools";
 import { usePathname } from "next/navigation";
 import { ShortcutContext, ShortcutProvider } from "@/contexts/shortcut-context";
+import { BreadcrumbContext, BreadcrumbItem } from "@/contexts/breadcrumb-context";
 
 function formatKey(key: string, meta?: boolean, shift?: boolean, alt?: boolean): string {
   const parts: string[] = [];
@@ -113,7 +113,7 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
     if (tool) recordRecent(tool.href);
   }, [tool]);
 
-  const breadcrumbItems = [
+  const breadcrumbItems: BreadcrumbItem[] = [
     { label: "home", href: "https://iamkesava.com" },
     { label: "apps", href: "https://apps.iamkesava.com" },
     { label: "tools", href: "/" },
@@ -122,8 +122,8 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
   ];
 
   return (
+    <BreadcrumbContext.Provider value={breadcrumbItems}>
     <div className="kami-scope min-h-screen" style={{ color: "var(--kami-text)" }}>
-      <Breadcrumb items={breadcrumbItems} />
       <div>{children}</div>
       {tool && (
         <div className="mx-auto max-w-3xl px-4 pb-12">
@@ -133,6 +133,7 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
       <ShortcutHintBar />
       <Footer />
     </div>
+    </BreadcrumbContext.Provider>
   );
 }
 

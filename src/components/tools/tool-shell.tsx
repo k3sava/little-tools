@@ -1,29 +1,8 @@
 "use client";
 
-/**
- * ToolShell — mobile-first app-shell layout for every tool.
- *
- * Layout:
- *   ┌────────────────────────────────────────┐
- *   │ Sticky tool header (title + actions)   │
- *   ├──────────────────────┬─────────────────┤
- *   │                      │                 │
- *   │   Canvas / workspace │  Controls panel │
- *   │                      │  (desktop side, │
- *   │                      │   mobile sheet) │
- *   │                      │                 │
- *   └──────────────────────┴─────────────────┘
- *
- * Mobile behaviour: canvas fills viewport. Controls collapse into a
- * bottom-sheet toggled by a floating "Controls" button. A second
- * floating button opens an optional secondary panel (e.g. Help/Info).
- *
- * Inspired by toys.iamkesava.com/wordart and /pixart — the workspace
- * is the centerpiece, controls are contextual and always reachable.
- */
-
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { useBreadcrumb } from "@/contexts/breadcrumb-context";
 
 export interface ToolShellProps {
   /** Tool title shown in the header */
@@ -50,6 +29,41 @@ export interface ToolShellProps {
   panelWidth?: string;
 }
 
+function ToolShareButton() {
+  const [state, setState] = useState<"idle" | "copied">("idle");
+  const onShare = useCallback(async () => {
+    if (typeof window === "undefined") return;
+    const url = window.location.href;
+    const title = document.title;
+    if ("share" in navigator) {
+      try { await navigator.share({ title, url }); return; } catch { /* fall through */ }
+    }
+    if (navigator.clipboard) {
+      try {
+        await navigator.clipboard.writeText(url);
+        setState("copied");
+        window.setTimeout(() => setState("idle"), 1800);
+      } catch { /* ignore */ }
+    }
+  }, []);
+  return (
+    <button
+      type="button"
+      onClick={onShare}
+      aria-label="Share this tool"
+      data-variant="ghost"
+      className="tool-action-btn"
+    >
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 4 }}>
+        <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+        <polyline points="16 6 12 2 8 6" />
+        <line x1="12" y1="2" x2="12" y2="15" />
+      </svg>
+      {state === "copied" ? "Copied" : "Share"}
+    </button>
+  );
+}
+
 export function ToolShell({
   title,
   tagline,
@@ -65,6 +79,7 @@ export function ToolShell({
 }: ToolShellProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const breadcrumb = useBreadcrumb();
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
 
@@ -111,11 +126,27 @@ export function ToolShell({
             />
           )}
           <div className="min-w-0">
+            {breadcrumb.length > 0 && (
+              <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
+                {breadcrumb.map((item, i) => (
+                  <span key={i}>
+                    {i > 0 && <span className="tool-shell-breadcrumb-sep">·</span>}
+                    {item.href
+                      ? <a href={item.href}>{item.label}</a>
+                      : <span>{item.label}</span>
+                    }
+                  </span>
+                ))}
+              </nav>
+            )}
             <h1 className="tool-shell-title">{title}</h1>
             {tagline && <p className="tool-shell-tagline">{tagline}</p>}
           </div>
         </div>
-        {actions && <div className="tool-shell-actions">{actions}</div>}
+        <div className="tool-shell-actions">
+          {actions}
+          <ToolShareButton />
+        </div>
       </header>
 
       {/* Body grid */}

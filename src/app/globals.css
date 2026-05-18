@@ -2086,7 +2086,6 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   --tool-shell-fab-gap: 12px;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   width: 100%;
   position: relative;
 }
@@ -2125,6 +2124,30 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   height: 8px;
   border-radius: 999px;
   flex: 0 0 auto;
+}
+.tool-shell-breadcrumb {
+  display: none;
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--kami-text-dim);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tool-shell-breadcrumb a {
+  color: var(--kami-text-dim);
+  text-decoration: none;
+}
+.tool-shell-breadcrumb a:hover {
+  color: var(--kami-text-muted);
+}
+.tool-shell-breadcrumb-sep {
+  margin: 0 3px;
+  opacity: 0.5;
+}
+@media (min-width: 768px) {
+  .tool-shell-breadcrumb { display: block; }
 }
 .tool-shell-title {
   font-family: var(--kami-font-display);
@@ -2877,11 +2900,10 @@ html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px sol
 }
 
 
-/* On tool pages using ToolShell, move the floating share button and
-   theme switcher OUT of the way of the sticky tool header (56px) on
-   desktop. They sit just under the header. */
+/* On tool pages: share button lives in the tool-shell header actions.
+   Hide the global floating one; move theme switcher below the header. */
+body:has(.tool-shell) .kami-share-btn { display: none !important; }
 @media (min-width: 640px) {
-  body:has(.tool-shell) .kami-share-btn { top: 70px !important; }
   body:has(.tool-shell) .theme-switcher-container { top: 70px !important; }
 }
 
