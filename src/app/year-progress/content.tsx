@@ -126,14 +126,16 @@ const ACCENT_WEEK = "#f97316";
 const ACCENT_DAY  = "#facc15";
 
 export default function YearProgressContent() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
   const s = useMemo(() => {
+    if (!now) return null;
     const year = now.getFullYear();
     const month = now.getMonth();
     const daysInYear = getDaysInYear(year) ? 366 : 365;
@@ -182,51 +184,53 @@ export default function YearProgressContent() {
       accent={ACCENT_YEAR}
       hideControls
     >
-      <div className="flex flex-col gap-4 max-w-xl">
-        {/* Three bars */}
-        <div className="p-6 flex flex-col gap-6" style={cardStyle}>
-          <ProgressBar label={`${s.year}`} pct={s.yearPct} accent={ACCENT_YEAR} large />
-          <ProgressBar label={`Week ${s.week}`} pct={s.weekPct} accent={ACCENT_WEEK} />
-          <ProgressBar label="Today" pct={s.dayPct} accent={ACCENT_DAY} />
-        </div>
+      {s && (
+        <div className="flex flex-col gap-4 max-w-xl">
+          {/* Three bars */}
+          <div className="p-6 flex flex-col gap-6" style={cardStyle}>
+            <ProgressBar label={`${s.year}`} pct={s.yearPct} accent={ACCENT_YEAR} large />
+            <ProgressBar label={`Week ${s.week}`} pct={s.weekPct} accent={ACCENT_WEEK} />
+            <ProgressBar label="Today" pct={s.dayPct} accent={ACCENT_DAY} />
+          </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { label: "Day", value: `${s.dayOfYear} / ${s.daysInYear}` },
-            { label: "Week", value: `${s.week} / 52` },
-            { label: "Q", value: `${s.quarter} / 4` },
-          ].map(({ label, value }) => (
-            <div key={label} className="p-4 text-center" style={cardStyle}>
-              <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--kami-text-dim)" }}>
-                {label}
-              </p>
-              <p className="text-sm font-semibold tabular-nums" style={{ color: "var(--kami-text)" }}>
-                {value}
-              </p>
-            </div>
-          ))}
-        </div>
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Day", value: `${s.dayOfYear} / ${s.daysInYear}` },
+              { label: "Week", value: `${s.week} / 52` },
+              { label: "Q", value: `${s.quarter} / 4` },
+            ].map(({ label, value }) => (
+              <div key={label} className="p-4 text-center" style={cardStyle}>
+                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                  {label}
+                </p>
+                <p className="text-sm font-semibold tabular-nums" style={{ color: "var(--kami-text)" }}>
+                  {value}
+                </p>
+              </div>
+            ))}
+          </div>
 
-        {/* Commentary */}
-        <div className="p-5 flex flex-col gap-2.5" style={cardStyle}>
-          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            {s.daysLeft} days left in {s.year}.
-          </p>
-          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            {s.monthName} accounts for {s.monthPctOfRemaining}% of what remains.
-          </p>
-          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-            {s.monthComment}
-          </p>
-          <p
-            className="text-sm italic pt-1 border-t"
-            style={{ color: "var(--kami-text-muted)", borderColor: "var(--kami-border-strong)" }}
-          >
-            {s.witty}
-          </p>
+          {/* Commentary */}
+          <div className="p-5 flex flex-col gap-2.5" style={cardStyle}>
+            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+              {s.daysLeft} days left in {s.year}.
+            </p>
+            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+              {s.monthName} accounts for {s.monthPctOfRemaining}% of what remains.
+            </p>
+            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+              {s.monthComment}
+            </p>
+            <p
+              className="text-sm italic pt-1 border-t"
+              style={{ color: "var(--kami-text-muted)", borderColor: "var(--kami-border-strong)" }}
+            >
+              {s.witty}
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </ToolShell>
   );
 }

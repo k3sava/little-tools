@@ -188,9 +188,10 @@ const TRAFFIC_CONFIG = {
 export default function CaffeineContent() {
   const [drinks, setDrinks] = useState<DrinkEntry[]>(defaultDrinks);
   const [bedtime, setBedtime] = useState<string>(defaultBedtime);
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 10000);
     return () => clearInterval(id);
   }, []);
@@ -210,11 +211,11 @@ export default function CaffeineContent() {
     setDrinks((prev) => prev.map((d) => d.id === id ? { ...d, [field]: value } : d));
   }, []);
 
-  const nowH = nowDecimalHours(now);
+  const nowH = now ? nowDecimalHours(now) : 0;
   const curvePoints = useMemo(() => buildCurvePoints(drinks), [drinks]);
 
   const nowPct = useMemo(() => {
-    if (drinks.length === 0) return 0;
+    if (!now || drinks.length === 0) return 0;
     const totalInitial = drinks.reduce((sum, d) => {
       const opt = DRINK_OPTIONS.find((o) => o.label === d.drinkType);
       return sum + (opt?.mg ?? 0);
@@ -228,7 +229,10 @@ export default function CaffeineContent() {
   const trafficLight = useMemo(() => sleepTrafficLight(mgAtBedtime), [mgAtBedtime]);
   const lastSafeCoffee = useMemo(() => lastSafeCoffeeTime(drinks, bedtimeH), [drinks, bedtimeH]);
   const clearedTime = useMemo(() => findClearedTime(drinks), [drinks]);
-  const personality = useMemo(() => personalityLine(drinks, nowPct, mgAtBedtime, now), [drinks, nowPct, mgAtBedtime, now]);
+  const personality = useMemo(() => {
+    if (!now) return "";
+    return personalityLine(drinks, nowPct, mgAtBedtime, now);
+  }, [drinks, nowPct, mgAtBedtime, now]);
 
   const nowX = (nowH / CHART_HOURS) * 100;
   const bedtimeX = (bedtimeH / CHART_HOURS) * 100;
@@ -369,11 +373,13 @@ export default function CaffeineContent() {
                 stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4 3"
               />
               {/* Now marker */}
-              <line
-                x1={`${(nowX / 100) * svgWidth}`} y1="0"
-                x2={`${(nowX / 100) * svgWidth}`} y2={svgHeight}
-                stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4 3"
-              />
+              {now && (
+                <line
+                  x1={`${(nowX / 100) * svgWidth}`} y1="0"
+                  x2={`${(nowX / 100) * svgWidth}`} y2={svgHeight}
+                  stroke="#ef4444" strokeWidth="1.5" strokeDasharray="4 3"
+                />
+              )}
             </svg>
             <div className="flex justify-between mt-1 px-0.5">
               {["12am", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm", "12am"].map((label) => (

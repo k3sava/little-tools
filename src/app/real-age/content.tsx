@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   ToolShell,
   ControlGroup,
@@ -52,12 +52,16 @@ interface StatCard {
 
 export default function RealAgeContent() {
   const [dob, setDob] = useState(getDefaultDob);
+  const [today, setToday] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
 
   const stats = useMemo((): StatCard[] | null => {
-    if (!dob) return null;
+    if (!dob || !today) return null;
     const birth = new Date(dob);
     if (isNaN(birth.getTime())) return null;
-    const today = new Date();
     if (birth > today) return null;
 
     const msPerDay = 1000 * 60 * 60 * 24;
@@ -112,17 +116,16 @@ export default function RealAgeContent() {
         note: daysToNext === "today" ? "happy birthday!" : daysToNext === 1 ? "tomorrow!" : "mark your calendar",
       },
     ];
-  }, [dob]);
+  }, [dob, today]);
 
   const closingLine = useMemo(() => {
-    if (!dob) return null;
+    if (!dob || !today) return null;
     const birth = new Date(dob);
     if (isNaN(birth.getTime())) return null;
-    const today = new Date();
     const totalDays = Math.floor((today.getTime() - birth.getTime()) / (1000 * 60 * 60 * 24));
     const fullYears = Math.floor(totalDays / 365.25);
     return getClosingLine(fullYears);
-  }, [dob]);
+  }, [dob, today]);
 
   const cardStyle = {
     background: "var(--kami-surface-solid)",
