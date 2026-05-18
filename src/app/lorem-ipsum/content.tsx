@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
+import { RotateCcw, FileText, Copy, Check } from "lucide-react";
 import {
   ToolShell,
   ControlGroup,
-  ToolActionButton,
+  ToolIconButton,
 } from "@/components/tools/tool-shell";
 import {
   NumberStepper,
@@ -527,15 +528,15 @@ export default function LoremIpsumContent() {
 
   const actions = (
     <>
-      <ToolActionButton variant="outline" onClick={handleGenerate}>
-        Regenerate
-      </ToolActionButton>
-      <ToolActionButton variant="outline" onClick={handleCopyMarkdown}>
-        {copiedMd ? "Copied MD" : "Copy MD"}
-      </ToolActionButton>
-      <ToolActionButton variant="solid" onClick={handleCopy}>
-        {copied ? "Copied" : htmlTag !== "none" ? "Copy HTML" : "Copy"}
-      </ToolActionButton>
+      <ToolIconButton label="Regenerate" onClick={handleGenerate} variant="outline">
+        <RotateCcw size={14} />
+      </ToolIconButton>
+      <ToolIconButton label="Copy as Markdown" onClick={handleCopyMarkdown} variant="outline" active={copiedMd}>
+        {copiedMd ? <Check size={14} /> : <FileText size={14} />}
+      </ToolIconButton>
+      <ToolIconButton label={htmlTag !== "none" ? "Copy HTML" : "Copy"} onClick={handleCopy} variant="solid" active={copied}>
+        {copied ? <Check size={14} /> : <Copy size={14} />}
+      </ToolIconButton>
     </>
   );
 

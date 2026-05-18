@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Upload, X } from "lucide-react";
 import { useBreadcrumb } from "@/contexts/breadcrumb-context";
 import { ShortcutContext } from "@/contexts/shortcut-context";
 
@@ -125,14 +125,9 @@ function ToolShareButton() {
       onClick={onShare}
       aria-label="Share this tool"
       data-variant="ghost"
-      className="tool-action-btn"
+      className="tool-icon-btn"
     >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 4 }}>
-        <path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
-        <polyline points="16 6 12 2 8 6" />
-        <line x1="12" y1="2" x2="12" y2="15" />
-      </svg>
-      {state === "copied" ? "Copied" : "Share"}
+      {state === "copied" ? <Check size={14} /> : <Upload size={14} />}
     </button>
   );
 }
