@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { AppCard } from "@/components/app-card";
-import { allTools, getRelatedTools, getPrimaryCollection } from "@/data/tools";
+import { allTools, getRelatedTools } from "@/data/tools";
 
 interface RelatedToolsProps {
   currentHref: string;
@@ -16,9 +16,6 @@ export function RelatedTools({ currentHref, count = 4 }: RelatedToolsProps) {
   }, [currentHref, count]);
 
   if (related.length === 0) return null;
-
-  const currentTool = allTools.find((t) => t.href === currentHref);
-  const collection = currentTool ? getPrimaryCollection(currentTool) : null;
 
   return (
     <div
@@ -45,11 +42,11 @@ export function RelatedTools({ currentHref, count = 4 }: RelatedToolsProps) {
       </div>
       <div className="mt-6 text-center">
         <Link
-          href={collection?.href ?? "/"}
+          href="/"
           className="text-sm transition-colors"
           style={{ color: "var(--kami-text-muted)" }}
         >
-          View all {collection?.title.toLowerCase() ?? "tools"} →
+          View all tools →
         </Link>
       </div>
     </div>
