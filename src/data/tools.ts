@@ -171,6 +171,15 @@ export const allTools: Tool[] = [
 
   // Video tools
   { name: "Video Converter", description: "Convert videos between MP4 and WebM. 100% client-side, no uploads, no limits.", href: "/video-converter", icon: "▶", collections: ["everyone"], keywords: ["video", "convert", "mp4", "webm", "mov", "transcode"] },
+
+  // Time / life tools
+  { name: "Year Progress", description: "How far through the year are you, with opinions.", href: "/year-progress", icon: "📅", collections: ["everyone"], keywords: ["year", "progress", "time", "calendar", "goals"] },
+  { name: "Life in Numbers", description: "Your age in units that actually mean something.", href: "/real-age", icon: "🫀", collections: ["everyone"], keywords: ["age", "birthday", "life", "time", "heartbeat", "years"] },
+  { name: "Caffeine Clock", description: "When will your coffee actually wear off?", href: "/caffeine", icon: "☕", collections: ["everyone"], keywords: ["caffeine", "coffee", "sleep", "energy", "half-life"] },
+  { name: "Meeting Cost Meter", description: "The live cost of this meeting, in real time.", href: "/meeting-cost", icon: "💸", collections: ["everyone"], keywords: ["meeting", "cost", "salary", "productivity", "time", "money"] },
+  { name: "How's Outside?", description: "Weather without the numbers. Warmer than yesterday? Good for what?", href: "/outside", icon: "🌤️", collections: ["everyone"], keywords: ["weather", "outside", "temperature", "forecast", "feels like"] },
+  { name: "Email Signature", description: "Generate a clean email signature and share it via link.", href: "/email-signature", icon: "✍️", collections: ["everyone"], keywords: ["email", "signature", "gmail", "outlook", "contact"] },
+  { name: "Decision Flow", description: "Build a yes/no troubleshooting tree and share it as a link.", href: "/flow", icon: "🌿", collections: ["developers", "everyone"], keywords: ["decision", "tree", "troubleshoot", "flow", "diagram", "embed"] },
 ];
 
 // --- Helper functions ---
