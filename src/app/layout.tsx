@@ -85,6 +85,13 @@ export const metadata: Metadata = {
   themeColor: "#0a0a0a",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

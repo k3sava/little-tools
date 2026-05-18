@@ -322,8 +322,10 @@ html[data-theme="brutalist"] .kami-scope h3 {
   font-weight: 700;
   font-family: var(--kami-font-display);
 }
-/* Text-link anchors - underline magenta on hover */
-html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+/* Text-link anchors - scoped to prose/content context only */
+html[data-theme="brutalist"] .kami-scope p a,
+html[data-theme="brutalist"] .kami-scope li a,
+html[data-theme="brutalist"] .kami-scope .kami-content a {
   color: #000;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -331,7 +333,9 @@ html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="bord
   text-decoration-color: #000;
   transition: color 40ms steps(1), text-decoration-color 40ms steps(1);
 }
-html[data-theme="brutalist"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+html[data-theme="brutalist"] .kami-scope p a:hover,
+html[data-theme="brutalist"] .kami-scope li a:hover,
+html[data-theme="brutalist"] .kami-scope .kami-content a:hover {
   color: #d946ef;
   text-decoration-color: #d946ef;
   background: transparent;
@@ -355,24 +359,6 @@ html[data-theme="brutalist"] .kami-scope textarea:focus,
 html[data-theme="brutalist"] .kami-scope select:focus {
   outline: none !important;
   box-shadow: 0 4px 0 #d946ef !important;
-}
-/* Generic buttons inside tool pages */
-html[data-theme="brutalist"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle) {
-  border-radius: 0 !important;
-  border: 2px solid #000 !important;
-  background: #fff !important;
-  color: #000 !important;
-  font-family: var(--kami-font-body) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  box-shadow: 3px 3px 0 #000;
-  transition: none !important;
-}
-html[data-theme="brutalist"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle):hover {
-  background: #d946ef !important;
-  color: #000 !important;
-  box-shadow: 5px 5px 0 #000;
-  transform: translate(-2px, -2px);
 }
 
 /* ============================================================
@@ -474,8 +460,10 @@ html[data-theme="editorial"] .kami-scope p[class*="uppercase"] {
   letter-spacing: 0.1em;
   text-transform: none !important;
 }
-/* Anchor links: sienna, underline draws in on hover */
-html[data-theme="editorial"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+/* Anchor links: sienna, underline draws in on hover — prose/content context only */
+html[data-theme="editorial"] .kami-scope p a,
+html[data-theme="editorial"] .kami-scope li a,
+html[data-theme="editorial"] .kami-scope .kami-content a {
   color: #8a2f1b;
   text-decoration: none;
   background-image: linear-gradient(#8a2f1b, #8a2f1b);
@@ -484,7 +472,9 @@ html[data-theme="editorial"] .kami-scope a:not([class*="bg-"]):not([class*="bord
   background-repeat: no-repeat;
   transition: background-size 400ms cubic-bezier(0.25, 0.1, 0.25, 1), color 400ms ease;
 }
-html[data-theme="editorial"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+html[data-theme="editorial"] .kami-scope p a:hover,
+html[data-theme="editorial"] .kami-scope li a:hover,
+html[data-theme="editorial"] .kami-scope .kami-content a:hover {
   background-size: 100% 1px;
   color: #6e2415;
 }
@@ -509,21 +499,6 @@ html[data-theme="editorial"] .kami-scope textarea:focus {
   outline: none !important;
   border-bottom-color: #8a2f1b !important;
   border-bottom-width: 2px !important;
-}
-/* Buttons: pill with sienna fill on hover (exclude full-width disclosure toggles) */
-html[data-theme="editorial"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full) {
-  background: #2f2a26 !important;
-  color: #f8f3ea !important;
-  border: 1px solid #2f2a26 !important;
-  border-radius: 2px !important;
-  font-family: var(--kami-font-display) !important;
-  font-style: italic;
-  transition: background 400ms ease, color 400ms ease, border-color 400ms ease !important;
-}
-html[data-theme="editorial"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):hover {
-  background: #8a2f1b !important;
-  color: #f8f3ea !important;
-  border-color: #8a2f1b !important;
 }
 /* Editorial disclosure buttons (full-width collapsible section headers) */
 html[data-theme="editorial"] .kami-scope button.w-full {
@@ -646,13 +621,17 @@ html[data-theme="terminal"] .kami-scope h2::before {
   color: #ffd166;
   opacity: 0.8;
 }
-/* Anchor links: amber with subtle glow on hover */
-html[data-theme="terminal"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+/* Anchor links: amber with subtle glow on hover — prose/content context only */
+html[data-theme="terminal"] .kami-scope p a,
+html[data-theme="terminal"] .kami-scope li a,
+html[data-theme="terminal"] .kami-scope .kami-content a {
   color: #ffd166;
   text-decoration: none;
   transition: text-shadow 16ms linear, color 16ms linear;
 }
-html[data-theme="terminal"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+html[data-theme="terminal"] .kami-scope p a:hover,
+html[data-theme="terminal"] .kami-scope li a:hover,
+html[data-theme="terminal"] .kami-scope .kami-content a:hover {
   color: #fff5d6;
   text-shadow: 0 0 8px rgba(255,209,102,0.55);
 }
@@ -680,30 +659,6 @@ html[data-theme="terminal"] .kami-scope select:focus {
   outline: none !important;
   border-color: #ffd166 !important;
   box-shadow: 0 0 0 1px #ffd166 !important;
-}
-/* Buttons: bracketed terminal style */
-html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle) {
-  background: transparent !important;
-  color: #ffd166 !important;
-  border: 1px dashed rgba(255,209,102,0.45) !important;
-  border-radius: 0 !important;
-  font-family: var(--kami-font-body) !important;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  transition: background 16ms linear, color 16ms linear !important;
-}
-html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full)::before {
-  content: "[ ";
-  opacity: 0.6;
-}
-html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full)::after {
-  content: " ]";
-  opacity: 0.6;
-}
-html[data-theme="terminal"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle):hover {
-  background: #ffd166 !important;
-  color: #0d1117 !important;
-  border-color: #ffd166 !important;
 }
 /* Catch hardcoded page text colors inside scope */
 html[data-theme="terminal"] .kami-scope [style*="color: #1d1d1f"],
@@ -811,8 +766,10 @@ html[data-theme="zen"] .kami-scope h3 {
 html[data-theme="zen"] .kami-scope h1 {
   font-weight: 300 !important;
 }
-/* Anchor links: underline draws slowly */
-html[data-theme="zen"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary) {
+/* Anchor links: underline draws slowly — prose/content context only */
+html[data-theme="zen"] .kami-scope p a,
+html[data-theme="zen"] .kami-scope li a,
+html[data-theme="zen"] .kami-scope .kami-content a {
   color: #64748b;
   text-decoration: none;
   background-image: linear-gradient(#7a8471, #7a8471);
@@ -821,7 +778,9 @@ html[data-theme="zen"] .kami-scope a:not([class*="bg-"]):not([class*="border-"])
   background-repeat: no-repeat;
   transition: background-size 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease;
 }
-html[data-theme="zen"] .kami-scope a:not([class*="bg-"]):not([class*="border-"]):not(.kami-tile):not(.kami-share-btn):not(.kami-overlay-btn-primary):hover {
+html[data-theme="zen"] .kami-scope p a:hover,
+html[data-theme="zen"] .kami-scope li a:hover,
+html[data-theme="zen"] .kami-scope .kami-content a:hover {
   color: #7a8471;
   background-size: 100% 1px;
 }
@@ -847,22 +806,6 @@ html[data-theme="zen"] .kami-scope input:focus,
 html[data-theme="zen"] .kami-scope textarea:focus {
   outline: none !important;
   border-bottom-color: #7a8471 !important;
-}
-/* Buttons: thin pill, fills slowly with moss wash */
-html[data-theme="zen"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle) {
-  background: transparent !important;
-  color: #7a8471 !important;
-  border: 1px solid rgba(122,132,113,0.3) !important;
-  border-radius: 999px !important;
-  font-family: var(--kami-font-body) !important;
-  font-weight: 300 !important;
-  letter-spacing: 0.06em !important;
-  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease, border-color 600ms ease !important;
-}
-html[data-theme="zen"] .kami-scope button:not(.theme-switcher-pill):not(.theme-switcher-option):not(.kami-share-btn):not(.kami-overlay-btn-primary):not(.w-full):not(.kami-panel-toggle):hover {
-  background: rgba(122,132,113,0.1) !important;
-  color: #334155 !important;
-  border-color: #7a8471 !important;
 }
 /* Zen layout - more breathing room */
 html[data-theme="zen"] .kami-scope .grid {
@@ -2143,14 +2086,14 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   white-space: nowrap;
 }
 .tool-shell-breadcrumb a {
-  color: var(--kami-text-dim) !important;
-  text-decoration: none !important;
-  border-bottom: none !important;
+  color: var(--kami-text-dim);
+  text-decoration: none;
+  border-bottom: none;
   transition: color 0.2s ease;
 }
 .tool-shell-breadcrumb a:hover {
-  color: var(--kami-text-muted) !important;
-  background: transparent !important;
+  color: var(--kami-text-muted);
+  background: transparent;
 }
 .tool-shell-breadcrumb-sep {
   margin: 0 4px;
@@ -2805,9 +2748,258 @@ html[data-theme="brutalist"] .kc-stepper,
 html[data-theme="brutalist"] .kc-select { border-radius: 0; border: 2px solid #000; }
 html[data-theme="brutalist"] .kc-segment-btn { border-radius: 0; }
 html[data-theme="brutalist"] .tool-shell-fab { border-radius: 0; border: 2px solid #000; box-shadow: 3px 3px 0 #000; }
-html[data-theme="brutalist"] .tool-action-btn,
-html[data-theme="brutalist"] .tool-icon-btn { border-radius: 0; }
 html[data-theme="brutalist"] .kc-swatch { border-radius: 0; border: 2px solid #000; }
+html[data-theme="brutalist"] .tool-action-btn {
+  border-radius: 0;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  font-family: var(--kami-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: 3px 3px 0 #000;
+  transition: none;
+}
+html[data-theme="brutalist"] .tool-action-btn:hover:not(:disabled) {
+  background: #d946ef;
+  color: #000;
+  box-shadow: 5px 5px 0 #000;
+  transform: translate(-2px, -2px);
+}
+html[data-theme="brutalist"] .tool-action-btn[data-variant="solid"] {
+  background: #000;
+  color: #fff;
+  border: 2px solid #000;
+}
+html[data-theme="brutalist"] .tool-action-btn[data-variant="solid"]:hover:not(:disabled) {
+  background: #d946ef;
+  color: #000;
+  box-shadow: 5px 5px 0 #000;
+  transform: translate(-2px, -2px);
+}
+html[data-theme="brutalist"] .tool-icon-btn {
+  border-radius: 0;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  box-shadow: 2px 2px 0 #000;
+  transition: none;
+}
+html[data-theme="brutalist"] .tool-icon-btn:hover:not(:disabled) {
+  background: #d946ef;
+  color: #000;
+  box-shadow: 3px 3px 0 #000;
+  transform: translate(-1px, -1px);
+}
+html[data-theme="brutalist"] .tool-icon-btn[data-active="true"] {
+  background: #000;
+  color: #fff;
+}
+html[data-theme="brutalist"] .tool-icon-btn[data-variant="solid"] {
+  background: #000;
+  color: #fff;
+  border: 2px solid #000;
+}
+
+/* Brutalist FAB and kc component overrides */
+html[data-theme="brutalist"] .tool-shell-fab.is-primary {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+  box-shadow: 4px 4px 0 #000;
+}
+html[data-theme="brutalist"] .kc-segment-btn[data-active="true"] {
+  background: #000;
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Editorial theme overrides — serif, hairline, slow hover */
+html[data-theme="editorial"] .tool-shell-header { background: rgba(248,243,234,0.95); border-bottom: 1px solid rgba(47,42,38,0.15); }
+html[data-theme="editorial"] .tool-shell-panel { background: #fdf9f0; border-color: rgba(47,42,38,0.15); }
+html[data-theme="editorial"] .tool-action-btn {
+  background: #2f2a26;
+  color: #f8f3ea;
+  border: 1px solid #2f2a26;
+  border-radius: 2px;
+  font-family: var(--kami-font-display);
+  font-style: italic;
+  transition: background 400ms ease, color 400ms ease, border-color 400ms ease;
+}
+html[data-theme="editorial"] .tool-action-btn:hover:not(:disabled) {
+  background: #8a2f1b;
+  color: #f8f3ea;
+  border-color: #8a2f1b;
+}
+html[data-theme="editorial"] .tool-action-btn[data-variant="solid"] {
+  background: #2f2a26;
+  color: #f8f3ea;
+  border-color: #2f2a26;
+}
+html[data-theme="editorial"] .tool-icon-btn {
+  border-radius: 2px;
+  background: transparent;
+  color: #5a4a38;
+  border: 1px solid rgba(47,42,38,0.2);
+  transition: background 400ms ease, color 400ms ease;
+}
+html[data-theme="editorial"] .tool-icon-btn:hover:not(:disabled) {
+  background: rgba(138,47,27,0.08);
+  color: #8a2f1b;
+}
+html[data-theme="editorial"] .tool-icon-btn[data-active="true"] {
+  background: #2f2a26;
+  color: #f8f3ea;
+}
+
+/* Editorial disclosure / w-full buttons (were previously in the broad button block) */
+html[data-theme="editorial"] .kami-scope button.w-full {
+  background: transparent;
+  color: var(--kami-text);
+  border: none;
+  border-bottom: 1px solid rgba(47,42,38,0.12);
+  font-family: var(--kami-font-body);
+  font-style: normal;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+
+/* Editorial FAB */
+html[data-theme="editorial"] .tool-shell-fab.is-primary {
+  background: #2f2a26;
+  color: #f8f3ea;
+  border-color: #2f2a26;
+  border-radius: 2px;
+}
+html[data-theme="editorial"] .kc-segment-btn[data-active="true"] {
+  background: #2f2a26;
+  color: #f8f3ea;
+  box-shadow: none;
+}
+
+/* Terminal theme overrides — phosphor amber, dashed, instant */
+html[data-theme="terminal"] .tool-shell-header { background: rgba(13,17,23,0.96); border-bottom: 1px dashed rgba(138,247,167,0.3); }
+html[data-theme="terminal"] .tool-shell-panel { background: #0d1117; border-color: rgba(138,247,167,0.3); }
+html[data-theme="terminal"] .tool-shell-fab {
+  background: #0d1117;
+  color: #8af7a7;
+  border: 1px dashed rgba(138,247,167,0.4);
+  border-radius: 0;
+}
+html[data-theme="terminal"] .tool-shell-fab.is-primary {
+  background: #ffd166;
+  color: #0d1117;
+  border-color: #ffd166;
+  border-style: solid;
+}
+html[data-theme="terminal"] .kc-segment-btn[data-active="true"] {
+  background: rgba(255,209,102,0.15);
+  color: #ffd166;
+  box-shadow: none;
+}
+html[data-theme="terminal"] .tool-action-btn {
+  background: transparent;
+  color: #ffd166;
+  border: 1px dashed rgba(255,209,102,0.45);
+  border-radius: 0;
+  font-family: var(--kami-font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 16ms linear, color 16ms linear;
+}
+html[data-theme="terminal"] .tool-action-btn::before { content: "[ "; opacity: 0.6; }
+html[data-theme="terminal"] .tool-action-btn::after { content: " ]"; opacity: 0.6; }
+html[data-theme="terminal"] .tool-action-btn:hover:not(:disabled) {
+  background: #ffd166;
+  color: #0d1117;
+  border-color: #ffd166;
+  border-style: solid;
+}
+html[data-theme="terminal"] .tool-action-btn[data-variant="solid"] {
+  background: #ffd166;
+  color: #0d1117;
+  border-color: #ffd166;
+  border-style: solid;
+}
+html[data-theme="terminal"] .tool-icon-btn {
+  background: transparent;
+  color: #ffd166;
+  border: 1px dashed rgba(255,209,102,0.45);
+  border-radius: 0;
+  transition: background 16ms linear, color 16ms linear;
+}
+html[data-theme="terminal"] .tool-icon-btn:hover:not(:disabled) {
+  background: #ffd166;
+  color: #0d1117;
+  border-color: #ffd166;
+  border-style: solid;
+}
+html[data-theme="terminal"] .tool-icon-btn[data-active="true"] {
+  background: #ffd166;
+  color: #0d1117;
+  border-style: solid;
+}
+
+/* Zen theme overrides — moss, thin pill, slow breath */
+html[data-theme="zen"] .tool-shell-header { background: rgba(247,249,251,0.95); border-bottom: 1px solid rgba(122,132,113,0.15); }
+html[data-theme="zen"] .tool-shell-panel { background: rgba(247,249,251,0.98); border-color: rgba(122,132,113,0.15); }
+html[data-theme="zen"] .tool-shell-fab {
+  background: transparent;
+  color: #7a8471;
+  border: 1px solid rgba(122,132,113,0.3);
+  border-radius: 999px;
+}
+html[data-theme="zen"] .tool-shell-fab.is-primary {
+  background: #7a8471;
+  color: #f7f9fb;
+  border-color: #7a8471;
+}
+html[data-theme="zen"] .kc-segment-btn[data-active="true"] {
+  background: rgba(122,132,113,0.15);
+  color: #334155;
+  box-shadow: none;
+}
+html[data-theme="zen"] .tool-action-btn {
+  background: transparent;
+  color: #7a8471;
+  border: 1px solid rgba(122,132,113,0.3);
+  border-radius: 999px;
+  font-family: var(--kami-font-body);
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease, border-color 600ms ease;
+}
+html[data-theme="zen"] .tool-action-btn:hover:not(:disabled) {
+  background: rgba(122,132,113,0.1);
+  color: #334155;
+  border-color: #7a8471;
+}
+html[data-theme="zen"] .tool-action-btn[data-variant="solid"] {
+  background: #7a8471;
+  color: #f7f9fb;
+  border-color: #7a8471;
+  border-radius: 999px;
+}
+html[data-theme="zen"] .tool-action-btn[data-variant="solid"]:hover:not(:disabled) {
+  background: #5c6355;
+  border-color: #5c6355;
+}
+html[data-theme="zen"] .tool-icon-btn {
+  background: transparent;
+  color: #7a8471;
+  border: 1px solid rgba(122,132,113,0.3);
+  border-radius: 999px;
+  transition: background 600ms cubic-bezier(0.22, 1, 0.36, 1), color 600ms ease;
+}
+html[data-theme="zen"] .tool-icon-btn:hover:not(:disabled) {
+  background: rgba(122,132,113,0.1);
+  color: #334155;
+  border-color: #7a8471;
+}
+html[data-theme="zen"] .tool-icon-btn[data-active="true"] {
+  background: #7a8471;
+  color: #f7f9fb;
+}
 
 
 /* ============================================================
@@ -2943,21 +3135,15 @@ html[data-theme="brutalist"] .tools-hub-search { border-radius: 0; border: 2px s
 html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px solid #000; }
 
 
-/* On mobile, the kami-mobile-bar sits at top:0 height:48px and
-   .kami-scope gets padding-top:48px. The ToolShell sticky header
-   needs to stick BELOW that bar, not behind it. */
-@media (max-width: 639px) {
-  .tool-shell-header {
-    top: 48px;
-  }
-}
+/* Tool pages own their header chrome — hide the global mobile bar. */
+body:has(.tool-shell) .kami-mobile-bar { display: none; }
+/* The ToolShell sticky header sticks at top:0 now that the mobile bar is gone. */
 
-/* On mobile, .kami-scope's 48px padding-top adds extra space before
-   the ToolShell header. We don't want that — the sticky header has
-   its own backdrop. Remove the padding when ToolShell is in use. */
+/* On mobile, .kami-scope's 48px padding-top is for the global mobile bar.
+   Tool pages use the ToolShell sticky header instead — reset to 0. */
 @media (max-width: 639px) {
   .kami-scope:has(.tool-shell) {
-    padding-top: 48px;
+    padding-top: 0;
   }
 }
 
@@ -3140,4 +3326,86 @@ html[data-theme="brutalist"] .kc-copyable,
 html[data-theme="brutalist"] .kc-stat {
   border-radius: 0;
   border: 2px solid #000;
+}
+
+/* ============================================================
+   Touch / mobile — form factor parity
+   Strategy: every interactive element >= 44px touch target,
+   keyboard-only affordances hidden on narrow screens,
+   bottom sheet handles swipe-friendly dismiss.
+   Mirrors the wordart chrome.css mobile section.
+   ============================================================ */
+
+@media (max-width: 767px) {
+  /* Hide keyboard-shortcut help button — no physical keyboard on phones */
+  .tool-help-btn { display: none; }
+
+  /* Theme pill in header: ensure 44px touch area */
+  .tool-theme-inline .theme-switcher-pill {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 12px;
+  }
+
+  /* Action/icon buttons in header: 44px touch area */
+  .tool-icon-btn,
+  .tool-shell-icon-btn {
+    min-width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  /* Control group touch targets */
+  .kc-segment-btn {
+    min-height: 44px;
+    padding: 0 14px;
+  }
+  .kc-stepper { height: 48px; }
+  .kc-stepper-btn { width: 48px; font-size: 20px; }
+  .kc-stepper-input { width: 80px; font-size: 16px; }
+
+  /* Panel inner: more padding for thumb reach */
+  .tool-shell-panel-inner { padding: 20px 16px; gap: 22px; }
+
+  /* Range slider: fatter thumb for touch */
+  .kc-range::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+    margin-top: -11px;
+  }
+
+  /* Ensure select uses native picker (best touch UX) */
+  .kc-select { font-size: 16px; } /* prevents iOS zoom on focus */
+}
+
+/* Between 640-767px (small tablets, large phones landscape) */
+@media (min-width: 640px) and (max-width: 767px) {
+  .tool-shell-header { padding: 0 16px; }
+}
+
+/* Prevent iOS double-tap zoom on buttons */
+.tool-action-btn,
+.tool-icon-btn,
+.tool-shell-fab,
+.kc-segment-btn,
+.kc-stepper-btn,
+.tool-shell-icon-btn {
+  touch-action: manipulation;
+}
+
+/* Canvas inside tools: allow touch pan and zoom (don't block scroll) */
+.tool-shell-canvas { touch-action: pan-y; }
+
+/* On touch devices, remove hover-only shadow effects that don't translate */
+@media (hover: none) {
+  .tool-shell-fab:hover { transform: none; box-shadow: 0 4px 14px rgba(0,0,0,0.10); }
+  .kami-tile:hover { transform: none; }
+  html[data-theme="brutalist"] .tool-action-btn:hover:not(:disabled) {
+    transform: none;
+    box-shadow: 3px 3px 0 #000;
+  }
+  html[data-theme="brutalist"] .tool-icon-btn:hover:not(:disabled) {
+    transform: none;
+    box-shadow: 2px 2px 0 #000;
+  }
 }
