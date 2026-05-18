@@ -20,6 +20,11 @@ function getWeekNumber(d: Date): number {
   return Math.ceil(((d.getTime() - start.getTime()) / 86400000 + start.getDay() + 1) / 7);
 }
 
+function getMonthProgress(d: Date): number {
+  const daysInMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  return (d.getDate() - 1 + getDayProgress(d)) / daysInMonth;
+}
+
 function getDayProgress(d: Date): number {
   return (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds()) / 86400;
 }
@@ -121,9 +126,10 @@ function ProgressBar({
 // Component
 // ---------------------------------------------------------------------------
 
-const ACCENT_YEAR = "#f43f5e";
-const ACCENT_WEEK = "#f97316";
-const ACCENT_DAY  = "#facc15";
+const ACCENT_YEAR  = "#f43f5e";
+const ACCENT_MONTH = "#a855f7";
+const ACCENT_WEEK  = "#f97316";
+const ACCENT_DAY   = "#facc15";
 
 export default function YearProgressContent() {
   const [now, setNow] = useState<Date | null>(null);
@@ -143,6 +149,7 @@ export default function YearProgressContent() {
     const daysLeft = daysInYear - dayOfYear;
     const yearPct = dayOfYear / daysInYear;
     const weekPct = getWeekProgress(now);
+    const monthPct = getMonthProgress(now);
     const dayPct  = getDayProgress(now);
     const week = getWeekNumber(now);
     const quarter = Math.ceil((month + 1) / 3);
@@ -157,6 +164,7 @@ export default function YearProgressContent() {
       year,
       yearPct,
       weekPct,
+      monthPct,
       dayPct,
       dayOfYear,
       daysInYear,
@@ -189,15 +197,17 @@ export default function YearProgressContent() {
           {/* Three bars */}
           <div className="p-6 flex flex-col gap-6" style={cardStyle}>
             <ProgressBar label={`${s.year}`} pct={s.yearPct} accent={ACCENT_YEAR} large />
+            <ProgressBar label={s.monthName} pct={s.monthPct} accent={ACCENT_MONTH} />
             <ProgressBar label={`Week ${s.week}`} pct={s.weekPct} accent={ACCENT_WEEK} />
             <ProgressBar label="Today" pct={s.dayPct} accent={ACCENT_DAY} />
           </div>
 
           {/* Stats row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-4 gap-3">
             {[
               { label: "Day", value: `${s.dayOfYear} / ${s.daysInYear}` },
               { label: "Week", value: `${s.week} / 52` },
+              { label: "Month", value: `${s.month + 1} / 12` },
               { label: "Q", value: `${s.quarter} / 4` },
             ].map(({ label, value }) => (
               <div key={label} className="p-4 text-center" style={cardStyle}>

@@ -28,8 +28,13 @@ const DRINK_OPTIONS: DrinkOption[] = [
   { label: "Americano", mg: 128 },
   { label: "Latte", mg: 64 },
   { label: "Cold brew", mg: 200 },
-  { label: "Energy drink", mg: 160 },
+  { label: "Cold brew (grande)", mg: 310 },
+  { label: "Energy drink (standard)", mg: 160 },
+  { label: "Energy drink (large)", mg: 300 },
   { label: "Green tea", mg: 30 },
+  { label: "Black tea", mg: 47 },
+  { label: "Matcha latte", mg: 80 },
+  { label: "Diet Coke (12oz)", mg: 46 },
 ];
 
 const HALF_LIFE_HOURS = 5;
@@ -281,10 +286,12 @@ export default function CaffeineContent() {
                       Drink {idx + 1}
                     </span>
                     {drinks.length > 1 && (
-                      <button
-                        type="button"
+                      <div
+                        role="button"
+                        tabIndex={0}
                         onClick={() => removeDrink(drink.id)}
-                        className="text-xs px-1.5 py-0.5"
+                        onKeyDown={(e) => e.key === "Enter" && removeDrink(drink.id)}
+                        className="text-xs px-1.5 py-0.5 cursor-pointer select-none"
                         style={{
                           color: "var(--kami-text-dim)",
                           border: "1px solid var(--kami-border)",
@@ -293,7 +300,7 @@ export default function CaffeineContent() {
                         }}
                       >
                         Remove
-                      </button>
+                      </div>
                     )}
                   </div>
                   <input
@@ -372,6 +379,22 @@ export default function CaffeineContent() {
                 x2={`${(bedtimeX / 100) * svgWidth}`} y2={svgHeight}
                 stroke="#8b5cf6" strokeWidth="1.5" strokeDasharray="4 3"
               />
+              {/* Drink time markers */}
+              {drinks.map((d) => {
+                const [dh, dm] = d.time.split(":").map(Number);
+                const drinkPct = ((dh + dm / 60) / CHART_HOURS) * 100;
+                return (
+                  <circle
+                    key={d.id}
+                    cx={`${(drinkPct / 100) * svgWidth}`}
+                    cy={svgHeight * 0.07}
+                    r={4}
+                    fill="#f59e0b"
+                    stroke="var(--kami-surface-solid, #fff)"
+                    strokeWidth={2}
+                  />
+                );
+              })}
               {/* Now marker */}
               {now && (
                 <line

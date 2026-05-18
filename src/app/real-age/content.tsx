@@ -86,9 +86,9 @@ export default function RealAgeContent() {
         note: "exact count",
       },
       {
-        number: totalDays.toLocaleString("en-US"),
-        label: "Sunrises witnessed",
-        note: "give or take a few deep sleeps",
+        number: formatBigNumber(totalDays * 26000),
+        label: "Breaths taken",
+        note: "~26,000 per day",
       },
       {
         number: `~${hoursSlept.toLocaleString("en-US")} hrs`,

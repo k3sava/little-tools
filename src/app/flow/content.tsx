@@ -98,8 +98,8 @@ export default function FlowContent() {
         return;
       }
     }
-    setSelectedId(emptyTree().startId);
-    setPreviewNodeId(emptyTree().startId);
+    setSelectedId(tree.startId);
+    setPreviewNodeId(tree.startId);
   }, []);
 
   const selectedNode = useMemo(
@@ -315,10 +315,13 @@ export default function FlowContent() {
             <ControlGroup label={`Questions (${tree.nodes.length})`}>
               <div className="flex flex-col gap-1">
                 {tree.nodes.map((n) => (
-                  <button
+                  <div
                     key={n.id}
+                    role="button"
+                    tabIndex={0}
                     onClick={() => setSelectedId(n.id)}
-                    className="text-left px-3 py-2 rounded-lg text-xs leading-snug truncate"
+                    onKeyDown={(e) => e.key === "Enter" && setSelectedId(n.id)}
+                    className="text-left px-3 py-2 rounded-lg text-xs leading-snug truncate cursor-pointer select-none"
                     style={{
                       background: n.id === selectedId ? ACCENT : "var(--kami-surface)",
                       color: n.id === selectedId ? "#fff" : "var(--kami-text)",
@@ -329,12 +332,15 @@ export default function FlowContent() {
                       <span className="opacity-60 mr-1">[start]</span>
                     )}
                     {n.question.slice(0, 50)}{n.question.length > 50 ? "…" : ""}
-                  </button>
+                  </div>
                 ))}
               </div>
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={addNode}
-                className="mt-2 w-full py-2 rounded-lg text-xs font-medium border"
+                onKeyDown={(e) => e.key === "Enter" && addNode()}
+                className="mt-2 w-full py-2 rounded-lg text-xs font-medium text-center cursor-pointer select-none"
                 style={{
                   border: `1px dashed ${ACCENT}`,
                   color: ACCENT,
@@ -342,34 +348,40 @@ export default function FlowContent() {
                 }}
               >
                 + Add question
-              </button>
+              </div>
             </ControlGroup>
 
             {selectedNode && (
               <ControlGroup label="Start node">
-                <button
-                  onClick={() => setTree((p) => ({ ...p, startId: selectedNode.id }))}
-                  disabled={tree.startId === selectedNode.id}
-                  className="w-full py-2 rounded-lg text-xs font-medium"
+                <div
+                  role="button"
+                  tabIndex={tree.startId === selectedNode.id ? -1 : 0}
+                  onClick={() => tree.startId !== selectedNode.id && setTree((p) => ({ ...p, startId: selectedNode.id }))}
+                  onKeyDown={(e) => e.key === "Enter" && tree.startId !== selectedNode.id && setTree((p) => ({ ...p, startId: selectedNode.id }))}
+                  className="w-full py-2 rounded-lg text-xs font-medium text-center select-none"
                   style={{
                     background: tree.startId === selectedNode.id ? "var(--kami-border-strong)" : ACCENT,
                     color: tree.startId === selectedNode.id ? "var(--kami-text-dim)" : "#fff",
+                    cursor: tree.startId === selectedNode.id ? "default" : "pointer",
                   }}
                 >
                   {tree.startId === selectedNode.id ? "This is the start" : "Set as start"}
-                </button>
+                </div>
               </ControlGroup>
             )}
           </>
         ) : (
           <ControlGroup label="Preview">
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={resetPreview}
-              className="w-full py-2 rounded-lg text-xs font-medium"
+              onKeyDown={(e) => e.key === "Enter" && resetPreview()}
+              className="w-full py-2 rounded-lg text-xs font-medium text-center cursor-pointer select-none"
               style={{ background: ACCENT, color: "#fff" }}
             >
               Restart flow
-            </button>
+            </div>
           </ControlGroup>
         )
       }
@@ -398,13 +410,16 @@ export default function FlowContent() {
               <BranchEditor nodeId={selectedNode.id} dir="no" branch={selectedNode.no} />
             </div>
             {tree.nodes.length > 1 && (
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={() => deleteNode(selectedNode.id)}
-                className="self-start text-xs px-3 py-1.5 rounded-lg"
+                onKeyDown={(e) => e.key === "Enter" && deleteNode(selectedNode.id)}
+                className="self-start text-xs px-3 py-1.5 rounded-lg cursor-pointer select-none"
                 style={{ color: "#ef4444", background: "#fef2f2", border: "1px solid #fecaca" }}
               >
                 Delete this question
-              </button>
+              </div>
             )}
           </div>
 
@@ -432,13 +447,16 @@ export default function FlowContent() {
                   </p>
                 </div>
               </div>
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={resetPreview}
-                className="self-start text-sm px-4 py-2 rounded-lg font-medium"
+                onKeyDown={(e) => e.key === "Enter" && resetPreview()}
+                className="self-start text-sm px-4 py-2 rounded-lg font-medium cursor-pointer select-none"
                 style={{ background: ACCENT, color: "#fff" }}
               >
                 Start over
-              </button>
+              </div>
             </div>
           ) : previewNode ? (
             <div className="p-6 flex flex-col gap-5" style={cardStyle}>
@@ -446,16 +464,22 @@ export default function FlowContent() {
                 {previewNode.question}
               </p>
               <div className="flex gap-3">
-                <button
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleAnswer(previewNode.yes)}
-                  className="flex-1 py-3 rounded-xl text-sm font-medium text-white"
-                  style={{ background: ACCENT }}
+                  onKeyDown={(e) => e.key === "Enter" && handleAnswer(previewNode.yes)}
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-center cursor-pointer select-none"
+                  style={{ background: ACCENT, color: "#fff" }}
                 >
                   Yes
-                </button>
-                <button
+                </div>
+                <div
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleAnswer(previewNode.no)}
-                  className="flex-1 py-3 rounded-xl text-sm font-medium border"
+                  onKeyDown={(e) => e.key === "Enter" && handleAnswer(previewNode.no)}
+                  className="flex-1 py-3 rounded-xl text-sm font-medium text-center cursor-pointer select-none"
                   style={{
                     border: "1px solid var(--kami-border-strong)",
                     color: "var(--kami-text)",
@@ -463,7 +487,7 @@ export default function FlowContent() {
                   }}
                 >
                   No
-                </button>
+                </div>
               </div>
             </div>
           ) : (

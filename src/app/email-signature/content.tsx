@@ -263,17 +263,21 @@ export default function EmailSignatureContent() {
               <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
                 HTML to paste in Gmail / Outlook
               </p>
-              <button
+              <div
+                role="button"
+                tabIndex={0}
                 onClick={copyHTML}
-                className="text-xs px-3 py-1 rounded-md font-medium"
+                onKeyDown={(e) => e.key === "Enter" && copyHTML()}
+                className="text-xs px-3 py-1 rounded-md font-medium cursor-pointer select-none"
                 style={{
                   background: copied === "html" ? "#10b981" : "var(--kami-border-strong)",
                   color: copied === "html" ? "#fff" : "var(--kami-text)",
                   transition: "background 0.2s",
+                  display: "inline-block",
                 }}
               >
                 {copied === "html" ? "Copied!" : "Copy"}
-              </button>
+              </div>
             </div>
             <pre
               className="text-xs overflow-x-auto rounded-lg p-3 whitespace-pre-wrap break-all"
@@ -299,13 +303,16 @@ export default function EmailSignatureContent() {
                 The link encodes your signature — no account or storage needed.
               </p>
             </div>
-            <button
+            <div
+              role="button"
+              tabIndex={0}
               onClick={copyURL}
-              className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium text-white"
-              style={{ background: copied === "url" ? "#10b981" : ACCENT, transition: "background 0.2s" }}
+              onKeyDown={(e) => e.key === "Enter" && copyURL()}
+              className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer select-none"
+              style={{ background: copied === "url" ? "#10b981" : ACCENT, color: "#fff", transition: "background 0.2s" }}
             >
               {copied === "url" ? "Copied!" : "Copy link"}
-            </button>
+            </div>
           </div>
         )}
       </div>

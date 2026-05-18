@@ -139,6 +139,7 @@ export default function MeetingCostContent() {
   }, [running]);
 
   const has30MinWarning = elapsed >= 30 * 60;
+  const hasEmailVerdict = elapsed >= 45 * 60;
 
   const cardStyle = {
     background: "var(--kami-surface-solid)",
@@ -237,11 +238,6 @@ export default function MeetingCostContent() {
               <p className="mt-2 text-sm" style={{ color: "var(--kami-text-dim)" }}>
                 {attendees} people · ${salary.toLocaleString("en-US")}/yr avg
               </p>
-              <div className="mt-6">
-                <ToolActionButton onClick={start} variant="solid">
-                  Start Meeting
-                </ToolActionButton>
-              </div>
             </>
           ) : (
             <>
@@ -281,7 +277,7 @@ export default function MeetingCostContent() {
         )}
 
         {/* 30-minute warning */}
-        {has30MinWarning && (
+        {has30MinWarning && !hasEmailVerdict && (
           <div
             className="p-4"
             style={{
@@ -291,6 +287,24 @@ export default function MeetingCostContent() {
           >
             <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
               This meeting has been going for 30 minutes. Just saying.
+            </p>
+          </div>
+        )}
+
+        {/* 45-minute verdict */}
+        {hasEmailVerdict && (
+          <div
+            className="p-4"
+            style={{
+              ...cardStyle,
+              borderLeft: "3px solid #ef4444",
+            }}
+          >
+            <p className="text-sm font-medium" style={{ color: "#ef4444" }}>
+              This could have been an email.
+            </p>
+            <p className="text-xs mt-1" style={{ color: "var(--kami-text-dim)" }}>
+              45 minutes × {attendees} people = {attendees * 45} person-minutes. Someone write the summary.
             </p>
           </div>
         )}
