@@ -160,7 +160,7 @@ export default function RealAgeContent() {
         </ControlGroup>
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
         {!stats && (
           <div className="p-6 text-center" style={cardStyle}>
             <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>

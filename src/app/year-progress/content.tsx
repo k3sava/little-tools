@@ -193,7 +193,7 @@ export default function YearProgressContent() {
       hideControls
     >
       {s && (
-        <div className="flex flex-col gap-4 max-w-xl">
+        <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
           {/* Three bars */}
           <div className="p-6 flex flex-col gap-6" style={cardStyle}>
             <ProgressBar label={`${s.year}`} pct={s.yearPct} accent={ACCENT_YEAR} large />

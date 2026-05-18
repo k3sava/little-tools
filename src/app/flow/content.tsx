@@ -387,7 +387,7 @@ export default function FlowContent() {
       }
     >
       {mode === "build" && selectedNode ? (
-        <div className="flex flex-col gap-4 max-w-lg">
+        <div className="flex flex-col gap-4 max-w-lg mx-auto w-full">
           <div className="p-5 flex flex-col gap-4" style={cardStyle}>
             <div>
               <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--kami-text-dim)" }}>
@@ -428,7 +428,7 @@ export default function FlowContent() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 max-w-lg">
+        <div className="flex flex-col gap-4 max-w-lg mx-auto w-full">
           {/* Title */}
           <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
             {tree.title}

@@ -2,7 +2,7 @@
 
 > Free, ad-free, privacy-first browser tools by Kesava. All processing happens client-side. No accounts, no data collection.
 
-Counts: 56 tools across 8 collections.
+Counts: 63 tools across 8 collections.
 
 ## Index
 
@@ -50,6 +50,7 @@ Counts: 56 tools across 8 collections.
 - [UUID / ULID Generator](https://tools.iamkesava.com/uuid-generator/): Generate UUID v4 and ULID identifiers in bulk.
 - [Timestamp Converter](https://tools.iamkesava.com/timestamp/): Convert between Unix timestamps and dates.
 - [Cron Builder](https://tools.iamkesava.com/cron-builder/): Build and validate cron expressions visually.
+- [Decision Flow](https://tools.iamkesava.com/flow/): Build a yes/no troubleshooting tree and share it as a link.
 
 ### Designers
 
@@ -148,6 +149,13 @@ Counts: 56 tools across 8 collections.
 - [PDF Compress](https://tools.iamkesava.com/pdf-compress/): Reduce PDF file size without uploading. 100% client-side.
 - [PDF Split](https://tools.iamkesava.com/pdf-split/): Extract specific pages from a PDF. 100% client-side.
 - [Video Converter](https://tools.iamkesava.com/video-converter/): Convert videos between MP4 and WebM. 100% client-side, no uploads, no limits.
+- [Year Progress](https://tools.iamkesava.com/year-progress/): How far through the year are you, with opinions.
+- [Life in Numbers](https://tools.iamkesava.com/real-age/): Your age in units that actually mean something.
+- [Caffeine Clock](https://tools.iamkesava.com/caffeine/): When will your coffee actually wear off?
+- [Meeting Cost Meter](https://tools.iamkesava.com/meeting-cost/): The live cost of this meeting, in real time.
+- [How's Outside?](https://tools.iamkesava.com/outside/): Weather without the numbers. Warmer than yesterday? Good for what?
+- [Email Signature](https://tools.iamkesava.com/email-signature/): Generate a clean email signature and share it via link.
+- [Decision Flow](https://tools.iamkesava.com/flow/): Build a yes/no troubleshooting tree and share it as a link.
 
 ## URL templates
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, X } from "lucide-react";
 import { useBreadcrumb } from "@/contexts/breadcrumb-context";
+import { ShortcutContext } from "@/contexts/shortcut-context";
 
 export interface ToolShellProps {
   /** Tool title shown in the header */
@@ -27,6 +28,29 @@ export interface ToolShellProps {
   controlsLabel?: string;
   /** Desktop side panel width in CSS units */
   panelWidth?: string;
+}
+
+function formatShortcutKey(key: string, meta?: boolean, shift?: boolean, alt?: boolean): string {
+  const parts: string[] = [];
+  if (meta) parts.push("⌘");
+  if (alt) parts.push("⌥");
+  if (shift) parts.push("⇧");
+  const keyMap: Record<string, string> = {
+    enter: "↵",
+    return: "↵",
+    escape: "Esc",
+    backspace: "⌫",
+    delete: "⌦",
+    tab: "⇥",
+    arrowup: "↑",
+    arrowdown: "↓",
+    arrowleft: "←",
+    arrowright: "→",
+    " ": "Space",
+  };
+  const display = keyMap[key.toLowerCase()] ?? key.toUpperCase();
+  parts.push(display);
+  return parts.join("");
 }
 
 function ToolShareButton() {
@@ -79,19 +103,22 @@ export function ToolShell({
 }: ToolShellProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const breadcrumb = useBreadcrumb();
+  const shortcutCtx = useContext(ShortcutContext);
+  const labeledShortcuts = shortcutCtx?.shortcuts.filter((s) => s.label) ?? [];
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
 
   // Lock body scroll when bottom-sheet is open on mobile
   useEffect(() => {
-    if (!sheetOpen && !infoOpen) return;
+    if (!sheetOpen && !infoOpen && !helpOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = prev;
     };
-  }, [sheetOpen, infoOpen]);
+  }, [sheetOpen, infoOpen, helpOpen]);
 
   // Close sheets on Esc
   useEffect(() => {
@@ -99,6 +126,7 @@ export function ToolShell({
       if (e.key === "Escape") {
         setSheetOpen(false);
         setInfoOpen(false);
+        setHelpOpen(false);
       }
     }
     window.addEventListener("keydown", onKey);
@@ -146,6 +174,17 @@ export function ToolShell({
         <div className="tool-shell-actions">
           {actions}
           <ToolShareButton />
+          {labeledShortcuts.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              aria-label="Keyboard shortcuts"
+              data-variant="ghost"
+              className="tool-action-btn tool-help-btn"
+            >
+              ?
+            </button>
+          )}
         </div>
       </header>
 
@@ -240,6 +279,47 @@ export function ToolShell({
           </div>
           <div className="tool-shell-panel-inner">{info}</div>
         </div>
+      )}
+
+      {/* Keyboard shortcuts modal */}
+      {helpOpen && (
+        <>
+          <div
+            className="tool-shortcuts-overlay"
+            onClick={() => setHelpOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            className="tool-shortcuts-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Keyboard shortcuts"
+          >
+            <div className="tool-shortcuts-modal-header">
+              <span className="text-sm font-semibold uppercase tracking-wide">
+                Keyboard shortcuts
+              </span>
+              <button
+                type="button"
+                onClick={() => setHelpOpen(false)}
+                className="tool-shell-icon-btn"
+                aria-label="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="tool-shortcuts-modal-body">
+              {labeledShortcuts.map((s, i) => (
+                <div key={i} className="tool-shortcuts-row">
+                  <kbd className="tool-shortcuts-kbd">
+                    {formatShortcutKey(s.key, s.meta, s.shift, s.alt)}
+                  </kbd>
+                  <span className="tool-shortcuts-label">{s.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

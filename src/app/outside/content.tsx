@@ -326,7 +326,7 @@ export default function OutsideContent() {
       )}
 
       {data && condition && personality && (
-        <div className="flex flex-col gap-4 max-w-lg">
+        <div className="flex flex-col gap-4 max-w-lg mx-auto w-full">
           {/* Location + mood */}
           <div className="p-6 flex flex-col gap-3" style={cardStyle}>
             <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>

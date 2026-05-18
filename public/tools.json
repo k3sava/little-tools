@@ -2,9 +2,9 @@
   "$schema": "https://tools.iamkesava.com/tools.schema.json",
   "site": "https://tools.iamkesava.com",
   "license": "MIT",
-  "last_updated": "2026-05-16",
+  "last_updated": "2026-05-18",
   "counts": {
-    "tools": 56,
+    "tools": 63,
     "collections": 8
   },
   "collections": [
@@ -964,6 +964,122 @@
         "webm",
         "mov",
         "transcode"
+      ]
+    },
+    {
+      "slug": "year-progress",
+      "name": "Year Progress",
+      "url": "https://tools.iamkesava.com/year-progress",
+      "description": "How far through the year are you, with opinions.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "year",
+        "progress",
+        "time",
+        "calendar",
+        "goals"
+      ]
+    },
+    {
+      "slug": "real-age",
+      "name": "Life in Numbers",
+      "url": "https://tools.iamkesava.com/real-age",
+      "description": "Your age in units that actually mean something.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "age",
+        "birthday",
+        "life",
+        "time",
+        "heartbeat",
+        "years"
+      ]
+    },
+    {
+      "slug": "caffeine",
+      "name": "Caffeine Clock",
+      "url": "https://tools.iamkesava.com/caffeine",
+      "description": "When will your coffee actually wear off?",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "caffeine",
+        "coffee",
+        "sleep",
+        "energy",
+        "half-life"
+      ]
+    },
+    {
+      "slug": "meeting-cost",
+      "name": "Meeting Cost Meter",
+      "url": "https://tools.iamkesava.com/meeting-cost",
+      "description": "The live cost of this meeting, in real time.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "meeting",
+        "cost",
+        "salary",
+        "productivity",
+        "time",
+        "money"
+      ]
+    },
+    {
+      "slug": "outside",
+      "name": "How's Outside?",
+      "url": "https://tools.iamkesava.com/outside",
+      "description": "Weather without the numbers. Warmer than yesterday? Good for what?",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "weather",
+        "outside",
+        "temperature",
+        "forecast",
+        "feels like"
+      ]
+    },
+    {
+      "slug": "email-signature",
+      "name": "Email Signature",
+      "url": "https://tools.iamkesava.com/email-signature",
+      "description": "Generate a clean email signature and share it via link.",
+      "collections": [
+        "everyone"
+      ],
+      "keywords": [
+        "email",
+        "signature",
+        "gmail",
+        "outlook",
+        "contact"
+      ]
+    },
+    {
+      "slug": "flow",
+      "name": "Decision Flow",
+      "url": "https://tools.iamkesava.com/flow",
+      "description": "Build a yes/no troubleshooting tree and share it as a link.",
+      "collections": [
+        "developers",
+        "everyone"
+      ],
+      "keywords": [
+        "decision",
+        "tree",
+        "troubleshoot",
+        "flow",
+        "diagram",
+        "embed"
       ]
     }
   ]

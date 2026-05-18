@@ -238,7 +238,7 @@ export default function EmailSignatureContent() {
         </>
       }
     >
-      <div className="flex flex-col gap-4 max-w-2xl">
+      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
         {/* Live preview */}
         <div className="p-6" style={cardStyle}>
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--kami-text-dim)" }}>
