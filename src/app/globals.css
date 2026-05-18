@@ -2143,10 +2143,15 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   white-space: nowrap;
 }
 .tool-shell-breadcrumb a {
-  color: var(--kami-text-dim);
-  text-decoration: none;
+  color: var(--kami-text-dim) !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+  transition: color 0.2s ease;
 }
-.tool-shell-breadcrumb a:hover { color: var(--kami-text-muted); }
+.tool-shell-breadcrumb a:hover {
+  color: var(--kami-text-muted) !important;
+  background: transparent !important;
+}
 .tool-shell-breadcrumb-sep {
   margin: 0 4px;
   opacity: 0.4;
