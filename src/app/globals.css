@@ -2090,6 +2090,7 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   position: relative;
 }
 
+/* ── Tool Shell Header ─────────────────────────────────────────────────────── */
 .tool-shell-header {
   position: sticky;
   top: 0;
@@ -2097,84 +2098,140 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   min-height: var(--tool-shell-header-h);
-  padding: 10px 14px;
+  padding: 0 14px;
   background: color-mix(in srgb, var(--kami-bg) 92%, transparent);
   backdrop-filter: saturate(140%) blur(10px);
   -webkit-backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid var(--kami-border-strong);
 }
 @media (min-width: 768px) {
-  .tool-shell-header {
-    padding: 10px 20px;
-  }
+  .tool-shell-header { padding: 0 20px; }
 }
 
+/* Left group: theme pill + divider + breadcrumb + title row */
 .tool-shell-title-block {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
   flex: 1 1 auto;
+  overflow: hidden;
 }
-.tool-shell-accent-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
+
+/* Vertical hair-line divider between theme pill and breadcrumb */
+.tool-shell-header-div {
+  display: none;
+  width: 1px;
+  height: 16px;
+  background: var(--kami-border-strong);
   flex: 0 0 auto;
 }
+@media (min-width: 768px) {
+  .tool-shell-header-div { display: block; }
+}
+
+/* Breadcrumb: home · apps · tools — inline, desktop only */
 .tool-shell-breadcrumb {
   display: none;
-  font-size: 10px;
-  line-height: 1.2;
+  align-items: center;
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 1;
   color: var(--kami-text-dim);
-  margin-bottom: 2px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .tool-shell-breadcrumb a {
   color: var(--kami-text-dim);
   text-decoration: none;
 }
-.tool-shell-breadcrumb a:hover {
-  color: var(--kami-text-muted);
-}
+.tool-shell-breadcrumb a:hover { color: var(--kami-text-muted); }
 .tool-shell-breadcrumb-sep {
-  margin: 0 3px;
-  opacity: 0.5;
+  margin: 0 4px;
+  opacity: 0.4;
+  flex: 0 0 auto;
+}
+/* The · between breadcrumb and title */
+.tool-shell-title-sep {
+  display: none;
+  font-size: 11px;
+  color: var(--kami-text-dim);
+  opacity: 0.4;
+  flex: 0 0 auto;
 }
 @media (min-width: 768px) {
-  .tool-shell-breadcrumb { display: block; }
+  .tool-shell-breadcrumb { display: flex; }
+  .tool-shell-title-sep { display: inline; }
+}
+
+/* Title row: accent dot + h1 + tagline — all inline */
+.tool-shell-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+}
+.tool-shell-accent-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex: 0 0 auto;
 }
 .tool-shell-title {
   font-family: var(--kami-font-display);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: var(--kami-heading-weight, 600);
   letter-spacing: var(--kami-heading-tracking, -0.01em);
   text-transform: var(--kami-heading-case, none);
   color: var(--kami-text);
-  line-height: 1.2;
+  line-height: 1;
   margin: 0;
   white-space: nowrap;
+  flex: 0 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Tagline: inline after title, shrinks and hides first */
 .tool-shell-tagline {
-  font-size: 12px;
-  color: var(--kami-text-muted);
-  margin: 0;
+  font-size: 11px;
+  color: var(--kami-text-dim);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: none;
+  flex-shrink: 10;
+  line-height: 1;
 }
 @media (min-width: 768px) {
-  .tool-shell-title { font-size: 16px; }
-  .tool-shell-tagline { display: block; }
+  .tool-shell-title { font-size: 14px; }
+  .tool-shell-tagline { display: inline; }
 }
+@media (min-width: 1024px) {
+  .tool-shell-tagline { display: inline; }
+}
+
+/* Inline theme switcher — pill sized to match action buttons */
+.tool-theme-inline {
+  position: relative;
+  flex: 0 0 auto;
+}
+.tool-theme-inline .theme-switcher-pill {
+  width: auto;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.tool-theme-inline-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 10100;
+}
+
 .tool-shell-actions {
   display: flex;
   align-items: center;
@@ -2900,16 +2957,10 @@ html[data-theme="brutalist"] .tools-hub-chip { border-radius: 0; border: 2px sol
 }
 
 
-/* On tool pages: share button lives in the tool-shell header actions.
-   Hide the global floating one. Theme switcher stays at its default top-left
-   position (top: 0.85rem; left: 1.8rem) so it visually sits in the sticky header.
-   Reserve space in the header so the title doesn't collide with it. */
+/* On tool pages: share + theme switcher live inside the tool-shell header.
+   Hide the global floating versions. */
 body:has(.tool-shell) .kami-share-btn { display: none !important; }
-@media (min-width: 640px) {
-  body:has(.tool-shell) .tool-shell-header {
-    padding-left: 58px !important;
-  }
-}
+body:has(.tool-shell) .theme-switcher-container { display: none !important; }
 
 /* Keyboard shortcuts modal */
 .tool-shortcuts-overlay {

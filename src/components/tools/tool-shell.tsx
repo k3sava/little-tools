@@ -6,52 +6,101 @@ import { useBreadcrumb } from "@/contexts/breadcrumb-context";
 import { ShortcutContext } from "@/contexts/shortcut-context";
 
 export interface ToolShellProps {
-  /** Tool title shown in the header */
   title: string;
-  /** Optional one-line tagline shown under the title on desktop */
   tagline?: string;
-  /** Optional accent dot color (matches the tool's primary collection) */
   accent?: string;
-  /** Toolbar actions rendered top-right (copy, download, reset, share, ...) */
   actions?: React.ReactNode;
-  /** Main workspace — text editor, canvas, preview, etc. */
   children: React.ReactNode;
-  /** Side panel content — sliders, dropdowns, toggles */
   controls?: React.ReactNode;
-  /** Optional secondary panel — usually help/info/tips */
   info?: React.ReactNode;
-  /** Floating action bar pinned to bottom on mobile (CTA: copy/download/...) */
   mobileAction?: React.ReactNode;
-  /** When true, hide the controls panel (e.g. tool has no settings) */
   hideControls?: boolean;
-  /** Label used for the mobile bottom-sheet toggle button */
   controlsLabel?: string;
-  /** Desktop side panel width in CSS units */
   panelWidth?: string;
 }
 
-function formatShortcutKey(key: string, meta?: boolean, shift?: boolean, alt?: boolean): string {
-  const parts: string[] = [];
-  if (meta) parts.push("⌘");
-  if (alt) parts.push("⌥");
-  if (shift) parts.push("⇧");
-  const keyMap: Record<string, string> = {
-    enter: "↵",
-    return: "↵",
-    escape: "Esc",
-    backspace: "⌫",
-    delete: "⌦",
-    tab: "⇥",
-    arrowup: "↑",
-    arrowdown: "↓",
-    arrowleft: "←",
-    arrowright: "→",
-    " ": "Space",
-  };
-  const display = keyMap[key.toLowerCase()] ?? key.toUpperCase();
-  parts.push(display);
-  return parts.join("");
+// ── Inline Theme Switcher ────────────────────────────────────────────────────
+
+const THEMES = [
+  { id: "default",    label: "classic",   icon: "○" },
+  { id: "brutalist",  label: "brutalist", icon: "■" },
+  { id: "editorial",  label: "editorial", icon: "¶" },
+  { id: "terminal",   label: "phosphor",  icon: ">" },
+  { id: "zen",        label: "zen",       icon: "◯" },
+] as const;
+
+type ThemeId = (typeof THEMES)[number]["id"];
+
+function applyTheme(theme: ThemeId) {
+  const html = document.documentElement;
+  if (theme === "default") {
+    html.removeAttribute("data-theme");
+  } else {
+    html.setAttribute("data-theme", theme);
+  }
 }
+
+function InlineThemeSwitcher() {
+  const [theme, setTheme] = useState<ThemeId>("brutalist");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") as ThemeId | null;
+    const id = (saved && THEMES.some((t) => t.id === saved)) ? saved : "brutalist";
+    setTheme(id);
+    applyTheme(id);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    function onClickOut(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOut);
+    return () => document.removeEventListener("mousedown", onClickOut);
+  }, [open]);
+
+  const select = useCallback((id: ThemeId) => {
+    setTheme(id);
+    applyTheme(id);
+    localStorage.setItem("theme", id);
+    setOpen(false);
+  }, []);
+
+  const current = THEMES.find((t) => t.id === theme)!;
+
+  return (
+    <div ref={ref} className="tool-theme-inline" aria-label="Switch theme">
+      <button
+        type="button"
+        className="theme-switcher-pill"
+        onClick={() => setOpen((v) => !v)}
+        aria-label={`Theme: ${current.label}`}
+        title={current.label}
+      >
+        <span className="theme-switcher-pill-icon">{current.icon}</span>
+      </button>
+      {open && (
+        <div className="tool-theme-inline-picker theme-switcher-picker">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`theme-switcher-option${t.id === theme ? " active" : ""}`}
+              onClick={() => select(t.id)}
+            >
+              <span className="theme-switcher-option-icon">{t.icon}</span>
+              <span>{t.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Share button ─────────────────────────────────────────────────────────────
 
 function ToolShareButton() {
   const [state, setState] = useState<"idle" | "copied">("idle");
@@ -88,6 +137,24 @@ function ToolShareButton() {
   );
 }
 
+// ── Keyboard shortcut formatting ─────────────────────────────────────────────
+
+function formatShortcutKey(key: string, meta?: boolean, shift?: boolean, alt?: boolean) {
+  const parts: string[] = [];
+  if (meta) parts.push("⌘");
+  if (alt) parts.push("⌥");
+  if (shift) parts.push("⇧");
+  const keyMap: Record<string, string> = {
+    enter: "↵", return: "↵", escape: "Esc", backspace: "⌫",
+    delete: "⌦", tab: "⇥", arrowup: "↑", arrowdown: "↓",
+    arrowleft: "←", arrowright: "→", " ": "Space",
+  };
+  parts.push(keyMap[key.toLowerCase()] ?? key.toUpperCase());
+  return parts.join("");
+}
+
+// ── ToolShell ────────────────────────────────────────────────────────────────
+
 export function ToolShell({
   title,
   tagline,
@@ -110,17 +177,16 @@ export function ToolShell({
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
 
-  // Lock body scroll when bottom-sheet is open on mobile
+  // Show only home · apps · tools (first 3 items)
+  const navCrumbs = breadcrumb.slice(0, 3);
+
   useEffect(() => {
     if (!sheetOpen && !infoOpen && !helpOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [sheetOpen, infoOpen, helpOpen]);
 
-  // Close sheets on Esc
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -136,41 +202,50 @@ export function ToolShell({
   return (
     <div
       className="tool-shell"
-      style={
-        {
-          "--tool-shell-panel-w": panelWidth,
-          color: "var(--kami-text)",
-        } as React.CSSProperties
-      }
+      style={{ "--tool-shell-panel-w": panelWidth, color: "var(--kami-text)" } as React.CSSProperties}
     >
-      {/* Header */}
+      {/* ── Header ── */}
       <header className="tool-shell-header">
         <div className="tool-shell-title-block">
-          {accent && (
-            <span
-              aria-hidden="true"
-              className="tool-shell-accent-dot"
-              style={{ backgroundColor: accent }}
-            />
+          {/* Theme switcher — leftmost */}
+          <InlineThemeSwitcher />
+
+          {/* Vertical divider */}
+          <span className="tool-shell-header-div" aria-hidden="true" />
+
+          {/* Breadcrumb: home · apps · tools */}
+          {navCrumbs.length > 0 && (
+            <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
+              {navCrumbs.map((item, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="tool-shell-breadcrumb-sep">·</span>}
+                  {item.href
+                    ? <a href={item.href}>{item.label}</a>
+                    : <span>{item.label}</span>
+                  }
+                </span>
+              ))}
+            </nav>
           )}
-          <div className="min-w-0">
-            {breadcrumb.length > 0 && (
-              <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
-                {breadcrumb.map((item, i) => (
-                  <span key={i}>
-                    {i > 0 && <span className="tool-shell-breadcrumb-sep">·</span>}
-                    {item.href
-                      ? <a href={item.href}>{item.label}</a>
-                      : <span>{item.label}</span>
-                    }
-                  </span>
-                ))}
-              </nav>
+
+          {/* Separator dot between breadcrumb and title */}
+          {navCrumbs.length > 0 && (
+            <span className="tool-shell-breadcrumb-sep tool-shell-title-sep" aria-hidden="true">·</span>
+          )}
+
+          {/* Title + accent dot + tagline — all inline */}
+          <div className="tool-shell-title-row">
+            {accent && (
+              <span aria-hidden="true" className="tool-shell-accent-dot" style={{ backgroundColor: accent }} />
             )}
             <h1 className="tool-shell-title">{title}</h1>
-            {tagline && <p className="tool-shell-tagline">{tagline}</p>}
+            {tagline && (
+              <span className="tool-shell-tagline" aria-label={tagline}>— {tagline}</span>
+            )}
           </div>
         </div>
+
+        {/* Actions — rightmost */}
         <div className="tool-shell-actions">
           {actions}
           <ToolShareButton />
@@ -188,30 +263,16 @@ export function ToolShell({
         </div>
       </header>
 
-      {/* Body grid */}
-      <div
-        className={`tool-shell-body ${
-          hasControls ? "has-controls" : "no-controls"
-        }`}
-      >
+      {/* ── Body grid ── */}
+      <div className={`tool-shell-body ${hasControls ? "has-controls" : "no-controls"}`}>
         <main className="tool-shell-canvas">{children}</main>
 
         {hasControls && (
-          <aside
-            className={`tool-shell-panel ${sheetOpen ? "is-open" : ""}`}
-            aria-label="Controls"
-          >
+          <aside className={`tool-shell-panel ${sheetOpen ? "is-open" : ""}`} aria-label="Controls">
             <div className="tool-shell-panel-handle" aria-hidden="true" />
             <div className="tool-shell-panel-header md:hidden">
-              <span className="text-sm font-semibold uppercase tracking-wide">
-                {controlsLabel}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSheetOpen(false)}
-                className="tool-shell-icon-btn"
-                aria-label="Close controls"
-              >
+              <span className="text-sm font-semibold uppercase tracking-wide">{controlsLabel}</span>
+              <button type="button" onClick={() => setSheetOpen(false)} className="tool-shell-icon-btn" aria-label="Close controls">
                 <X size={16} />
               </button>
             </div>
@@ -220,16 +281,11 @@ export function ToolShell({
         )}
       </div>
 
-      {/* Mobile floating action: controls toggle + info toggle + extra action */}
+      {/* ── Mobile FAB row ── */}
       <div className="tool-shell-fab-row">
         {mobileAction}
         {hasInfo && (
-          <button
-            type="button"
-            className="tool-shell-fab"
-            onClick={() => setInfoOpen((v) => !v)}
-            aria-label="Show info"
-          >
+          <button type="button" className="tool-shell-fab" onClick={() => setInfoOpen((v) => !v)} aria-label="Show info">
             <span aria-hidden="true">?</span>
           </button>
         )}
@@ -247,33 +303,18 @@ export function ToolShell({
         )}
       </div>
 
-      {/* Backdrop for open sheets */}
+      {/* ── Sheet backdrop ── */}
       {(sheetOpen || infoOpen) && (
-        <button
-          type="button"
-          aria-label="Close panel"
-          className="tool-shell-backdrop"
-          onClick={() => {
-            setSheetOpen(false);
-            setInfoOpen(false);
-          }}
-        />
+        <button type="button" aria-label="Close panel" className="tool-shell-backdrop" onClick={() => { setSheetOpen(false); setInfoOpen(false); }} />
       )}
 
-      {/* Info drawer (separate from controls; opens above sheet) */}
+      {/* ── Info drawer ── */}
       {hasInfo && (
         <div className={`tool-shell-info ${infoOpen ? "is-open" : ""}`}>
           <div className="tool-shell-panel-handle" aria-hidden="true" />
           <div className="tool-shell-panel-header">
-            <span className="text-sm font-semibold uppercase tracking-wide">
-              About
-            </span>
-            <button
-              type="button"
-              onClick={() => setInfoOpen(false)}
-              className="tool-shell-icon-btn"
-              aria-label="Close info"
-            >
+            <span className="text-sm font-semibold uppercase tracking-wide">About</span>
+            <button type="button" onClick={() => setInfoOpen(false)} className="tool-shell-icon-btn" aria-label="Close info">
               <X size={16} />
             </button>
           </div>
@@ -281,39 +322,21 @@ export function ToolShell({
         </div>
       )}
 
-      {/* Keyboard shortcuts modal */}
+      {/* ── Keyboard shortcuts modal ── */}
       {helpOpen && (
         <>
-          <div
-            className="tool-shortcuts-overlay"
-            onClick={() => setHelpOpen(false)}
-            aria-hidden="true"
-          />
-          <div
-            className="tool-shortcuts-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Keyboard shortcuts"
-          >
+          <div className="tool-shortcuts-overlay" onClick={() => setHelpOpen(false)} aria-hidden="true" />
+          <div className="tool-shortcuts-modal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts">
             <div className="tool-shortcuts-modal-header">
-              <span className="text-sm font-semibold uppercase tracking-wide">
-                Keyboard shortcuts
-              </span>
-              <button
-                type="button"
-                onClick={() => setHelpOpen(false)}
-                className="tool-shell-icon-btn"
-                aria-label="Close"
-              >
+              <span className="text-sm font-semibold uppercase tracking-wide">Keyboard shortcuts</span>
+              <button type="button" onClick={() => setHelpOpen(false)} className="tool-shell-icon-btn" aria-label="Close">
                 <X size={16} />
               </button>
             </div>
             <div className="tool-shortcuts-modal-body">
               {labeledShortcuts.map((s, i) => (
                 <div key={i} className="tool-shortcuts-row">
-                  <kbd className="tool-shortcuts-kbd">
-                    {formatShortcutKey(s.key, s.meta, s.shift, s.alt)}
-                  </kbd>
+                  <kbd className="tool-shortcuts-kbd">{formatShortcutKey(s.key, s.meta, s.shift, s.alt)}</kbd>
                   <span className="tool-shortcuts-label">{s.label}</span>
                 </div>
               ))}
@@ -325,13 +348,9 @@ export function ToolShell({
   );
 }
 
-/** Labeled group of controls inside the side panel. */
-export function ControlGroup({
-  label,
-  hint,
-  children,
-  inline,
-}: {
+// ── Sub-components ───────────────────────────────────────────────────────────
+
+export function ControlGroup({ label, hint, children, inline }: {
   label?: React.ReactNode;
   hint?: React.ReactNode;
   children: React.ReactNode;
@@ -350,20 +369,11 @@ export function ControlGroup({
   );
 }
 
-/** Sticky toolbar at the top of the canvas — desktop alternative to FAB row. */
 export function CanvasToolbar({ children }: { children: React.ReactNode }) {
   return <div className="canvas-toolbar">{children}</div>;
 }
 
-/** Icon-only button used inside ToolShell actions / toolbars. */
-export function ToolIconButton({
-  label,
-  onClick,
-  children,
-  active,
-  disabled,
-  variant = "ghost",
-}: {
+export function ToolIconButton({ label, onClick, children, active, disabled, variant = "ghost" }: {
   label: string;
   onClick?: () => void;
   children: React.ReactNode;
@@ -387,14 +397,7 @@ export function ToolIconButton({
   );
 }
 
-/** Standard text/icon action button used in ToolShell `actions` slot. */
-export function ToolActionButton({
-  onClick,
-  children,
-  variant = "ghost",
-  disabled,
-  type = "button",
-}: {
+export function ToolActionButton({ onClick, children, variant = "ghost", disabled, type = "button" }: {
   onClick?: () => void;
   children: React.ReactNode;
   variant?: "ghost" | "solid" | "outline" | "danger";
@@ -402,13 +405,7 @@ export function ToolActionButton({
   type?: "button" | "submit";
 }) {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      disabled={disabled}
-      data-variant={variant}
-      className="tool-action-btn"
-    >
+    <button type={type} onClick={onClick} disabled={disabled} data-variant={variant} className="tool-action-btn">
       {children}
     </button>
   );
