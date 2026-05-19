@@ -132,6 +132,16 @@ const ACCENT_WEEK  = "#f97316";
 const ACCENT_DAY   = "#facc15";
 
 export default function YearProgressContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isGlass = currentTheme === "glass";
+
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -193,6 +203,7 @@ export default function YearProgressContent() {
       hideControls
     >
       {s && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
           {/* Three bars */}
           <div className="p-6 flex flex-col gap-6" style={cardStyle}>
@@ -239,6 +250,7 @@ export default function YearProgressContent() {
               {s.witty}
             </p>
           </div>
+        </div>
         </div>
       )}
     </ToolShell>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { PDFDocument } from "pdf-lib";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import { formatBytes } from "@/lib/format-bytes";
@@ -34,6 +34,18 @@ const LEVEL_INFO: Record<CompressionLevel, { label: string; description: string 
 };
 
 export default function PdfCompressContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   const [file, setFile] = useState<File | null>(null);
   const [originalSize, setOriginalSize] = useState(0);
   const [pageCount, setPageCount] = useState(0);
@@ -288,8 +300,25 @@ export default function PdfCompressContent() {
       controls={controls}
       controlsLabel="Settings"
     >
+      {isMetro && (
+        <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+          {(["input", "output"] as const).map((tab) => (
+            <button key={tab} type="button" onClick={() => setMetroCPivot(tab)}
+              style={{
+                padding: "8px 16px", fontSize: 14,
+                fontWeight: metroCPivot === tab ? 600 : 400,
+                color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                background: "none", border: "none",
+                borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                cursor: "pointer", fontFamily: "'Segoe UI', system-ui, sans-serif", textTransform: "capitalize",
+              }}
+            >{tab === "input" ? "Upload" : "Compress"}</button>
+          ))}
+        </nav>
+      )}
       <div className="flex flex-col gap-4">
-        {!file && status !== "error" && (
+        {(!isMetro || metroCPivot === "input") && !file && status !== "error" && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <FileDropZone
             accept={[".pdf"]}
             onFiles={handleFiles}
@@ -297,6 +326,7 @@ export default function PdfCompressContent() {
             multiple={false}
             hint="100% client-side."
           />
+          </div>
         )}
 
         {status === "error" && !file && (
@@ -320,7 +350,8 @@ export default function PdfCompressContent() {
           </div>
         )}
 
-        {file && (
+        {(!isMetro || metroCPivot === "output") && file && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div
             className="rounded-xl border px-4 py-3"
             style={{
@@ -339,6 +370,7 @@ export default function PdfCompressContent() {
               </div>
             </div>
           </div>
+          </div>
         )}
 
         {status === "compressing" && (
@@ -348,7 +380,8 @@ export default function PdfCompressContent() {
           </div>
         )}
 
-        {status === "done" && file && (
+        {(!isMetro || metroCPivot === "output") && status === "done" && file && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div
             className="rounded-xl border p-6"
             style={{
@@ -404,6 +437,7 @@ export default function PdfCompressContent() {
                 Download compressed PDF
               </button>
             </div>
+          </div>
           </div>
         )}
 

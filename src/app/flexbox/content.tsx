@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -163,6 +163,16 @@ function gapToTw(px: number): string {
 
 /* ─── Main Component ─── */
 export default function FlexboxContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isGlass    = currentTheme === "glass";
+
   const [container, setContainer] = useState<ContainerState>({
     direction: "row", wrap: "nowrap", justify: "flex-start",
     alignItems: "stretch", alignContent: "stretch", rowGap: 8, colGap: 8,
@@ -512,51 +522,53 @@ export default function FlexboxContent() {
         </div>
       }
     >
-      <div
-        className="flex h-full min-h-[60vh] w-full flex-col gap-2 p-4"
-        style={{
-          background: "var(--kami-surface)",
-          borderRadius: "var(--kami-card-radius, 0.75rem)",
-          border: "1px solid var(--kami-border-strong)",
-        }}
-      >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
         <div
-          className="flex-1 overflow-auto p-3"
+          className="flex h-full min-h-[60vh] w-full flex-col gap-2 p-4"
           style={{
-            border: "2px dashed var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.5rem)",
-            display: "flex",
-            flexDirection: container.direction as React.CSSProperties["flexDirection"],
-            flexWrap: container.wrap as React.CSSProperties["flexWrap"],
-            justifyContent: container.justify,
-            alignItems: container.alignItems,
-            alignContent: container.wrap !== "nowrap" ? container.alignContent : undefined,
-            rowGap: container.rowGap,
-            columnGap: container.colGap,
-            minHeight: 280,
+            background: "var(--kami-surface)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            border: "1px solid var(--kami-border-strong)",
           }}
         >
-          {children.map((child) => (
-            <button
-              key={child.id}
-              type="button"
-              onClick={() => setSelected(child.id === selected ? null : child.id)}
-              className="flex min-h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-lg text-xs font-medium text-white transition-all"
-              style={{
-                backgroundColor: child.color,
-                order: child.order,
-                flexGrow: child.flexGrow,
-                flexShrink: child.flexShrink,
-                flexBasis: child.flexBasis,
-                alignSelf: child.alignSelf as React.CSSProperties["alignSelf"],
-                padding: "12px 14px",
-                outline: child.id === selected ? "3px solid var(--kami-text)" : "none",
-                outlineOffset: 2,
-              }}
-            >
-              {child.label}
-            </button>
-          ))}
+          <div
+            className="flex-1 overflow-auto p-3"
+            style={{
+              border: "2px dashed var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.5rem)",
+              display: "flex",
+              flexDirection: container.direction as React.CSSProperties["flexDirection"],
+              flexWrap: container.wrap as React.CSSProperties["flexWrap"],
+              justifyContent: container.justify,
+              alignItems: container.alignItems,
+              alignContent: container.wrap !== "nowrap" ? container.alignContent : undefined,
+              rowGap: container.rowGap,
+              columnGap: container.colGap,
+              minHeight: 280,
+            }}
+          >
+            {children.map((child) => (
+              <button
+                key={child.id}
+                type="button"
+                onClick={() => setSelected(child.id === selected ? null : child.id)}
+                className="flex min-h-[60px] min-w-[60px] cursor-pointer items-center justify-center rounded-lg text-xs font-medium text-white transition-all"
+                style={{
+                  backgroundColor: child.color,
+                  order: child.order,
+                  flexGrow: child.flexGrow,
+                  flexShrink: child.flexShrink,
+                  flexBasis: child.flexBasis,
+                  alignSelf: child.alignSelf as React.CSSProperties["alignSelf"],
+                  padding: "12px 14px",
+                  outline: child.id === selected ? "3px solid var(--kami-text)" : "none",
+                  outlineOffset: 2,
+                }}
+              >
+                {child.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </ToolShell>

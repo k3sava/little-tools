@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -140,6 +140,16 @@ const PRESETS: Preset[] = [
 /* ------------------------------------------------------------------ */
 
 export default function GridContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isGlass    = currentTheme === "glass";
+
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
   const [rowSizes, setRowSizes] = useState<string[]>(Array(3).fill("1fr"));
@@ -583,6 +593,7 @@ export default function GridContent() {
         </div>
       }
     >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
       <div
         className="h-full min-h-[60vh] w-full overflow-auto p-4"
         style={{
@@ -662,6 +673,7 @@ export default function GridContent() {
             </div>
           ))}
         </div>
+      </div>
       </div>
     </ToolShell>
   );

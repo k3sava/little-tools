@@ -238,6 +238,20 @@ async function canvasToUint8(canvas: HTMLCanvasElement): Promise<Uint8Array> {
 }
 
 export default function FaviconContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   const [mode, setMode] = useState<InputMode>("upload");
   const [emoji, setEmoji] = useState("⚡");
   const [text, setText] = useState("K");
@@ -582,14 +596,57 @@ export default function FaviconContent() {
       controlsLabel="Design"
     >
       <div className="flex flex-col gap-4">
-        {generating && (
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-            Generating...
-          </p>
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px", fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none", border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >{tab === "input" ? "Upload" : "Preview"}</button>
+            ))}
+          </nav>
         )}
 
-        {icons.length > 0 ? (
-          <>
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {generating && (
+              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                Generating...
+              </p>
+            )}
+            {icons.length === 0 && (
+              <div
+                className="rounded-xl border p-6 text-center text-sm"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  borderColor: "var(--kami-border-strong)",
+                  color: "var(--kami-text-muted)",
+                }}
+              >
+                Pick a source in the panel to start generating icons.
+              </div>
+            )}
+          </div>
+        )}
+
+        {(!isMetro || metroCPivot === "output") && icons.length > 0 && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {(!isMetro) && generating && (
+              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                Generating...
+              </p>
+            )}
             <section
               className="rounded-xl border p-4"
               style={{
@@ -698,17 +755,6 @@ export default function FaviconContent() {
                 <code>{generateManifest()}</code>
               </pre>
             </section>
-          </>
-        ) : (
-          <div
-            className="rounded-xl border p-6 text-center text-sm"
-            style={{
-              background: "var(--kami-surface-solid)",
-              borderColor: "var(--kami-border-strong)",
-              color: "var(--kami-text-muted)",
-            }}
-          >
-            Pick a source in the panel to start generating icons.
           </div>
         )}
       </div>

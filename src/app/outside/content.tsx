@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   ToolShell,
   ToolActionButton,
@@ -145,6 +145,16 @@ const ACCENT = "#0ea5e9";
 // ---------------------------------------------------------------------------
 
 export default function OutsideContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isGlass    = currentTheme === "glass";
+
   const [data, setData] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -255,6 +265,7 @@ export default function OutsideContent() {
         ) : undefined
       }
     >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
       {!data && !loading && !error && (
         <div className="flex flex-col items-center justify-center gap-6 py-20 text-center">
           <span style={{ fontSize: "4rem" }}>🌤️</span>
@@ -389,6 +400,7 @@ export default function OutsideContent() {
           </div>
         </div>
       )}
+      </div>
     </ToolShell>
   );
 }

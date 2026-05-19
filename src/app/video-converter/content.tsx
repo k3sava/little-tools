@@ -148,6 +148,20 @@ async function convertWithCanvas(
 }
 
 export default function VideoConverterContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   const [files, setFiles] = useState<QueuedVideo[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("mp4");
   const [bitrate, setBitrate] = useState(5); // Mbps
@@ -398,170 +412,200 @@ export default function VideoConverterContent() {
       controlsLabel="Settings"
     >
       <div className="flex flex-col gap-4">
-        <FileDropZone
-          accept={[".webm", ".mp4", ".mov", ".avi", ".mkv", ".m4v", ".ogv"]}
-          onFiles={handleFileDrop}
-          label="Drop video files here or click to browse"
-          hint="WebM, MP4, MOV, AVI, MKV"
-          multiple={true}
-        />
-
-        {files.length > 0 && (
-          <div className="flex flex-col gap-2">
-            {files.map((f, i) => (
-              <div
-                key={f.id}
-                onClick={() => setSelectedIndex(i)}
-                className="relative cursor-pointer overflow-hidden rounded-lg border px-3 py-2.5"
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
                 style={{
-                  background:
-                    i === selectedIndex ? "var(--kami-surface)" : "var(--kami-surface-solid)",
-                  borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
+                  padding: "8px 16px", fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none", border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
                 }}
-              >
-                {f.status === "converting" && (
-                  <div
-                    className="absolute inset-0 transition-all duration-300"
-                    style={{
-                      width: `${f.progress}%`,
-                      background: `color-mix(in srgb, ${ACCENT} 14%, transparent)`,
-                    }}
-                  />
-                )}
-                <div className="relative flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <span aria-hidden className="text-xs">
-                      {f.status === "pending" && "⏳"}
-                      {f.status === "converting" && "⚙️"}
-                      {f.status === "done" && "✓"}
-                      {f.status === "error" && "✕"}
-                    </span>
-                    <span className="truncate text-sm font-medium">{f.name}</span>
-                    <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                      {formatSize(f.originalSize)}
-                      {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
-                      {f.width > 0 && ` · ${f.width}×${f.height}`}
-                    </span>
-                    {f.status === "converting" && (
-                      <span className="text-xs font-medium" style={{ color: ACCENT }}>
-                        {f.progress}%
-                      </span>
-                    )}
-                    {f.status === "done" && (
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                        → {formatSize(f.convertedSize)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {f.status === "done" && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          downloadFile(f);
-                        }}
-                        className="tool-action-btn"
-                        data-variant="outline"
-                      >
-                        Save
-                      </button>
-                    )}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(f.id);
-                      }}
-                      className="tool-shell-icon-btn"
-                      title="Remove"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-                {f.status === "error" && (
-                  <p
-                    className="relative mt-1 text-xs"
-                    style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
-                  >
-                    {f.error}
-                  </p>
-                )}
-              </div>
+              >{tab === "input" ? "Upload" : "Output"}</button>
             ))}
+          </nav>
+        )}
+
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            <FileDropZone
+              accept={[".webm", ".mp4", ".mov", ".avi", ".mkv", ".m4v", ".ogv"]}
+              onFiles={handleFileDrop}
+              label="Drop video files here or click to browse"
+              hint="WebM, MP4, MOV, AVI, MKV"
+              multiple={true}
+            />
+
+            {files.length > 0 && (
+              <div className="flex flex-col gap-2 mt-4">
+                {files.map((f, i) => (
+                  <div
+                    key={f.id}
+                    onClick={() => setSelectedIndex(i)}
+                    className="relative cursor-pointer overflow-hidden rounded-lg border px-3 py-2.5"
+                    style={{
+                      background:
+                        i === selectedIndex ? "var(--kami-surface)" : "var(--kami-surface-solid)",
+                      borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
+                    }}
+                  >
+                    {f.status === "converting" && (
+                      <div
+                        className="absolute inset-0 transition-all duration-300"
+                        style={{
+                          width: `${f.progress}%`,
+                          background: `color-mix(in srgb, ${ACCENT} 14%, transparent)`,
+                        }}
+                      />
+                    )}
+                    <div className="relative flex items-center justify-between gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span aria-hidden className="text-xs">
+                          {f.status === "pending" && "⏳"}
+                          {f.status === "converting" && "⚙️"}
+                          {f.status === "done" && "✓"}
+                          {f.status === "error" && "✕"}
+                        </span>
+                        <span className="truncate text-sm font-medium">{f.name}</span>
+                        <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                          {formatSize(f.originalSize)}
+                          {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
+                          {f.width > 0 && ` · ${f.width}×${f.height}`}
+                        </span>
+                        {f.status === "converting" && (
+                          <span className="text-xs font-medium" style={{ color: ACCENT }}>
+                            {f.progress}%
+                          </span>
+                        )}
+                        {f.status === "done" && (
+                          <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                            → {formatSize(f.convertedSize)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {f.status === "done" && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadFile(f);
+                            }}
+                            className="tool-action-btn"
+                            data-variant="outline"
+                          >
+                            Save
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFile(f.id);
+                          }}
+                          className="tool-shell-icon-btn"
+                          title="Remove"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                    {f.status === "error" && (
+                      <p
+                        className="relative mt-1 text-xs"
+                        style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}
+                      >
+                        {f.error}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {selected && (
-          <div
-            className="rounded-xl border p-4"
-            style={{
-              background: "var(--kami-surface-solid)",
-              borderColor: "var(--kami-border-strong)",
-            }}
-          >
-            <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              {selected.name}
-            </p>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  Original ({formatSize(selected.originalSize)})
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {selected && (
+              <div
+                className="rounded-xl border p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  borderColor: "var(--kami-border-strong)",
+                }}
+              >
+                <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  {selected.name}
                 </p>
-                <div
-                  className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
-                  style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
-                >
-                  <video
-                    src={selected.previewUrl}
-                    controls
-                    className="max-h-full max-w-full"
-                    preload="metadata"
-                  />
-                </div>
-              </div>
-              <div>
-                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                  Converted
-                  {selected.status === "done" ? ` (${formatSize(selected.convertedSize)})` : ""}
-                </p>
-                <div
-                  className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
-                  style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
-                >
-                  {selected.status === "done" && selected.convertedUrl ? (
-                    <video
-                      src={selected.convertedUrl}
-                      controls
-                      className="max-h-full max-w-full"
-                      preload="metadata"
-                    />
-                  ) : selected.status === "converting" ? (
-                    <div className="text-center">
-                      <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                        Converting... {selected.progress}%
-                      </p>
-                      <div
-                        className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full"
-                        style={{ background: "var(--kami-border)" }}
-                      >
-                        <div
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{ width: `${selected.progress}%`, background: ACCENT }}
-                        />
-                      </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      Original ({formatSize(selected.originalSize)})
+                    </p>
+                    <div
+                      className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
+                      style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
+                    >
+                      <video
+                        src={selected.previewUrl}
+                        controls
+                        className="max-h-full max-w-full"
+                        preload="metadata"
+                      />
                     </div>
-                  ) : selected.status === "error" ? (
-                    <p className="text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
-                      {selected.error}
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      Converted
+                      {selected.status === "done" ? ` (${formatSize(selected.convertedSize)})` : ""}
                     </p>
-                  ) : (
-                    <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                      Click Convert
-                    </p>
-                  )}
+                    <div
+                      className="flex aspect-video w-full items-center justify-center overflow-hidden rounded-lg"
+                      style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
+                    >
+                      {selected.status === "done" && selected.convertedUrl ? (
+                        <video
+                          src={selected.convertedUrl}
+                          controls
+                          className="max-h-full max-w-full"
+                          preload="metadata"
+                        />
+                      ) : selected.status === "converting" ? (
+                        <div className="text-center">
+                          <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                            Converting... {selected.progress}%
+                          </p>
+                          <div
+                            className="mx-auto mt-2 h-1.5 w-48 overflow-hidden rounded-full"
+                            style={{ background: "var(--kami-border)" }}
+                          >
+                            <div
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{ width: `${selected.progress}%`, background: ACCENT }}
+                            />
+                          </div>
+                        </div>
+                      ) : selected.status === "error" ? (
+                        <p className="text-sm" style={{ color: "color-mix(in srgb, #ef4444 70%, var(--kami-text))" }}>
+                          {selected.error}
+                        </p>
+                      ) : (
+                        <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                          Click Convert
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>

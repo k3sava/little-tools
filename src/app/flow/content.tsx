@@ -75,6 +75,16 @@ const ACCENT = "#10b981";
 type Mode = "build" | "preview";
 
 export default function FlowContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isGlass    = currentTheme === "glass";
+
   const [tree, setTree] = useState<Tree>(emptyTree);
   const [selectedId, setSelectedId] = useState<string>("");
   const [mode, setMode] = useState<Mode>("build");
@@ -386,6 +396,7 @@ export default function FlowContent() {
         )
       }
     >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
       {mode === "build" && selectedNode ? (
         <div className="flex flex-col gap-4 w-full">
           <div className="p-5 flex flex-col gap-4" style={cardStyle}>
@@ -497,6 +508,7 @@ export default function FlowContent() {
           )}
         </div>
       )}
+      </div>
     </ToolShell>
   );
 }

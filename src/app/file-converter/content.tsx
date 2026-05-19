@@ -73,6 +73,20 @@ const SUPPORTED: { from: string; to: string; note?: string }[] = [
 ];
 
 export default function FileConverterContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("image/png");
   const [quality, setQuality] = useState(85);
@@ -398,76 +412,106 @@ export default function FileConverterContent() {
       controlsLabel="Settings"
     >
       <div className="flex flex-col gap-4">
-        <FileDropZone
-          accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
-          onFiles={handleFileDrop}
-          label="Drop images here or click to browse"
-          hint="PNG, JPG, WebP, GIF, BMP, SVG"
-          multiple={true}
-        />
-
-        {files.length > 0 && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {files.map((f, i) => (
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
               <button
-                key={f.id}
-                onClick={() => setSelectedIndex(i)}
-                className="group relative flex flex-col items-stretch overflow-hidden rounded-lg border"
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
                 style={{
-                  background: "var(--kami-surface-solid)",
-                  borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
+                  padding: "8px 16px", fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none", border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
                 }}
-              >
-                <div className="aspect-square w-full overflow-hidden" style={{ background: "var(--kami-surface)" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={f.previewUrl}
-                    alt={f.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-                <div className="flex items-center justify-between gap-1 p-2 text-left text-[10px]">
-                  <span className="truncate" title={f.name}>
-                    {f.name}
-                  </span>
-                  <span
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFile(f.id);
-                    }}
-                    role="button"
-                    style={{ color: "var(--kami-text-muted)" }}
-                  >
-                    ✕
-                  </span>
-                </div>
-                <div className="px-2 pb-2 text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
-                  {formatSize(f.originalSize)}
-                  {f.status === "done" && (
-                    <> → {formatSize(f.convertedSize)}</>
-                  )}
-                  {f.status === "converting" && " · converting..."}
-                  {f.status === "error" && " · error"}
-                </div>
-              </button>
+              >{tab === "input" ? "Upload" : "Convert"}</button>
             ))}
+          </nav>
+        )}
+
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            <FileDropZone
+              accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
+              onFiles={handleFileDrop}
+              label="Drop images here or click to browse"
+              hint="PNG, JPG, WebP, GIF, BMP, SVG"
+              multiple={true}
+            />
+
+            {files.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 mt-4">
+                {files.map((f, i) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedIndex(i)}
+                    className="group relative flex flex-col items-stretch overflow-hidden rounded-lg border"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      borderColor: i === selectedIndex ? ACCENT : "var(--kami-border-strong)",
+                    }}
+                  >
+                    <div className="aspect-square w-full overflow-hidden" style={{ background: "var(--kami-surface)" }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={f.previewUrl}
+                        alt={f.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between gap-1 p-2 text-left text-[10px]">
+                      <span className="truncate" title={f.name}>
+                        {f.name}
+                      </span>
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeFile(f.id);
+                        }}
+                        role="button"
+                        style={{ color: "var(--kami-text-muted)" }}
+                      >
+                        ✕
+                      </span>
+                    </div>
+                    <div className="px-2 pb-2 text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                      {formatSize(f.originalSize)}
+                      {f.status === "done" && (
+                        <> → {formatSize(f.convertedSize)}</>
+                      )}
+                      {f.status === "converting" && " · converting..."}
+                      {f.status === "error" && " · error"}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        {selected && selected.status === "done" && (
-          <div
-            className="rounded-xl border p-4"
-            style={{
-              background: "var(--kami-surface-solid)",
-              borderColor: "var(--kami-border-strong)",
-            }}
-          >
-            <p className="mb-3 text-sm font-medium">
-              {selected.name} → {formatLabel(outputFormat)}
-            </p>
-            <button onClick={() => downloadFile(selected)} className="tool-action-btn" data-variant="outline">
-              Download
-            </button>
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {selected && selected.status === "done" && (
+              <div
+                className="rounded-xl border p-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  borderColor: "var(--kami-border-strong)",
+                }}
+              >
+                <p className="mb-3 text-sm font-medium">
+                  {selected.name} → {formatLabel(outputFormat)}
+                </p>
+                <button onClick={() => downloadFile(selected)} className="tool-action-btn" data-variant="outline">
+                  Download
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
