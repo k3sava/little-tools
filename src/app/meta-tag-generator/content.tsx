@@ -321,6 +321,7 @@ export default function MetaTagGeneratorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const title = state.title;
   const description = state.description;
@@ -523,7 +524,7 @@ export default function MetaTagGeneratorContent() {
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {/* Inputs */}
         {(!isMetro || metroCPivot === "input") && (
-        <>
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-3">
             <div>
@@ -570,11 +571,11 @@ export default function MetaTagGeneratorContent() {
           <FacebookPreview title={title} description={description} image={image} siteName={siteName} />
           <TwitterPreview title={title} description={description} image={image} url={url} />
         </div>
-        </>
-        )}
+        </div>)}
 
         {/* Generated HTML */}
         {(!isMetro || metroCPivot === "output") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
@@ -591,6 +592,7 @@ export default function MetaTagGeneratorContent() {
           >
             <code>{metaTags}</code>
           </pre>
+        </div>
         </div>
         )}
       </div>

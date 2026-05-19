@@ -150,6 +150,7 @@ export default function UtmBuilderContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const urlWarning = params.url.length > 0 && !isValidUrl(params.url);
 
@@ -405,7 +406,7 @@ export default function UtmBuilderContent() {
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {/* Input section: URL input(s) + UTM fields */}
         {(!isMetro || metroCPivot === "input") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             {/* URL input(s) */}
             {!bulkMode ? (
               <div>
@@ -473,12 +474,12 @@ export default function UtmBuilderContent() {
                 </div>
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Output section: Generated URL + bulk results */}
         {(!isMetro || metroCPivot === "output") && (!bulkMode && generatedUrl) && (
-          <div
+          <div className={isGlass ? "glass-canvas-section" : ""}><div
             className="p-4 rounded-xl"
             style={{
               background: "var(--kami-surface)",
@@ -497,12 +498,12 @@ export default function UtmBuilderContent() {
                 Short-URL preview: <code>{shortPreview}</code>
               </div>
             )}
-          </div>
+          </div></div>
         )}
 
         {/* Bulk results */}
         {(!isMetro || metroCPivot === "output") && bulkMode && bulkGenerated.length > 0 && (
-          <div>
+          <div className={isGlass ? "glass-canvas-section" : ""}><div>
             <div className="mb-2 text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
               {bulkGenerated.filter((b) => b.generated).length} tagged URLs
             </div>
@@ -544,7 +545,7 @@ export default function UtmBuilderContent() {
                 </div>
               ))}
             </div>
-          </div>
+          </div></div>
         )}
       </div>
     </ToolShell>

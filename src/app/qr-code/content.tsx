@@ -539,6 +539,7 @@ export default function QrCodeContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const getPayload = useCallback((): string => {
     switch (inputType) {
@@ -905,7 +906,7 @@ export default function QrCodeContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "input") && (
-        <div className="flex flex-col gap-4 p-4 md:p-6">
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex flex-col gap-4 p-4 md:p-6">
           <div>
             <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
               {inputType === "url" ? "URL" : inputType === "text" ? "Text" : inputType === "wifi" ? "Wi-Fi SSID" : "Contact name"}
@@ -923,10 +924,10 @@ export default function QrCodeContent() {
               placeholder={inputType === "url" ? "https://example.com" : inputType === "wifi" ? "Network name" : "Enter content..."}
             />
           </div>
-        </div>
+        </div></div>
       )}
       {(!isMetro || metroCPivot === "output") && (
-        <div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
           <div
             className="flex flex-col items-center justify-center p-6 sm:p-10"
             style={{
@@ -947,7 +948,7 @@ export default function QrCodeContent() {
               </p>
             )}
           </div>
-        </div>
+        </div></div>
       )}
     </ToolShell>
   );

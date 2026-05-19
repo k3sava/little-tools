@@ -85,6 +85,7 @@ export default function ScreenshotBeautifierContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
   const [frame, setFrame] = useState<DeviceFrame>("browser");
   const [bgMode, setBgMode] = useState<BgMode>("gradient");
   const [bgColor, setBgColor] = useState("#6366f1");
@@ -556,15 +557,17 @@ export default function ScreenshotBeautifierContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "input") && !image && (
-        <FileDropZone
-          accept={[".png", ".jpg", ".jpeg", ".webp"]}
-          onFiles={handleFiles}
-          label="Drop a screenshot here, click to upload, or paste with ⌘V"
-          hint="PNG, JPG, WebP — nothing is uploaded"
-          multiple={false}
-        />
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+          <FileDropZone
+            accept={[".png", ".jpg", ".jpeg", ".webp"]}
+            onFiles={handleFiles}
+            label="Drop a screenshot here, click to upload, or paste with ⌘V"
+            hint="PNG, JPG, WebP — nothing is uploaded"
+            multiple={false}
+          />
+        </div>
       )}
-      {(!isMetro || metroCPivot === "output") && image && (<div
+      {(!isMetro || metroCPivot === "output") && image && (<div className={isGlass ? "glass-canvas-section" : ""}><div
           className="overflow-hidden p-3 sm:p-4 select-none"
           style={cardStyle}
           onMouseMove={handleDragMove}
@@ -600,7 +603,7 @@ export default function ScreenshotBeautifierContent() {
           <p className="mt-3 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
             Drag the image to reposition · ⌘V to paste a new screenshot
           </p>
-        </div>
+        </div></div>
       )}
     </ToolShell>
   );

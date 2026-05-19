@@ -354,6 +354,7 @@ export default function ReadabilityScorerContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const overallGrade = scores ? getOverallGrade(scores) : null;
   const hasContent = words.length > 0 && stats.totalSentences > 0;
@@ -496,7 +497,7 @@ export default function ReadabilityScorerContent() {
       )}
       <div className="flex flex-col gap-4 p-4 md:p-6">
         {(!isMetro || metroCPivot === "input") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -513,11 +514,11 @@ export default function ReadabilityScorerContent() {
               rows={8}
               autoFocus
             />
-          </>
+          </div>
         )}
 
         {(!isMetro || metroCPivot === "output") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             {/* Overall summary */}
             {hasContent && scores && overallGrade !== null && (
               <div
@@ -655,7 +656,7 @@ export default function ReadabilityScorerContent() {
                 Paste text above to see readability scores.
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </ToolShell>

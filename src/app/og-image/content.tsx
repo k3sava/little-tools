@@ -659,6 +659,7 @@ export default function OgImageContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass  = currentTheme === "glass";
 
   const template = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
 
@@ -1028,6 +1029,7 @@ export default function OgImageContent() {
       {/* Live canvas — visible across all tabs so platform previews can read it */}
       <div className="flex flex-col gap-4">
         {(!isMetro || metroCPivot === "input") && activeTab === "editor" && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div className="p-3 sm:p-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1050,9 +1052,11 @@ export default function OgImageContent() {
               </div>
             </div>
           </div>
+          </div>
         )}
 
         {(!isMetro ? activeTab === "preview" : metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div className="p-3 sm:p-4 space-y-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1098,6 +1102,7 @@ export default function OgImageContent() {
                 </div>
               ))}
             </div>
+          </div>
           </div>
         )}
 

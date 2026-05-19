@@ -270,6 +270,7 @@ export default function TextCleanerContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const diffSegments = useMemo(() => {
     if (!hasChanges) return null;
@@ -376,7 +377,7 @@ export default function TextCleanerContent() {
         </nav>
       )}
       <div className="flex flex-col gap-3 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (<>
+        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -407,9 +408,9 @@ export default function TextCleanerContent() {
             </span>
           )}
         </div>
-        </>)}
+        </div>)}
 
-        {(!isMetro || metroCPivot === "output") && (<>
+        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}>
         {/* Output area */}
         {input && (view === "after" || (!hasChanges && view === "diff")) && (
           <div
@@ -464,7 +465,7 @@ export default function TextCleanerContent() {
             })}
           </div>
         )}
-        </>)}
+        </div>)}
       </div>
     </ToolShell>
   );

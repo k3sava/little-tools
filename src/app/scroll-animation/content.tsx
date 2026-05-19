@@ -160,6 +160,7 @@ export default function ScrollAnimationContent() {
   const [durationAuto, setDurationAuto] = useState(true);
   const [durationMs, setDurationMs] = useState(600);
   const [copied, setCopied] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
@@ -207,6 +208,18 @@ export default function ScrollAnimationContent() {
     onScroll();
     return () => container.removeEventListener("scroll", onScroll);
   }, [selectedPreset]);
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isGlass = currentTheme === "glass";
 
   const copyCSS = useCallback(() => {
     navigator.clipboard.writeText(css);
@@ -366,7 +379,7 @@ export default function ScrollAnimationContent() {
         </div>
       }
     >
-      <div className="flex h-full min-h-[60vh] w-full flex-col gap-3 p-4">
+      <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] w-full flex-col gap-3 p-4">
         <div
           ref={scrollRef}
           className="relative flex-1 overflow-y-auto"
@@ -446,7 +459,7 @@ export default function ScrollAnimationContent() {
             {(progress * 100).toFixed(0)}%
           </span>
         </div>
-      </div>
+      </div></div>
     </ToolShell>
   );
 }

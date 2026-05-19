@@ -465,6 +465,7 @@ export default function TextDiffContent() {
 
   const isMaterial = currentTheme === "material";
   const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const diff = useMemo(() => {
     if (!original && !modified) return [];
@@ -657,7 +658,7 @@ export default function TextDiffContent() {
       <div className="flex flex-col gap-3 p-4 md:p-6">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {(!isMetro || metroDiffPivot === "a") && (
-            <div>
+            <div className={isGlass ? "glass-canvas-section" : ""}><div>
               <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Original
               </div>
@@ -670,10 +671,10 @@ export default function TextDiffContent() {
                 rows={6}
                 autoFocus
               />
-            </div>
+            </div></div>
           )}
           {(!isMetro || metroDiffPivot === "b") && (
-            <div>
+            <div className={isGlass ? "glass-canvas-section" : ""}><div>
               <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
                 Modified
               </div>
@@ -685,13 +686,13 @@ export default function TextDiffContent() {
                 style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
                 rows={6}
               />
-            </div>
+            </div></div>
           )}
         </div>
 
         {/* Stats row */}
         {(!isMetro || metroDiffPivot === "diff") && diff.length > 0 && (
-          <div
+          <div className={isGlass ? "glass-canvas-section" : ""}><div
             className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
             style={{
               background: "var(--kami-surface-solid)",
@@ -730,7 +731,7 @@ export default function TextDiffContent() {
                 </button>
               </div>
             )}
-          </div>
+          </div></div>
         )}
 
         {/* Diff output */}
@@ -751,12 +752,12 @@ export default function TextDiffContent() {
           ))}
 
         {(!isMetro || metroDiffPivot === "diff") && (original || modified) && diff.length === 0 && (
-          <div
+          <div className={isGlass ? "glass-canvas-section" : ""}><div
             className="text-center py-8 text-sm"
             style={{ color: "var(--kami-text-dim)" }}
           >
             Texts are identical.
-          </div>
+          </div></div>
         )}
       </div>
 

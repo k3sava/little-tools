@@ -250,6 +250,7 @@ export default function RegexTesterContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const [flagG, setFlagG] = useState(true);
   const [flagI, setFlagI] = useState(false);
@@ -395,7 +396,7 @@ export default function RegexTesterContent() {
       )}
       <div className="flex flex-col gap-3">
         {(!isMetro || metroCPivot === "input") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             {/* Pattern input */}
             <div className="flex items-center gap-2">
               <span className="text-lg font-mono select-none" style={{ color: "var(--kami-text-dim)" }}>/</span>
@@ -459,11 +460,11 @@ export default function RegexTesterContent() {
               {matches.length} match{matches.length !== 1 ? "es" : ""}
               {testString && ` in ${testString.length} chars`}
             </div>
-          </>
+          </div>
         )}
 
         {(!isMetro || metroCPivot === "output") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             {/* Explain panel */}
             {showExplain && pattern && explanation.length > 0 && (
               <div className="p-4" style={cardStyle}>
@@ -645,7 +646,7 @@ export default function RegexTesterContent() {
                 )}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </ToolShell>

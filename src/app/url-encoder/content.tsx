@@ -76,6 +76,7 @@ export default function UrlEncoderContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const output = useMemo(() => {
     if (!input) return "";
@@ -187,7 +188,7 @@ export default function UrlEncoderContent() {
         </nav>
       )}
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && (<>
+        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -213,9 +214,9 @@ export default function UrlEncoderContent() {
             <span>{output.length} chars out</span>
           )}
         </div>
-        </>)}
+        </div>)}
 
-        {(!isMetro || metroCPivot === "output") && (<>
+        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}>
         {/* Encode/decode output */}
         {(mode === "encode" || mode === "decode") && input && output && (
           <div>
@@ -346,7 +347,7 @@ export default function UrlEncoderContent() {
             Not a valid URL — needs protocol (e.g. <code>https://</code>) and host.
           </div>
         )}
-        </>)}
+        </div>)}
       </div>
     </ToolShell>
   );

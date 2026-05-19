@@ -207,6 +207,7 @@ export default function WordFrequencyContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const tabLabel = activeTab === "words" ? "words" : "phrases";
 
@@ -308,7 +309,7 @@ export default function WordFrequencyContent() {
       )}
       <div className="flex flex-col gap-3 p-4 md:p-6">
         {(!isMetro || metroCPivot === "input") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -332,11 +333,11 @@ export default function WordFrequencyContent() {
                 </button>
               )}
             </div>
-          </>
+          </div>
         )}
 
         {(!isMetro || metroCPivot === "output") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             {/* Search within results */}
             {entries.length > 0 && (
               <input
@@ -422,7 +423,7 @@ export default function WordFrequencyContent() {
                 </table>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </ToolShell>

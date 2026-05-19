@@ -598,6 +598,7 @@ export default function SchemaGeneratorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const [article, setArticle] = useState<ArticleFields>(EMPTY_ARTICLE);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([{ question: "", answer: "" }]);
@@ -1133,7 +1134,7 @@ export default function SchemaGeneratorContent() {
       )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {(!isMetro || metroCPivot === "input") && (
-          <div
+          <div className={isGlass ? "glass-canvas-section" : ""}><div
             className="rounded-xl p-4"
             style={{
               border: "1px solid var(--kami-border)",
@@ -1142,11 +1143,11 @@ export default function SchemaGeneratorContent() {
             }}
           >
             {renderForm()}
-          </div>
+          </div></div>
         )}
 
         {(!isMetro || metroCPivot === "output") && (
-          <div>
+          <div className={isGlass ? "glass-canvas-section" : ""}><div>
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>JSON-LD output</span>
               <span className="text-xs" style={{ color: errors > 0 ? "#ef4444" : "#22c55e" }}>
@@ -1167,7 +1168,7 @@ export default function SchemaGeneratorContent() {
               {"\n"}
               <span style={{ opacity: 0.6 }}>&lt;/script&gt;</span>
             </pre>
-          </div>
+          </div></div>
         )}
       </div>
     </ToolShell>

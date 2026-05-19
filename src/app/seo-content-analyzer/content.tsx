@@ -633,6 +633,7 @@ export default function SeoContentAnalyzerContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const [content, setContent] = useState("");
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -752,7 +753,7 @@ export default function SeoContentAnalyzerContent() {
       )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {(!isMetro || metroCPivot === "input") && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -766,11 +767,11 @@ export default function SeoContentAnalyzerContent() {
                 minHeight: 220,
               }}
             />
-          </>
+          </div>
         )}
 
         {(!isMetro || metroCPivot === "output") && analysis && (
-          <>
+          <div className={isGlass ? "glass-canvas-section" : ""}>
             <div className="space-y-5">
               <div className="flex flex-col items-center gap-3">
                 <ScoreBadge score={analysis.score} />
@@ -1052,7 +1053,7 @@ export default function SeoContentAnalyzerContent() {
                 </div>
               </Card>
             </div>
-          </>
+          </div>
         )}
       </div>
     </ToolShell>

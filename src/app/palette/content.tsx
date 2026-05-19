@@ -242,6 +242,7 @@ export default function PaletteContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
   const [showAdjacentContrast, setShowAdjacentContrast] = useState(true);
   const [copied, setCopied] = useState<number | null>(null);
   const [exportCopied, setExportCopied] = useState(false);
@@ -533,7 +534,7 @@ export default function PaletteContent() {
       )}
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Palette swatches */}
-        {(!isMetro || metroCPivot === "output") && (<><div
+        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><div
           className="flex flex-1 min-h-[260px] flex-col overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -657,10 +658,10 @@ export default function PaletteContent() {
             })}
           </div>
         )}
-        </>)}
+        </div>)}
 
         {/* Export preview */}
-        {(!isMetro || metroCPivot === "input") && <div
+        {(!isMetro || metroCPivot === "input") && <div className={isGlass ? "glass-canvas-section" : ""}><div
           className="overflow-hidden"
           style={{
             background: "var(--kami-overlay-bg, #111827)",
@@ -695,7 +696,7 @@ export default function PaletteContent() {
           <pre className="overflow-x-auto p-4 text-xs leading-relaxed">
             <code>{exportText}</code>
           </pre>
-        </div>}
+        </div></div>}
       </div>
     </ToolShell>
   );
