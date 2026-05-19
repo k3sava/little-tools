@@ -2174,7 +2174,6 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   width: auto;
   height: 30px;
   padding: 0 10px;
-  border-radius: 6px;
   font-size: 13px;
   display: inline-flex;
   align-items: center;

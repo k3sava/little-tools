@@ -44,7 +44,7 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
       <div className="kami-scope" style={{ color: "var(--kami-text)" }}>
         <div>{children}</div>
         {tool && (
-          <div className="mx-auto max-w-3xl px-4 pb-12">
+          <div className="px-4 pb-12 lg:px-6">
             <RelatedTools currentHref={tool.href} />
           </div>
         )}
