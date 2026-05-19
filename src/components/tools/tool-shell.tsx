@@ -4,7 +4,6 @@ import React, { useCallback, useContext, useEffect, useRef, useState } from "rea
 import { X } from "lucide-react";
 import { ShortcutContext } from "@/contexts/shortcut-context";
 import { useBreadcrumb } from "@/contexts/breadcrumb-context";
-import { Footer } from "@/components/footer";
 
 export interface ToolShellProps {
   title: string;
@@ -515,9 +514,6 @@ export function ToolShell({
           </aside>
         )}
       </div>
-
-      {/* ── Page footer — AEO + sister-sites + credit ── */}
-      <Footer />
 
       {/* ── Material primary FAB ── */}
       {isMaterial && materialFab && (
