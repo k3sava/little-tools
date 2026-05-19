@@ -123,21 +123,8 @@ export default function Base64Content() {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const lineWrapNum = useMemo(() => parseInt(lineWrap, 10), [lineWrap]);
 
@@ -291,7 +278,7 @@ export default function Base64Content() {
             onChange={setShowImagePreviewTab}
           />
           <ControlGroup label="Size">
-            <div className="flex flex-col gap-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="flex flex-col gap-1 text-xs kami-text-muted">
               <span>In: {formatSize(inputByteSize)}</span>
               <span>Base64: {formatSize(base64Text.length)}</span>
               {byteSize > 0 && <span>Decoded: {formatSize(byteSize)}</span>}
@@ -300,16 +287,14 @@ export default function Base64Content() {
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Output</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div
         className="flex flex-col gap-3"
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -324,11 +309,10 @@ export default function Base64Content() {
         {/* Dual editor */}
         <div className="flex flex-col md:flex-row gap-3">
           {/* Plain text side */}
-          {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+          <div className="canvas-section glass-canvas-section" data-panel="input">
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="text-sm font-medium kami-text-muted">
                 Plain text
               </span>
               {plainText && (
@@ -347,22 +331,20 @@ export default function Base64Content() {
               autoFocus
               spellCheck={false}
             />
-            <div className="flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="flex items-center justify-between text-xs kami-text-dim">
               <span>{plainText.length} chars · {new TextEncoder().encode(plainText).length} bytes</span>
             </div>
           </div>
           </div>
-          )}
 
           {/* Base64 side */}
-          {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+          <div className="canvas-section glass-canvas-section" data-panel="output">
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="text-sm font-medium kami-text-muted">
                 Base64{variant === "urlsafe" ? " (URL-safe)" : ""}
                 {fileName && (
-                  <span className="font-normal ml-1" style={{ color: "var(--kami-text-dim)" }}>
+                  <span className="font-normal ml-1 kami-text-dim">
                     · {fileName}
                   </span>
                 )}
@@ -382,7 +364,7 @@ export default function Base64Content() {
               rows={10}
               spellCheck={false}
             />
-            <div className="flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="flex items-center justify-between text-xs kami-text-dim">
               <span>
                 {base64Text.length} base64 chars
                 {byteSize > 0 && ` · ${formatSize(byteSize)} decoded`}
@@ -390,12 +372,10 @@ export default function Base64Content() {
             </div>
           </div>
           </div>
-          )}
         </div>
 
         {/* Drop zone integrated into canvas */}
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <div
           className="flex flex-col items-center justify-center text-center px-4 py-6 transition-colors"
           style={{
@@ -404,7 +384,7 @@ export default function Base64Content() {
             borderRadius: "var(--kami-card-radius, 0.75rem)",
           }}
         >
-          <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+          <p className="text-sm font-medium kami-text">
             {dragOver ? "Drop the file" : "Drag a file here, or"}
           </p>
           <div className="mt-2 flex items-center gap-2">
@@ -424,23 +404,22 @@ export default function Base64Content() {
               }}
             />
           </div>
-          <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="mt-2 text-xs kami-text-dim">
             Any file type — converts to Base64 with auto-detected MIME
           </p>
         </div>
         </div>
-        )}
 
         {/* Data URL + Image preview */}
-        {(!isMetro || metroCPivot === "output") && (<>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         {base64Text && dataUrl && (
           <div className="flex flex-col gap-3">
             <div className="p-4" style={cardStyle}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-sm font-medium kami-text-muted">
                   Data URL
                   {detectedMime && (
-                    <span className="font-normal ml-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                    <span className="font-normal ml-2 text-xs kami-text-dim">
                       {detectedMime}
                     </span>
                   )}
@@ -463,7 +442,7 @@ export default function Base64Content() {
 
             {showImagePreview && showImagePreviewTab && (
               <div className="p-4" style={cardStyle}>
-                <span className="text-sm font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-sm font-medium mb-2 block kami-text-muted">
                   Preview
                 </span>
                 <div
@@ -482,7 +461,7 @@ export default function Base64Content() {
             )}
           </div>
         )}
-        </>)}
+        </div>
       </div>
     </ToolShell>
   );

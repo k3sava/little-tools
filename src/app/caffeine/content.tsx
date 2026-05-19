@@ -194,7 +194,6 @@ export default function CaffeineContent() {
   const [drinks, setDrinks] = useState<DrinkEntry[]>(defaultDrinks);
   const [bedtime, setBedtime] = useState<string>(defaultBedtime);
   const [now, setNow] = useState<Date | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   useEffect(() => {
@@ -203,19 +202,7 @@ export default function CaffeineContent() {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
 
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
-
-  void isMaterial;
 
   const addDrink = useCallback(() => {
     if (drinks.length >= 3) return;
@@ -298,7 +285,7 @@ export default function CaffeineContent() {
               {drinks.map((drink, idx) => (
                 <div key={drink.id} className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    <span className="text-xs font-medium kami-text-muted">
                       Drink {idx + 1}
                     </span>
                     {drinks.length > 1 && (
@@ -324,13 +311,13 @@ export default function CaffeineContent() {
                     value={drink.time}
                     onChange={(e) => updateDrink(drink.id, "time", e.target.value)}
                     className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{ ...inputStyle, minHeight: 36 }}
+                    style={{ ...inputStyle, minHeight: 44 }}
                   />
                   <select
                     value={drink.drinkType}
                     onChange={(e) => updateDrink(drink.id, "drinkType", e.target.value)}
                     className="w-full px-3 py-2 text-sm focus:outline-none"
-                    style={{ ...inputStyle, minHeight: 36 }}
+                    style={{ ...inputStyle, minHeight: 44 }}
                   >
                     {DRINK_OPTIONS.map((opt) => (
                       <option key={opt.label} value={opt.label}>
@@ -348,7 +335,7 @@ export default function CaffeineContent() {
               + Add drink
             </ToolActionButton>
           ) : (
-            <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs kami-text-dim">
               3 drinks tracked. Respect the limit.
             </p>
           )}
@@ -359,9 +346,9 @@ export default function CaffeineContent() {
               value={bedtime}
               onChange={(e) => setBedtime(e.target.value)}
               className="w-full px-3 py-2 text-sm focus:outline-none"
-              style={{ ...inputStyle, minHeight: 36 }}
+              style={{ ...inputStyle, minHeight: 44 }}
             />
-            <p className="text-xs mt-1" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs mt-1 kami-text-dim">
               Used to assess sleep impact.
             </p>
           </ControlGroup>
@@ -369,37 +356,19 @@ export default function CaffeineContent() {
       }
     >
       <div className="flex flex-col gap-4 w-full">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Log" : "Timeline"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Log</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
         {/* Chart */}
-        <div className={isGlass ? "glass-canvas-section" : ""}>
-        {(!isMetro || metroCPivot === "input") && (
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <div className="p-4" style={cardStyle}>
-          <p className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs font-medium uppercase tracking-wider mb-3 kami-text-dim">
             Caffeine in system — today
           </p>
           <div className="relative w-full overflow-hidden" style={{ borderRadius: "0.5rem" }}>
@@ -457,10 +426,10 @@ export default function CaffeineContent() {
             </div>
             {/* Chart legend */}
             <div className="flex gap-4 mt-2">
-              <span className="text-xs flex items-center gap-1.5" style={{ color: "var(--kami-text-dim)" }}>
+              <span className="text-xs flex items-center gap-1.5 kami-text-dim">
                 <span style={{ display: "inline-block", width: 16, height: 2, borderTop: "1.5px dashed #ef4444", verticalAlign: "middle" }} /> Now
               </span>
-              <span className="text-xs flex items-center gap-1.5" style={{ color: "var(--kami-text-dim)" }}>
+              <span className="text-xs flex items-center gap-1.5 kami-text-dim">
                 <span style={{ display: "inline-block", width: 16, height: 2, borderTop: "1.5px dashed #8b5cf6", verticalAlign: "middle" }} /> Bedtime
               </span>
             </div>
@@ -484,30 +453,28 @@ export default function CaffeineContent() {
             </div>
           )}
         </div>
-        )}
         </div>
 
         {/* Stats — 3 columns */}
-        <div className={isGlass ? "glass-canvas-section" : ""}>
-        {(!isMetro || metroCPivot === "output") && (
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Right now */}
           <div className="p-4" style={cardStyle}>
-            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs font-medium uppercase tracking-wider kami-text-dim">
               Right now
             </p>
-            <p className="mt-1 text-3xl font-bold tabular-nums" style={{ color: "#f59e0b" }}>
+            <p className="mt-1 text-3xl font-bold tabular-nums kami-text-warning">
               {Math.round(nowPct)}%
             </p>
-            <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="mt-0.5 text-xs kami-text-dim">
               active caffeine
             </p>
           </div>
 
           {/* Sleep impact — traffic light */}
           <div className="p-4" style={cardStyle}>
-            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs font-medium uppercase tracking-wider kami-text-dim">
               At bedtime
             </p>
             <div className="mt-1.5 flex items-center gap-2">
@@ -522,31 +489,31 @@ export default function CaffeineContent() {
                 {tc.label}
               </p>
             </div>
-            <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="mt-0.5 text-xs kami-text-dim">
               {Math.round(mgAtBedtime)}mg active · {tc.note}
             </p>
           </div>
 
           {/* Last safe coffee */}
           <div className="p-4" style={cardStyle}>
-            <p className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs font-medium uppercase tracking-wider kami-text-dim">
               Last safe coffee
             </p>
             {lastSafeCoffee !== null ? (
               <>
-                <p className="mt-1 text-2xl font-bold tabular-nums" style={{ color: "var(--kami-text)" }}>
+                <p className="mt-1 text-2xl font-bold tabular-nums kami-text">
                   {formatTime(lastSafeCoffee)}
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="mt-0.5 text-xs kami-text-dim">
                   {nowH < lastSafeCoffee ? "still time — have one if you need" : "that ship has sailed"}
                 </p>
               </>
             ) : (
               <>
-                <p className="mt-1 text-base font-semibold" style={{ color: "#ef4444" }}>
+                <p className="mt-1 text-base font-semibold kami-text-error">
                   Already over
                 </p>
-                <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="mt-0.5 text-xs kami-text-dim">
                   existing caffeine exceeds safe level
                 </p>
               </>
@@ -560,10 +527,10 @@ export default function CaffeineContent() {
             ...cardStyle,
             border: "1px solid var(--kami-border)",
           }}>
-            <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs kami-text-dim">
               Fully cleared (below 5%)
             </p>
-            <p className="text-sm font-semibold tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="text-sm font-semibold tabular-nums kami-text-muted">
               {formatTime(clearedTime % 24)}
             </p>
           </div>
@@ -572,13 +539,12 @@ export default function CaffeineContent() {
         {/* Personality line */}
         {drinks.length > 0 && (
           <div className="p-4" style={{ ...cardStyle, borderLeft: "3px solid #f59e0b" }}>
-            <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="text-sm kami-text-muted">
               {personality}
             </p>
           </div>
         )}
         </div>
-        )}
         </div>
       </div>
     </ToolShell>

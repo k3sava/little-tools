@@ -160,7 +160,6 @@ export default function ScrollAnimationContent() {
   const [durationAuto, setDurationAuto] = useState(true);
   const [durationMs, setDurationMs] = useState(600);
   const [copied, setCopied] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
@@ -209,17 +208,6 @@ export default function ScrollAnimationContent() {
     return () => container.removeEventListener("scroll", onScroll);
   }, [selectedPreset]);
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isGlass = currentTheme === "glass";
 
   const copyCSS = useCallback(() => {
     navigator.clipboard.writeText(css);
@@ -366,7 +354,7 @@ export default function ScrollAnimationContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Scroll inside the preview frame to drive the animation. Output uses the
             modern CSS Scroll-Driven Animations spec (Chromium 115+, behind flag in
@@ -379,7 +367,7 @@ export default function ScrollAnimationContent() {
         </div>
       }
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] w-full flex-col gap-3 p-4">
+      <div className="glass-canvas-section"><div className="flex h-full min-h-[60vh] w-full flex-col gap-3 p-4">
         <div
           ref={scrollRef}
           className="relative flex-1 overflow-y-auto"
@@ -387,7 +375,7 @@ export default function ScrollAnimationContent() {
             background: "var(--kami-surface)",
             border: "1px solid var(--kami-border-strong)",
             borderRadius: "var(--kami-card-radius, 0.75rem)",
-            minHeight: 360,
+            minHeight: 440,
           }}
         >
           <div className="flex flex-col items-center gap-3 px-6 py-10">
@@ -401,7 +389,7 @@ export default function ScrollAnimationContent() {
                 }}
               />
             ))}
-            <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>↓ scroll down</p>
+            <p className="mt-2 text-xs kami-text-dim">↓ scroll down</p>
           </div>
 
           <div className="flex justify-center px-6 py-8">
@@ -418,7 +406,7 @@ export default function ScrollAnimationContent() {
             >
               <div className="text-3xl mb-2">{preset.icon}</div>
               <h3 className="font-semibold">{preset.label}</h3>
-              <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="mt-1 text-sm kami-text-muted">
                 Animated with scroll-driven CSS
               </p>
             </div>
@@ -455,7 +443,7 @@ export default function ScrollAnimationContent() {
               }}
             />
           </div>
-          <span className="w-12 text-right text-xs tabular-nums font-mono" style={{ color: "var(--kami-text-dim)" }}>
+          <span className="w-12 text-right text-xs tabular-nums font-mono kami-text-dim">
             {(progress * 100).toFixed(0)}%
           </span>
         </div>

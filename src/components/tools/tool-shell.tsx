@@ -481,16 +481,14 @@ export function ToolShell({
         )}
       </nav>
 
-      {/* Large title — Glass (iOS) and Metro (Zune panoramic) */}
-      {(isGlass || isMetro) && title && (
-        <div className="tool-shell-large-title" aria-hidden="true">
-          <div className="tool-shell-large-title-inner">
-            {isGlass && <div className="tool-shell-large-title-eyebrow">tool</div>}
-            <h2 className="tool-shell-large-title-text">{title}</h2>
-            {tagline && <p className="tool-shell-large-title-sub">{tagline}</p>}
-          </div>
+      {/* Large title — always in DOM; CSS shows it for Glass (iOS) and Metro (Zune panoramic) */}
+      <div className="tool-shell-large-title" aria-hidden="true">
+        <div className="tool-shell-large-title-inner">
+          <div className="tool-shell-large-title-eyebrow">tool</div>
+          <h2 className="tool-shell-large-title-text">{title}</h2>
+          {tagline && <p className="tool-shell-large-title-sub">{tagline}</p>}
         </div>
-      )}
+      </div>
 
       {/* ── Body ── */}
       <div className={`tool-shell-body${hasControls ? " has-controls" : " no-controls"}`}>
@@ -515,8 +513,8 @@ export function ToolShell({
         )}
       </div>
 
-      {/* ── Material primary FAB ── */}
-      {isMaterial && materialFab && (
+      {/* ── Material primary FAB — always in DOM; CSS shows only on material theme ── */}
+      {materialFab && (
         <button
           type="button"
           onClick={materialFab.onClick}

@@ -228,21 +228,8 @@ export default function PaletteContent() {
     setMounted(true);
   }, []);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("css");
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [showAdjacentContrast, setShowAdjacentContrast] = useState(true);
   const [copied, setCopied] = useState<number | null>(null);
   const [exportCopied, setExportCopied] = useState(false);
@@ -398,7 +385,7 @@ export default function PaletteContent() {
         tagline="Generate harmonies you can ship"
         accent="#8b5cf6"
       >
-        <div className="flex h-full min-h-[60vh] items-center justify-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
+        <div className="flex h-full min-h-[60vh] items-center justify-center text-sm kami-text-dim">
           Loading palette…
         </div>
       </ToolShell>
@@ -497,20 +484,20 @@ export default function PaletteContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Generate harmonious palettes from a chosen color-theory rule. Press
             Space to shuffle, click a swatch to lock it, then export to your
             framework of choice.
           </p>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">
               Made for
             </div>
             <p className="mt-1">Designers, brand teams, developers.</p>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">
               Reach for it when
             </div>
             <ul className="mt-1 space-y-1 text-xs">
@@ -522,19 +509,17 @@ export default function PaletteContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Controls</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Palette</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Controls</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Palette</button>
+      </nav>
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Palette swatches */}
-        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><div
+        <div className="canvas-section glass-canvas-section" data-panel="output"><div
           className="flex flex-1 min-h-[260px] flex-col overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -658,10 +643,10 @@ export default function PaletteContent() {
             })}
           </div>
         )}
-        </div>)}
+        </div>
 
         {/* Export preview */}
-        {(!isMetro || metroCPivot === "input") && <div className={isGlass ? "glass-canvas-section" : ""}><div
+        <div className="canvas-section glass-canvas-section" data-panel="input"><div
           className="overflow-hidden"
           style={{
             background: "var(--kami-overlay-bg, #111827)",
@@ -696,7 +681,7 @@ export default function PaletteContent() {
           <pre className="overflow-x-auto p-4 text-xs leading-relaxed">
             <code>{exportText}</code>
           </pre>
-        </div></div>}
+        </div></div>
       </div>
     </ToolShell>
   );

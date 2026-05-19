@@ -193,21 +193,8 @@ export default function WordFrequencyContent() {
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [handleCopy, setInput]));
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const tabLabel = activeTab === "words" ? "words" : "phrases";
 
@@ -297,19 +284,16 @@ export default function WordFrequencyContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Analysis</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Analysis</button>
+      </nav>
       <div className="flex flex-col gap-3 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -321,23 +305,20 @@ export default function WordFrequencyContent() {
             />
 
             <div
-              className="flex items-center justify-between text-xs"
-              style={{ color: "var(--kami-text-dim)" }}
+              className="flex items-center justify-between text-xs kami-text-dim"
             >
               <span>
                 {entries.length} unique {tabLabel}
               </span>
               {input && (
-                <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
+                <button onClick={() => setInput("")} className="kami-text-dim">
                   Clear
                 </button>
               )}
             </div>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Search within results */}
             {entries.length > 0 && (
               <input
@@ -356,13 +337,13 @@ export default function WordFrequencyContent() {
                 className="px-4 py-4"
                 style={cardStyle}
               >
-                <div className="text-xs font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>
+                <div className="text-xs font-medium mb-3 kami-text-muted">
                   Top {Math.min(20, filteredEntries.length)} {tabLabel}
                 </div>
                 <div className="space-y-1.5">
                   {top20.map((e) => (
                     <div key={e.word} className="grid grid-cols-[minmax(80px,auto)_1fr_auto_auto] items-center gap-2 text-sm">
-                      <span className="truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
+                      <span className="truncate text-right font-mono kami-text-muted">
                         {e.word}
                       </span>
                       <div
@@ -378,10 +359,10 @@ export default function WordFrequencyContent() {
                           }}
                         />
                       </div>
-                      <span className="w-10 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                      <span className="w-10 text-right font-mono tabular-nums kami-text-muted">
                         {e.count}
                       </span>
-                      <span className="w-12 text-right text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
+                      <span className="w-12 text-right text-xs tabular-nums kami-text-dim">
                         {e.pct.toFixed(1)}%
                       </span>
                     </div>
@@ -395,26 +376,26 @@ export default function WordFrequencyContent() {
               <div className="overflow-auto max-h-96" style={cardStyle}>
                 <table className="w-full text-sm">
                   <thead className="sticky top-0" style={{ background: "var(--kami-surface-solid)" }}>
-                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                      <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    <tr className="kami-border-bottom">
+                      <th className="px-4 py-2 text-left font-medium kami-text-muted">
                         {activeTab === "words" ? "Word" : "Phrase"}
                       </th>
-                      <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <th className="px-4 py-2 text-right font-medium kami-text-muted">
                         Count
                       </th>
-                      <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <th className="px-4 py-2 text-right font-medium kami-text-muted">
                         %
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredEntries.map((e) => (
-                      <tr key={e.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <tr key={e.word} className="kami-border-bottom">
                         <td className="px-4 py-1.5 font-mono">{e.word}</td>
-                        <td className="px-4 py-1.5 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                        <td className="px-4 py-1.5 text-right font-mono tabular-nums kami-text-muted">
                           {e.count}
                         </td>
-                        <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                        <td className="px-4 py-1.5 text-right tabular-nums kami-text-muted">
                           {e.pct.toFixed(2)}%
                         </td>
                       </tr>
@@ -424,7 +405,6 @@ export default function WordFrequencyContent() {
               </div>
             )}
           </div>
-        )}
       </div>
     </ToolShell>
   );

@@ -187,21 +187,9 @@ Fixed timezone display bug in scheduled reports`;
 // --- Component ---
 
 export default function ReleaseNotesFormatterContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  void isMaterial;
 
   const [rawText, setRawText] = useState(EXAMPLE_RAW);
   const [items, setItems] = useState<ChangeItem[]>(() => parseRawText(EXAMPLE_RAW));
@@ -387,7 +375,7 @@ export default function ReleaseNotesFormatterContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Paste raw bullets, click parse — we auto-categorize into Added / Changed / Fixed / Removed / Deprecated / Security (Keep a Changelog).</p>
       <p>Re-categorize any row with the dropdown. Export as Markdown (GitHub releases), HTML (blog), or plain text (email).</p>
       <p><strong>Tip:</strong> lead with the user-visible change, not the implementation. Keep bullets under ~12 words.</p>
@@ -404,34 +392,17 @@ export default function ReleaseNotesFormatterContent() {
       info={info}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Input" : "Formatted"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
       <div className={`grid grid-cols-1 gap-4 lg:grid-cols-2`}>
           {/* Left: Input */}
-          {(!isMetro || metroCPivot === "input") && <div className={`space-y-4${isGlass ? " glass-canvas-section" : ""}`}>
+          <div className="canvas-section glass-canvas-section space-y-4" data-panel="input">
             {/* Raw input */}
             <div
               className="p-5"
@@ -443,10 +414,10 @@ export default function ReleaseNotesFormatterContent() {
               }}
             >
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                <h2 className="text-sm font-semibold kami-text-muted">
                   Raw Changes
                 </h2>
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                <span className="text-xs kami-text-dim">
                   One change per line. Bullets/dashes are stripped automatically.
                 </span>
               </div>
@@ -504,7 +475,7 @@ export default function ReleaseNotesFormatterContent() {
                 }}
               >
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                  <h2 className="text-sm font-semibold kami-text-muted">
                     Categorized ({items.length} items)
                   </h2>
                   <div className="flex gap-1.5">
@@ -554,13 +525,11 @@ export default function ReleaseNotesFormatterContent() {
                           onChange={(e) =>
                             handleItemTextChange(item.id, e.target.value)
                           }
-                          className="min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm focus:outline-none focus:ring-0"
-                          style={{ color: "var(--kami-text)" }}
+                          className="min-w-0 flex-1 border-0 bg-transparent px-0 py-0 text-sm focus:outline-none focus:ring-0 kami-text"
                         />
                         <button
                           onClick={() => handleRemoveItem(item.id)}
-                          className="mt-0.5 flex-shrink-0 rounded px-1.5 py-0.5 text-xs"
-                          style={{ color: "var(--kami-text-dim)" }}
+                          className="mt-0.5 flex-shrink-0 rounded px-1.5 py-0.5 text-xs kami-text-dim"
                         >
                           ✕
                         </button>
@@ -570,11 +539,12 @@ export default function ReleaseNotesFormatterContent() {
                 </div>
               </div>
             )}
-          </div>}
+          </div>
 
           {/* Right: Preview / Source */}
-          {(!isMetro || metroCPivot === "output") && <div
-            className={isGlass ? "glass-canvas-section" : ""}
+          <div
+            className="canvas-section glass-canvas-section"
+            data-panel="output"
             style={{
               background: "var(--kami-surface-solid)",
               border: "1px solid var(--kami-border-strong)",
@@ -585,11 +555,11 @@ export default function ReleaseNotesFormatterContent() {
               <div className="max-h-[36rem] overflow-y-auto p-5">
                 {showPreview && items.length > 0 ? (
                   <div className="prose prose-sm max-w-none">
-                    <h1 className="mb-1 text-xl font-bold" style={{ color: "var(--kami-text)" }}>
+                    <h1 className="mb-1 text-xl font-bold kami-text">
                       {title || version || "Release Notes"}
                     </h1>
                     {(version || date) && (
-                      <p className="mt-0 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                      <p className="mt-0 text-sm kami-text-muted">
                         {[version, date].filter(Boolean).join(" - ")}
                       </p>
                     )}
@@ -609,10 +579,9 @@ export default function ReleaseNotesFormatterContent() {
                             {catItems.map((item) => (
                               <li
                                 key={item.id}
-                                className="text-sm"
-                                style={{ color: "var(--kami-text-muted)" }}
+                                className="text-sm kami-text-muted"
                               >
-                                <span className="mr-2" style={{ color: "var(--kami-text-dim)" }}>•</span>
+                                <span className="mr-2 kami-text-dim">•</span>
                                 {item.text}
                               </li>
                             ))}
@@ -622,7 +591,7 @@ export default function ReleaseNotesFormatterContent() {
                     })}
                   </div>
                 ) : showPreview && items.length === 0 ? (
-                  <p className="py-16 text-center text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                  <p className="py-16 text-center text-sm kami-text-dim">
                     Paste your changes and click &quot;Parse &amp; Categorize&quot;
                   </p>
                 ) : (
@@ -638,7 +607,7 @@ export default function ReleaseNotesFormatterContent() {
                   </pre>
                 )}
               </div>
-          </div>}
+          </div>
       </div>
       </div>
     </ToolShell>

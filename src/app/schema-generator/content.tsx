@@ -584,21 +584,8 @@ const EVENT_AVAILABILITIES = ["InStock", "SoldOut", "PreOrder"];
 export default function SchemaGeneratorContent() {
   const [schemaType, setSchemaType] = useState<SchemaType>("Article");
   const [copied, setCopied] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [article, setArticle] = useState<ArticleFields>(EMPTY_ARTICLE);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([{ question: "", answer: "" }]);
@@ -810,7 +797,7 @@ export default function SchemaGeneratorContent() {
   }) {
     return (
       <label className="block">
-        <span className="block text-xs font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+        <span className="block text-xs font-medium mb-1 kami-text-muted">{label}</span>
         {multiline ? (
           <textarea
             value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} rows={3}
@@ -831,7 +818,7 @@ export default function SchemaGeneratorContent() {
   function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
     return (
       <label className="block">
-        <span className="block text-xs font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+        <span className="block text-xs font-medium mb-1 kami-text-muted">{label}</span>
         <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 text-sm focus:outline-none" style={inputStyle}>
           {options.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
         </select>
@@ -861,9 +848,9 @@ export default function SchemaGeneratorContent() {
             {faqItems.map((item, i) => (
               <div key={i} className="rounded-lg p-3 space-y-2" style={{ border: "1px solid var(--kami-border)", background: "var(--kami-surface-solid)" }}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Question {i + 1}</span>
+                  <span className="text-xs font-medium kami-text-muted">Question {i + 1}</span>
                   {faqItems.length > 1 && (
-                    <button onClick={() => setFaqItems((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 32 }}>Remove</button>
+                    <button onClick={() => setFaqItems((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 44 }}>Remove</button>
                   )}
                 </div>
                 <Field label="Question" value={item.question} onChange={(v) => setFaqItems((prev) => prev.map((it, j) => j === i ? { ...it, question: v } : it))} />
@@ -884,9 +871,9 @@ export default function SchemaGeneratorContent() {
             {howToSteps.map((step, i) => (
               <div key={i} className="rounded-lg p-3 space-y-2" style={{ border: "1px solid var(--kami-border)", background: "var(--kami-surface-solid)" }}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Step {i + 1}</span>
+                  <span className="text-xs font-medium kami-text-muted">Step {i + 1}</span>
                   {howToSteps.length > 1 && (
-                    <button onClick={() => setHowToSteps((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 32 }}>Remove</button>
+                    <button onClick={() => setHowToSteps((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 44 }}>Remove</button>
                   )}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -929,15 +916,15 @@ export default function SchemaGeneratorContent() {
             <Field label="Image URL" value={localBusiness.image} onChange={(v) => updateLocalBusiness("image", v)} placeholder="https://" />
             <Field label="Price Range" value={localBusiness.priceRange} onChange={(v) => updateLocalBusiness("priceRange", v)} placeholder="$$" />
             <div className="sm:col-span-2">
-              <span className="block text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>Opening Hours</span>
+              <span className="block text-xs font-medium mb-2 kami-text-muted">Opening Hours</span>
               <div className="space-y-2">
                 {localBusiness.openingHours.map((entry, i) => (
                   <div key={entry.day} className="flex items-center gap-3">
-                    <span className="w-20 text-sm shrink-0" style={{ color: "var(--kami-text)" }}>{entry.day.slice(0, 3)}</span>
+                    <span className="w-20 text-sm shrink-0 kami-text">{entry.day.slice(0, 3)}</span>
                     <input type="time" value={entry.opens} onChange={(e) => setLocalBusiness((prev) => ({
                       ...prev, openingHours: prev.openingHours.map((h, j) => j === i ? { ...h, opens: e.target.value } : h)
                     }))} className="px-2 py-1.5 text-sm focus:outline-none" style={inputStyle} />
-                    <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>to</span>
+                    <span className="text-xs kami-text-dim">to</span>
                     <input type="time" value={entry.closes} onChange={(e) => setLocalBusiness((prev) => ({
                       ...prev, openingHours: prev.openingHours.map((h, j) => j === i ? { ...h, closes: e.target.value } : h)
                     }))} className="px-2 py-1.5 text-sm focus:outline-none" style={inputStyle} />
@@ -957,14 +944,14 @@ export default function SchemaGeneratorContent() {
             </div>
             <Field label="Description" value={organization.description} onChange={(v) => updateOrganization("description", v)} multiline />
             <div className="space-y-2">
-              <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Social links (sameAs)</span>
+              <span className="text-xs font-medium kami-text-muted">Social links (sameAs)</span>
               {socialLinks.map((link, i) => (
                 <div key={i} className="flex gap-2">
                   <div className="flex-1">
                     <Field label={`Link ${i + 1}`} value={link} onChange={(v) => setSocialLinks((prev) => prev.map((l, j) => j === i ? v : l))} placeholder="https://" />
                   </div>
                   {socialLinks.length > 1 && (
-                    <button onClick={() => setSocialLinks((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn self-end" style={{ minHeight: 36 }}>Remove</button>
+                    <button onClick={() => setSocialLinks((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn self-end" style={{ minHeight: 44 }}>Remove</button>
                   )}
                 </div>
               ))}
@@ -978,9 +965,9 @@ export default function SchemaGeneratorContent() {
             {breadcrumbItems.map((item, i) => (
               <div key={i} className="rounded-lg p-3 space-y-2" style={{ border: "1px solid var(--kami-border)", background: "var(--kami-surface-solid)" }}>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Item {i + 1}</span>
+                  <span className="text-xs font-medium kami-text-muted">Item {i + 1}</span>
                   {breadcrumbItems.length > 2 && (
-                    <button onClick={() => setBreadcrumbItems((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 32 }}>Remove</button>
+                    <button onClick={() => setBreadcrumbItems((prev) => prev.filter((_, j) => j !== i))} className="kc-segment-btn" style={{ minHeight: 44 }}>Remove</button>
                   )}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -1070,11 +1057,11 @@ export default function SchemaGeneratorContent() {
                 aria-hidden="true"
                 style={{
                   display: "inline-block", width: 8, height: 8, borderRadius: 999,
-                  background: msg.level === "error" ? "#ef4444" : msg.level === "warning" ? "#f59e0b" : "#22c55e",
+                  background: msg.level === "error" ? "var(--kami-error)" : msg.level === "warning" ? "var(--kami-warning)" : "var(--kami-success)",
                   marginTop: 5, flexShrink: 0,
                 }}
               />
-              <span style={{ color: msg.level === "error" ? "#ef4444" : msg.level === "warning" ? "#f59e0b" : "#22c55e" }}>
+              <span style={{ color: msg.level === "error" ? "var(--kami-error)" : msg.level === "warning" ? "var(--kami-warning)" : "var(--kami-success)" }}>
                 {msg.text}
               </span>
             </div>
@@ -1105,7 +1092,7 @@ export default function SchemaGeneratorContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Pick a schema type, fill the fields, and copy a valid JSON-LD <code>&lt;script&gt;</code> block for your page&apos;s <code>&lt;head&gt;</code>.</p>
       <p>Test the output with Google&apos;s Rich Results Test. A page can include multiple schema types.</p>
       <p>FAQ rich results currently only display on a small number of trusted sites — they&apos;re still valid markup either way.</p>
@@ -1122,19 +1109,16 @@ export default function SchemaGeneratorContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Form</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>JSON-LD</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Form</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>JSON-LD</button>
+      </nav>
       <div className="flex flex-col gap-5 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div
+        <div className="canvas-section glass-canvas-section" data-panel="input"><div
             className="rounded-xl p-4"
             style={{
               border: "1px solid var(--kami-border)",
@@ -1144,13 +1128,11 @@ export default function SchemaGeneratorContent() {
           >
             {renderForm()}
           </div></div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><div>
             <div className="mb-2 flex items-center justify-between">
               <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>JSON-LD output</span>
-              <span className="text-xs" style={{ color: errors > 0 ? "#ef4444" : "#22c55e" }}>
+              <span className="text-xs" style={{ color: errors > 0 ? "var(--kami-error)" : "var(--kami-success)" }}>
                 {errors > 0 ? `${errors} error${errors === 1 ? "" : "s"}` : "Valid"}
               </span>
             </div>
@@ -1169,7 +1151,6 @@ export default function SchemaGeneratorContent() {
               <span style={{ opacity: 0.6 }}>&lt;/script&gt;</span>
             </pre>
           </div></div>
-        )}
       </div>
     </ToolShell>
   );

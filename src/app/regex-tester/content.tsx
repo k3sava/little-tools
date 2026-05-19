@@ -236,21 +236,8 @@ export default function RegexTesterContent() {
   const testString = toolState.test;
   const setPattern = useCallback((v: string) => setToolState({ pattern: v }), [setToolState]);
   const setTestString = useCallback((v: string) => setToolState({ test: v }), [setToolState]);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [flagG, setFlagG] = useState(true);
   const [flagI, setFlagI] = useState(false);
@@ -384,22 +371,19 @@ export default function RegexTesterContent() {
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Pattern</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Matches</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Pattern</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Matches</button>
+      </nav>
       <div className="flex flex-col gap-3">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             {/* Pattern input */}
             <div className="flex items-center gap-2">
-              <span className="text-lg font-mono select-none" style={{ color: "var(--kami-text-dim)" }}>/</span>
+              <span className="text-lg font-mono select-none kami-text-dim">/</span>
               <input
                 value={pattern}
                 onChange={(e) => setPattern(e.target.value)}
@@ -409,9 +393,9 @@ export default function RegexTesterContent() {
                 autoFocus
                 spellCheck={false}
               />
-              <span className="text-lg font-mono select-none" style={{ color: "var(--kami-text-dim)" }}>/{flags}</span>
+              <span className="text-lg font-mono select-none kami-text-dim">/{flags}</span>
             </div>
-            {error && <p className="text-xs" style={{ color: "#ef4444" }}>{error}</p>}
+            {error && <p className="text-xs kami-text-error">{error}</p>}
 
             {/* Replacement input */}
             {mode === "replace" && (
@@ -435,7 +419,7 @@ export default function RegexTesterContent() {
                         color: "var(--kami-text-muted)",
                         border: "1px solid var(--kami-border)",
                         borderRadius: "var(--kami-cta-radius, 0.25rem)",
-                        minHeight: 32,
+                        minHeight: 44,
                       }}
                     >
                       {ref}
@@ -456,19 +440,17 @@ export default function RegexTesterContent() {
               spellCheck={false}
             />
 
-            <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="text-xs kami-text-dim">
               {matches.length} match{matches.length !== 1 ? "es" : ""}
               {testString && ` in ${testString.length} chars`}
             </div>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Explain panel */}
             {showExplain && pattern && explanation.length > 0 && (
               <div className="p-4" style={cardStyle}>
-                <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Pattern breakdown</h3>
+                <h3 className="mb-3 text-sm font-medium kami-text-muted">Pattern breakdown</h3>
                 <div className="flex flex-wrap gap-1">
                   {explanation.map((tok, i) => (
                     <span
@@ -481,8 +463,8 @@ export default function RegexTesterContent() {
                       }}
                       title={tok.desc}
                     >
-                      <span style={{ color: "var(--kami-text)" }}>{tok.token}</span>
-                      <span className="ml-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>{tok.desc}</span>
+                      <span className="kami-text">{tok.token}</span>
+                      <span className="ml-2 text-xs kami-text-muted">{tok.desc}</span>
                     </span>
                   ))}
                 </div>
@@ -492,11 +474,11 @@ export default function RegexTesterContent() {
             {/* Cheat sheet */}
             {showCheat && (
               <div className="p-4" style={cardStyle}>
-                <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Cheat sheet</h3>
+                <h3 className="mb-3 text-sm font-medium kami-text-muted">Cheat sheet</h3>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {CHEAT_SHEET.map((cat) => (
                     <div key={cat.cat}>
-                      <h4 className="mb-2 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat.cat}</h4>
+                      <h4 className="mb-2 text-xs font-medium uppercase tracking-wide kami-text-dim">{cat.cat}</h4>
                       <div className="space-y-1">
                         {cat.items.map(([token, desc]) => (
                           <div key={token} className="flex items-baseline gap-2">
@@ -509,7 +491,7 @@ export default function RegexTesterContent() {
                                 borderRadius: "var(--kami-cta-radius, 0.25rem)",
                               }}
                             >{token}</code>
-                            <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{desc}</span>
+                            <span className="text-xs kami-text-muted">{desc}</span>
                           </div>
                         ))}
                       </div>
@@ -522,10 +504,10 @@ export default function RegexTesterContent() {
             {/* Common patterns */}
             {showPatterns && (
               <div className="p-4" style={cardStyle}>
-                <h3 className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Common patterns</h3>
+                <h3 className="mb-3 text-sm font-medium kami-text-muted">Common patterns</h3>
                 {PATTERN_CATEGORIES.map((cat) => (
                   <div key={cat.label} className="mb-3 last:mb-0">
-                    <h4 className="mb-1.5 text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat.label}</h4>
+                    <h4 className="mb-1.5 text-xs font-medium uppercase tracking-wide kami-text-dim">{cat.label}</h4>
                     <div className="grid gap-1.5 sm:grid-cols-2">
                       {cat.patterns.map((p) => (
                         <button
@@ -539,8 +521,8 @@ export default function RegexTesterContent() {
                             minHeight: 44,
                           }}
                         >
-                          <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>{p.label}</span>
-                          <span className="text-xs font-mono truncate ml-2 max-w-[140px]" style={{ color: "var(--kami-text-dim)" }}>{p.pattern}</span>
+                          <span className="text-sm kami-text-muted">{p.label}</span>
+                          <span className="text-xs font-mono truncate ml-2 max-w-[140px] kami-text-dim">{p.pattern}</span>
                         </button>
                       ))}
                     </div>
@@ -552,7 +534,7 @@ export default function RegexTesterContent() {
             {/* Highlighted preview */}
             {testString && pattern && !error && (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Highlighted</span>
+                <span className="text-sm font-medium kami-text-muted">Highlighted</span>
                 <div
                   className="whitespace-pre-wrap px-4 py-3 font-mono text-sm max-h-[300px] overflow-auto break-all"
                   style={cardStyle}
@@ -566,7 +548,7 @@ export default function RegexTesterContent() {
             {mode === "replace" && replaceResult && testString && pattern && !error && (
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>Replace result</span>
+                  <span className="text-sm font-medium kami-text-muted">Replace result</span>
                   <ToolActionButton onClick={() => handleCopy(replaceResult, "result")} variant="solid">
                     {copied === "result" ? "Copied" : "Copy"}
                   </ToolActionButton>
@@ -583,7 +565,7 @@ export default function RegexTesterContent() {
             {/* Match cards */}
             {matches.length > 0 && mode === "match" && (
               <div className="flex flex-col gap-2">
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-sm font-medium kami-text-muted">
                   Matches ({matches.length})
                 </span>
                 <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
@@ -594,10 +576,10 @@ export default function RegexTesterContent() {
                       style={cardStyle}
                     >
                       <div className="flex items-baseline justify-between gap-2 mb-1">
-                        <span className="font-mono text-sm font-semibold break-all" style={{ color: "var(--kami-text)" }}>
+                        <span className="font-mono text-sm font-semibold break-all kami-text">
                           {m.fullMatch}
                         </span>
-                        <span className="text-[10px] shrink-0" style={{ color: "var(--kami-text-dim)" }}>
+                        <span className="text-[10px] shrink-0 kami-text-dim">
                           #{i + 1} · idx {m.index}
                         </span>
                       </div>
@@ -640,14 +622,13 @@ export default function RegexTesterContent() {
                   ))}
                 </div>
                 {matches.length > 200 && (
-                  <div className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="text-xs kami-text-dim">
                     Showing 200 of {matches.length} matches
                   </div>
                 )}
               </div>
             )}
           </div>
-        )}
       </div>
     </ToolShell>
   );

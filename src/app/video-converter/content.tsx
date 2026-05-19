@@ -148,17 +148,6 @@ async function convertWithCanvas(
 }
 
 export default function VideoConverterContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
@@ -394,7 +383,7 @@ export default function VideoConverterContent() {
 
       {!hasWebCodecs && (
         <ControlGroup>
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="text-xs kami-text-muted">
             Canvas-based conversion. Use Chrome 94+ for hardware acceleration.
           </p>
         </ControlGroup>
@@ -412,30 +401,16 @@ export default function VideoConverterContent() {
       controlsLabel="Settings"
     >
       <div className="flex flex-col gap-4">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px", fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none", border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >{tab === "input" ? "Upload" : "Output"}</button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Upload</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <FileDropZone
               accept={[".webm", ".mp4", ".mov", ".avi", ".mkv", ".m4v", ".ogv"]}
               onFiles={handleFileDrop}
@@ -475,7 +450,7 @@ export default function VideoConverterContent() {
                           {f.status === "error" && "✕"}
                         </span>
                         <span className="truncate text-sm font-medium">{f.name}</span>
-                        <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        <span className="text-xs kami-text-muted">
                           {formatSize(f.originalSize)}
                           {f.duration > 0 && ` · ${formatDuration(f.duration)}`}
                           {f.width > 0 && ` · ${f.width}×${f.height}`}
@@ -486,7 +461,7 @@ export default function VideoConverterContent() {
                           </span>
                         )}
                         {f.status === "done" && (
-                          <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                          <span className="text-xs kami-text-muted">
                             → {formatSize(f.convertedSize)}
                           </span>
                         )}
@@ -529,10 +504,8 @@ export default function VideoConverterContent() {
               </div>
             )}
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {selected && (
               <div
                 className="rounded-xl border p-4"
@@ -541,12 +514,12 @@ export default function VideoConverterContent() {
                   borderColor: "var(--kami-border-strong)",
                 }}
               >
-                <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="mb-3 text-sm font-medium kami-text-muted">
                   {selected.name}
                 </p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <p className="mb-1 text-xs kami-text-muted">
                       Original ({formatSize(selected.originalSize)})
                     </p>
                     <div
@@ -562,7 +535,7 @@ export default function VideoConverterContent() {
                     </div>
                   </div>
                   <div>
-                    <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <p className="mb-1 text-xs kami-text-muted">
                       Converted
                       {selected.status === "done" ? ` (${formatSize(selected.convertedSize)})` : ""}
                     </p>
@@ -579,7 +552,7 @@ export default function VideoConverterContent() {
                         />
                       ) : selected.status === "converting" ? (
                         <div className="text-center">
-                          <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                          <p className="text-sm kami-text-muted">
                             Converting... {selected.progress}%
                           </p>
                           <div
@@ -597,7 +570,7 @@ export default function VideoConverterContent() {
                           {selected.error}
                         </p>
                       ) : (
-                        <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                        <p className="text-sm kami-text-muted">
                           Click Convert
                         </p>
                       )}
@@ -607,7 +580,6 @@ export default function VideoConverterContent() {
               </div>
             )}
           </div>
-        )}
       </div>
     </ToolShell>
   );

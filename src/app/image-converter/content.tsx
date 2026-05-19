@@ -46,21 +46,8 @@ function formatLabel(mime: OutputFormat): string {
 }
 
 export default function ImageConverterContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("image/png");
@@ -355,7 +342,7 @@ export default function ImageConverterContent() {
               unit="px"
             />
           </div>
-          <span className="pb-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <span className="pb-2 text-xs kami-text-muted">
             ×
           </span>
           <div style={{ flex: 1 }}>
@@ -415,8 +402,7 @@ export default function ImageConverterContent() {
                     removeFile(f.id);
                   }}
                   role="button"
-                  className="ml-2 cursor-pointer"
-                  style={{ color: "var(--kami-text-muted)" }}
+                  className="ml-2 cursor-pointer kami-text-muted"
                 >
                   ✕
                 </span>
@@ -438,19 +424,16 @@ export default function ImageConverterContent() {
       controls={controls}
       controlsLabel="Settings"
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Upload</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Convert</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Upload</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Convert</button>
+      </nav>
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <FileDropZone
               accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
               onFiles={handleFileDrop}
@@ -459,27 +442,25 @@ export default function ImageConverterContent() {
               multiple={true}
             />
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && selected && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div
+        {selected && (
+          <div className="glass-canvas-section"><div
             className="rounded-xl border p-4"
             style={{
               background: "var(--kami-surface-solid)",
               borderColor: "var(--kami-border-strong)",
             }}
           >
-            <p className="mb-3 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="mb-3 text-sm font-medium kami-text-muted">
               {selected.name}
             </p>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="mb-1 text-xs kami-text-muted">
                   Original ({formatSize(selected.originalSize)})
                 </p>
                 <div
-                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg"
-                  style={{ border: "1px solid var(--kami-border)" }}
+                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg kami-border-all"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -490,14 +471,13 @@ export default function ImageConverterContent() {
                 </div>
               </div>
               <div>
-                <p className="mb-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="mb-1 text-xs kami-text-muted">
                   {selected.status === "done"
                     ? `${formatLabel(outputFormat)} (${formatSize(selected.convertedSize)})`
                     : formatLabel(outputFormat)}
                 </p>
                 <div
-                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg"
-                  style={{ border: "1px solid var(--kami-border)" }}
+                  className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-lg kami-border-all"
                 >
                   {selected.status === "done" && selected.convertedUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
@@ -507,7 +487,7 @@ export default function ImageConverterContent() {
                       className="max-h-full max-w-full object-contain"
                     />
                   ) : selected.status === "converting" ? (
-                    <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <p className="text-xs kami-text-muted">
                       Converting...
                     </p>
                   ) : selected.status === "error" ? (
@@ -515,7 +495,7 @@ export default function ImageConverterContent() {
                       {selected.error}
                     </p>
                   ) : (
-                    <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <p className="text-xs kami-text-muted">
                       Click Convert
                     </p>
                   )}

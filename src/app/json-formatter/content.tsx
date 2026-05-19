@@ -483,21 +483,8 @@ export default function JsonFormatterContent() {
   const [convertFormat, setConvertFormat] = useState<"yaml" | "toml" | "csv">("yaml");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const indent = useMemo<number | "tab">(() => {
     if (indentChoice === "tab") return "tab";
@@ -714,19 +701,17 @@ export default function JsonFormatterContent() {
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Output</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="flex flex-col gap-3">
         {/* Input */}
-        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="input"><>
         <textarea
           ref={textareaRef}
           value={input}
@@ -766,10 +751,10 @@ export default function JsonFormatterContent() {
             </span>
           )}
         </div>
-        </></div>)}
+        </></div>
 
         {/* Format Tab */}
-        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><>
         {hasData && activeTab === "format" && (
           <div className="flex flex-col gap-3">
             {/* Search */}
@@ -862,7 +847,7 @@ export default function JsonFormatterContent() {
                     color: "var(--kami-text-muted)",
                     border: "1px solid var(--kami-border)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    minHeight: 32,
+                    minHeight: 44,
                   }}
                 >
                   {example}
@@ -1006,7 +991,7 @@ export default function JsonFormatterContent() {
             </pre>
           </div>
         )}
-        </></div>)}
+        </></div>
       </div>
     </ToolShell>
   );

@@ -88,8 +88,7 @@ function ProgressBar({
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
         <span
-          className="text-xs uppercase tracking-widest"
-          style={{ color: "var(--kami-text-dim)" }}
+          className="text-xs uppercase tracking-widest kami-text-dim"
         >
           {label}
         </span>
@@ -132,15 +131,6 @@ const ACCENT_WEEK  = "#f97316";
 const ACCENT_DAY   = "#facc15";
 
 export default function YearProgressContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isGlass = currentTheme === "glass";
 
   const [now, setNow] = useState<Date | null>(null);
 
@@ -203,7 +193,7 @@ export default function YearProgressContent() {
       hideControls
     >
       {s && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="glass-canvas-section">
         <div className="flex flex-col gap-4 max-w-xl mx-auto w-full">
           {/* Three bars */}
           <div className="p-6 flex flex-col gap-6" style={cardStyle}>
@@ -222,10 +212,10 @@ export default function YearProgressContent() {
               { label: "Q", value: `${s.quarter} / 4` },
             ].map(({ label, value }) => (
               <div key={label} className="p-4 text-center" style={cardStyle}>
-                <p className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-xs uppercase tracking-widest mb-1 kami-text-dim">
                   {label}
                 </p>
-                <p className="text-sm font-semibold tabular-nums" style={{ color: "var(--kami-text)" }}>
+                <p className="text-sm font-semibold tabular-nums kami-text">
                   {value}
                 </p>
               </div>
@@ -234,13 +224,13 @@ export default function YearProgressContent() {
 
           {/* Commentary */}
           <div className="p-5 flex flex-col gap-2.5" style={cardStyle}>
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-sm kami-text-dim">
               {s.daysLeft} days left in {s.year}.
             </p>
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-sm kami-text-dim">
               {s.monthName} accounts for {s.monthPctOfRemaining}% of what remains.
             </p>
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-sm kami-text-dim">
               {s.monthComment}
             </p>
             <p

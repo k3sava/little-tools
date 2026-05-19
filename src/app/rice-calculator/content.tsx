@@ -145,21 +145,9 @@ async function copyText(text: string): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 export default function RiceCalculatorContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  void isMaterial;
 
   const [items, setItems] = useState<RiceItem[]>(() => loadItems());
   const [sortField, setSortField] = useState<SortField>("score");
@@ -334,9 +322,9 @@ export default function RiceCalculatorContent() {
     <>
       <ControlGroup label="Scoreboard">
         {summary ? (
-          <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="grid grid-cols-2 gap-2 text-xs kami-text-muted">
             <div>
-              <span className="block text-base font-bold" style={{ color: "var(--kami-text)" }}>{summary.total}</span>
+              <span className="block text-base font-bold kami-text">{summary.total}</span>
               features
             </div>
             <div>
@@ -353,7 +341,7 @@ export default function RiceCalculatorContent() {
             </div>
           </div>
         ) : (
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Add features to score.</p>
+          <p className="text-xs kami-text-dim">Add features to score.</p>
         )}
       </ControlGroup>
       <ControlGroup label="Manage">
@@ -376,7 +364,7 @@ export default function RiceCalculatorContent() {
               onClick={() => toggleSort(f)}
               data-active={sortField === f}
               className="kc-segment-btn"
-              style={{ minHeight: 36 }}
+              style={{ minHeight: 44 }}
             >
               {f}{sortField === f ? (sortDir === "desc" ? " ↓" : " ↑") : ""}
             </button>
@@ -396,7 +384,7 @@ export default function RiceCalculatorContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>RICE prioritizes ideas by (Reach × Impact × Confidence) / Effort. Higher score wins. Originally from Intercom.</p>
       <p><strong>Reach:</strong> users/qtr affected. <strong>Impact:</strong> 0.25–3. <strong>Confidence:</strong> 50–100%. <strong>Effort:</strong> person-months.</p>
       <p>State auto-saves to localStorage. Import/export CSV to share with stakeholders.</p>
@@ -414,35 +402,18 @@ export default function RiceCalculatorContent() {
       info={info}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Inputs" : "Score"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Inputs</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
       {/* Desktop table */}
-      {(!isMetro || metroCPivot === "input") && items.length > 0 ? (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="canvas-section glass-canvas-section" data-panel="input">
+      {items.length > 0 ? (
         <>
           {/* Table view (hidden on mobile) */}
           <div className="hidden sm:block mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
@@ -538,7 +509,7 @@ export default function RiceCalculatorContent() {
                       }}
                     >
                       {/* Name */}
-                      <td className="px-3 py-2" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                      <td className="px-3 py-2 kami-border-right">
                         <input
                           type="text"
                           value={item.name}
@@ -551,7 +522,7 @@ export default function RiceCalculatorContent() {
                       </td>
 
                       {/* Reach */}
-                      <td className="px-3 py-2 text-center" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                      <td className="px-3 py-2 text-center kami-border-right">
                         <input
                           type="number"
                           value={item.reach}
@@ -567,7 +538,7 @@ export default function RiceCalculatorContent() {
                       </td>
 
                       {/* Impact */}
-                      <td className="px-3 py-2 text-center" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                      <td className="px-3 py-2 text-center kami-border-right">
                         <select
                           value={item.impact}
                           onChange={(e) => updateItem(item.id, { impact: Number(e.target.value) })}
@@ -588,7 +559,7 @@ export default function RiceCalculatorContent() {
                       </td>
 
                       {/* Confidence */}
-                      <td className="px-3 py-2 text-center" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                      <td className="px-3 py-2 text-center kami-border-right">
                         <select
                           value={item.confidence}
                           onChange={(e) => updateItem(item.id, { confidence: Number(e.target.value) })}
@@ -609,7 +580,7 @@ export default function RiceCalculatorContent() {
                       </td>
 
                       {/* Effort */}
-                      <td className="px-3 py-2 text-center" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                      <td className="px-3 py-2 text-center kami-border-right">
                         <input
                           type="number"
                           value={item.effort}
@@ -627,8 +598,7 @@ export default function RiceCalculatorContent() {
 
                       {/* Score */}
                       <td
-                        className="px-3 py-2 text-center"
-                        style={{ borderRight: "1px solid var(--kami-border)" }}
+                        className="px-3 py-2 text-center kami-border-right"
                       >
                         <span
                           className="inline-block rounded-lg px-3 py-1 text-base font-bold tabular-nums"
@@ -645,8 +615,7 @@ export default function RiceCalculatorContent() {
                       <td className="px-1 text-center align-middle">
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="rounded p-1 opacity-30 transition-opacity hover:opacity-100"
-                          style={{ color: "var(--kami-text-muted)" }}
+                          className="rounded p-1 opacity-30 transition-opacity hover:opacity-100 kami-text-muted"
                           title="Remove feature"
                         >
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -681,8 +650,7 @@ export default function RiceCalculatorContent() {
                       type="text"
                       value={item.name}
                       onChange={(e) => updateItem(item.id, { name: e.target.value })}
-                      className="flex-1 bg-transparent text-sm font-semibold outline-none"
-                      style={{ color: "var(--kami-text)" }}
+                      className="flex-1 bg-transparent text-sm font-semibold outline-none kami-text"
                       placeholder="Feature name..."
                     />
                     <span
@@ -700,7 +668,7 @@ export default function RiceCalculatorContent() {
                   <div className="grid grid-cols-2 gap-3">
                     {/* Reach */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <label className="mb-1 block text-xs font-medium kami-text-muted">
                         Reach (users/qtr)
                       </label>
                       <input
@@ -719,7 +687,7 @@ export default function RiceCalculatorContent() {
 
                     {/* Effort */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <label className="mb-1 block text-xs font-medium kami-text-muted">
                         Effort (person-months)
                       </label>
                       <input
@@ -739,7 +707,7 @@ export default function RiceCalculatorContent() {
 
                     {/* Impact */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <label className="mb-1 block text-xs font-medium kami-text-muted">
                         Impact
                       </label>
                       <select
@@ -763,7 +731,7 @@ export default function RiceCalculatorContent() {
 
                     {/* Confidence */}
                     <div>
-                      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                      <label className="mb-1 block text-xs font-medium kami-text-muted">
                         Confidence
                       </label>
                       <select
@@ -790,8 +758,7 @@ export default function RiceCalculatorContent() {
                   <div className="mt-3 flex justify-end">
                     <button
                       onClick={() => removeItem(item.id)}
-                      className="rounded px-2 py-1 text-xs transition-opacity hover:opacity-80"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="rounded px-2 py-1 text-xs transition-opacity hover:opacity-80 kami-text-muted"
                     >
                       Remove
                     </button>
@@ -801,7 +768,6 @@ export default function RiceCalculatorContent() {
             })}
           </div>
         </>
-        </div>
       ) : (
         /* Empty state */
         <div
@@ -818,7 +784,7 @@ export default function RiceCalculatorContent() {
               <line x1="24" y1="18" x2="24" y2="30" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
-          <p className="mb-4 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="mb-4 text-sm kami-text-muted">
             Add your first feature to start prioritizing.
           </p>
           <button onClick={addItem} className="kami-btn-primary">
@@ -826,17 +792,16 @@ export default function RiceCalculatorContent() {
           </button>
           <button
             onClick={resetDefaults}
-            className="mt-2 text-xs underline"
-            style={{ color: "var(--kami-text-muted)" }}
+            className="mt-2 text-xs underline kami-text-muted"
           >
             or load example features
           </button>
         </div>
       )}
+      </div>
 
-      {/* Metro Score panel */}
-      {isMetro && metroCPivot === "output" && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      {/* Score panel */}
+      <div className="canvas-section glass-canvas-section" data-panel="output">
           <div
             className="rounded-xl p-6"
             style={{
@@ -846,12 +811,12 @@ export default function RiceCalculatorContent() {
             }}
           >
             {items.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-sm text-center py-8 kami-text-dim">
                 Add features in the Inputs tab to see scores here.
               </p>
             ) : (
               <div className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "var(--kami-text-muted)" }}>RICE Scores</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-wide mb-4 kami-text-muted">RICE Scores</h2>
                 {sortedItems.map((item, i) => {
                   const score = calcScore(item);
                   return (
@@ -863,7 +828,7 @@ export default function RiceCalculatorContent() {
                         border: "1px solid var(--kami-border)",
                       }}
                     >
-                      <span className="text-sm font-medium flex-1 truncate" style={{ color: "var(--kami-text)" }}>
+                      <span className="text-sm font-medium flex-1 truncate kami-text">
                         {item.name || "Unnamed feature"}
                       </span>
                       <span
@@ -878,8 +843,7 @@ export default function RiceCalculatorContent() {
               </div>
             )}
           </div>
-        </div>
-      )}
+      </div>
 
         {/* Toast */}
         {toast && (

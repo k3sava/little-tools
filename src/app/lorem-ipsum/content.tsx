@@ -375,26 +375,12 @@ export default function LoremIpsumContent() {
     null
   );
   const [mounted, setMounted] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
   // Generate on client only to avoid hydration mismatch from Math.random()
   useEffect(() => { setMounted(true); }, []);
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const output = useMemo(() => {
     if (!mounted) return "";
@@ -566,34 +552,16 @@ export default function LoremIpsumContent() {
       controls={controls}
     >
       <div className="flex flex-col gap-3 p-4 md:p-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Settings" : "Output"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Settings</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
           <div
             className="px-4 py-3 text-sm"
             style={{
@@ -602,21 +570,18 @@ export default function LoremIpsumContent() {
               borderRadius: "var(--kami-card-radius, 0.75rem)",
             }}
           >
-            <p style={{ color: "var(--kami-text-dim)" }}>
-              Flavor: <strong style={{ color: "var(--kami-text-muted)" }}>{flavor}</strong>
-              {" · "}Mode: <strong style={{ color: "var(--kami-text-muted)" }}>{activeTemplate ? `template: ${activeTemplate}` : `${count} ${mode}`}</strong>
-              {" · "}HTML: <strong style={{ color: "var(--kami-text-muted)" }}>{htmlTag === "none" ? "plain" : htmlTag}</strong>
-              {" · "}Start classic: <strong style={{ color: "var(--kami-text-muted)" }}>{startClassic ? "yes" : "no"}</strong>
+            <p className="kami-text-dim">
+              Flavor: <strong className="kami-text-muted">{flavor}</strong>
+              {" · "}Mode: <strong className="kami-text-muted">{activeTemplate ? `template: ${activeTemplate}` : `${count} ${mode}`}</strong>
+              {" · "}HTML: <strong className="kami-text-muted">{htmlTag === "none" ? "plain" : htmlTag}</strong>
+              {" · "}Start classic: <strong className="kami-text-muted">{startClassic ? "yes" : "no"}</strong>
             </p>
           </div>
         </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         <div
-          className="flex items-center justify-between text-xs"
-          style={{ color: "var(--kami-text-dim)" }}
+          className="flex items-center justify-between text-xs kami-text-dim"
         >
           <span>
             {wordCount.toLocaleString()} words · {charCount.toLocaleString()} chars
@@ -664,38 +629,7 @@ export default function LoremIpsumContent() {
           </div>
         )}
         </div>
-        )}
       </div>
-      {isMaterial && output && (
-        <button
-          onClick={handleGenerate}
-          title="Regenerate"
-          aria-label="Regenerate"
-          style={{
-            position: "fixed",
-            bottom: 88,
-            right: 24,
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: "#6750a4",
-            color: "#fff",
-            border: "none",
-            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
-            fontSize: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            zIndex: 20,
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-          </svg>
-        </button>
-      )}
     </ToolShell>
   );
 }

@@ -75,15 +75,6 @@ const ACCENT = "#10b981";
 type Mode = "build" | "preview";
 
 export default function FlowContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isGlass    = currentTheme === "glass";
 
   const [tree, setTree] = useState<Tree>(emptyTree);
   const [selectedId, setSelectedId] = useState<string>("");
@@ -240,7 +231,7 @@ export default function FlowContent() {
     return (
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium" style={{ color: "var(--kami-text-dim)" }}>
+          <span className="text-xs font-medium kami-text-dim">
             {dir === "yes" ? "✓ Yes →" : "✗ No →"}
           </span>
           <select
@@ -396,12 +387,12 @@ export default function FlowContent() {
         )
       }
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="glass-canvas-section">
       {mode === "build" && selectedNode ? (
         <div className="flex flex-col gap-4 w-full">
           <div className="p-5 flex flex-col gap-4" style={cardStyle}>
             <div>
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs uppercase tracking-widest mb-2 kami-text-dim">
                 Question
               </p>
               <textarea
@@ -427,7 +418,7 @@ export default function FlowContent() {
                 onClick={() => deleteNode(selectedNode.id)}
                 onKeyDown={(e) => e.key === "Enter" && deleteNode(selectedNode.id)}
                 className="self-start text-xs px-3 py-1.5 rounded-lg cursor-pointer select-none"
-                style={{ color: "#ef4444", background: "#fef2f2", border: "1px solid #fecaca" }}
+                style={{ color: "var(--kami-error)", background: "var(--kami-error-bg)", border: "1px solid var(--kami-error-border)" }}
               >
                 Delete this question
               </div>
@@ -435,13 +426,13 @@ export default function FlowContent() {
           </div>
 
           <div className="p-4 rounded-lg text-xs" style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border-strong)", color: "var(--kami-text-dim)" }}>
-            <strong style={{ color: "var(--kami-text)" }}>How it works:</strong> Build your questions above. Each question branches to either another question or a final resolution. When ready, click <em>Preview</em> to test it, then <em>Copy link</em> to share — no backend needed.
+            <strong className="kami-text">How it works:</strong> Build your questions above. Each question branches to either another question or a final resolution. When ready, click <em>Preview</em> to test it, then <em>Copy link</em> to share — no backend needed.
           </div>
         </div>
       ) : (
         <div className="flex flex-col gap-4 w-full">
           {/* Title */}
-          <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs uppercase tracking-widest kami-text-dim">
             {tree.title}
           </p>
 
@@ -450,10 +441,10 @@ export default function FlowContent() {
               <div className="flex items-start gap-3">
                 <span className="text-2xl">✅</span>
                 <div>
-                  <p className="text-sm font-medium mb-1" style={{ color: "var(--kami-text)" }}>
+                  <p className="text-sm font-medium mb-1 kami-text">
                     Resolution
                   </p>
-                  <p className="text-sm leading-relaxed" style={{ color: "var(--kami-text-dim)" }}>
+                  <p className="text-sm leading-relaxed kami-text-dim">
                     {previewDone}
                   </p>
                 </div>
@@ -471,7 +462,7 @@ export default function FlowContent() {
             </div>
           ) : previewNode ? (
             <div className="p-6 flex flex-col gap-5" style={cardStyle}>
-              <p className="text-base font-medium leading-snug" style={{ color: "var(--kami-text)" }}>
+              <p className="text-base font-medium leading-snug kami-text">
                 {previewNode.question}
               </p>
               <div className="flex gap-3">
@@ -502,7 +493,7 @@ export default function FlowContent() {
               </div>
             </div>
           ) : (
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-sm kami-text-dim">
               No questions yet. Switch to Edit mode to add some.
             </p>
           )}

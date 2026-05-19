@@ -150,21 +150,8 @@ export default function KeyframeAnimatorContent() {
   const [copied, setCopied] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const css = useMemo(() => generateCSS(config, stops), [config, stops]);
 
@@ -365,7 +352,7 @@ export default function KeyframeAnimatorContent() {
                     color: selected === s._i ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
                     border: "1px solid var(--kami-border-strong)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    minHeight: 32,
+                    minHeight: 44,
                   }}
                 >
                   {s.percent}%
@@ -380,7 +367,7 @@ export default function KeyframeAnimatorContent() {
                   color: "var(--kami-text-muted)",
                   border: "1px dashed var(--kami-border-strong)",
                   borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                  minHeight: 32,
+                  minHeight: 44,
                 }}
               >
                 + Add
@@ -422,7 +409,7 @@ export default function KeyframeAnimatorContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Pick a preset or click <strong>+ Add</strong> in the Keyframe panel to insert a
             stop in the widest gap. Each stop has its own translate, scale, rotate,
@@ -432,18 +419,15 @@ export default function KeyframeAnimatorContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Editor</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Editor</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual">
         <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
           {/* Live Preview */}
           <div
@@ -476,7 +460,7 @@ export default function KeyframeAnimatorContent() {
               borderRadius: "var(--kami-card-radius, 0.75rem)",
             }}
           >
-            <div className="mb-3 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="mb-3 flex items-center justify-between text-xs kami-text-muted">
               <span className="font-semibold">Timeline</span>
               <span className="font-mono">{config.duration}s · {stops.length} stops</span>
             </div>
@@ -494,7 +478,7 @@ export default function KeyframeAnimatorContent() {
                   className="absolute top-0 h-full"
                   style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
                 >
-                  <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
+                  <span className="absolute -top-5 -translate-x-1/2 text-[10px] kami-text-dim">{t}%</span>
                 </div>
               ))}
               {sorted.map((s) => (
@@ -518,9 +502,7 @@ export default function KeyframeAnimatorContent() {
           </div>
         </div>
         </div>
-      )}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="canvas-section glass-canvas-section" data-panel="code">
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -535,7 +517,6 @@ export default function KeyframeAnimatorContent() {
           </pre>
         </div>
         </div>
-      )}
     </ToolShell>
   );
 }

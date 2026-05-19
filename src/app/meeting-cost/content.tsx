@@ -92,7 +92,6 @@ export default function MeetingCostContent() {
   const startTimeRef = useRef<number | null>(null);
   const baseElapsedRef = useRef(0); // seconds accumulated before latest start
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const cpm = costPerMinute(attendees, salary);
@@ -140,19 +139,7 @@ export default function MeetingCostContent() {
     };
   }, [running]);
 
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
 
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
-
-  void isMaterial;
 
   const has30MinWarning = elapsed >= 30 * 60;
   const hasEmailVerdict = elapsed >= 45 * 60;
@@ -197,7 +184,7 @@ export default function MeetingCostContent() {
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold tabular-nums">{attendees}</span>
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>people</span>
+                <span className="text-xs kami-text-dim">people</span>
               </div>
               <input
                 type="range"
@@ -210,8 +197,8 @@ export default function MeetingCostContent() {
                 style={{ accentColor: "#ef4444" }}
               />
               <div className="flex justify-between">
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>2</span>
-                <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>20</span>
+                <span className="text-xs kami-text-dim">2</span>
+                <span className="text-xs kami-text-dim">20</span>
               </div>
             </div>
           </ControlGroup>
@@ -221,7 +208,7 @@ export default function MeetingCostContent() {
               value={salary}
               onChange={(e) => setSalary(Number(e.target.value))}
               className="w-full px-3 py-2 text-sm focus:outline-none"
-              style={{ ...inputStyle, minHeight: 36 }}
+              style={{ ...inputStyle, minHeight: 44 }}
             >
               {SALARY_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -232,55 +219,37 @@ export default function MeetingCostContent() {
           </ControlGroup>
 
           <div className="p-3" style={{ ...cardStyle, border: "1px solid var(--kami-border)" }}>
-            <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Cost per minute</p>
+            <p className="text-xs kami-text-dim">Cost per minute</p>
             <p className="text-lg font-bold tabular-nums mt-0.5">
               {formatDollars(cpm)}
-              <span className="text-sm font-normal ml-1" style={{ color: "var(--kami-text-dim)" }}>/min</span>
+              <span className="text-sm font-normal ml-1 kami-text-dim">/min</span>
             </p>
           </div>
         </>
       }
     >
       <div className="flex flex-col gap-4 w-full">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Setup" : "Cost"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Setup</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
         {/* Main cost display */}
-        <div className={isGlass ? "glass-canvas-section" : ""}>
-        {(!isMetro || metroCPivot === "output") && (
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         <div className="flex flex-col gap-4">
         <div className="p-6 flex flex-col items-center justify-center min-h-48" style={cardStyle}>
           {!running && elapsed === 0 ? (
             <>
               {/* Pre-start state */}
-              <p className="text-5xl font-bold tabular-nums" style={{ color: "#ef4444" }}>
+              <p className="text-5xl font-bold tabular-nums kami-text-error">
                 {formatDollars(cpm)}
-                <span className="text-2xl font-normal ml-1" style={{ color: "var(--kami-text-dim)" }}>/min</span>
+                <span className="text-2xl font-normal ml-1 kami-text-dim">/min</span>
               </p>
-              <p className="mt-2 text-sm" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-2 text-sm kami-text-dim">
                 {attendees} people · ${salary.toLocaleString("en-US")}/yr avg
               </p>
             </>
@@ -298,10 +267,10 @@ export default function MeetingCostContent() {
               >
                 {formatDollars(totalCost)}
               </p>
-              <p className="mt-2 text-xl font-mono tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-2 text-xl font-mono tabular-nums kami-text-dim">
                 {formatElapsed(elapsed)}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-1 text-xs kami-text-dim">
                 {running ? "and counting..." : "paused"}
               </p>
             </>
@@ -313,7 +282,7 @@ export default function MeetingCostContent() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {EQUIVALENCES.map((eq, i) => (
               <div key={i} className="p-4" style={cardStyle}>
-                <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-sm kami-text-muted">
                   {eq.label(totalCost)}
                 </p>
               </div>
@@ -330,7 +299,7 @@ export default function MeetingCostContent() {
               borderLeft: "3px solid #ef4444",
             }}
           >
-            <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="text-sm kami-text-muted">
               This meeting has been going for 30 minutes. Just saying.
             </p>
           </div>
@@ -345,10 +314,10 @@ export default function MeetingCostContent() {
               borderLeft: "3px solid #ef4444",
             }}
           >
-            <p className="text-sm font-medium" style={{ color: "#ef4444" }}>
+            <p className="text-sm font-medium kami-text-error">
               This could have been an email.
             </p>
-            <p className="text-xs mt-1" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs mt-1 kami-text-dim">
               45 minutes × {attendees} people = {attendees * 45} person-minutes. Someone write the summary.
             </p>
           </div>
@@ -356,38 +325,35 @@ export default function MeetingCostContent() {
 
         {/* Formula note */}
         <div className="p-3" style={{ ...cardStyle, border: "1px solid var(--kami-border)" }}>
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs kami-text-dim">
             Formula: (attendees × salary ÷ 2,080 hrs ÷ 60 min) × minutes elapsed
             · Current rate: {formatDollars(cpm)}/min · {attendees} people · ${salary.toLocaleString("en-US")}/yr avg salary
           </p>
         </div>
         </div>
-        )}
         </div>
 
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
           <div className="p-4" style={cardStyle}>
-            <p className="text-xs font-medium uppercase tracking-wider mb-2" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs font-medium uppercase tracking-wider mb-2 kami-text-dim">
               Meeting setup
             </p>
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Attendees</span>
+                <span className="text-sm kami-text-muted">Attendees</span>
                 <span className="text-sm font-semibold tabular-nums">{attendees} people</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Avg salary</span>
+                <span className="text-sm kami-text-muted">Avg salary</span>
                 <span className="text-sm font-semibold tabular-nums">${salary.toLocaleString("en-US")}/yr</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Cost per minute</span>
-                <span className="text-sm font-semibold tabular-nums" style={{ color: "#ef4444" }}>{formatDollars(cpm)}/min</span>
+                <span className="text-sm kami-text-muted">Cost per minute</span>
+                <span className="text-sm font-semibold tabular-nums kami-text-error">{formatDollars(cpm)}/min</span>
               </div>
             </div>
           </div>
         </div>
-        )}
       </div>
     </ToolShell>
   );

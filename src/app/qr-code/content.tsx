@@ -525,21 +525,8 @@ export default function QrCodeContent() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<"" | "png" | "svg">("");
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const getPayload = useCallback((): string => {
     switch (inputType) {
@@ -768,7 +755,7 @@ export default function QrCodeContent() {
                 style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-input-radius, 0.4rem)" }}
                 aria-label="Foreground"
               />
-              <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{fgColor}</span>
+              <span className="font-mono text-xs kami-text-dim">{fgColor}</span>
             </div>
           </ControlGroup>
 
@@ -782,7 +769,7 @@ export default function QrCodeContent() {
                 style={{ border: "1px solid var(--kami-border-strong)", borderRadius: "var(--kami-input-radius, 0.4rem)" }}
                 aria-label="Background"
               />
-              <span className="font-mono text-xs" style={{ color: "var(--kami-text-dim)" }}>{bgColor}</span>
+              <span className="font-mono text-xs kami-text-dim">{bgColor}</span>
             </div>
           </ControlGroup>
 
@@ -854,7 +841,7 @@ export default function QrCodeContent() {
               </div>
               {logo && (
                 <div className="mt-2">
-                  <div className="mb-1 text-[11px]" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="mb-1 text-[11px] kami-text-dim">
                     Logo size · {Math.round(logoScale * 100)}%
                   </div>
                   <Slider
@@ -871,21 +858,21 @@ export default function QrCodeContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Pick a content type (URL, plain text, Wi-Fi or vCard), fill in the fields,
             and the QR renders live in your browser. Customize colors, dot/eye style,
             add a center logo, and export as crisp SVG or PNG.
           </p>
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs kami-text-dim">
             Tip: when adding a logo, raise the error-correction level so the code stays scannable.
           </p>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Made for</div>
             <p className="mt-1">Everyone — marketers, event organizers, small business owners.</p>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Reach for it when</div>
             <ul className="mt-1 space-y-1 text-xs">
               <li>· Putting a URL on a flyer or poster</li>
               <li>· Sharing Wi-Fi credentials without typing</li>
@@ -895,20 +882,17 @@ export default function QrCodeContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>QR Code</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex flex-col gap-4 p-4 md:p-6">
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>QR Code</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="input"><div className="flex flex-col gap-4 p-4 md:p-6">
           <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+            <label className="mb-1 block text-sm font-medium kami-text-muted">
               {inputType === "url" ? "URL" : inputType === "text" ? "Text" : inputType === "wifi" ? "Wi-Fi SSID" : "Contact name"}
             </label>
             <textarea
@@ -925,9 +909,7 @@ export default function QrCodeContent() {
             />
           </div>
         </div></div>
-      )}
-      {(!isMetro || metroCPivot === "output") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
+      <div className="canvas-section glass-canvas-section" data-panel="output"><div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
           <div
             className="flex flex-col items-center justify-center p-6 sm:p-10"
             style={{
@@ -949,7 +931,6 @@ export default function QrCodeContent() {
             )}
           </div>
         </div></div>
-      )}
     </ToolShell>
   );
 }

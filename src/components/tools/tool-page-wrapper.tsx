@@ -41,7 +41,7 @@ function ToolPageInner({ children }: { children: React.ReactNode }) {
 
   return (
     <BreadcrumbContext.Provider value={breadcrumbItems}>
-      <div className="kami-scope" style={{ color: "var(--kami-text)" }}>
+      <div className="kami-scope kami-text">
         <div>{children}</div>
         {tool && (
           <div className="px-4 pb-12 lg:px-6">

@@ -117,7 +117,7 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{label}</label>
+      <label className="text-xs kami-text-dim">{label}</label>
       <input
         type={type}
         value={value}
@@ -143,21 +143,8 @@ const ACCENT = "#6366f1";
 export default function EmailSignatureContent() {
   const [sig, setSig] = useState<SigData>(DEFAULTS);
   const [copied, setCopied] = useState<"html" | "url" | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Load from URL on mount
   useEffect(() => {
@@ -234,8 +221,7 @@ export default function EmailSignatureContent() {
                 type="color"
                 value={sig.accentColor}
                 onChange={(e) => set("accentColor", e.target.value)}
-                className="w-10 h-10 rounded-lg border cursor-pointer"
-                style={{ border: "1px solid var(--kami-border-strong)" }}
+                className="w-10 h-10 rounded-lg border cursor-pointer kami-border-strong-all"
               />
               <input
                 type="text"
@@ -253,21 +239,18 @@ export default function EmailSignatureContent() {
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Form</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Preview</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Form</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Preview</button>
+      </nav>
       <div className="flex flex-col gap-4 w-full">
         {/* Live preview */}
-        {(!isMetro || metroCPivot === "output") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-6" style={cardStyle}>
-          <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--kami-text-dim)" }}>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><div className="p-6" style={cardStyle}>
+          <p className="text-xs uppercase tracking-widest mb-4 kami-text-dim">
             Preview
           </p>
           {hasContent ? (
@@ -276,19 +259,18 @@ export default function EmailSignatureContent() {
               style={{ fontFamily: "Arial, Helvetica, sans-serif" }}
             />
           ) : (
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-sm kami-text-dim">
               Fill in your name and email to see the preview.
             </p>
           )}
         </div></div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && hasContent && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><>
+        {hasContent && (
+        <div className="glass-canvas-section"><>
           {/* Raw HTML */}
           <div className="p-5" style={cardStyle}>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs uppercase tracking-widest kami-text-dim">
                 HTML to paste in Gmail / Outlook
               </p>
               <div
@@ -322,10 +304,10 @@ export default function EmailSignatureContent() {
           {/* Share */}
           <div className="p-5 flex items-center justify-between gap-4" style={cardStyle}>
             <div>
-              <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+              <p className="text-sm font-medium kami-text">
                 Share this signature
               </p>
-              <p className="text-xs mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs mt-0.5 kami-text-dim">
                 The link encodes your signature — no account or storage needed.
               </p>
             </div>
@@ -343,11 +325,6 @@ export default function EmailSignatureContent() {
         </></div>
         )}
 
-        {isMetro && metroCPivot === "input" && (
-          <div className="p-6 text-sm" style={{ color: "var(--kami-text-muted)" }}>
-            Fill in your details in the panel on the right, then switch to Preview to see and copy your signature.
-          </div>
-        )}
       </div>
     </ToolShell>
   );

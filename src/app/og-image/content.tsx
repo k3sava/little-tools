@@ -645,21 +645,8 @@ export default function OgImageContent() {
 
   const [validatorInput, setValidatorInput] = useState("");
   const [validatorResults, setValidatorResults] = useState<OgTagResult[]>([]);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass  = currentTheme === "glass";
 
   const template = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
 
@@ -800,7 +787,7 @@ export default function OgImageContent() {
                       }}
                     >
                       <div className="mb-1 h-5 w-full rounded" style={{ background: t.bgValue }} />
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{t.name}</span>
+                      <span className="text-xs kami-text-muted">{t.name}</span>
                     </button>
                   ))}
                 </div>
@@ -962,7 +949,7 @@ export default function OgImageContent() {
                       type="button"
                       onClick={() => setLogoData(null)}
                       className="text-xs"
-                      style={{ color: "var(--kami-text-dim)", minHeight: 32 }}
+                      style={{ color: "var(--kami-text-dim)", minHeight: 44 }}
                     >
                       Remove
                     </button>
@@ -986,7 +973,7 @@ export default function OgImageContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-xs kami-text-muted">
           <p>
             <strong>OG Image Generator</strong> renders a 1200×630 social-share image entirely in your browser
             using HTML canvas — nothing is uploaded.
@@ -1006,30 +993,18 @@ export default function OgImageContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Design</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Preview</button>
-        </nav>
-      )}
-      {/* Hidden canvas kept alive in Metro Preview mode so platform thumbnails can read it */}
-      {isMetro && metroCPivot === "output" && (
-        <canvas
-          ref={canvasRef}
-          width={OG_WIDTH}
-          height={OG_HEIGHT}
-          className="hidden"
-          aria-hidden="true"
-        />
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Design</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Preview</button>
+      </nav>
       {/* Live canvas — visible across all tabs so platform previews can read it */}
-      <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && activeTab === "editor" && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="flex flex-col gap-4" data-pivot={metroCPivot}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
+        {activeTab === "editor" && (
           <div className="p-3 sm:p-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1039,7 +1014,7 @@ export default function OgImageContent() {
               style={{ aspectRatio: "1200/630", display: "block" }}
             />
             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-              <span className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <span className="text-xs kami-text-dim">
                 1200 × 630 px · {fontFamily}
               </span>
               <div className="flex items-center gap-2">
@@ -1052,11 +1027,11 @@ export default function OgImageContent() {
               </div>
             </div>
           </div>
-          </div>
         )}
+        </div>
 
-        {(!isMetro ? activeTab === "preview" : metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
+        {activeTab === "preview" && (
           <div className="p-3 sm:p-4 space-y-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1068,7 +1043,7 @@ export default function OgImageContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {PLATFORMS.map((platform) => (
                 <div key={platform.name}>
-                  <h3 className="mb-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                  <h3 className="mb-2 text-sm font-semibold kami-text-muted">
                     {platform.name}
                   </h3>
                   <div
@@ -1103,17 +1078,18 @@ export default function OgImageContent() {
               ))}
             </div>
           </div>
-          </div>
         )}
+        </div>
 
-        {(!isMetro ? activeTab === "validator" : false) && (
+        <div className="canvas-section glass-canvas-section" data-panel="validator">
+        {activeTab === "validator" && (
           <>
             <canvas ref={canvasRef} className="hidden" />
             <div className="p-4 space-y-3" style={cardStyle}>
-              <h3 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h3 className="text-sm font-semibold kami-text-muted">
                 OG Tag Validator
               </h3>
-              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="text-xs kami-text-muted">
                 Paste HTML source code to check which Open Graph tags are present.
               </p>
               <textarea
@@ -1133,10 +1109,9 @@ export default function OgImageContent() {
             {validatorResults.length > 0 && (
               <div className="overflow-hidden" style={cardStyle}>
                 <div
-                  className="px-4 py-3 flex flex-wrap items-center gap-3"
-                  style={{ borderBottom: "1px solid var(--kami-border)" }}
+                  className="px-4 py-3 flex flex-wrap items-center gap-3 kami-border-bottom"
                 >
-                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>Results</span>
+                  <span className="text-sm font-semibold kami-text-muted">Results</span>
                   <span className="text-xs text-green-600">
                     {validatorResults.filter((r) => r.status === "present").length} present
                   </span>
@@ -1150,26 +1125,26 @@ export default function OgImageContent() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Status</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Tag</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Content</th>
+                      <tr className="kami-border-bottom">
+                        <th className="px-4 py-2 text-left text-xs font-medium kami-text-muted">Status</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium kami-text-muted">Tag</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium kami-text-muted">Content</th>
                       </tr>
                     </thead>
                     <tbody>
                       {validatorResults.map((r, i) => (
-                        <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                        <tr key={i} className="kami-border-bottom">
                           <td className="px-4 py-2">
                             {r.status === "present" && <span className="text-green-600 text-xs font-medium">OK</span>}
                             {r.status === "warning" && <span className="text-amber-600 text-xs font-medium">WARN</span>}
                             {r.status === "missing" && <span className="text-red-600 text-xs font-medium">MISS</span>}
                           </td>
-                          <td className="px-4 py-2 font-mono text-xs" style={{ color: "var(--kami-text)" }}>{r.tag}</td>
-                          <td className="px-4 py-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                          <td className="px-4 py-2 font-mono text-xs kami-text">{r.tag}</td>
+                          <td className="px-4 py-2 text-xs kami-text-muted">
                             {r.content ? (
                               <span className="break-all">{r.content}</span>
                             ) : (
-                              <span className="italic" style={{ color: "var(--kami-text-dim)" }}>{r.message}</span>
+                              <span className="italic kami-text-dim">{r.message}</span>
                             )}
                             {r.content && r.message && <div className="text-amber-500 mt-0.5">{r.message}</div>}
                           </td>
@@ -1182,6 +1157,7 @@ export default function OgImageContent() {
             )}
           </>
         )}
+        </div>
       </div>
     </ToolShell>
   );

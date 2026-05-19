@@ -27,17 +27,6 @@ const SIGNALS: { name: string; weight: number; what: string }[] = [
 const MAX_SCORE = SIGNALS.reduce((s, x) => s + x.weight, 0);
 
 export default function AeoReadinessScorerContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
@@ -67,19 +56,19 @@ export default function AeoReadinessScorerContent() {
               <span className="text-2xl font-bold" style={{ color: ACCENT }}>
                 A
               </span>
-              <span className="text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="text-[10px] kami-text-muted">
                 target
               </span>
             </div>
           </div>
         </div>
-        <p className="text-center text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <p className="text-center text-xs kami-text-muted">
           12 weighted signals. Run the script for your real score.
         </p>
       </ControlGroup>
 
       <ControlGroup label="What to fix next">
-        <ol className="list-decimal pl-4 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <ol className="list-decimal pl-4 text-xs kami-text-muted">
           <li>Add llms.txt to the site root.</li>
           <li>Inject JSON-LD with Article or Product type.</li>
           <li>Tighten meta description to 120-160 chars.</li>
@@ -98,30 +87,16 @@ export default function AeoReadinessScorerContent() {
       controlsLabel="Insights"
     >
       <div className="flex flex-col gap-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px", fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none", border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "’Segoe UI’, system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >{tab === "input" ? "Content" : "Score"}</button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Content</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <section
               className="rounded-xl border p-6"
               style={{ background: "var(--kami-surface-solid)", borderColor: "var(--kami-border-strong)" }}
@@ -129,7 +104,7 @@ export default function AeoReadinessScorerContent() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold">Download the script</h2>
-                  <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                  <p className="mt-1 text-sm kami-text-muted">
                     152 lines. Pure Python 3 standard library. No dependencies, no API keys.
                   </p>
                 </div>
@@ -156,18 +131,16 @@ python aeo-readiness-scorer.py page.html
 # Or fetch and score a URL directly
 python aeo-readiness-scorer.py https://example.com/blog-post`}
               </pre>
-              <p className="mt-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="mt-3 text-sm kami-text-muted">
                 Output is JSON with a per-signal verdict and a prioritized fix list.
               </p>
             </section>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             <section id="signals">
               <h2 className="text-lg font-semibold">Per-signal checks</h2>
-              <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="mt-1 text-sm kami-text-muted">
                 Twelve signals, each weighted 2–5 by impact on citation likelihood.
               </p>
               <div className="mt-4 grid gap-2">
@@ -193,13 +166,12 @@ python aeo-readiness-scorer.py https://example.com/blog-post`}
                         </span>
                         <p className="text-sm font-medium">{s.name}</p>
                       </div>
-                      <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <p className="mt-1 text-xs kami-text-muted">
                         {s.what}
                       </p>
                     </div>
                     <span
-                      className="text-xs"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="text-xs kami-text-muted"
                       aria-label="Status pending"
                     >
                       ○
@@ -218,7 +190,7 @@ python aeo-readiness-scorer.py https://example.com/blog-post`}
                 color: "var(--kami-text-muted)",
               }}
             >
-              <h2 className="text-base font-semibold" style={{ color: "var(--kami-text)" }}>
+              <h2 className="text-base font-semibold kami-text">
                 Credits
               </h2>
               <p className="mt-2">
@@ -231,7 +203,6 @@ python aeo-readiness-scorer.py https://example.com/blog-post`}
               </p>
             </section>
           </div>
-        )}
       </div>
     </ToolShell>
   );

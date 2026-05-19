@@ -145,15 +145,6 @@ const ACCENT = "#0ea5e9";
 // ---------------------------------------------------------------------------
 
 export default function OutsideContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isGlass    = currentTheme === "glass";
 
   const [data, setData] = useState<WeatherData | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -265,15 +256,15 @@ export default function OutsideContent() {
         ) : undefined
       }
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="glass-canvas-section">
       {!data && !loading && !error && (
         <div className="flex flex-col items-center justify-center gap-6 py-20 text-center">
           <span style={{ fontSize: "4rem" }}>🌤️</span>
           <div>
-            <p className="text-lg font-medium" style={{ color: "var(--kami-text)" }}>
+            <p className="text-lg font-medium kami-text">
               Let&apos;s see what&apos;s happening outside.
             </p>
-            <p className="mt-1 text-sm" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="mt-1 text-sm kami-text-dim">
               Needs your location to compare today to yesterday.
             </p>
           </div>
@@ -301,7 +292,7 @@ export default function OutsideContent() {
 
       {loading && (
         <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-          <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-sm kami-text-dim">
             Checking outside…
           </p>
         </div>
@@ -309,7 +300,7 @@ export default function OutsideContent() {
 
       {error && (
         <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
-          <p className="text-sm max-w-xs" style={{ color: "var(--kami-text-dim)" }}>{error}</p>
+          <p className="text-sm max-w-xs kami-text-dim">{error}</p>
           <div
             role="button"
             tabIndex={0}
@@ -336,16 +327,16 @@ export default function OutsideContent() {
         <div className="flex flex-col gap-4 max-w-lg mx-auto w-full">
           {/* Location + mood */}
           <div className="p-6 flex flex-col gap-3" style={cardStyle}>
-            <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="text-xs uppercase tracking-widest kami-text-dim">
               {data.cityName}
             </p>
             <div className="flex items-center gap-3">
               <span style={{ fontSize: "2.5rem" }}>{condition.emoji}</span>
               <div>
-                <p className="text-2xl font-bold" style={{ color: "var(--kami-text)" }}>
+                <p className="text-2xl font-bold kami-text">
                   {condition.mood}
                 </p>
-                <p className="text-sm mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-sm mt-0.5 kami-text-dim">
                   {condition.label} · feels like {showTemp(data.apparentTemp, units)}
                 </p>
               </div>
@@ -356,17 +347,17 @@ export default function OutsideContent() {
             />
             <div className="flex flex-col gap-1">
               {data.deltaYesterday !== null && (
-                <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-sm kami-text-dim">
                   {describeDelta(data.deltaYesterday, "yesterday at this hour")}
                 </p>
               )}
               {data.deltaMorning !== null && Math.abs(data.deltaMorning) >= 1 && (
-                <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-sm kami-text-dim">
                   {describeDelta(data.deltaMorning, "this morning")}
                 </p>
               )}
               {data.windSpeedMph >= 15 && (
-                <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-sm kami-text-dim">
                   Wind at {Math.round(data.windSpeedMph)} mph. Factor that in.
                 </p>
               )}
@@ -376,18 +367,18 @@ export default function OutsideContent() {
           {/* Personality */}
           <div className="p-5 flex flex-col gap-4" style={cardStyle}>
             <div>
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs uppercase tracking-widest mb-2 kami-text-dim">
                 Good for
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--kami-text)" }}>
+              <p className="text-sm leading-relaxed kami-text">
                 {personality.good.join(", ")}.
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs uppercase tracking-widest mb-2 kami-text-dim">
                 Bad for
               </p>
-              <p className="text-sm leading-relaxed" style={{ color: "var(--kami-text)" }}>
+              <p className="text-sm leading-relaxed kami-text">
                 {personality.bad.join(", ")}.
               </p>
             </div>

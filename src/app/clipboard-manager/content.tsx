@@ -123,7 +123,6 @@ export default function ClipboardManagerContent() {
   const [fillingTemplate, setFillingTemplate] = useState<Template | null>(null);
   const [templateValues, setTemplateValues] = useState<Record<string, string>>({});
   const [templateCopied, setTemplateCopied] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
   useEffect(() => {
     setClips(loadClips());
@@ -131,20 +130,7 @@ export default function ClipboardManagerContent() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
 
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
-
-  void isMaterial;
-  void isMetro;
 
   useEffect(() => {
     if (mounted) saveClips(clips);
@@ -458,7 +444,7 @@ export default function ClipboardManagerContent() {
               placeholder="Tags (comma-separated)"
               style={inputStyle}
             />
-            <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="text-xs kami-text-muted">
               {input.trim() ? `${input.trim().length} chars · ⌘↵ to save` : "⌘↵ to save"}
             </p>
           </ControlGroup>
@@ -510,17 +496,17 @@ export default function ClipboardManagerContent() {
       controls={controls}
       controlsLabel="Tools"
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="glass-canvas-section">
       <div className="flex flex-col gap-2">
         {activeTab === "clips" && mounted && (
           <>
             {filteredClips.length === 0 && clips.length > 0 && (search || tagFilter) && (
-              <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="py-8 text-center text-sm kami-text-muted">
                 No clips match your search
               </p>
             )}
             {filteredClips.length === 0 && clips.length === 0 && (
-              <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="py-8 text-center text-sm kami-text-muted">
                 No clips yet. Use the panel to save your first clip.
               </p>
             )}
@@ -562,7 +548,7 @@ export default function ClipboardManagerContent() {
                       ))}
                     </div>
                   )}
-                  <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  <p className="mt-1 text-xs kami-text-muted">
                     {timeAgo(clip.createdAt)}
                     {clip.text.length > 500 && ` · ${clip.text.length} chars`}
                   </p>
@@ -571,8 +557,7 @@ export default function ClipboardManagerContent() {
                   <button
                     onClick={() => togglePin(clip.id)}
                     title={clip.pinned ? "Unpin" : "Pin"}
-                    className="tool-shell-icon-btn"
-                    style={{ color: clip.pinned ? "#f59e0b" : undefined }}
+                    className={`tool-shell-icon-btn${clip.pinned ? " kami-text-warning" : ""}`}
                   >
                     {clip.pinned ? "★" : "☆"}
                   </button>
@@ -599,7 +584,7 @@ export default function ClipboardManagerContent() {
         {activeTab === "templates" && mounted && (
           <>
             {templates.length === 0 && (
-              <p className="py-8 text-center text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="py-8 text-center text-sm kami-text-muted">
                 No templates yet. Use the panel to add one.
               </p>
             )}
@@ -618,8 +603,7 @@ export default function ClipboardManagerContent() {
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-medium">{tmpl.name}</h3>
                       <p
-                        className="mt-1 whitespace-pre-wrap break-words text-sm"
-                        style={{ color: "var(--kami-text-muted)" }}
+                        className="mt-1 whitespace-pre-wrap break-words text-sm kami-text-muted"
                       >
                         {truncate(tmpl.body, 300)}
                       </p>
@@ -640,7 +624,7 @@ export default function ClipboardManagerContent() {
                           ))}
                         </div>
                       )}
-                      <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <p className="mt-1 text-xs kami-text-muted">
                         {timeAgo(tmpl.createdAt)}
                       </p>
                     </div>
@@ -681,15 +665,14 @@ export default function ClipboardManagerContent() {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-lg font-semibold">{fillingTemplate.name}</h3>
-              <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="mt-1 text-sm kami-text-muted">
                 Fill in variables.
               </p>
               <div className="mt-4 space-y-3">
                 {extractVariables(fillingTemplate.body).map((varName) => (
                   <div key={varName}>
                     <label
-                      className="block text-sm font-medium"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="block text-sm font-medium kami-text-muted"
                     >
                       {varName}
                     </label>
@@ -712,14 +695,12 @@ export default function ClipboardManagerContent() {
                 style={{ background: "var(--kami-surface)", border: "1px solid var(--kami-border)" }}
               >
                 <p
-                  className="mb-1 text-xs font-medium"
-                  style={{ color: "var(--kami-text-muted)" }}
+                  className="mb-1 text-xs font-medium kami-text-muted"
                 >
                   Preview
                 </p>
                 <p
-                  className="whitespace-pre-wrap break-words text-sm"
-                  style={{ color: "var(--kami-text-muted)" }}
+                  className="whitespace-pre-wrap break-words text-sm kami-text-muted"
                 >
                   {fillTemplate(fillingTemplate.body, templateValues)}
                 </p>

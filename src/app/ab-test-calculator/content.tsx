@@ -239,21 +239,8 @@ function formatNumber(n: number): string {
 
 export default function ABTestCalculatorContent() {
   const [tab, setTab] = useState<Tab>("results");
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Results Analyzer state - pre-filled with example data
   const [resultsInput, setResultsInput] = useState<ResultsInput>({
@@ -384,7 +371,7 @@ export default function ABTestCalculatorContent() {
   const actions = null;
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Two modes: Significance (paste visitor + conversion counts to see if the lift is real) and Sample size (plan how many visitors you need).</p>
       <ul className="space-y-1">
         <li><strong>p-value:</strong> probability the difference is random.</li>
@@ -404,16 +391,14 @@ export default function ABTestCalculatorContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Inputs</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Results</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Inputs</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Results</button>
+      </nav>
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {tab === "results" ? (
           <ResultsAnalyzer
@@ -421,12 +406,10 @@ export default function ABTestCalculatorContent() {
             significance={resultsSignificance}
             output={resultsOutput}
             onUpdateInput={updateResults}
-            isMetro={isMetro}
-            isGlass={isGlass}
             metroCPivot={metroCPivot}
           />
         ) : (
-          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} isMetro={isMetro} isGlass={isGlass} metroCPivot={metroCPivot} />
+          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} metroCPivot={metroCPivot} />
         )}
       </div>
     </ToolShell>
@@ -441,22 +424,18 @@ function ResultsAnalyzer({
   input,
   output,
   onUpdateInput,
-  isMetro,
-  isGlass,
   metroCPivot,
 }: {
   input: ResultsInput;
   significance: number;
   output: ResultsOutput | null;
   onUpdateInput: (key: keyof ResultsInput, value: string) => void;
-  isMetro: boolean;
-  isGlass: boolean;
   metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
       {/* Input cards */}
-      {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="grid gap-6 lg:grid-cols-2">
+      <div className="canvas-section glass-canvas-section" data-panel="input"><div className="grid gap-6 lg:grid-cols-2">
         {/* Control */}
         <div
           className="p-5"
@@ -467,12 +446,12 @@ function ResultsAnalyzer({
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          <h3 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+          <h3 className="mb-4 text-sm font-semibold kami-text">
             Control (A)
           </h3>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-sm kami-text-muted">
                 Visitors
               </label>
               <input
@@ -494,7 +473,7 @@ function ResultsAnalyzer({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-sm kami-text-muted">
                 Conversions
               </label>
               <input
@@ -528,12 +507,12 @@ function ResultsAnalyzer({
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          <h3 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+          <h3 className="mb-4 text-sm font-semibold kami-text">
             Variant (B)
           </h3>
           <div className="space-y-3">
             <div>
-              <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-sm kami-text-muted">
                 Visitors
               </label>
               <input
@@ -555,7 +534,7 @@ function ResultsAnalyzer({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-sm kami-text-muted">
                 Conversions
               </label>
               <input
@@ -578,11 +557,11 @@ function ResultsAnalyzer({
             </div>
           </div>
         </div>
-      </div></div>)}
+      </div></div>
 
       {/* Results */}
-      {(!isMetro || metroCPivot === "output") && output && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      {output && (
+        <div className="glass-canvas-section">
           <ResultsDisplay output={output} />
         </div>
       )}
@@ -613,13 +592,13 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
           <span
             className={`inline-block h-2.5 w-2.5 rounded-full ${verdictDot}`}
           />
-          <span className="text-xl font-bold" style={{ color: "var(--kami-text)" }}>
+          <span className="text-xl font-bold kami-text">
             {output.isSignificant
               ? "Statistically Significant"
               : "Not Significant"}
           </span>
         </div>
-        <p className="mt-1 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <p className="mt-1 text-sm kami-text-muted">
           {output.isSignificant
             ? `You can be ${(output.confidenceLevel * 100).toFixed(0)}% confident this result is real.`
             : `Not enough evidence at the ${(output.confidenceLevel * 100).toFixed(0)}% confidence level. Consider running longer.`}
@@ -665,7 +644,7 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
           boxShadow: "var(--kami-card-shadow, none)",
         }}
       >
-        <h3 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+        <h3 className="mb-4 text-sm font-semibold kami-text">
           {(output.confidenceLevel * 100).toFixed(0)}% Confidence Interval for
           the Difference
         </h3>
@@ -674,15 +653,15 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
           upper={output.ciUpper}
           point={output.absoluteLift}
         />
-        <div className="mt-3 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="mt-3 flex items-center justify-between text-xs kami-text-muted">
           <span>{pct(output.ciLower)}</span>
-          <span className="font-medium" style={{ color: "var(--kami-text)" }}>
+          <span className="font-medium kami-text">
             {output.absoluteLift >= 0 ? "+" : ""}
             {pct(output.absoluteLift)}
           </span>
           <span>{pct(output.ciUpper)}</span>
         </div>
-        <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+        <p className="mt-2 text-xs kami-text-dim">
           {output.ciLower > 0
             ? "The entire interval is above zero, indicating a positive effect."
             : output.ciUpper < 0
@@ -702,7 +681,7 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
         }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+          <h3 className="text-sm font-semibold kami-text">
             Statistical Power Achieved
           </h3>
           <span
@@ -723,7 +702,7 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
             style={{ width: `${Math.min(output.achievedPower * 100, 100)}%` }}
           />
         </div>
-        <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+        <p className="mt-2 text-xs kami-text-dim">
           {output.achievedPower >= 0.8
             ? "Adequate power (>= 80%). The test is well-powered to detect this effect size."
             : "Low power (< 80%). The test may not have had enough visitors to reliably detect this effect. Consider a larger sample."}
@@ -739,45 +718,45 @@ function ResultsDisplay({ output }: { output: ResultsOutput }) {
           boxShadow: "var(--kami-card-shadow, none)",
         }}
       >
-        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+        <summary className="cursor-pointer px-5 py-4 text-sm font-semibold kami-text">
           Show the math
         </summary>
-        <div className="px-5 py-4" style={{ borderTop: "1px solid var(--kami-border)" }}>
-          <div className="space-y-3 font-mono text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="px-5 py-4 kami-border-top">
+          <div className="space-y-3 font-mono text-xs kami-text-muted">
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Conversion rates</span>
+              <span className="kami-text-dim">// Conversion rates</span>
               <br />
               p_control = {pct(output.rateControl, 4)}
               <br />
               p_variant = {pct(output.rateVariant, 4)}
             </div>
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Pooled proportion</span>
+              <span className="kami-text-dim">// Pooled proportion</span>
               <br />
               p_pooled = {output.pooledRate.toFixed(6)}
             </div>
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Pooled standard error</span>
+              <span className="kami-text-dim">// Pooled standard error</span>
               <br />
               SE_pooled = sqrt(p_pooled * (1 - p_pooled) * (1/n1 + 1/n2))
               <br />
               SE_pooled = {output.pooledSE.toFixed(6)}
             </div>
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Z-score</span>
+              <span className="kami-text-dim">// Z-score</span>
               <br />
               Z = (p_variant - p_control) / SE_pooled
               <br />Z = {output.zScore.toFixed(6)}
             </div>
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Two-tailed p-value</span>
+              <span className="kami-text-dim">// Two-tailed p-value</span>
               <br />
               p_value = 2 * (1 - Phi(|Z|))
               <br />
               p_value = {output.pValue.toFixed(6)}
             </div>
             <div>
-              <span style={{ color: "var(--kami-text-dim)" }}>// Confidence interval</span>
+              <span className="kami-text-dim">// Confidence interval</span>
               <br />
               SE_diff = sqrt(p1*(1-p1)/n1 + p2*(1-p2)/n2)
               <br />
@@ -837,7 +816,7 @@ function ConfidenceIntervalBar({
           className="absolute top-0 h-full w-px"
           style={{ left: `${zeroPos}%`, background: "var(--kami-border-strong)" }}
         >
-          <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>
+          <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] kami-text-dim">
             0
           </span>
         </div>
@@ -892,10 +871,10 @@ function MetricCard({
         boxShadow: "var(--kami-card-shadow, none)",
       }}
     >
-      <p className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>{label}</p>
-      <p className="mt-1 text-xl font-bold" style={{ color: "var(--kami-text)" }}>{value}</p>
+      <p className="text-xs font-medium kami-text-muted">{label}</p>
+      <p className="mt-1 text-xl font-bold kami-text">{value}</p>
       {!hideSubLabel && sublabel && (
-        <p className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>{sublabel}</p>
+        <p className="mt-0.5 text-xs kami-text-dim">{sublabel}</p>
       )}
     </div>
   );
@@ -909,20 +888,16 @@ function SampleSizePlanner({
   input,
   output,
   onUpdate,
-  isMetro,
-  isGlass,
   metroCPivot,
 }: {
   input: PlannerInput;
   output: PlannerOutput | null;
   onUpdate: (key: keyof PlannerInput, value: string | number) => void;
-  isMetro: boolean;
-  isGlass: boolean;
   metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
-      {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div
+      <div className="canvas-section glass-canvas-section" data-panel="input"><div
         className="p-5"
         style={{
           background: "var(--kami-surface-solid)",
@@ -931,12 +906,12 @@ function SampleSizePlanner({
           boxShadow: "var(--kami-card-shadow, none)",
         }}
       >
-        <h3 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+        <h3 className="mb-4 text-sm font-semibold kami-text">
           Test Parameters
         </h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            <label className="mb-1 block text-sm kami-text-muted">
               Baseline Conversion Rate (%)
             </label>
             <input
@@ -958,7 +933,7 @@ function SampleSizePlanner({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            <label className="mb-1 block text-sm kami-text-muted">
               Minimum Detectable Effect (%)
             </label>
             <input
@@ -977,14 +952,14 @@ function SampleSizePlanner({
               min="1"
               step="1"
             />
-            <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <p className="mt-1 text-xs kami-text-dim">
               Relative change you want to detect (e.g. 20% means 3% to 3.6%)
             </p>
           </div>
         </div>
 
         <div className="mt-4">
-          <label className="mb-1 block text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <label className="mb-1 block text-sm kami-text-muted">
             Daily Traffic (optional)
           </label>
           <input
@@ -1002,16 +977,16 @@ function SampleSizePlanner({
             }}
             min="1"
           />
-          <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="mt-1 text-xs kami-text-dim">
             Total visitors per day across all variants. Used to estimate test
             duration.
           </p>
         </div>
-      </div></div>)}
+      </div></div>
 
       {/* Results */}
-      {(!isMetro || metroCPivot === "output") && output && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="space-y-4">
+      {output && (
+        <div className="glass-canvas-section"><div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div
               className="p-5 text-center"
@@ -1022,13 +997,13 @@ function SampleSizePlanner({
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <p className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="text-xs font-medium kami-text-muted">
                 Sample Per Variant
               </p>
               <p className="mt-2 text-3xl font-bold">
                 {formatNumber(output.samplePerVariant)}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>visitors each</p>
+              <p className="mt-1 text-xs kami-text-dim">visitors each</p>
             </div>
             <div
               className="p-5 text-center"
@@ -1039,11 +1014,11 @@ function SampleSizePlanner({
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <p className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>Total Sample</p>
+              <p className="text-xs font-medium kami-text-muted">Total Sample</p>
               <p className="mt-2 text-3xl font-bold">
                 {formatNumber(output.totalSample)}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-1 text-xs kami-text-dim">
                 across both variants
               </p>
             </div>
@@ -1056,7 +1031,7 @@ function SampleSizePlanner({
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <p className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="text-xs font-medium kami-text-muted">
                 Estimated Duration
               </p>
               <p className="mt-2 text-3xl font-bold">
@@ -1064,7 +1039,7 @@ function SampleSizePlanner({
                   ? `${formatNumber(output.daysNeeded)}`
                   : "--"}
               </p>
-              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-1 text-xs kami-text-dim">
                 {output.daysNeeded !== null
                   ? output.daysNeeded === 1
                     ? "day"
@@ -1083,13 +1058,13 @@ function SampleSizePlanner({
               boxShadow: "var(--kami-card-shadow, none)",
             }}
           >
-            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+            <summary className="cursor-pointer px-5 py-4 text-sm font-semibold kami-text">
               Show the math
             </summary>
-            <div className="px-5 py-4" style={{ borderTop: "1px solid var(--kami-border)" }}>
-              <div className="space-y-3 font-mono text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="px-5 py-4 kami-border-top">
+              <div className="space-y-3 font-mono text-xs kami-text-muted">
                 <div>
-                  <span style={{ color: "var(--kami-text-dim)" }}>// Parameters</span>
+                  <span className="kami-text-dim">// Parameters</span>
                   <br />
                   p1 (baseline) ={" "}
                   {(parseFloat(input.baselineRate) / 100).toFixed(4)}
@@ -1108,7 +1083,7 @@ function SampleSizePlanner({
                   {normalInv(input.power).toFixed(4)}
                 </div>
                 <div>
-                  <span style={{ color: "var(--kami-text-dim)" }}>// Sample size formula</span>
+                  <span className="kami-text-dim">// Sample size formula</span>
                   <br />
                   n = (Z_alpha/2 + Z_beta)^2 * (p1*(1-p1) + p2*(1-p2)) /
                   (p2-p1)^2
@@ -1116,7 +1091,7 @@ function SampleSizePlanner({
                 </div>
                 {output.daysNeeded !== null && (
                   <div>
-                    <span style={{ color: "var(--kami-text-dim)" }}>// Duration</span>
+                    <span className="kami-text-dim">// Duration</span>
                     <br />
                     days = total_sample / daily_traffic ={" "}
                     {formatNumber(output.totalSample)} /{" "}

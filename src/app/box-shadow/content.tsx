@@ -168,21 +168,8 @@ export default function BoxShadowContent() {
   const [cardRadius, setCardRadius] = useState(16);
   const [cardSize, setCardSize] = useState(192);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("css");
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const cssValue = layers.map(layerToCSS).join(",\n    ");
   const fullCSS = `box-shadow: ${cssValue};`;
@@ -356,8 +343,8 @@ export default function BoxShadowContent() {
                     color: i === activeLayer ? "var(--kami-cta-text)" : "var(--kami-text-muted)",
                     border: "1px solid var(--kami-border-strong)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    minHeight: 32,
-                    minWidth: 32,
+                    minHeight: 44,
+                    minWidth: 44,
                   }}
                 >
                   L{i + 1}
@@ -373,7 +360,7 @@ export default function BoxShadowContent() {
                     color: "var(--kami-text-muted)",
                     border: "1px dashed var(--kami-border-strong)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    minHeight: 32,
+                    minHeight: 44,
                   }}
                 >
                   + Add
@@ -440,7 +427,7 @@ export default function BoxShadowContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Stack up to {MAX_LAYERS} shadow layers for realistic depth. Drag inside the
             preview to set the active layer&apos;s X/Y offset directly.
@@ -452,18 +439,15 @@ export default function BoxShadowContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Visual</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Visual</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual"><div
           className="flex h-full min-h-[60vh] w-full items-center justify-center p-6 sm:p-10"
           style={{
             backgroundColor: bgColor,
@@ -485,9 +469,7 @@ export default function BoxShadowContent() {
             title="Drag to set offset of active layer"
           />
         </div></div>
-      )}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-4">
+      <div className="canvas-section glass-canvas-section" data-panel="code"><div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
             style={{
@@ -500,7 +482,6 @@ export default function BoxShadowContent() {
             <code>{outputCode}</code>
           </pre>
         </div></div>
-      )}
     </ToolShell>
   );
 }

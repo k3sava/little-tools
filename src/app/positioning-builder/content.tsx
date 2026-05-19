@@ -364,21 +364,9 @@ function statementToMarkdown(
 type ViewMode = "edit" | "compare";
 
 export default function PositioningBuilderContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  void isMaterial;
 
   const [activeFramework, setActiveFramework] = useState<FrameworkId>("moore");
   const [allValues, setAllValues] = useState<Record<FrameworkId, Record<string, string>>>({
@@ -517,7 +505,7 @@ export default function PositioningBuilderContent() {
             </button>
           ))}
         </div>
-        <p className="text-xs mt-2" style={{ color: "var(--kami-text-muted)" }}>
+        <p className="text-xs mt-2 kami-text-muted">
           {framework.tagline}
         </p>
       </ControlGroup>
@@ -554,7 +542,7 @@ export default function PositioningBuilderContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Draft a positioning statement using one of four frameworks. Filled answers are bold; bracketed placeholders mark gaps.</p>
       <p><strong>Moore:</strong> seven explicit slots.<br /><strong>Dunford:</strong> Obviously Awesome — frame markets & unique attributes.<br /><strong>Blank:</strong> elevator pitch.<br /><strong>Simple:</strong> one-line internal.</p>
       <p>Be specific, name real alternatives, defensible differentiator. &quot;Copy AI tighten-prompt&quot; gives you a ready prompt for ChatGPT/Claude.</p>
@@ -570,32 +558,15 @@ export default function PositioningBuilderContent() {
       controls={controls}
       info={info}
     >
-      <div className="flex flex-col gap-4 p-4 md:p-6">
-        {isMetro && viewMode === "edit" && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Form" : "Statement"}
-              </button>
-            ))}
-          </nav>
-        )}
+      <div className="flex flex-col gap-4 p-4 md:p-6" data-pivot={metroCPivot}>
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Form</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Statement</button>
+        </nav>
 
         {/* Comparison view */}
         {viewMode === "compare" && (
@@ -623,10 +594,10 @@ export default function PositioningBuilderContent() {
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <div>
-                        <h3 className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+                        <h3 className="text-sm font-semibold kami-text">
                           {fw.name}
                         </h3>
-                        <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{fw.author}</p>
+                        <p className="text-xs kami-text-dim">{fw.author}</p>
                       </div>
                       <span
                         className="px-2 py-0.5 text-xs font-medium"
@@ -650,21 +621,21 @@ export default function PositioningBuilderContent() {
                     <p className="text-sm leading-relaxed">
                       {statement.parts.map((part, i) =>
                         part.filled ? (
-                          <span key={i} className="font-semibold" style={{ color: "var(--kami-text)" }}>
+                          <span key={i} className="font-semibold kami-text">
                             {part.text}
                           </span>
                         ) : part.text.startsWith("[") && part.text.endsWith("]") ? (
-                          <span key={i} className="italic" style={{ color: "var(--kami-text-dim)" }}>
+                          <span key={i} className="italic kami-text-dim">
                             {part.text}
                           </span>
                         ) : (
-                          <span key={i} style={{ color: "var(--kami-text-muted)" }}>
+                          <span key={i} className="kami-text-muted">
                             {part.text}
                           </span>
                         )
                       )}
                     </p>
-                    <p className="mt-3 text-xs opacity-0 transition-opacity group-hover:opacity-100" style={{ color: "var(--kami-text-dim)" }}>
+                    <p className="mt-3 text-xs opacity-0 transition-opacity group-hover:opacity-100 kami-text-dim">
                       Click to edit
                     </p>
                   </button>
@@ -672,7 +643,7 @@ export default function PositioningBuilderContent() {
               })}
             </div>
             {filledFrameworks.length === 0 && (
-              <p className="text-center text-sm py-8" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-center text-sm py-8 kami-text-dim">
                 Fill in at least one framework to see the comparison.
               </p>
             )}
@@ -680,7 +651,7 @@ export default function PositioningBuilderContent() {
         )}
 
         {/* Guided form */}
-        {viewMode === "edit" && <>{(!isMetro || metroCPivot === "input") && <div className={isGlass ? "glass-canvas-section" : ""}><div
+        {viewMode === "edit" && <><div className="canvas-section glass-canvas-section" data-panel="input"><div
           className="mb-8 p-6"
           style={{
             background: "var(--kami-surface-solid)",
@@ -691,17 +662,16 @@ export default function PositioningBuilderContent() {
         >
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+              <h2 className="text-sm font-semibold kami-text">
                 {framework.name} · {framework.author}
               </h2>
-              <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{framework.tagline}</p>
+              <p className="text-xs kami-text-muted">{framework.tagline}</p>
             </div>
             <div className="flex items-center gap-3">
               {framework.sample && (
                 <button
                   onClick={loadSample}
-                  className="text-xs font-medium underline underline-offset-2"
-                  style={{ color: "var(--kami-text-muted)" }}
+                  className="text-xs font-medium underline underline-offset-2 kami-text-muted"
                 >
                   Load sample
                 </button>
@@ -709,8 +679,7 @@ export default function PositioningBuilderContent() {
               {hasAnyValue && (
                 <button
                   onClick={clearForm}
-                  className="text-xs transition-colors"
-                  style={{ color: "var(--kami-text-dim)" }}
+                  className="text-xs transition-colors kami-text-dim"
                 >
                   Clear
                 </button>
@@ -722,16 +691,15 @@ export default function PositioningBuilderContent() {
               <div key={field.key} className="flex flex-col gap-1.5">
                 <label
                   htmlFor={`field-${field.key}`}
-                  className="flex items-center gap-1.5 text-sm font-medium"
-                  style={{ color: "var(--kami-text)" }}
+                  className="flex items-center gap-1.5 text-sm font-medium kami-text"
                 >
                   {field.label}
                   <InfoTip label={`About: ${field.label}`}>
-                    <div className="font-semibold" style={{ color: "var(--kami-text)" }}>{field.hint}</div>
-                    <div className="mt-1.5" style={{ color: "var(--kami-text-muted)" }}>{field.example}</div>
+                    <div className="font-semibold kami-text">{field.hint}</div>
+                    <div className="mt-1.5 kami-text-muted">{field.example}</div>
                   </InfoTip>
                 </label>
-                <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>{field.hint}</p>
+                <p className="text-xs kami-text-dim">{field.hint}</p>
                 {field.multiline ? (
                   <textarea
                     id={`field-${field.key}`}
@@ -767,9 +735,9 @@ export default function PositioningBuilderContent() {
             ))}
           </div>
         </div>
-        </div>}
+        </div>
 
-        {(!isMetro || metroCPivot === "output") && <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         {/* Live preview */}
         <div
           className="mb-8 p-6"
@@ -780,32 +748,31 @@ export default function PositioningBuilderContent() {
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+          <h2 className="mb-4 text-sm font-medium uppercase tracking-wide kami-text-muted">
             Live Preview
           </h2>
           <p className="text-lg leading-relaxed">
             {previewParts.parts.map((part, i) =>
               part.filled ? (
-                <span key={i} className="font-semibold" style={{ color: "var(--kami-text)" }}>
+                <span key={i} className="font-semibold kami-text">
                   {part.text}
                 </span>
               ) : part.text.startsWith("[") && part.text.endsWith("]") ? (
                 <span
                   key={i}
-                  className="italic"
-                  style={{ color: "var(--kami-text-dim)" }}
+                  className="italic kami-text-dim"
                 >
                   {part.text}
                 </span>
               ) : (
-                <span key={i} style={{ color: "var(--kami-text-muted)" }}>
+                <span key={i} className="kami-text-muted">
                   {part.text}
                 </span>
               )
             )}
           </p>
         </div>
-        </div>}
+        </div>
 
         </>}
       </div>

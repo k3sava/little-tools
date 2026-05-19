@@ -34,16 +34,6 @@ const LEVEL_INFO: Record<CompressionLevel, { label: string; description: string 
 };
 
 export default function PdfCompressContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const [file, setFile] = useState<File | null>(null);
@@ -229,7 +219,7 @@ export default function PdfCompressContent() {
           ]}
           full
         />
-        <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <p className="text-xs kami-text-muted">
           {LEVEL_INFO[level].description}
         </p>
       </ControlGroup>
@@ -243,7 +233,7 @@ export default function PdfCompressContent() {
           unit="%"
         />
         {originalSize > 0 && (
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="text-xs kami-text-muted">
             Estimate: ~{formatBytes(estimatedSize)}
           </p>
         )}
@@ -260,7 +250,7 @@ export default function PdfCompressContent() {
 
       {originalSize > 0 && compressedSize > 0 && (
         <ControlGroup label="Before / After">
-          <div className="flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="flex items-center justify-between text-xs kami-text-muted">
             <span
               className="rounded-full px-2 py-0.5"
               style={{ background: "var(--kami-input-bg)" }}
@@ -300,25 +290,17 @@ export default function PdfCompressContent() {
       controls={controls}
       controlsLabel="Settings"
     >
-      {isMetro && (
-        <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-          {(["input", "output"] as const).map((tab) => (
-            <button key={tab} type="button" onClick={() => setMetroCPivot(tab)}
-              style={{
-                padding: "8px 16px", fontSize: 14,
-                fontWeight: metroCPivot === tab ? 600 : 400,
-                color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                background: "none", border: "none",
-                borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                cursor: "pointer", fontFamily: "'Segoe UI', system-ui, sans-serif", textTransform: "capitalize",
-              }}
-            >{tab === "input" ? "Upload" : "Compress"}</button>
-          ))}
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Upload</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && !file && status !== "error" && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        {!file && status !== "error" && (
+          <div className="glass-canvas-section">
           <FileDropZone
             accept={[".pdf"]}
             onFiles={handleFiles}
@@ -337,7 +319,7 @@ export default function PdfCompressContent() {
               background: "color-mix(in srgb, #ef4444 10%, transparent)",
             }}
           >
-            <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+            <p className="text-sm font-medium kami-text">
               {errorMessage}
             </p>
             <button
@@ -350,8 +332,8 @@ export default function PdfCompressContent() {
           </div>
         )}
 
-        {(!isMetro || metroCPivot === "output") && file && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        {file && (
+          <div className="glass-canvas-section">
           <div
             className="rounded-xl border px-4 py-3"
             style={{
@@ -361,10 +343,10 @@ export default function PdfCompressContent() {
           >
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+                <p className="truncate text-sm font-medium kami-text">
                   {file.name}
                 </p>
-                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs kami-text-muted">
                   {formatBytes(originalSize)} · {pageCount} {pageCount === 1 ? "page" : "pages"}
                 </p>
               </div>
@@ -374,14 +356,14 @@ export default function PdfCompressContent() {
         )}
 
         {status === "compressing" && (
-          <div className="flex items-center justify-center gap-2 py-12 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="flex items-center justify-center gap-2 py-12 text-sm kami-text-muted">
             <Spinner />
             Compressing...
           </div>
         )}
 
-        {(!isMetro || metroCPivot === "output") && status === "done" && file && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        {status === "done" && file && (
+          <div className="glass-canvas-section">
           <div
             className="rounded-xl border p-6"
             style={{
@@ -389,19 +371,19 @@ export default function PdfCompressContent() {
               borderColor: "var(--kami-border-strong)",
             }}
           >
-            <p className="mb-4 text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="mb-4 text-sm font-medium kami-text-muted">
               Compression complete
             </p>
             <div className="flex items-end justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs uppercase tracking-wide kami-text-muted">
                   Original
                 </p>
                 <p className="mt-1 text-lg font-semibold">{formatBytes(originalSize)}</p>
               </div>
-              <span style={{ color: "var(--kami-text-muted)" }}>→</span>
+              <span className="kami-text-muted">→</span>
               <div className="text-right">
-                <p className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs uppercase tracking-wide kami-text-muted">
                   Compressed
                 </p>
                 <p className="mt-1 text-lg font-semibold" style={{ color: ACCENT }}>

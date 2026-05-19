@@ -205,21 +205,8 @@ export default function BorderRadiusContent() {
   const [copied, setCopied] = useState(false);
   const [dragging, setDragging] = useState<CornerKey | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const output = getOutput(radius, advanced, outputFmt);
   const styleRadius = radiusToStyle(radius, advanced);
@@ -456,7 +443,7 @@ export default function BorderRadiusContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Drag the corners of the preview box (within ~48px of each corner) to round
             them. Toggle elliptical mode for independent horizontal and vertical radii.
@@ -468,18 +455,15 @@ export default function BorderRadiusContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Visual</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Visual</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual"><div
           className="flex h-full min-h-[60vh] w-full items-center justify-center p-6"
           style={{
             background: "var(--kami-surface)",
@@ -524,9 +508,7 @@ export default function BorderRadiusContent() {
             })}
           </div>
         </div></div>
-      )}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-4">
+      <div className="canvas-section glass-canvas-section" data-panel="code"><div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
             style={{
@@ -539,7 +521,6 @@ export default function BorderRadiusContent() {
             <code>{output}</code>
           </pre>
         </div></div>
-      )}
     </ToolShell>
   );
 }

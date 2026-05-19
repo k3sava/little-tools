@@ -131,7 +131,6 @@ export default function UtmBuilderContent() {
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkUrls, setBulkUrls] = useState("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   // Load history on mount
@@ -139,18 +138,6 @@ export default function UtmBuilderContent() {
     setHistory(loadHistory());
   }, []);
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const urlWarning = params.url.length > 0 && !isValidUrl(params.url);
 
@@ -325,15 +312,15 @@ export default function UtmBuilderContent() {
                   minHeight: 40,
                 }}
               >
-                <span className="truncate font-medium" style={{ color: "var(--kami-text)" }}>
+                <span className="truncate font-medium kami-text">
                   {entry.campaign || "(no campaign)"}
                 </span>
-                <span className="truncate" style={{ color: "var(--kami-text-dim)" }}>
+                <span className="truncate kami-text-dim">
                   {entry.url}
                 </span>
               </button>
             ))}
-            <button onClick={clearHistory} className="text-xs underline" style={{ color: "var(--kami-text-dim)" }}>
+            <button onClick={clearHistory} className="text-xs underline kami-text-dim">
               Clear history
             </button>
           </div>
@@ -367,10 +354,10 @@ export default function UtmBuilderContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Build UTM-tagged campaign URLs that show up correctly in Google Analytics. Switch on bulk mode to tag a list of URLs at once.</p>
       <div>
-        <p className="font-semibold mb-1" style={{ color: "var(--kami-text)" }}>The five params</p>
+        <p className="font-semibold mb-1 kami-text">The five params</p>
         <ul className="space-y-1">
           <li><code>utm_source</code> — where the traffic came from (google, newsletter)</li>
           <li><code>utm_medium</code> — the &quot;how&quot; (cpc, email, social)</li>
@@ -393,25 +380,22 @@ export default function UtmBuilderContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Parameters</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>URL</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Parameters</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>URL</button>
+      </nav>
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {/* Input section: URL input(s) + UTM fields */}
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             {/* URL input(s) */}
             {!bulkMode ? (
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Website URL <span style={{ color: "#ef4444" }}>*</span>
+                <label className="mb-1 block text-sm font-medium kami-text-muted">
+                  Website URL <span className="kami-text-error">*</span>
                 </label>
                 <input
                   type="text"
@@ -426,15 +410,15 @@ export default function UtmBuilderContent() {
                   autoFocus
                 />
                 {urlWarning && (
-                  <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>
+                  <p className="mt-1 text-xs kami-text-error">
                     Enter a valid URL (e.g. example.com/page or https://example.com)
                   </p>
                 )}
               </div>
             ) : (
               <div>
-                <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                  Base URLs <span style={{ color: "var(--kami-text-dim)" }}>(one per line)</span>
+                <label className="mb-1 block text-sm font-medium kami-text-muted">
+                  Base URLs <span className="kami-text-dim">(one per line)</span>
                 </label>
                 <textarea
                   value={bulkUrls}
@@ -459,9 +443,9 @@ export default function UtmBuilderContent() {
                 ] as { key: keyof UtmParams; label: string; required: boolean; placeholder: string; span: boolean }[]
               ).map((field) => (
                 <div key={field.key} className={field.span ? "sm:col-span-2" : ""}>
-                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  <label className="mb-1 block text-xs font-medium kami-text-muted">
                     {field.label}
-                    {field.required && <span style={{ color: "#ef4444" }}> *</span>}
+                    {field.required && <span className="kami-text-error"> *</span>}
                   </label>
                   <input
                     type="text"
@@ -475,11 +459,10 @@ export default function UtmBuilderContent() {
               ))}
             </div>
           </div>
-        )}
 
         {/* Output section: Generated URL + bulk results */}
-        {(!isMetro || metroCPivot === "output") && (!bulkMode && generatedUrl) && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div
+        {(!bulkMode && generatedUrl) && (
+          <div className="canvas-section glass-canvas-section" data-panel="output"><div
             className="p-4 rounded-xl"
             style={{
               background: "var(--kami-surface)",
@@ -490,11 +473,11 @@ export default function UtmBuilderContent() {
             <div className="text-xs uppercase tracking-wide mb-1" style={{ color: ACCENT }}>
               Generated URL
             </div>
-            <div className="break-all font-mono text-sm" style={{ color: "var(--kami-text)" }}>
+            <div className="break-all font-mono text-sm kami-text">
               {generatedUrl}
             </div>
             {shortPreview && (
-              <div className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <div className="mt-2 text-xs kami-text-dim">
                 Short-URL preview: <code>{shortPreview}</code>
               </div>
             )}
@@ -502,8 +485,8 @@ export default function UtmBuilderContent() {
         )}
 
         {/* Bulk results */}
-        {(!isMetro || metroCPivot === "output") && bulkMode && bulkGenerated.length > 0 && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div>
+        {bulkMode && bulkGenerated.length > 0 && (
+          <div className="glass-canvas-section"><div>
             <div className="mb-2 text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
               {bulkGenerated.filter((b) => b.generated).length} tagged URLs
             </div>
@@ -521,24 +504,24 @@ export default function UtmBuilderContent() {
                   style={i > 0 ? { borderTop: "1px solid var(--kami-border)" } : undefined}
                 >
                   {!item.valid ? (
-                    <p className="text-sm" style={{ color: "#ef4444" }}>
+                    <p className="text-sm kami-text-error">
                       Invalid URL: {item.base}
                     </p>
                   ) : item.generated ? (
                     <div className="flex items-start gap-2">
-                      <p className="min-w-0 flex-1 break-all font-mono text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <p className="min-w-0 flex-1 break-all font-mono text-xs kami-text-muted">
                         {item.generated}
                       </p>
                       <button
                         onClick={() => handleCopyBulkItem(item.generated, i)}
                         className="kc-segment-btn shrink-0"
-                        style={{ minHeight: 32, padding: "0 10px" }}
+                        style={{ minHeight: 44, padding: "0 10px" }}
                       >
                         {copiedIndex === i ? "Copied" : "Copy"}
                       </button>
                     </div>
                   ) : (
-                    <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                    <p className="text-sm kami-text-dim">
                       Fill required UTM fields to generate
                     </p>
                   )}

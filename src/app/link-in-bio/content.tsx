@@ -160,21 +160,8 @@ export default function LinkInBioContent() {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [copied, setCopied] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const update = useCallback((patch: Partial<Profile>) => {
     setProfile((p) => ({ ...p, ...patch }));
@@ -322,8 +309,7 @@ export default function LinkInBioContent() {
         />
         <div>
           <label
-            className="mb-1 block text-[10px] uppercase"
-            style={{ color: "var(--kami-text-muted)" }}
+            className="mb-1 block text-[10px] uppercase kami-text-muted"
           >
             Avatar (≤500KB)
           </label>
@@ -396,21 +382,18 @@ export default function LinkInBioContent() {
       controls={controls}
       controlsLabel="Design"
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Links</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Preview</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Links</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Preview</button>
+      </nav>
       <div className="grid gap-4 md:grid-cols-2">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
           <section className="flex flex-col gap-2">
-          <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+          <h2 className="text-xs font-semibold uppercase kami-text-muted">
             Links
           </h2>
           {profile.links.map((link, idx) => (
@@ -489,12 +472,10 @@ export default function LinkInBioContent() {
           ))}
         </section>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
           <section className="flex flex-col gap-2">
-          <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
+          <h2 className="text-xs font-semibold uppercase kami-text-muted">
             Mobile preview
           </h2>
           <div
@@ -597,7 +578,6 @@ export default function LinkInBioContent() {
           </div>
         </section>
           </div>
-        )}
       </div>
     </ToolShell>
   );

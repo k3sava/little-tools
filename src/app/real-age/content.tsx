@@ -50,26 +50,13 @@ interface StatCard {
 export default function RealAgeContent() {
   const [dob, setDob] = useState(getDefaultDob);
   const [today, setToday] = useState<Date | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   useEffect(() => {
     setToday(new Date());
   }, []);
 
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
 
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
-
-  void isMaterial;
 
   const stats = useMemo((): StatCard[] | null => {
     if (!dob || !today) return null;
@@ -162,36 +149,18 @@ export default function RealAgeContent() {
       accent="#f43f5e"
     >
       <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Birth Date" : "Stats"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Birth Date</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        <div className={isGlass ? "glass-canvas-section" : ""}>
-        {(!isMetro || metroCPivot === "input") && (
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <div className="p-4 flex items-center gap-3" style={cardStyle}>
-          <label htmlFor="dob-input" className="text-sm shrink-0" style={{ color: "var(--kami-text-dim)" }}>
+          <label htmlFor="dob-input" className="text-sm shrink-0 kami-text-dim">
             Date of birth
           </label>
           <input
@@ -201,15 +170,13 @@ export default function RealAgeContent() {
             max={new Date().toISOString().split("T")[0]}
             onChange={(e) => setDob(e.target.value)}
             className="flex-1 px-3 py-2 text-sm focus:outline-none"
-            style={{ ...inputStyle, minHeight: 36 }}
+            style={{ ...inputStyle, minHeight: 44 }}
           />
         </div>
-        )}
         </div>
 
         {stats && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
-          {(!isMetro || metroCPivot === "output") && (
+          <div className="canvas-section glass-canvas-section" data-panel="output">
           <>
             {/* Stat grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -221,11 +188,11 @@ export default function RealAgeContent() {
                   >
                     {card.number}
                   </p>
-                  <p className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  <p className="text-sm font-medium kami-text-muted">
                     {card.label}
                   </p>
                   {card.note && (
-                    <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                    <p className="text-xs kami-text-dim">
                       {card.note}
                     </p>
                   )}
@@ -236,13 +203,12 @@ export default function RealAgeContent() {
             {/* Closing line */}
             {closingLine && (
               <div className="p-4 text-center" style={cardStyle}>
-                <p className="text-sm italic" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-sm italic kami-text-muted">
                   {closingLine}
                 </p>
               </div>
             )}
           </>
-          )}
           </div>
         )}
       </div>

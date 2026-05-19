@@ -95,17 +95,6 @@ export default function ContrastContent() {
   const [textWeight, setTextWeight] = useState<"400" | "700">("400");
   const [sampleText, setSampleText] = useState("The quick brown fox jumps over the lazy dog.");
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const ratio = useMemo(() => contrastRatio(fg, bg), [fg, bg]);
@@ -173,7 +162,7 @@ export default function ContrastContent() {
     onChange: (v: string) => void;
   }) => (
     <div>
-      <label className="mb-1 block text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+      <label className="mb-1 block text-xs font-medium uppercase tracking-wide kami-text-dim">
         {label}
       </label>
       <div
@@ -198,8 +187,7 @@ export default function ContrastContent() {
             const v = e.target.value;
             if (/^#[0-9a-fA-F]{0,6}$/.test(v)) onChange(v);
           }}
-          className="w-full border-0 bg-transparent px-1 py-1 font-mono text-sm focus:outline-none"
-          style={{ color: "var(--kami-text)" }}
+          className="w-full border-0 bg-transparent px-1 py-1 font-mono text-sm focus:outline-none kami-text"
           placeholder="#000000"
           aria-label={`${label} hex`}
         />
@@ -283,8 +271,8 @@ export default function ContrastContent() {
                       }}
                     />
                     <span className="flex-1">
-                      <span className="block text-xs font-medium" style={{ color: "var(--kami-text)" }}>{fx.label}</span>
-                      <span className="block text-[10px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{fx.hex} · {fx.ratio.toFixed(2)}:1</span>
+                      <span className="block text-xs font-medium kami-text">{fx.label}</span>
+                      <span className="block text-[10px] font-mono kami-text-dim">{fx.hex} · {fx.ratio.toFixed(2)}:1</span>
                     </span>
                   </button>
                 ))}
@@ -294,18 +282,18 @@ export default function ContrastContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Pick a foreground and background color. We compute the WCAG contrast ratio
             and tell you whether it passes AA / AAA for body text, large text, and UI
             components. When it fails, we suggest the nearest accessible color.
           </p>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Made for</div>
             <p className="mt-1">Designers, accessibility engineers, front-end devs.</p>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Reach for it when</div>
             <ul className="mt-1 space-y-1 text-xs">
               <li>· Verifying a brand color against a background</li>
               <li>· Checking a button or link meets WCAG</li>
@@ -313,7 +301,7 @@ export default function ContrastContent() {
             </ul>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>WCAG thresholds</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">WCAG thresholds</div>
             <ul className="mt-1 space-y-1 text-xs font-mono">
               <li>AA normal: 4.5 : 1</li>
               <li>AA large / UI: 3 : 1</li>
@@ -325,34 +313,16 @@ export default function ContrastContent() {
       }
     >
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Colors" : "Results"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Colors</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             {/* Large preview pane */}
             <div
               className="flex flex-1 min-h-[260px] flex-col justify-center overflow-hidden p-6 sm:p-10"
@@ -384,10 +354,8 @@ export default function ContrastContent() {
               </p>
             </div>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Ratio + badges */}
             <div
               className="flex flex-wrap items-center justify-between gap-4 p-4"
@@ -401,9 +369,9 @@ export default function ContrastContent() {
               <div>
                 <div className="text-4xl font-bold tabular-nums leading-none">
                   {ratio.toFixed(2)}
-                  <span className="text-base font-normal" style={{ color: "var(--kami-text-dim)" }}>:1</span>
+                  <span className="text-base font-normal kami-text-dim">:1</span>
                 </div>
-                <div className="mt-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                <div className="mt-1 text-xs uppercase tracking-wide kami-text-dim">
                   Contrast ratio
                 </div>
               </div>
@@ -418,7 +386,6 @@ export default function ContrastContent() {
               </div>
             </div>
           </div>
-        )}
       </div>
     </ToolShell>
   );

@@ -619,21 +619,8 @@ export default function SeoContentAnalyzerContent() {
     [setToolState]
   );
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [content, setContent] = useState("");
   const [copyFeedback, setCopyFeedback] = useState(false);
@@ -700,14 +687,14 @@ export default function SeoContentAnalyzerContent() {
       </ControlGroup>
       <ControlGroup label="Quick stats">
         {analysis ? (
-          <div className="grid grid-cols-2 gap-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.stats.wordCount.toLocaleString()}</span>words</div>
-            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.stats.sentenceCount}</span>sentences</div>
-            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.readability.fleschScore}</span>Flesch</div>
-            <div><span className="block font-semibold text-base" style={{ color: "var(--kami-text)" }}>{analysis.headings.headings.length}</span>headings</div>
+          <div className="grid grid-cols-2 gap-2 text-xs kami-text-muted">
+            <div><span className="block font-semibold text-base kami-text">{analysis.stats.wordCount.toLocaleString()}</span>words</div>
+            <div><span className="block font-semibold text-base kami-text">{analysis.stats.sentenceCount}</span>sentences</div>
+            <div><span className="block font-semibold text-base kami-text">{analysis.readability.fleschScore}</span>Flesch</div>
+            <div><span className="block font-semibold text-base kami-text">{analysis.headings.headings.length}</span>headings</div>
           </div>
         ) : (
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>Paste content to see stats.</p>
+          <p className="text-xs kami-text-dim">Paste content to see stats.</p>
         )}
       </ControlGroup>
     </>
@@ -726,7 +713,7 @@ export default function SeoContentAnalyzerContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Paste article text or HTML to score keyword density, heading structure, readability and length. Score is weighted across content length, readability, heading hierarchy, sentence structure and keyword presence.</p>
       <p><strong>Density:</strong> aim for 1–3%. <strong>H1:</strong> exactly one per page. <strong>Sentences:</strong> avg 15–20 words.</p>
     </div>
@@ -741,19 +728,16 @@ export default function SeoContentAnalyzerContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Analysis</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Analysis</button>
+      </nav>
       <div className="flex flex-col gap-5 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -768,10 +752,9 @@ export default function SeoContentAnalyzerContent() {
               }}
             />
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && analysis && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        {analysis && (
+          <div className="glass-canvas-section">
             <div className="space-y-5">
               <div className="flex flex-col items-center gap-3">
                 <ScoreBadge score={analysis.score} />
@@ -875,14 +858,14 @@ export default function SeoContentAnalyzerContent() {
                         ) : (
                           <WarningTriangle className="text-yellow-500" />
                         )}
-                        <span style={{ color: "var(--kami-text-muted)" }}>
+                        <span className="kami-text-muted">
                           Keyword in first 100 words
                         </span>
                       </div>
 
                       {analysis.keyword.topPhrases.length > 0 && (
                         <div>
-                          <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
+                          <div className="text-xs font-medium mb-2 kami-text-muted">
                             Related 2-word phrases
                           </div>
                           <div className="flex flex-wrap gap-1.5">
@@ -898,7 +881,7 @@ export default function SeoContentAnalyzerContent() {
                                 }}
                               >
                                 {p.phrase}{" "}
-                                <span style={{ color: "var(--kami-text-dim)" }}>({p.count})</span>
+                                <span className="kami-text-dim">({p.count})</span>
                               </span>
                             ))}
                           </div>
@@ -911,7 +894,7 @@ export default function SeoContentAnalyzerContent() {
                 {/* Heading Structure */}
                 <Card title="Heading Structure" icon={<HeadingIcon />}>
                   {analysis.headings.headings.length === 0 ? (
-                    <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                    <p className="text-sm kami-text-dim">
                       No headings detected. Add headings to improve content
                       structure.
                     </p>
@@ -936,7 +919,7 @@ export default function SeoContentAnalyzerContent() {
                             >
                               H{h.level}
                             </span>
-                            <span className="truncate" style={{ color: "var(--kami-text-muted)" }}>
+                            <span className="truncate kami-text-muted">
                               {h.text}
                             </span>
                           </div>
@@ -944,7 +927,7 @@ export default function SeoContentAnalyzerContent() {
                       </div>
 
                       {/* Checks */}
-                      <div className="space-y-1.5 pt-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
+                      <div className="space-y-1.5 pt-3 kami-border-top">
                         <HeadingCheck
                           passing={analysis.headings.hasH1}
                           label="Has H1 heading"
@@ -978,17 +961,17 @@ export default function SeoContentAnalyzerContent() {
                         >
                           {analysis.readability.fleschScore}
                         </div>
-                        <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                        <div className="text-xs kami-text-muted">
                           Flesch Score
                         </div>
                       </div>
-                      <div className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                      <div className="text-sm kami-text-muted">
                         {analysis.readability.gradeLevel}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
+                      <div className="text-xs font-medium mb-2 kami-text-muted">
                         Sentence Length Distribution
                       </div>
                       <div className="space-y-1.5">
@@ -1047,7 +1030,7 @@ export default function SeoContentAnalyzerContent() {
                       ) : (
                         <WarningTriangle className="text-yellow-500 mt-0.5 shrink-0" />
                       )}
-                      <span style={{ color: "var(--kami-text-muted)" }}>{rec.text}</span>
+                      <span className="kami-text-muted">{rec.text}</span>
                     </div>
                   ))}
                 </div>
@@ -1098,7 +1081,7 @@ function ScoreBreakdown({ analysis }: { analysis: FullAnalysis }) {
     <div className="w-full max-w-md grid grid-cols-2 gap-3">
       {items.map((it) => (
         <div key={it.label}>
-          <div className="flex justify-between text-xs mb-1" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="flex justify-between text-xs mb-1 kami-text-muted">
             <span>{it.label}</span>
             <span className="tabular-nums">{Math.round(it.value)}</span>
           </div>
@@ -1202,11 +1185,10 @@ function Card({
       }}
     >
       <div
-        className="flex items-center gap-2.5 px-5 py-3.5"
-        style={{ borderBottom: "1px solid var(--kami-border)" }}
+        className="flex items-center gap-2.5 px-5 py-3.5 kami-border-bottom"
       >
         {icon}
-        <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>{title}</span>
+        <span className="text-sm font-semibold kami-text">{title}</span>
       </div>
       <div className="px-5 py-4">{children}</div>
     </div>
@@ -1232,8 +1214,8 @@ function StatItem({
         borderRadius: "var(--kami-input-radius, 0.5rem)",
       }}
     >
-      <div className="text-lg font-bold" style={{ color: "var(--kami-text)" }}>{value}</div>
-      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
+      <div className="text-lg font-bold kami-text">{value}</div>
+      <div className="text-xs kami-text-muted">{label}</div>
       {note && (
         <div
           className={`text-xs mt-0.5 ${noteColor || ""}`}
@@ -1260,7 +1242,7 @@ function HeadingCheck({
       ) : (
         <WarningTriangle className="text-yellow-500" />
       )}
-      <span style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+      <span className="kami-text-muted">{label}</span>
     </div>
   );
 }
@@ -1279,7 +1261,7 @@ function DistBar({
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="w-28 shrink-0 text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</span>
+      <span className="w-28 shrink-0 text-xs kami-text-muted">{label}</span>
       <div
         className="flex-1 h-2 overflow-hidden"
         style={{
@@ -1293,7 +1275,7 @@ function DistBar({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="w-8 shrink-0 text-right text-xs tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+      <span className="w-8 shrink-0 text-right text-xs tabular-nums kami-text-muted">
         {count}
       </span>
     </div>
@@ -1313,7 +1295,7 @@ function StatsIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
@@ -1333,7 +1315,7 @@ function KeywordIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -1352,7 +1334,7 @@ function HeadingIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <path d="M4 12h8" />
       <path d="M4 18V6" />
@@ -1373,7 +1355,7 @@ function ReadabilityIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
@@ -1392,7 +1374,7 @@ function RecommendationIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <path d="M9 11l3 3L22 4" />
       <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
@@ -1450,7 +1432,7 @@ function CopyIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
@@ -1469,7 +1451,7 @@ function DownloadIcon() {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ color: "var(--kami-text-dim)" }}
+      className="kami-text-dim"
     >
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />

@@ -108,7 +108,7 @@ export function ToolsHubContent() {
   const isMetro    = currentTheme === "metro";
 
   return (
-    <div className={`kami-scope min-h-screen tools-hub theme-${currentTheme}`} style={{ color: "var(--kami-text)" }}>
+    <div className={`kami-scope min-h-screen tools-hub theme-${currentTheme} kami-text`}>
       <Breadcrumb
         items={[
           { label: "home", href: "https://apps.iamkesava.com" },
@@ -185,10 +185,10 @@ export function ToolsHubContent() {
         {/* Default + non-glass heading block */}
         {!isGlass && !isMaterial && !isMetro && (
           <div className="mb-5 sm:mb-7">
-            <h1 className="text-2xl font-semibold leading-tight sm:text-3xl" style={{ color: "var(--kami-text)" }}>
+            <h1 className="text-2xl font-semibold leading-tight sm:text-3xl kami-text">
               {allTools.length} little tools
             </h1>
-            <p className="mt-1 text-sm sm:text-base" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="mt-1 text-sm sm:text-base kami-text-muted">
               Ad-free, privacy-first browser utilities. Everything runs locally.
             </p>
           </div>
@@ -239,7 +239,7 @@ export function ToolsHubContent() {
 
         {recentTools.length > 0 && (
           <section className="mb-6">
-            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
+            <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider kami-text-dim">
               Recent
             </h2>
             <div className="tools-hub-grid">
@@ -251,12 +251,12 @@ export function ToolsHubContent() {
         )}
 
         <div className="mb-3 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--kami-text-dim)" }}>
+          <h2 className="text-sm font-semibold uppercase tracking-wider kami-text-dim">
             {activeCollection
               ? collections.find((c) => c.id === activeCollection)?.title
               : "All tools"}
           </h2>
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs kami-text-dim">
             {filtered.length} tool{filtered.length === 1 ? "" : "s"}
           </p>
         </div>

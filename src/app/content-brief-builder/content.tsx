@@ -173,21 +173,8 @@ function exportMarkdown(brief: ContentBrief): string {
 export default function ContentBriefBuilderContent() {
   const [brief, setBrief] = useState<ContentBrief>(DEFAULT_BRIEF);
   const [copied, setCopied] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Load from localStorage
   useEffect(() => {
@@ -345,9 +332,9 @@ export default function ContentBriefBuilderContent() {
     <>
       <ControlGroup label="Completeness">
         <div className="flex flex-col gap-1.5">
-          <div className="flex justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="flex justify-between text-xs kami-text-muted">
             <span>Brief filled</span>
-            <span className="tabular-nums font-bold" style={{ color: "var(--kami-text)" }}>{completeness}%</span>
+            <span className="tabular-nums font-bold kami-text">{completeness}%</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--kami-border)" }}>
             <div style={{ width: `${completeness}%`, height: "100%", background: completeness >= 80 ? "#10b981" : completeness >= 50 ? "#f59e0b" : ACCENT_SEO }} />
@@ -392,7 +379,7 @@ export default function ContentBriefBuilderContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Produce a writer-ready content brief: target keyword, audience, intent, outline, links, CTAs. Auto-saves to localStorage.</p>
       <p>Export as Markdown to paste into Notion / Docs / Linear. Completeness score helps you spot gaps before handing off.</p>
     </div>
@@ -407,22 +394,20 @@ export default function ContentBriefBuilderContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Brief</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Output</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Brief</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-3">
           {/* Left column: form */}
-          {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="space-y-4 lg:col-span-2">
+          <div className="canvas-section glass-canvas-section" data-panel="input"><div className="space-y-4 lg:col-span-2">
             {/* Core */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 Content Spec
               </h2>
               <div className="space-y-3">
@@ -500,7 +485,7 @@ export default function ContentBriefBuilderContent() {
 
             {/* Audience */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 Target Audience
               </h2>
               <div className="space-y-3">
@@ -538,7 +523,7 @@ export default function ContentBriefBuilderContent() {
             {/* Outline */}
             <div className="p-5" style={cardStyle}>
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                <h2 className="text-sm font-semibold kami-text-muted">
                   Outline ({brief.sections.length} sections)
                 </h2>
               </div>
@@ -552,7 +537,7 @@ export default function ContentBriefBuilderContent() {
                       borderRadius: "var(--kami-input-radius, 0.5rem)",
                     }}
                   >
-                    <span className="mt-2 flex-shrink-0 text-xs font-medium" style={{ color: "var(--kami-text-dim)" }}>
+                    <span className="mt-2 flex-shrink-0 text-xs font-medium kami-text-dim">
                       H2
                     </span>
                     <div className="min-w-0 flex-1 space-y-1">
@@ -563,8 +548,7 @@ export default function ContentBriefBuilderContent() {
                           updateSection(s.id, "heading", e.target.value)
                         }
                         placeholder={`Section ${i + 1} heading`}
-                        className="w-full border-0 bg-transparent px-0 py-0 text-sm font-medium focus:outline-none focus:ring-0"
-                        style={{ color: "var(--kami-text)" }}
+                        className="w-full border-0 bg-transparent px-0 py-0 text-sm font-medium focus:outline-none focus:ring-0 kami-text"
                       />
                       <input
                         type="text"
@@ -573,31 +557,27 @@ export default function ContentBriefBuilderContent() {
                           updateSection(s.id, "notes", e.target.value)
                         }
                         placeholder="Notes for writer"
-                        className="w-full border-0 bg-transparent px-0 py-0 text-xs focus:outline-none focus:ring-0"
-                        style={{ color: "var(--kami-text-muted)" }}
+                        className="w-full border-0 bg-transparent px-0 py-0 text-xs focus:outline-none focus:ring-0 kami-text-muted"
                       />
                     </div>
                     <div className="flex flex-shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100">
                       <button
                         onClick={() => moveSection(s.id, -1)}
                         disabled={i === 0}
-                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30"
-                        style={{ color: "var(--kami-text-dim)" }}
+                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30 kami-text-dim"
                       >
                         ↑
                       </button>
                       <button
                         onClick={() => moveSection(s.id, 1)}
                         disabled={i === brief.sections.length - 1}
-                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30"
-                        style={{ color: "var(--kami-text-dim)" }}
+                        className="rounded px-1 py-0.5 text-xs disabled:opacity-30 kami-text-dim"
                       >
                         ↓
                       </button>
                       <button
                         onClick={() => removeSection(s.id)}
-                        className="rounded px-1 py-0.5 text-xs"
-                        style={{ color: "var(--kami-text-dim)" }}
+                        className="rounded px-1 py-0.5 text-xs kami-text-dim"
                       >
                         ✕
                       </button>
@@ -620,7 +600,7 @@ export default function ContentBriefBuilderContent() {
 
             {/* Key points */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 Key Points &amp; Requirements
               </h2>
               <textarea
@@ -635,7 +615,7 @@ export default function ContentBriefBuilderContent() {
 
             {/* SEO & Links */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 SEO &amp; Links
               </h2>
               <div className="space-y-3">
@@ -698,7 +678,7 @@ export default function ContentBriefBuilderContent() {
 
             {/* CTA */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 Call to Action
               </h2>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -731,7 +711,7 @@ export default function ContentBriefBuilderContent() {
 
             {/* Additional notes */}
             <div className="p-5" style={cardStyle}>
-              <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-semibold kami-text-muted">
                 Additional Notes
               </h2>
               <textarea
@@ -745,23 +725,23 @@ export default function ContentBriefBuilderContent() {
                 style={inputStyle}
               />
             </div>
-          </div></div>)}
+          </div></div>
 
           {/* Right column: preview */}
-          {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="lg:col-span-1">
+          <div className="canvas-section glass-canvas-section" data-panel="output"><div className="lg:col-span-1">
             <div className="sticky top-4" style={cardStyle}>
-              <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <div className="px-5 py-3 kami-border-bottom">
+                <h2 className="text-sm font-semibold kami-text-muted">
                   Preview
                 </h2>
               </div>
               <div className="max-h-[calc(100vh-8rem)] overflow-y-auto p-5">
-                <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed" style={{ color: "var(--kami-text-muted)" }}>
+                <pre className="whitespace-pre-wrap font-mono text-xs leading-relaxed kami-text-muted">
                   {formatted}
                 </pre>
               </div>
             </div>
-          </div></div>)}
+          </div></div>
       </div>
     </ToolShell>
   );

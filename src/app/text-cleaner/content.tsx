@@ -256,21 +256,8 @@ export default function TextCleanerContent() {
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [handleCopy, setInput]));
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const diffSegments = useMemo(() => {
     if (!hasChanges) return null;
@@ -366,18 +353,16 @@ export default function TextCleanerContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Output</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="flex flex-col gap-3 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -389,8 +374,7 @@ export default function TextCleanerContent() {
         />
 
         <div
-          className="flex items-center justify-between text-xs"
-          style={{ color: "var(--kami-text-dim)" }}
+          className="flex items-center justify-between text-xs kami-text-dim"
         >
           <span>
             {lineCount} {lineCount === 1 ? "line" : "lines"} · {charCount} chars
@@ -408,9 +392,9 @@ export default function TextCleanerContent() {
             </span>
           )}
         </div>
-        </div>)}
+        </div>
 
-        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         {/* Output area */}
         {input && (view === "after" || (!hasChanges && view === "diff")) && (
           <div
@@ -465,7 +449,7 @@ export default function TextCleanerContent() {
             })}
           </div>
         )}
-        </div>)}
+        </div>
       </div>
     </ToolShell>
   );

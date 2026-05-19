@@ -305,10 +305,10 @@ function ScoreRow({
       }}
     >
       <div className="min-w-0">
-        <div className="text-xs uppercase tracking-wide truncate" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="text-xs uppercase tracking-wide truncate kami-text-muted">
           {name}
         </div>
-        <div className="text-xs mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
+        <div className="text-xs mt-0.5 kami-text-dim">
           {interpretation}
         </div>
       </div>
@@ -340,21 +340,8 @@ export default function ReadabilityScorerContent() {
   const scores = useMemo(() => computeScores(words, stats.totalSentences, input), [words, stats.totalSentences, input]);
   const suggestions = useMemo(() => generateSuggestions(input), [input]);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const overallGrade = scores ? getOverallGrade(scores) : null;
   const hasContent = words.length > 0 && stats.totalSentences > 0;
@@ -428,7 +415,7 @@ export default function ReadabilityScorerContent() {
             />
           </div>
         ) : (
-          <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="text-xs kami-text-dim">
             Type 1+ sentence to see scores.
           </p>
         )}
@@ -437,28 +424,28 @@ export default function ReadabilityScorerContent() {
       <ControlGroup label="Stats">
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Words</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{stats.totalWords}</div>
+            <div className="kami-text-dim">Words</div>
+            <div className="font-bold text-sm kami-text">{stats.totalWords}</div>
           </div>
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Sentences</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{stats.totalSentences}</div>
+            <div className="kami-text-dim">Sentences</div>
+            <div className="font-bold text-sm kami-text">{stats.totalSentences}</div>
           </div>
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Paragraphs</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{stats.totalParagraphs}</div>
+            <div className="kami-text-dim">Paragraphs</div>
+            <div className="font-bold text-sm kami-text">{stats.totalParagraphs}</div>
           </div>
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Avg w/s</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{stats.avgWordsPerSentence}</div>
+            <div className="kami-text-dim">Avg w/s</div>
+            <div className="font-bold text-sm kami-text">{stats.avgWordsPerSentence}</div>
           </div>
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Complex</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{stats.complexWordPercent}%</div>
+            <div className="kami-text-dim">Complex</div>
+            <div className="font-bold text-sm kami-text">{stats.complexWordPercent}%</div>
           </div>
           <div>
-            <div style={{ color: "var(--kami-text-dim)" }}>Reading</div>
-            <div className="font-bold text-sm" style={{ color: "var(--kami-text)" }}>{formatTime(stats.readingTimeMin)}</div>
+            <div className="kami-text-dim">Reading</div>
+            <div className="font-bold text-sm kami-text">{formatTime(stats.readingTimeMin)}</div>
           </div>
         </div>
       </ControlGroup>
@@ -485,19 +472,16 @@ export default function ReadabilityScorerContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Scores</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Scores</button>
+      </nav>
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -515,10 +499,8 @@ export default function ReadabilityScorerContent() {
               autoFocus
             />
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Overall summary */}
             {hasContent && scores && overallGrade !== null && (
               <div
@@ -530,7 +512,7 @@ export default function ReadabilityScorerContent() {
                 }}
               >
                 <div>
-                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="text-xs uppercase tracking-wide mb-1 kami-text-dim">
                     Overall grade
                   </div>
                   <div className="flex items-baseline gap-2">
@@ -540,24 +522,24 @@ export default function ReadabilityScorerContent() {
                     >
                       {overallGrade}
                     </span>
-                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                    <span className="text-sm kami-text-muted">
                       {getGradeLevelLabel(overallGrade)}
                     </span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="text-xs uppercase tracking-wide mb-1 kami-text-dim">
                     Reading ease
                   </div>
-                  <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                  <div className="text-lg font-semibold kami-text-muted">
                     {getFleschLabel(scores.fleschReadingEase)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="text-xs uppercase tracking-wide mb-1 kami-text-dim">
                     Reading time
                   </div>
-                  <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                  <div className="text-lg font-semibold kami-text-muted">
                     {formatTime(stats.readingTimeMin)}
                   </div>
                 </div>
@@ -574,7 +556,7 @@ export default function ReadabilityScorerContent() {
                   borderRadius: "var(--kami-card-radius, 0.75rem)",
                 }}
               >
-                <div className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text)" }}>
+                <div className="text-sm font-semibold mb-3 kami-text">
                   Rewrite suggestions ({suggestions.length})
                 </div>
                 <ul className="flex flex-col gap-2.5">
@@ -591,7 +573,7 @@ export default function ReadabilityScorerContent() {
                       >
                         {s.suggestion}
                       </div>
-                      <div className="text-xs truncate mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
+                      <div className="text-xs truncate mt-0.5 kami-text-dim">
                         "{s.sentence}"
                       </div>
                     </li>
@@ -611,10 +593,10 @@ export default function ReadabilityScorerContent() {
                 }}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+                  <span className="text-sm font-semibold kami-text">
                     Sentence difficulty
                   </span>
-                  <div className="flex flex-wrap gap-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                  <div className="flex flex-wrap gap-3 text-xs kami-text-muted">
                     <Legend color="#22c55e" label="< 14" />
                     <Legend color="transparent" label="14-20" border />
                     <Legend color="#eab308" label="21-30" />
@@ -650,14 +632,12 @@ export default function ReadabilityScorerContent() {
 
             {!hasContent && (
               <div
-                className="text-center py-8 text-sm"
-                style={{ color: "var(--kami-text-dim)" }}
+                className="text-center py-8 text-sm kami-text-dim"
               >
                 Paste text above to see readability scores.
               </div>
             )}
           </div>
-        )}
       </div>
     </ToolShell>
   );

@@ -442,21 +442,8 @@ function generatePDF(data: InvoiceData) {
 export default function InvoiceGeneratorContent() {
   const [invoice, setInvoice] = useState<InvoiceData>(defaultInvoice);
   const [loaded, setLoaded] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Load sender defaults on mount
   useEffect(() => {
@@ -596,27 +583,26 @@ export default function InvoiceGeneratorContent() {
           style={{ background: "var(--kami-input-bg)", borderColor: "var(--kami-border)" }}
         >
           <div className="flex justify-between">
-            <span style={{ color: "var(--kami-text-muted)" }}>Subtotal</span>
+            <span className="kami-text-muted">Subtotal</span>
             <span>{formatMoney(subtotal, invoice.currency)}</span>
           </div>
           {invoice.discountRate > 0 && (
-            <div className="flex justify-between" style={{ color: "#dc2626" }}>
+            <div className="flex justify-between kami-text-error">
               <span>Discount ({invoice.discountRate}%)</span>
               <span>-{formatMoney(discountAmt, invoice.currency)}</span>
             </div>
           )}
           {invoice.taxRate > 0 && (
             <div className="flex justify-between">
-              <span style={{ color: "var(--kami-text-muted)" }}>Tax ({invoice.taxRate}%)</span>
+              <span className="kami-text-muted">Tax ({invoice.taxRate}%)</span>
               <span>{formatMoney(taxAmt, invoice.currency)}</span>
             </div>
           )}
           <div
-            className="mt-2 flex justify-between pt-2 text-base font-bold"
-            style={{ borderTop: "1px solid var(--kami-border)" }}
+            className="mt-2 flex justify-between pt-2 text-base font-bold kami-border-top"
           >
             <span>Total</span>
-            <span style={isCreditNote ? { color: "#dc2626" } : undefined}>
+            <span className={isCreditNote ? "kami-text-error" : undefined}>
               {displayTotal < 0 ? "-" : ""}
               {formatMoney(total, invoice.currency)}
             </span>
@@ -635,18 +621,16 @@ export default function InvoiceGeneratorContent() {
       controls={controls}
       controlsLabel="Settings"
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Details</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Preview</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Details</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Preview</button>
+      </nav>
       <div className="flex flex-col gap-6">
-        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><><div className="grid gap-6 lg:grid-cols-2">
+        <div className="canvas-section glass-canvas-section" data-panel="input"><><div className="grid gap-6 lg:grid-cols-2">
           {/* From */}
           <fieldset
             className="p-5"
@@ -657,7 +641,7 @@ export default function InvoiceGeneratorContent() {
               boxShadow: "var(--kami-card-shadow, none)",
             }}
           >
-            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+            <legend className="px-2 text-sm font-semibold kami-text-muted">
               From (Your Details)
             </legend>
             <div className="mt-2 space-y-3">
@@ -695,7 +679,7 @@ export default function InvoiceGeneratorContent() {
               boxShadow: "var(--kami-card-shadow, none)",
             }}
           >
-            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+            <legend className="px-2 text-sm font-semibold kami-text-muted">
               To (Client)
             </legend>
             <div className="mt-2 space-y-3">
@@ -729,7 +713,7 @@ export default function InvoiceGeneratorContent() {
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+          <legend className="px-2 text-sm font-semibold kami-text-muted">
             {documentTypeLabels[invoice.documentType].label} Details
           </legend>
           <div className="mt-2 grid gap-3 sm:grid-cols-5">
@@ -745,7 +729,7 @@ export default function InvoiceGeneratorContent() {
               onChange={(v) => update("invoiceDate", v)}
             />
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-xs font-medium kami-text-muted">
                 Payment Terms
               </label>
               <select
@@ -776,7 +760,7 @@ export default function InvoiceGeneratorContent() {
               }}
             />
             <div>
-              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="mb-1 block text-xs font-medium kami-text-muted">
                 Currency
               </label>
               <select
@@ -799,9 +783,9 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </fieldset>
-        </></div>)}
+        </></div>
 
-        {(!isMetro || metroCPivot === "output") && <div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><>
         {/* Line items */}
         <fieldset
           className="mt-6 p-5"
@@ -812,12 +796,12 @@ export default function InvoiceGeneratorContent() {
             boxShadow: "var(--kami-card-shadow, none)",
           }}
         >
-          <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+          <legend className="px-2 text-sm font-semibold kami-text-muted">
             Line Items
           </legend>
           <div className="mt-2 space-y-3">
             {/* Header row */}
-            <div className="hidden sm:grid sm:grid-cols-[1fr_80px_100px_100px_36px] sm:gap-2 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="hidden sm:grid sm:grid-cols-[1fr_80px_100px_100px_36px] sm:gap-2 text-xs font-medium kami-text-muted">
               <span>Description</span>
               <span>Qty</span>
               <span>Rate</span>
@@ -886,7 +870,7 @@ export default function InvoiceGeneratorContent() {
                       borderRadius: "var(--kami-input-radius, 0.5rem)",
                     }}
                   />
-                  <div className="flex items-center text-sm font-medium" style={{ color: "var(--kami-text)" }}>
+                  <div className="flex items-center text-sm font-medium kami-text">
                     {isCreditNote && amount > 0 ? "-" : ""}
                     {formatMoney(amount, invoice.currency)}
                   </div>
@@ -942,7 +926,7 @@ export default function InvoiceGeneratorContent() {
               boxShadow: "var(--kami-card-shadow, none)",
             }}
           >
-            <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+            <legend className="px-2 text-sm font-semibold kami-text-muted">
               Notes
             </legend>
             <textarea
@@ -970,7 +954,7 @@ export default function InvoiceGeneratorContent() {
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <legend className="px-2 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+              <legend className="px-2 text-sm font-semibold kami-text-muted">
                 Tax & Discount
               </legend>
               <div className="mt-2 grid grid-cols-2 gap-3">
@@ -1005,7 +989,7 @@ export default function InvoiceGeneratorContent() {
             >
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span style={{ color: "var(--kami-text-muted)" }}>Subtotal</span>
+                  <span className="kami-text-muted">Subtotal</span>
                   <span>
                     {isCreditNote && subtotal > 0 ? "-" : ""}
                     {formatMoney(subtotal, invoice.currency)}
@@ -1021,7 +1005,7 @@ export default function InvoiceGeneratorContent() {
                 )}
                 {invoice.taxRate > 0 && (
                   <div className="flex justify-between">
-                    <span style={{ color: "var(--kami-text-muted)" }}>
+                    <span className="kami-text-muted">
                       Tax ({invoice.taxRate}%)
                     </span>
                     <span>
@@ -1031,8 +1015,7 @@ export default function InvoiceGeneratorContent() {
                   </div>
                 )}
                 <div
-                  className="flex justify-between pt-2 text-lg font-bold"
-                  style={{ borderTop: "1px solid var(--kami-border)" }}
+                  className="flex justify-between pt-2 text-lg font-bold kami-border-top"
                 >
                   <span>Total</span>
                   <span style={isCreditNote ? { color: "color-mix(in srgb, #dc2626 80%, var(--kami-text))" } : undefined}>
@@ -1044,7 +1027,7 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </div>
-        </></div>}
+        </></div>
 
       </div>
     </ToolShell>
@@ -1066,7 +1049,7 @@ function Input({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+      <label className="mb-1 block text-xs font-medium kami-text-muted">
         {label}
       </label>
       <input

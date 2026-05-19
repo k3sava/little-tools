@@ -163,15 +163,6 @@ function gapToTw(px: number): string {
 
 /* ─── Main Component ─── */
 export default function FlexboxContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isGlass    = currentTheme === "glass";
 
   const [container, setContainer] = useState<ContainerState>({
     direction: "row", wrap: "nowrap", justify: "flex-start",
@@ -398,8 +389,8 @@ export default function FlexboxContent() {
                     color: c.id === selected ? "var(--kami-cta-text)" : "#ffffff",
                     border: "1px solid var(--kami-border-strong)",
                     borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                    minHeight: 32,
-                    minWidth: 32,
+                    minHeight: 44,
+                    minWidth: 44,
                   }}
                 >
                   {i + 1}
@@ -510,7 +501,7 @@ export default function FlexboxContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Tap an item in the preview (or pill in the panel) to edit per-item flex
             properties. Use the reorder arrows in the item panel to change DOM order.
@@ -522,7 +513,7 @@ export default function FlexboxContent() {
         </div>
       }
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="glass-canvas-section">
         <div
           className="flex h-full min-h-[60vh] w-full flex-col gap-2 p-4"
           style={{

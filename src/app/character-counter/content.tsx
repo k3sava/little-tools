@@ -247,9 +247,9 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
         boxShadow: "var(--kami-card-shadow, none)",
       }}
     >
-      <div className="text-2xl font-bold tabular-nums" style={{ color: "var(--kami-text)" }}>{value}</div>
-      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{label}</div>
-      {sub && <div className="mt-0.5 text-xs" style={{ color: "var(--kami-text-dim)" }}>{sub}</div>}
+      <div className="text-2xl font-bold tabular-nums kami-text">{value}</div>
+      <div className="text-xs kami-text-muted">{label}</div>
+      {sub && <div className="mt-0.5 text-xs kami-text-dim">{sub}</div>}
     </div>
   );
 }
@@ -262,7 +262,7 @@ function ProgressBar({ name, limit, current }: { name: string; limit: number; cu
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
-        <span style={{ color: "var(--kami-text-muted)" }}>{name}</span>
+        <span className="kami-text-muted">{name}</span>
         <span className="tabular-nums" style={{ color: over ? "#ef4444" : "var(--kami-text-muted)" }}>
           {current} / {limit}
         </span>
@@ -291,17 +291,6 @@ export default function CharacterCounterContent() {
   const [includeSpaces, setIncludeSpaces] = useState(true);
   const [view, setView] = useState<"stats" | "limits" | "keywords" | "lines">("stats");
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   useKeyboardShortcuts(useMemo(() => [
@@ -403,34 +392,16 @@ export default function CharacterCounterContent() {
       controls={controls}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Input" : "Stats"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -448,10 +419,8 @@ export default function CharacterCounterContent() {
               autoFocus
             />
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
 
         {/* Goal bar */}
         {target > 0 && (
@@ -464,7 +433,7 @@ export default function CharacterCounterContent() {
             }}
           >
             <div className="flex items-center justify-between text-xs mb-2">
-              <span style={{ color: "var(--kami-text-muted)" }}>
+              <span className="kami-text-muted">
                 Goal: {currentGoal} / {target} {goalType}
               </span>
               <span
@@ -537,24 +506,24 @@ export default function CharacterCounterContent() {
             }}
           >
             {keywords.length === 0 ? (
-              <p className="px-4 py-4 text-sm" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="px-4 py-4 text-sm kami-text-dim">
                 Type something to see keyword density.
               </p>
             ) : (
               <table className="w-full text-sm">
                 <thead>
-                  <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                    <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Word</th>
-                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Count</th>
-                    <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>Density</th>
+                  <tr className="kami-border-bottom">
+                    <th className="px-4 py-2 text-left font-medium kami-text-muted">Word</th>
+                    <th className="px-4 py-2 text-right font-medium kami-text-muted">Count</th>
+                    <th className="px-4 py-2 text-right font-medium kami-text-muted">Density</th>
                   </tr>
                 </thead>
                 <tbody>
                   {keywords.map((kw) => (
-                    <tr key={kw.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                      <td className="px-4 py-1.5 font-medium" style={{ color: "var(--kami-text)" }}>{kw.word}</td>
-                      <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.count}</td>
-                      <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>{kw.percentage}%</td>
+                    <tr key={kw.word} className="kami-border-bottom">
+                      <td className="px-4 py-1.5 font-medium kami-text">{kw.word}</td>
+                      <td className="px-4 py-1.5 text-right tabular-nums kami-text-muted">{kw.count}</td>
+                      <td className="px-4 py-1.5 text-right tabular-nums kami-text-muted">{kw.percentage}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -562,8 +531,7 @@ export default function CharacterCounterContent() {
             )}
             {sentenceStats && (
               <div
-                className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 py-3"
-                style={{ borderTop: "1px solid var(--kami-border)" }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-2 px-4 py-3 kami-border-top"
               >
                 <StatCard label="Longest" value={sentenceStats.longest} sub="words" />
                 <StatCard label="Shortest" value={sentenceStats.shortest} sub="words" />
@@ -596,19 +564,17 @@ export default function CharacterCounterContent() {
               <table className="w-full text-xs font-mono">
                 <tbody>
                   {lines.slice(0, 200).map((line, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                    <tr key={i} className="kami-border-bottom">
                       <td
-                        className="px-3 py-1 tabular-nums w-12 text-right"
-                        style={{ color: "var(--kami-text-dim)" }}
+                        className="px-3 py-1 tabular-nums w-12 text-right kami-text-dim"
                       >
                         {i + 1}
                       </td>
-                      <td className="px-3 py-1 truncate" style={{ color: "var(--kami-text)" }}>
+                      <td className="px-3 py-1 truncate kami-text">
                         {line || " "}
                       </td>
                       <td
-                        className="px-3 py-1 tabular-nums w-16 text-right"
-                        style={{ color: "var(--kami-text-dim)" }}
+                        className="px-3 py-1 tabular-nums w-16 text-right kami-text-dim"
                       >
                         {line.length}
                       </td>
@@ -620,7 +586,6 @@ export default function CharacterCounterContent() {
           </div>
         )}
           </div>
-        )}
       </div>
     </ToolShell>
   );

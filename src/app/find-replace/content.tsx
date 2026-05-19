@@ -192,22 +192,8 @@ export default function FindReplaceContent() {
 
   const [showPreview, setShowPreview] = useState(true);
   const [presets, setPresets] = useState<Preset[]>([]);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroFRPivot, setMetroFRPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Load presets
   useEffect(() => {
@@ -366,7 +352,7 @@ export default function FindReplaceContent() {
               key={item.label}
               onClick={() => insertRegexPattern(item.pattern)}
               className="kc-segment-btn"
-              style={{ minHeight: 36 }}
+              style={{ minHeight: 44 }}
               title={item.pattern}
             >
               {item.label}
@@ -381,7 +367,7 @@ export default function FindReplaceContent() {
               <button
                 onClick={() => loadPreset(p)}
                 className="kc-segment-btn flex-1 truncate text-left"
-                style={{ minHeight: 36, padding: "6px 10px", justifyContent: "flex-start" }}
+                style={{ minHeight: 44, padding: "6px 10px", justifyContent: "flex-start" }}
                 title={p.name}
               >
                 {p.name}
@@ -389,7 +375,7 @@ export default function FindReplaceContent() {
               <button
                 onClick={() => deletePreset(p.id)}
                 className="kc-segment-btn"
-                style={{ minHeight: 36, minWidth: 36 }}
+                style={{ minHeight: 44, minWidth: 44 }}
                 aria-label="Delete preset"
               >
                 ×
@@ -423,7 +409,6 @@ export default function FindReplaceContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
         <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
           <button
             role="tab"
@@ -442,9 +427,8 @@ export default function FindReplaceContent() {
             Output
           </button>
         </nav>
-      )}
       <div className="relative flex flex-col gap-3 p-4 md:p-6">
-      {(!isMetro || metroFRPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+      <div className="canvas-section glass-canvas-section" data-panel="input"><>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -480,7 +464,7 @@ export default function FindReplaceContent() {
                 </span>
               )}
               {result.error && (
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs" style={{ color: "#ef4444" }}>
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs kami-text-error">
                   {result.error}
                 </span>
               )}
@@ -535,39 +519,29 @@ export default function FindReplaceContent() {
               + Add rule
             </button>
             {result.error && (
-              <p className="text-xs" style={{ color: "#ef4444" }}>{result.error}</p>
+              <p className="text-xs kami-text-error">{result.error}</p>
             )}
           </div>
         )}
 
         {/* Stats line */}
         <div
-          className="flex items-center justify-between text-xs"
-          style={{ color: "var(--kami-text-dim)" }}
+          className="flex items-center justify-between text-xs kami-text-dim"
         >
           <span>{input.length} chars</span>
           {matchCount > 0 && (
-            <span style={{ color: "var(--kami-text-muted)" }}>
+            <span className="kami-text-muted">
               {matchCount} {matchCount === 1 ? "match" : "matches"}
             </span>
           )}
-          {isMetro && hasChanges && (
-            <button
-              className="metro-pivot-item is-active"
-              style={{ fontSize: 11, padding: "2px 10px", height: "auto" }}
-              onClick={() => setMetroFRPivot("output")}
-            >
-              See output →
-            </button>
-          )}
         </div>
-      </></div>)}
-      {(!isMetro || metroFRPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+      </></div>
+      <div className="canvas-section glass-canvas-section" data-panel="output"><>
 
         {/* Preview diff */}
         {hasChanges && showPreview && diffSegments && (
           <div>
-            <div className="text-sm font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="text-sm font-medium mb-1 kami-text-muted">
               Preview
             </div>
             <div
@@ -611,7 +585,7 @@ export default function FindReplaceContent() {
         {/* Result output */}
         {hasChanges && (
           <div>
-            <div className="text-sm font-medium mb-1" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="text-sm font-medium mb-1 kami-text-muted">
               Result
             </div>
             <div
@@ -622,37 +596,7 @@ export default function FindReplaceContent() {
             </div>
           </div>
         )}
-      </></div>)}
-      {isMaterial && hasChanges && (
-        <button
-          onClick={handleCopy}
-          title="Copy result"
-          aria-label="Copy result"
-          style={{
-            position: "fixed",
-            bottom: 88,
-            right: 24,
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: "#6750a4",
-            color: "#fff",
-            border: "none",
-            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
-            fontSize: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            zIndex: 20,
-          }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-        </button>
-      )}
+      </></div>
       </div>
     </ToolShell>
   );

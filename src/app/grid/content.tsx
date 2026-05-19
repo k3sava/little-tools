@@ -140,15 +140,6 @@ const PRESETS: Preset[] = [
 /* ------------------------------------------------------------------ */
 
 export default function GridContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isGlass    = currentTheme === "glass";
 
   const [rows, setRows] = useState(3);
   const [cols, setCols] = useState(3);
@@ -488,8 +479,7 @@ export default function GridContent() {
               <button
                 type="button"
                 onClick={() => setAreas([])}
-                className="mt-2 text-xs"
-                style={{ color: "var(--kami-text-dim)" }}
+                className="mt-2 text-xs kami-text-dim"
               >
                 Clear all areas
               </button>
@@ -550,14 +540,13 @@ export default function GridContent() {
                   >
                     <div className="h-3 w-3 rounded" style={{ background: item.color }} />
                     <span className="truncate">{item.area || `#${i + 1}`}</span>
-                    <button onClick={() => removeItem(item.id)} className="ml-auto" style={{ color: "var(--kami-text-dim)" }}>×</button>
+                    <button onClick={() => removeItem(item.id)} className="ml-auto kami-text-dim">×</button>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={() => { setItems([]); nextId = 1; }}
-                  className="mt-1 text-xs"
-                  style={{ color: "var(--kami-text-dim)" }}
+                  className="mt-1 text-xs kami-text-dim"
                 >
                   Clear all items
                 </button>
@@ -581,7 +570,7 @@ export default function GridContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Tap two cells to place an item spanning the rectangle between them. Toggle
             paint mode to assign named areas instead.
@@ -593,7 +582,7 @@ export default function GridContent() {
         </div>
       }
     >
-      <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="glass-canvas-section">
       <div
         className="h-full min-h-[60vh] w-full overflow-auto p-4"
         style={{

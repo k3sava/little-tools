@@ -265,22 +265,8 @@ export default function CaseConverterContent() {
   const [selectionOnly, setSelectionOnly] = useState(false);
   const [groupFilter, setGroupFilter] = useState<"all" | CaseInfo["group"]>("all");
   const [history, setHistory] = useState<string[]>([]);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCanvasPivot, setMetroCanvasPivot] = useState<"input" | "results">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
@@ -365,7 +351,7 @@ export default function CaseConverterContent() {
                 key={i}
                 onClick={() => setInput(h)}
                 className="kc-segment-btn truncate text-left"
-                style={{ minHeight: 36, padding: "6px 10px", justifyContent: "flex-start" }}
+                style={{ minHeight: 44, padding: "6px 10px", justifyContent: "flex-start" }}
                 title={h}
               >
                 {h.length > 40 ? h.slice(0, 40) + "…" : h}
@@ -404,7 +390,6 @@ export default function CaseConverterContent() {
       controls={controls}
     >
       {/* Metro: in-canvas pivot for Input | Results */}
-      {isMetro && (
         <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
           <button
             role="tab"
@@ -423,11 +408,9 @@ export default function CaseConverterContent() {
             Results
           </button>
         </nav>
-      )}
       <div className="relative flex flex-col gap-4 p-4 md:p-6">
         {/* Input section — hidden on Metro Results tab */}
-        {(!isMetro || metroCanvasPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
           <div>
             {detected && input.trim() && (
               <div className="mb-2">
@@ -461,27 +444,17 @@ export default function CaseConverterContent() {
               rows={4}
               autoFocus
             />
-            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="mt-1.5 flex items-center justify-between text-xs kami-text-dim">
               <span>
                 {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount} {charCount === 1 ? "char" : "chars"}
               </span>
-              {isMetro && input.trim() && (
-                <button
-                  className="metro-pivot-item is-active"
-                  style={{ fontSize: 11, padding: "2px 10px", height: "auto" }}
-                  onClick={() => setMetroCanvasPivot("results")}
-                >
-                  See results →
-                </button>
-              )}
             </div>
           </div>
           </div>
-        )}
 
-        {/* Results section — hidden on Metro Input tab */}
-        {(!isMetro || metroCanvasPivot === "results") && (
-          filteredConversions.length === 0 ? (
+        {/* Results section */}
+        <div className="canvas-section glass-canvas-section" data-panel="results">
+          {filteredConversions.length === 0 ? (
             <div
               className="p-8 text-center text-sm"
               style={{
@@ -491,9 +464,7 @@ export default function CaseConverterContent() {
                 color: "var(--kami-text-dim)",
               }}
             >
-              {isMetro
-                ? "Switch to Input tab to enter text."
-                : "Type something above to see all 13 case conversions."}
+              Type something above to see all 13 case conversions.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -512,54 +483,22 @@ export default function CaseConverterContent() {
                   }}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+                    <span className="text-xs font-medium uppercase tracking-wide kami-text-muted">
                       {c.label}
                     </span>
                     <span className="text-xs" style={{ color: copiedCard === c.value ? "#16a34a" : "var(--kami-text-dim)" }}>
                       {copiedCard === c.value ? "Copied" : "Tap to copy"}
                     </span>
                   </div>
-                  <div className="truncate font-mono text-sm" style={{ color: "var(--kami-text)" }}>
+                  <div className="truncate font-mono text-sm kami-text">
                     {c.result}
                   </div>
                 </button>
               ))}
             </div>
-          )
-        )}
+          )}
+        </div>
 
-        {/* Material: FAB for copy top result */}
-        {isMaterial && filteredConversions.length > 0 && (
-          <button
-            onClick={() => handleCardCopy(filteredConversions[0].value, filteredConversions[0].result)}
-            title={`Copy ${filteredConversions[0].label}`}
-            aria-label={`Copy ${filteredConversions[0].label}`}
-            style={{
-              position: "fixed",
-              bottom: 88,
-              right: 24,
-              width: 56,
-              height: 56,
-              borderRadius: 16,
-              background: "#6750a4",
-              color: "#fff",
-              border: "none",
-              boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
-              fontSize: 22,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              zIndex: 20,
-              transition: "box-shadow 0.2s, background 0.2s",
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </svg>
-          </button>
-        )}
       </div>
     </ToolShell>
   );

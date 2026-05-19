@@ -41,21 +41,8 @@ export default function GlassmorphismContent() {
   const [neuDark, setNeuDark] = useState(false);
 
   const [copied, setCopied] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Glass CSS
   const glassR = parseInt(glassBg.slice(1, 3), 16);
@@ -283,7 +270,7 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         )
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Glass mode renders backdrop-filter with blur + saturation + brightness
             against a chosen gradient scene. Neumorph mode generates the soft
@@ -296,17 +283,15 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Visual</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (mode === "glass" ? (
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Visual</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual">{mode === "glass" ? (
         <div
           className="relative flex h-full min-h-[60vh] w-full items-center justify-center overflow-hidden"
           style={{
@@ -359,9 +344,8 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
             <span className={`text-sm font-medium ${neuDark ? "text-gray-300" : "text-gray-500"}`}>Soft Card</span>
           </div>
         </div>
-      ))}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      )}</div>
+      <div className="canvas-section glass-canvas-section" data-panel="code">
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -376,7 +360,6 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
           </pre>
         </div>
         </div>
-      )}
     </ToolShell>
   );
 }

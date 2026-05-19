@@ -4,7 +4,7 @@ function Error({ statusCode }: { statusCode?: number }) {
       <h1 style={{ fontSize: "2rem", fontWeight: 700 }}>
         {statusCode || "Error"}
       </h1>
-      <p style={{ color: "#6b7280", marginTop: "8px" }}>
+      <p style={{ color: "var(--kami-text-muted)", marginTop: "8px" }}>
         {statusCode === 404
           ? "Page not found"
           : "An error occurred"}

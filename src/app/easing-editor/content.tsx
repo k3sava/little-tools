@@ -326,7 +326,7 @@ function AnimationPreview({
           containerType: "inline-size",
         }}
       >
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: "var(--kami-text-dim)" }}>custom</div>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium kami-text-dim">custom</div>
         <div
           key={`custom-${playKey}`}
           className="absolute top-1 left-1 h-8 w-8 rounded-lg"
@@ -346,7 +346,7 @@ function AnimationPreview({
           containerType: "inline-size",
         }}
       >
-        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium" style={{ color: "var(--kami-text-dim)" }}>linear</div>
+        <div className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-medium kami-text-dim">linear</div>
         <div
           key={`linear-${playKey}`}
           className="absolute top-1 left-1 h-8 w-8 rounded-lg"
@@ -376,21 +376,8 @@ export default function EasingEditorContent() {
   const [outputFmt, setOutputFmt] = useState<OutputFormat>("function");
   const [copied, setCopied] = useState(false);
   const [playKey, setPlayKey] = useState(0);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const easingCSS = mode === "cubic-bezier" ? bezierStr(bezier) : linearStr(linearPoints);
 
@@ -525,7 +512,7 @@ export default function EasingEditorContent() {
                 </button>
               </ControlGroup>
               <ControlGroup>
-                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs kami-text-muted">
                   Tap the canvas to add a stop. Double-click a stop to remove it.
                   Drag to position.
                 </p>
@@ -568,7 +555,7 @@ export default function EasingEditorContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Drag the blue and red dots on the cubic-bezier canvas to shape the curve.
             Y values can overshoot 0..1 for back / bounce effects.
@@ -580,18 +567,15 @@ export default function EasingEditorContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Editor</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Editor</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual">
         <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
           <div
             className="flex flex-1 flex-col items-center justify-center gap-3 p-4"
@@ -606,7 +590,7 @@ export default function EasingEditorContent() {
             ) : (
               <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
             )}
-            <code className="text-xs font-mono" style={{ color: "var(--kami-text-muted)" }}>
+            <code className="text-xs font-mono kami-text-muted">
               {easingCSS}
             </code>
           </div>
@@ -619,7 +603,7 @@ export default function EasingEditorContent() {
               borderRadius: "var(--kami-card-radius, 0.75rem)",
             }}
           >
-            <div className="mb-2 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <div className="mb-2 flex items-center justify-between text-xs kami-text-muted">
               <span className="font-semibold">Preview</span>
               <span className="font-mono">{duration.toFixed(1)}s</span>
             </div>
@@ -627,9 +611,7 @@ export default function EasingEditorContent() {
           </div>
         </div>
         </div>
-      )}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <div className="canvas-section glass-canvas-section" data-panel="code">
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -644,7 +626,6 @@ export default function EasingEditorContent() {
           </pre>
         </div>
         </div>
-      )}
     </ToolShell>
   );
 }

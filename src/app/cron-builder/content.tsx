@@ -424,7 +424,7 @@ function FieldSelector({
   // If it's a complex expression, show it in a custom option
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+      <label className="text-xs font-medium uppercase tracking-wide kami-text-muted">
         {label}
       </label>
       <select
@@ -454,17 +454,6 @@ function FieldSelector({
 // --- Main component ---
 
 export default function CronBuilderContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const [{ cron: initialCron }, setToolState] = useToolState({ cron: "* * * * *" });
@@ -617,7 +606,7 @@ export default function CronBuilderContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Build or decode cron expressions. We translate to plain English and show the next 5 run times. Supports 5-field (Unix) and 6-field (Quartz with seconds).</p>
       <ul className="space-y-0.5">
         <li><code>*</code> — every value</li>
@@ -640,34 +629,16 @@ export default function CronBuilderContent() {
       info={info}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Builder" : "Expression"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Builder</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             {/* Manual input + copy */}
             <div
               className="mb-6 p-5"
@@ -679,7 +650,7 @@ export default function CronBuilderContent() {
               }}
             >
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+                <h2 className="text-sm font-medium uppercase tracking-wide kami-text-muted">
                   Cron Expression
                 </h2>
               </div>
@@ -718,7 +689,7 @@ export default function CronBuilderContent() {
                   {useSixField ? "6" : "5"} space-separated fields.
                 </p>
               )}
-              <p className="mt-2 text-xs font-mono" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="mt-2 text-xs font-mono kami-text-dim">
                 {useSixField
                   ? "second  minute  hour  day(month)  month  day(week)"
                   : "minute  hour  day(month)  month  day(week)"}
@@ -735,7 +706,7 @@ export default function CronBuilderContent() {
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <h2 className="mb-4 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-4 text-sm font-medium uppercase tracking-wide kami-text-muted">
                 Visual Builder
               </h2>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -788,10 +759,8 @@ export default function CronBuilderContent() {
               </div>
             </div>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Description */}
             <div
               className="mb-6 p-5"
@@ -802,10 +771,10 @@ export default function CronBuilderContent() {
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <h2 className="mb-2 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-2 text-sm font-medium uppercase tracking-wide kami-text-muted">
                 Description
               </h2>
-              <p className="text-base" style={{ color: "var(--kami-text)" }}>{description}</p>
+              <p className="text-base kami-text">{description}</p>
             </div>
 
             {/* Next execution times */}
@@ -818,7 +787,7 @@ export default function CronBuilderContent() {
                 boxShadow: "var(--kami-card-shadow, none)",
               }}
             >
-              <h2 className="mb-3 text-sm font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="mb-3 text-sm font-medium uppercase tracking-wide kami-text-muted">
                 Next Execution Times
               </h2>
               {nextTimes.length > 0 ? (
@@ -828,10 +797,10 @@ export default function CronBuilderContent() {
                       key={i}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <span className="text-xs w-5 text-right" style={{ color: "var(--kami-text-dim)" }}>
+                      <span className="text-xs w-5 text-right kami-text-dim">
                         {i + 1}.
                       </span>
-                      <span className="font-mono" style={{ color: "var(--kami-text-muted)" }}>
+                      <span className="font-mono kami-text-muted">
                         {d.toLocaleString(undefined, {
                           weekday: "short",
                           year: "numeric",
@@ -847,13 +816,12 @@ export default function CronBuilderContent() {
                   ))}
                 </ol>
               ) : (
-                <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                <p className="text-sm kami-text-dim">
                   No upcoming execution times found.
                 </p>
               )}
             </div>
           </div>
-        )}
 
       </div>
     </ToolShell>

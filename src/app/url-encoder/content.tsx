@@ -62,21 +62,8 @@ export default function UrlEncoderContent() {
   const [plusEncode, setPlusEncode] = useState(false);
   const [paramRows, setParamRows] = useState<[string, string][]>([]);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const output = useMemo(() => {
     if (!input) return "";
@@ -177,18 +164,16 @@ export default function UrlEncoderContent() {
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Output</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -208,20 +193,20 @@ export default function UrlEncoderContent() {
           autoFocus
           spellCheck={false}
         />
-        <div className="text-xs flex items-center justify-between" style={{ color: "var(--kami-text-dim)" }}>
+        <div className="text-xs flex items-center justify-between kami-text-dim">
           <span>{input.length} chars</span>
           {mode !== "parse" && output && (
             <span>{output.length} chars out</span>
           )}
         </div>
-        </div>)}
+        </div>
 
-        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
         {/* Encode/decode output */}
         {(mode === "encode" || mode === "decode") && input && output && (
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="text-sm font-medium kami-text-muted">
                 {mode === "encode" ? "Encoded" : "Decoded"} output
               </span>
               <ToolActionButton onClick={() => handleCopy(output)} variant="outline">
@@ -242,7 +227,7 @@ export default function UrlEncoderContent() {
           <div className="flex flex-col gap-4">
             <div style={cardStyle}>
               <div className="px-4 py-2 border-b" style={{ borderColor: "var(--kami-border)" }}>
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-sm font-medium kami-text-muted">
                   URL Components
                 </span>
               </div>
@@ -259,7 +244,7 @@ export default function UrlEncoderContent() {
                     className="flex items-center justify-between gap-3 px-4 py-2.5"
                     style={i < arr.length - 1 ? { borderBottom: "1px solid var(--kami-border)" } : undefined}
                   >
-                    <span className="text-xs font-medium uppercase tracking-wide shrink-0 w-20" style={{ color: "var(--kami-text-muted)" }}>
+                    <span className="text-xs font-medium uppercase tracking-wide shrink-0 w-20 kami-text-muted">
                       {label}
                     </span>
                     <span className="font-mono text-sm break-all flex-1 min-w-0">{value}</span>
@@ -274,7 +259,7 @@ export default function UrlEncoderContent() {
             {/* Query param editor */}
             <div style={cardStyle}>
               <div className="px-4 py-2 border-b flex items-center justify-between" style={{ borderColor: "var(--kami-border)" }}>
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-sm font-medium kami-text-muted">
                   Query Parameters ({paramRows.length})
                 </span>
                 <div className="flex items-center gap-2">
@@ -288,7 +273,7 @@ export default function UrlEncoderContent() {
               </div>
               <div className="flex flex-col">
                 {paramRows.length === 0 ? (
-                  <div className="px-4 py-6 text-sm text-center" style={{ color: "var(--kami-text-dim)" }}>
+                  <div className="px-4 py-6 text-sm text-center kami-text-dim">
                     No query parameters
                   </div>
                 ) : (
@@ -347,7 +332,7 @@ export default function UrlEncoderContent() {
             Not a valid URL — needs protocol (e.g. <code>https://</code>) and host.
           </div>
         )}
-        </div>)}
+        </div>
       </div>
     </ToolShell>
   );

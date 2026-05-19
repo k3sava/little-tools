@@ -286,21 +286,8 @@ export default function GradientContent() {
   const previewRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<{ index: number; pointerId: number } | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const layer = layers[activeLayer] || defaultLayer();
 
@@ -586,8 +573,7 @@ export default function GradientContent() {
                     value={stop.color}
                     onChange={(e) => updateStop(i, { color: e.target.value })}
                     aria-label={`Stop ${i + 1} color`}
-                    className="h-9 w-9 cursor-pointer rounded"
-                    style={{ border: "1px solid var(--kami-border-strong)" }}
+                    className="h-9 w-9 cursor-pointer rounded kami-border-strong-all"
                   />
                   <input
                     type="range"
@@ -599,13 +585,12 @@ export default function GradientContent() {
                     className="kc-range flex-1"
                     style={{ ["--kc-fill" as string]: `${stop.position}%` }}
                   />
-                  <span className="w-12 text-right text-[11px] font-mono" style={{ color: "var(--kami-text-dim)" }}>{stop.position}%</span>
+                  <span className="w-12 text-right text-[11px] font-mono kami-text-dim">{stop.position}%</span>
                   {layer.stops.length > 2 && (
                     <button
                       onClick={() => removeStop(i)}
                       aria-label="Remove stop"
-                      className="h-8 w-8 text-sm"
-                      style={{ color: "var(--kami-text-dim)" }}
+                      className="h-8 w-8 text-sm kami-text-dim"
                     >×</button>
                   )}
                 </div>
@@ -651,8 +636,7 @@ export default function GradientContent() {
                     <button
                       onClick={() => removeLayer(i)}
                       aria-label="Remove layer"
-                      className="text-[10px]"
-                      style={{ color: "var(--kami-text-dim)" }}
+                      className="text-[10px] kami-text-dim"
                     >×</button>
                   )}
                 </div>
@@ -672,7 +656,7 @@ export default function GradientContent() {
           <ControlGroup label="Presets">
             {PRESET_CATEGORIES.map((cat) => (
               <div key={cat} className="mb-2 last:mb-0">
-                <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>{cat}</div>
+                <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wide kami-text-dim">{cat}</div>
                 <div className="flex flex-wrap gap-1.5">
                   {PRESETS.filter((p) => p.category === cat).map((p) => (
                     <button key={p.name} onClick={() => applyPreset(p)} className="group flex flex-col items-center gap-1" title={p.name}>
@@ -684,7 +668,7 @@ export default function GradientContent() {
                           borderRadius: "var(--kami-card-radius, 0.4rem)",
                         }}
                       />
-                      <span className="text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{p.name}</span>
+                      <span className="text-[10px] kami-text-dim">{p.name}</span>
                     </button>
                   ))}
                 </div>
@@ -716,18 +700,18 @@ export default function GradientContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Design linear, radial, or conic CSS gradients with multi-stop drag editing
             and stacked layers. Click the preview to set the angle (linear/conic).
             Double-click the gradient track to insert a stop.
           </p>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Made for</div>
             <p className="mt-1">Designers, front-end developers.</p>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Reach for it when</div>
             <ul className="mt-1 space-y-1 text-xs">
               <li>· Building a hero-section background</li>
               <li>· Designing a button with a subtle color sweep</li>
@@ -737,18 +721,15 @@ export default function GradientContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "visual"}
-            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("visual")}>Visual</button>
-          <button role="tab" aria-selected={metroCPivot === "code"}
-            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("code")}>CSS</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "visual") && (
-      <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] flex-col gap-3">
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "visual"}
+          className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("visual")}>Visual</button>
+        <button role="tab" aria-selected={metroCPivot === "code"}
+          className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("code")}>CSS</button>
+      </nav>
+      <div className="canvas-section glass-canvas-section" data-panel="visual"><div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Preview */}
         <div
           ref={previewRef}
@@ -769,7 +750,7 @@ export default function GradientContent() {
         {/* Multi-stop drag track */}
         <div className="px-1">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+            <span className="text-[11px] font-medium uppercase tracking-wide kami-text-dim">
               Stops · drag to position · double-click to add
             </span>
           </div>
@@ -816,12 +797,9 @@ export default function GradientContent() {
         </div>
 
       </div></div>
-      )}
-      {(!isMetro || metroCPivot === "code") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="overflow-hidden" style={cardStyle}>
+      <div className="canvas-section glass-canvas-section" data-panel="code"><div className="overflow-hidden" style={cardStyle}>
           <div
-            className="flex items-center justify-between gap-2 px-3 py-2"
-            style={{ borderBottom: "1px solid var(--kami-border)" }}
+            className="flex items-center justify-between gap-2 px-3 py-2 kami-border-bottom"
           >
             <div className="flex gap-1 overflow-x-auto">
               {(["css", "tailwind", "scss", "svg"] as OutputTab[]).map((tab) => (
@@ -867,7 +845,6 @@ export default function GradientContent() {
             }}
           ><code>{outputMap[outputTab]}</code></pre>
         </div></div>
-      )}
     </ToolShell>
   );
 }

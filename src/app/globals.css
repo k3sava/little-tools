@@ -70,6 +70,18 @@
     --kami-footer-link: #6b7280;
     --kami-footer-link-hover: #1d1d1f;
 
+    /* ---- semantic status tokens ---- */
+    --kami-error:          #ef4444;
+    --kami-error-bg:       #fef2f2;
+    --kami-error-border:   #fecaca;
+    --kami-success:        #16a34a;
+    --kami-success-bg:     #f0fdf4;
+    --kami-success-border: #bbf7d0;
+    --kami-warning:        #f59e0b;
+    --kami-warning-bg:     #fffbeb;
+    --kami-warning-border: #fde68a;
+    --kami-accent:         var(--kami-cta-bg);
+
     /* ---- design-language tokens (new) ---- */
     /* Typography per theme */
     --kami-font-display: var(--font-sans), "DM Sans", system-ui, sans-serif;
@@ -754,6 +766,12 @@ html[data-theme="zen"] .kami-blob-canvas {
 }
 html[data-theme="zen"] .kami-blob-canvas { display: block; }
 
+/* Ensure hub content stacks above the blob canvas (z-index: 0) */
+html[data-theme="zen"] .tools-hub {
+  position: relative;
+  z-index: 1;
+}
+
 /* Headings: serif display, light weight, wide tracking, lowercase feel */
 html[data-theme="zen"] .kami-scope h1,
 html[data-theme="zen"] .kami-scope h2,
@@ -1115,9 +1133,23 @@ html[data-theme] a[class*="border-gray-200"][class*="rounded"]:hover {
 }
 
 /* --- Kami text helpers bound to tokens --- */
-.kami-text { color: var(--kami-text) !important; }
+.kami-text       { color: var(--kami-text) !important; }
 .kami-text-muted { color: var(--kami-text-muted) !important; }
-.kami-text-dim { color: var(--kami-text-dim) !important; }
+.kami-text-dim   { color: var(--kami-text-dim) !important; }
+.kami-text-error   { color: var(--kami-error, #ef4444) !important; }
+.kami-text-success { color: var(--kami-success, #16a34a) !important; }
+.kami-text-warning { color: var(--kami-warning, #f59e0b) !important; }
+.kami-text-accent  { color: var(--kami-accent, var(--kami-cta-bg)) !important; }
+.kami-text-cta     { color: var(--kami-cta-text) !important; }
+.kami-bg-error     { background-color: var(--kami-error-bg, #fef2f2) !important; }
+.kami-bg-success   { background-color: var(--kami-success-bg, #f0fdf4) !important; }
+.kami-bg-warning   { background-color: var(--kami-warning-bg, #fffbeb) !important; }
+.kami-bg-surface   { background-color: var(--kami-surface) !important; }
+.kami-border-bottom { border-bottom: 1px solid var(--kami-border) !important; }
+.kami-border-top    { border-top:    1px solid var(--kami-border) !important; }
+.kami-border-right  { border-right:  1px solid var(--kami-border) !important; }
+.kami-border-all    { border:        1px solid var(--kami-border) !important; }
+.kami-border-strong-all { border:   1px solid var(--kami-border-strong) !important; }
 .kami-surface { background-color: var(--kami-surface-solid) !important; border-color: var(--kami-border-strong) !important; }
 
 /* --- Kami page text overrides (catch inline hardcoded hex still present) --- */
@@ -2448,7 +2480,7 @@ html[data-theme="material"] .tool-material-fab:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   border-radius: 8px;
   background: transparent;
@@ -2700,7 +2732,7 @@ html[data-theme="material"] .tool-material-fab:hover {
 .kc-segment.is-full { display: flex; width: 100%; }
 .kc-segment-btn {
   flex: 1 1 auto;
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   border: 0;
   background: transparent;
@@ -2712,7 +2744,7 @@ html[data-theme="material"] .tool-material-fab:hover {
   transition: background 120ms ease, color 120ms ease;
   white-space: nowrap;
 }
-.kc-segment.is-sm .kc-segment-btn { min-height: 30px; font-size: 12px; padding: 0 10px; }
+.kc-segment.is-sm .kc-segment-btn { min-height: 44px; font-size: 12px; padding: 0 10px; }
 .kc-segment-btn[data-active="true"] {
   background: var(--kami-surface-solid);
   color: var(--kami-text);
@@ -3118,6 +3150,7 @@ html[data-theme="zen"] .tool-icon-btn[data-active="true"] {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 44px;
   padding: 7px 12px;
   border-radius: 999px;
   background: var(--kami-surface-solid);
@@ -4434,7 +4467,6 @@ html[data-theme="material"] .tool-shell-header {
 
 /* M3 type scale */
 html[data-theme="material"] .tool-shell-title {
-  font-size: 22px !important;
   font-weight: 400 !important;
   letter-spacing: 0 !important;
 }
@@ -6290,6 +6322,12 @@ html[data-theme="glass"] .tools-hub-chips {
 }
 html[data-theme="glass"] .tools-hub-chips::-webkit-scrollbar { display: none; }
 
+/* Material hub: breadcrumb collides with app-bar label (both at ~19px from top).
+   The app-bar already provides site identity, so hide the floating breadcrumb. */
+html[data-theme="material"] .tools-hub .kami-breadcrumb-fixed {
+  display: none;
+}
+
 /* ── Material: top-app-bar–style hub header ── */
 
 .hub-material-appbar {
@@ -6302,7 +6340,7 @@ html[data-theme="glass"] .tools-hub-chips::-webkit-scrollbar { display: none; }
 .hub-material-appbar-inner {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 16px 24px 12px;
+  padding: 16px 24px 12px 72px; /* left: clear fixed theme-switcher (right edge ~61px) */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7561,3 +7599,4 @@ html[data-theme="glass"] .glass-canvas-section + .glass-canvas-section {
 }
 
 /* ── end Phase 3 Glass canvas sections ───────────────────────────────────── */
+

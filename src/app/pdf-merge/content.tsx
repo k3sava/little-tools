@@ -62,16 +62,6 @@ function parsePageList(input: string, total: number): number[] {
 }
 
 export default function PdfMergeContent() {
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const [entries, setEntries] = useState<PdfEntry[]>([]);
@@ -261,7 +251,7 @@ export default function PdfMergeContent() {
               color: "var(--kami-text)",
             }}
           />
-          <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <span className="text-xs kami-text-muted">
             .pdf
           </span>
         </div>
@@ -272,11 +262,11 @@ export default function PdfMergeContent() {
         hint={`${entries.length} · ${totalPages} pages · ${formatBytes(totalSize)}`}
       >
         {entries.length === 0 ? (
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="text-xs kami-text-muted">
             Drop PDFs in the canvas to add them.
           </p>
         ) : (
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="text-xs kami-text-muted">
             Drag tiles in the canvas to reorder. Use ↻ to rotate. Set a range
             (e.g. <code>1-3,5</code>) to include only certain pages.
           </p>
@@ -323,25 +313,16 @@ export default function PdfMergeContent() {
       controls={controls}
       controlsLabel="Settings"
     >
-      {isMetro && (
-        <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-          {(["input", "output"] as const).map((tab) => (
-            <button key={tab} type="button" onClick={() => setMetroCPivot(tab)}
-              style={{
-                padding: "8px 16px", fontSize: 14,
-                fontWeight: metroCPivot === tab ? 600 : 400,
-                color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                background: "none", border: "none",
-                borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                cursor: "pointer", fontFamily: "'Segoe UI', system-ui, sans-serif", textTransform: "capitalize",
-              }}
-            >{tab === "input" ? "Upload" : "Merge"}</button>
-          ))}
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Upload</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Output</button>
+      </nav>
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
         <FileDropZone
           accept={[".pdf"]}
           onFiles={addFiles}
@@ -351,7 +332,6 @@ export default function PdfMergeContent() {
           hint=".pdf only · drag tiles below to reorder"
         />
         </div>
-        )}
 
         {error && (
           <div
@@ -366,8 +346,8 @@ export default function PdfMergeContent() {
           </div>
         )}
 
-        {(!isMetro || metroCPivot === "output") && entries.length > 0 && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        {entries.length > 0 && (
+        <div className="glass-canvas-section">
           <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
             {entries.map((entry, i) => (
               <div
@@ -424,20 +404,18 @@ export default function PdfMergeContent() {
                 </div>
 
                 <p
-                  className="truncate text-sm font-medium"
-                  style={{ color: "var(--kami-text)" }}
+                  className="truncate text-sm font-medium kami-text"
                   title={entry.name}
                 >
                   {entry.name}
                 </p>
-                <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs kami-text-muted">
                   {entry.pageCount} {entry.pageCount === 1 ? "page" : "pages"} ·{" "}
                   {formatBytes(entry.size)}
                 </p>
 
                 <label
-                  className="text-[10px] uppercase tracking-wide"
-                  style={{ color: "var(--kami-text-muted)" }}
+                  className="text-[10px] uppercase tracking-wide kami-text-muted"
                 >
                   Pages
                 </label>
@@ -454,7 +432,7 @@ export default function PdfMergeContent() {
                   }}
                 />
 
-                <div className="flex items-center justify-between text-[10px]" style={{ color: "var(--kami-text-muted)" }}>
+                <div className="flex items-center justify-between text-[10px] kami-text-muted">
                   <span>
                     {parsePageList(entry.range, entry.pageCount).length} included
                   </span>
@@ -486,7 +464,7 @@ export default function PdfMergeContent() {
         )}
 
         {entries.length === 1 && (
-          <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+          <p className="text-xs kami-text-muted">
             Add at least one more PDF to merge.
           </p>
         )}

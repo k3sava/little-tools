@@ -192,7 +192,7 @@ function InlineDiffView({
               if (isChange) changeIdx++;
               const ci = changeIdx;
               if (entry.op === "equal") {
-                return <span key={i} style={{ color: "var(--kami-text-muted)" }}>{entry.value}</span>;
+                return <span key={i} className="kami-text-muted">{entry.value}</span>;
               }
               if (entry.op === "add") {
                 return (
@@ -234,7 +234,7 @@ function InlineDiffView({
             ) : null;
             if (entry.op === "equal") {
               return (
-                <div key={i} style={{ color: "var(--kami-text-muted)" }}>
+                <div key={i} className="kami-text-muted">
                   {lineMarker}
                   {"  "}
                   {entry.value}
@@ -450,22 +450,8 @@ export default function TextDiffContent() {
   const [currentChangeIdx, setCurrentChangeIdx] = useState(0);
   const changeRefs = useRef<(HTMLElement | null)[]>([]);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroDiffPivot, setMetroDiffPivot] = useState<"a" | "b" | "diff">("a");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const diff = useMemo(() => {
     if (!original && !modified) return [];
@@ -626,7 +612,6 @@ export default function TextDiffContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
         <nav className="metro-pivot" role="tablist" aria-label="Pane" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
           <button
             role="tab"
@@ -653,13 +638,11 @@ export default function TextDiffContent() {
             Diff
           </button>
         </nav>
-      )}
 
       <div className="flex flex-col gap-3 p-4 md:p-6">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {(!isMetro || metroDiffPivot === "a") && (
-            <div className={isGlass ? "glass-canvas-section" : ""}><div>
-              <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="canvas-section glass-canvas-section" data-panel="a"><div>
+              <div className="mb-1 text-xs font-medium kami-text-muted">
                 Original
               </div>
               <textarea
@@ -672,10 +655,8 @@ export default function TextDiffContent() {
                 autoFocus
               />
             </div></div>
-          )}
-          {(!isMetro || metroDiffPivot === "b") && (
-            <div className={isGlass ? "glass-canvas-section" : ""}><div>
-              <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+          <div className="canvas-section glass-canvas-section" data-panel="b"><div>
+              <div className="mb-1 text-xs font-medium kami-text-muted">
                 Modified
               </div>
               <textarea
@@ -687,12 +668,11 @@ export default function TextDiffContent() {
                 rows={6}
               />
             </div></div>
-          )}
         </div>
 
         {/* Stats row */}
-        {(!isMetro || metroDiffPivot === "diff") && diff.length > 0 && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div
+        {diff.length > 0 && (
+          <div className="glass-canvas-section"><div
             className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
             style={{
               background: "var(--kami-surface-solid)",
@@ -700,12 +680,12 @@ export default function TextDiffContent() {
               borderRadius: "var(--kami-card-radius, 0.75rem)",
             }}
           >
-            <span style={{ color: "#16a34a" }}>+{addedCount}</span>
-            <span style={{ color: "#ef4444" }}>−{removedCount}</span>
-            <span style={{ color: "var(--kami-text-muted)" }}>
+            <span className="kami-text-success">+{addedCount}</span>
+            <span className="kami-text-error">−{removedCount}</span>
+            <span className="kami-text-muted">
               Similarity {similarity}%
             </span>
-            <span style={{ color: "var(--kami-text-muted)" }}>
+            <span className="kami-text-muted">
               Levenshtein {levDist}
             </span>
             {totalChanges > 0 && (
@@ -713,18 +693,18 @@ export default function TextDiffContent() {
                 <button
                   onClick={handlePrevChange}
                   className="kc-segment-btn"
-                  style={{ minHeight: 32, minWidth: 36 }}
+                  style={{ minHeight: 44, minWidth: 44 }}
                   aria-label="Previous change"
                 >
                   ←
                 </button>
-                <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                <span className="text-xs kami-text-muted">
                   {currentChangeIdx + 1}/{totalChanges}
                 </span>
                 <button
                   onClick={handleNextChange}
                   className="kc-segment-btn"
-                  style={{ minHeight: 32, minWidth: 36 }}
+                  style={{ minHeight: 44, minWidth: 44 }}
                   aria-label="Next change"
                 >
                   →
@@ -735,7 +715,7 @@ export default function TextDiffContent() {
         )}
 
         {/* Diff output */}
-        {(!isMetro || metroDiffPivot === "diff") && diff.length > 0 &&
+        {diff.length > 0 &&
           (viewMode === "inline" || diffMode === "char" ? (
             <InlineDiffView
               diff={diff}
@@ -751,46 +731,15 @@ export default function TextDiffContent() {
             />
           ))}
 
-        {(!isMetro || metroDiffPivot === "diff") && (original || modified) && diff.length === 0 && (
-          <div className={isGlass ? "glass-canvas-section" : ""}><div
-            className="text-center py-8 text-sm"
-            style={{ color: "var(--kami-text-dim)" }}
+        {(original || modified) && diff.length === 0 && (
+          <div className="glass-canvas-section"><div
+            className="text-center py-8 text-sm kami-text-dim"
           >
             Texts are identical.
           </div></div>
         )}
       </div>
 
-      {isMaterial && (
-        <button
-          onClick={handleCopy}
-          title="Copy diff"
-          aria-label="Copy diff"
-          style={{
-            position: "fixed",
-            bottom: 88,
-            right: 24,
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: "#6750a4",
-            color: "#fff",
-            border: "none",
-            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
-            fontSize: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            zIndex: 20,
-          }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-          </svg>
-        </button>
-      )}
     </ToolShell>
   );
 }

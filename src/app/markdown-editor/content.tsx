@@ -165,21 +165,7 @@ export default function MarkdownEditorContent() {
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isScrollingSynced = useRef(false);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
@@ -684,11 +670,11 @@ export default function MarkdownEditorContent() {
                   style={{ color: "var(--kami-text)", borderRadius: 4 }}
                 >
                   <span>{cmd.label}</span>
-                  <span style={{ color: "var(--kami-text-dim)" }}>/{cmd.trigger}</span>
+                  <span className="kami-text-dim">/{cmd.trigger}</span>
                 </button>
               ))}
               {filteredSlash.length === 0 && (
-                <div className="px-2 py-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
+                <div className="px-2 py-2 text-xs kami-text-dim">
                   No match
                 </div>
               )}
@@ -748,7 +734,7 @@ export default function MarkdownEditorContent() {
                 onClick={() => setActiveTabId(t.id)}
                 data-active={t.id === activeTabId}
                 className="kc-segment-btn flex-1 truncate text-left"
-                style={{ minHeight: 36, padding: "6px 10px", justifyContent: "flex-start" }}
+                style={{ minHeight: 44, padding: "6px 10px", justifyContent: "flex-start" }}
               >
                 {getTabTitle(t.content)}
               </button>
@@ -756,7 +742,7 @@ export default function MarkdownEditorContent() {
                 <button
                   onClick={() => closeTab(t.id)}
                   className="kc-segment-btn"
-                  style={{ minHeight: 36, minWidth: 36 }}
+                  style={{ minHeight: 44, minWidth: 44 }}
                   aria-label="Close tab"
                 >
                   ×
@@ -794,8 +780,7 @@ export default function MarkdownEditorContent() {
   const actions = (
     <>
       <span
-        className="hidden md:inline-flex items-center text-xs px-2"
-        style={{ color: "var(--kami-text-muted)" }}
+        className="hidden md:inline-flex items-center text-xs px-2 kami-text-muted"
       >
         {wordCount.words} words · {wordCount.readMin} min read
       </span>
@@ -826,34 +811,17 @@ export default function MarkdownEditorContent() {
 
       <div className="flex flex-col h-[calc(100dvh-220px)] min-h-[420px] md:h-[calc(100dvh-160px)]">
         {/* Metro in-canvas pivot */}
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Markdown" : "Preview"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Markdown</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
         {/* Mobile: tab switcher between editor / preview */}
-        <div className="md:hidden p-2" style={{ borderBottom: "1px solid var(--kami-border)" }}>
+        <div className="md:hidden p-2 kami-border-bottom">
           <Segment
             value={mobileTab}
             onChange={setMobileTab}
@@ -867,78 +835,36 @@ export default function MarkdownEditorContent() {
 
         {/* Mobile single-pane */}
         <div className="md:hidden flex-1 min-h-0">
-          {isMetro ? (
-            metroCPivot === "input" ? (
-              <div className={isGlass ? "glass-canvas-section" : ""}>{editorPane}</div>
-            ) : (
-              <div className={isGlass ? "glass-canvas-section" : ""}>{previewPane}</div>
-            )
-          ) : mobileTab === "editor" ? (
-            <div className={isGlass ? "glass-canvas-section" : ""}>{editorPane}</div>
-          ) : (
-            <div className={isGlass ? "glass-canvas-section" : ""}>{previewPane}</div>
-          )}
+          <div className="canvas-section glass-canvas-section flex-1 min-h-0" data-panel="input">
+            {mobileTab === "editor" && <div className="glass-canvas-section">{editorPane}</div>}
+          </div>
+          <div className="canvas-section glass-canvas-section flex-1 min-h-0" data-panel="output">
+            {mobileTab === "preview" && <div className="glass-canvas-section">{previewPane}</div>}
+          </div>
         </div>
 
         {/* Desktop layout */}
         <div className="hidden md:flex flex-1 min-h-0">
-          {isMetro ? (
-            metroCPivot === "input" ? (
-              <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{editorPane}</div>
-            ) : (
-              <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{previewPane}</div>
-            )
-          ) : (
-            <>
-              {paneView !== "preview" && (
-                <div
-                  className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}
-                  style={{
-                    borderRight: paneView === "split" ? "1px solid var(--kami-border)" : "none",
-                  }}
-                >
-                  {editorPane}
-                </div>
-              )}
-              {paneView !== "editor" && (
-                <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{previewPane}</div>
-              )}
-            </>
-          )}
+          <div className="canvas-section glass-canvas-section flex-1 min-w-0" data-panel="input">
+            {paneView !== "preview" && (
+              <div
+                className="flex-1 min-w-0 glass-canvas-section"
+                style={{
+                  borderRight: paneView === "split" ? "1px solid var(--kami-border)" : "none",
+                }}
+              >
+                {editorPane}
+              </div>
+            )}
+          </div>
+          <div className="canvas-section glass-canvas-section flex-1 min-w-0" data-panel="output">
+            {paneView !== "editor" && (
+              <div className="flex-1 min-w-0 glass-canvas-section">{previewPane}</div>
+            )}
+          </div>
         </div>
       </div>
 
-      {isMaterial && (
-        <button
-          onClick={exportMd}
-          title="Download .md"
-          aria-label="Download .md"
-          style={{
-            position: "fixed",
-            bottom: 88,
-            right: 24,
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: "#6750a4",
-            color: "#fff",
-            border: "none",
-            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
-            fontSize: 22,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            zIndex: 20,
-          }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7 10 12 15 17 10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-        </button>
-      )}
 
       {/* Table dialog */}
       {showTableDialog && (
@@ -957,11 +883,11 @@ export default function MarkdownEditorContent() {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text)" }}>
+            <div className="text-sm font-semibold mb-3 kami-text">
               Insert table
             </div>
             <div className="flex flex-col gap-3">
-              <label className="text-xs flex items-center justify-between" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="text-xs flex items-center justify-between kami-text-muted">
                 Rows
                 <input
                   type="number"
@@ -978,7 +904,7 @@ export default function MarkdownEditorContent() {
                   }}
                 />
               </label>
-              <label className="text-xs flex items-center justify-between" style={{ color: "var(--kami-text-muted)" }}>
+              <label className="text-xs flex items-center justify-between kami-text-muted">
                 Columns
                 <input
                   type="number"
@@ -1000,7 +926,7 @@ export default function MarkdownEditorContent() {
               <button
                 onClick={() => setShowTableDialog(false)}
                 className="kc-segment-btn"
-                style={{ minHeight: 36 }}
+                style={{ minHeight: 44 }}
               >
                 Cancel
               </button>
@@ -1008,7 +934,7 @@ export default function MarkdownEditorContent() {
                 onClick={generateTable}
                 className="kc-segment-btn"
                 data-active="true"
-                style={{ minHeight: 36 }}
+                style={{ minHeight: 44 }}
               >
                 Insert
               </button>

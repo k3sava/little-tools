@@ -42,7 +42,7 @@ export default async function CollectionPage(props: { params: Promise<Params> })
   const others = collections.filter((c) => c.id !== col.id);
 
   return (
-    <div className="kami-scope min-h-screen" style={{ color: "var(--kami-text)" }}>
+    <div className="kami-scope min-h-screen kami-text">
       <JsonLd
         data={collectionLd({
           id: col.id,
@@ -86,27 +86,23 @@ export default async function CollectionPage(props: { params: Promise<Params> })
               aria-hidden="true"
             />
             <p
-              className="text-xs uppercase tracking-widest font-mono"
-              style={{ color: "var(--kami-text-dim)" }}
+              className="text-xs uppercase tracking-widest font-mono kami-text-dim"
             >
               for {col.title.toLowerCase()}
             </p>
           </div>
           <h1
-            className="font-display text-4xl font-semibold tracking-tight"
-            style={{ color: "var(--kami-text)" }}
+            className="font-display text-4xl font-semibold tracking-tight kami-text"
           >
             {col.title} tools
           </h1>
           <p
-            className="mt-2 max-w-prose text-base"
-            style={{ color: "var(--kami-text-muted)" }}
+            className="mt-2 max-w-prose text-base kami-text-muted"
           >
             {col.description}
           </p>
           <p
-            className="mt-2 text-xs font-mono"
-            style={{ color: "var(--kami-text-dim)" }}
+            className="mt-2 text-xs font-mono kami-text-dim"
           >
             {inCol.length} tools · free, ad-free, processed in your browser
           </p>
@@ -129,8 +125,7 @@ export default async function CollectionPage(props: { params: Promise<Params> })
         {/* Other collections */}
         <section className="mt-16 pt-8" style={{ borderTop: "1px solid var(--kami-border-strong)" }}>
           <p
-            className="mb-3 text-xs uppercase tracking-widest font-mono"
-            style={{ color: "var(--kami-text-dim)" }}
+            className="mb-3 text-xs uppercase tracking-widest font-mono kami-text-dim"
           >
             other collections
           </p>
@@ -158,7 +153,7 @@ export default async function CollectionPage(props: { params: Promise<Params> })
                   aria-hidden="true"
                 />
                 {c.title.toLowerCase()}
-                <span style={{ color: "var(--kami-text-dim)" }}>
+                <span className="kami-text-dim">
                   {allTools.filter((t) => t.collections.includes(c.id)).length}
                 </span>
               </a>

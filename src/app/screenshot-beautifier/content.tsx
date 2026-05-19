@@ -71,21 +71,8 @@ function roundRect(
 
 export default function ScreenshotBeautifierContent() {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [frame, setFrame] = useState<DeviceFrame>("browser");
   const [bgMode, setBgMode] = useState<BgMode>("gradient");
   const [bgColor, setBgColor] = useState("#6366f1");
@@ -459,16 +446,14 @@ export default function ScreenshotBeautifierContent() {
                       type="color"
                       value={gradColors[0]}
                       onChange={(e) => setGradColors([e.target.value, gradColors[1]])}
-                      className="h-10 w-10 shrink-0 cursor-pointer rounded"
-                      style={{ border: "1px solid var(--kami-border-strong)" }}
+                      className="h-10 w-10 shrink-0 cursor-pointer rounded kami-border-strong-all"
                       title="Start color"
                     />
                     <input
                       type="color"
                       value={gradColors[1]}
                       onChange={(e) => setGradColors([gradColors[0], e.target.value])}
-                      className="h-10 w-10 shrink-0 cursor-pointer rounded"
-                      style={{ border: "1px solid var(--kami-border-strong)" }}
+                      className="h-10 w-10 shrink-0 cursor-pointer rounded kami-border-strong-all"
                       title="End color"
                     />
                     <div className="min-w-0 flex-1">
@@ -527,7 +512,7 @@ export default function ScreenshotBeautifierContent() {
         ) : null
       }
       info={
-        <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-xs kami-text-muted">
           <p>
             <strong>Screenshot Beautifier</strong> turns a flat screenshot into a polished product shot — drop a file,
             paste with ⌘V, or click the canvas to upload.
@@ -546,18 +531,16 @@ export default function ScreenshotBeautifierContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Upload</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Preview</button>
-        </nav>
-      )}
-      {(!isMetro || metroCPivot === "input") && !image && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Upload</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Preview</button>
+      </nav>
+      {!image && (
+        <div className="glass-canvas-section">
           <FileDropZone
             accept={[".png", ".jpg", ".jpeg", ".webp"]}
             onFiles={handleFiles}
@@ -567,7 +550,7 @@ export default function ScreenshotBeautifierContent() {
           />
         </div>
       )}
-      {(!isMetro || metroCPivot === "output") && image && (<div className={isGlass ? "glass-canvas-section" : ""}><div
+      {image && (<div className="glass-canvas-section"><div
           className="overflow-hidden p-3 sm:p-4 select-none"
           style={cardStyle}
           onMouseMove={handleDragMove}
@@ -600,7 +583,7 @@ export default function ScreenshotBeautifierContent() {
               onTouchStart={handleDragStart}
             />
           )}
-          <p className="mt-3 text-center text-xs" style={{ color: "var(--kami-text-dim)" }}>
+          <p className="mt-3 text-center text-xs kami-text-dim">
             Drag the image to reposition · ⌘V to paste a new screenshot
           </p>
         </div></div>

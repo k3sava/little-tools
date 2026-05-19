@@ -245,21 +245,8 @@ export default function ComparisonTableContent() {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState("feature");
   const previewRef = useRef<HTMLDivElement>(null);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // --- Undo stack (max 20) ---
   const MAX_UNDO = 20;
@@ -542,7 +529,7 @@ export default function ComparisonTableContent() {
   );
 
   const info = (
-    <div className="space-y-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+    <div className="space-y-3 text-xs kami-text-muted">
       <p>Build the classic &quot;us vs. them&quot; feature table. Click a cell to cycle check / cross / partial / text. Rearrange rows & columns with arrows.</p>
       <p>Export as HTML (paste into a page), Markdown (paste into docs), or PNG (screenshot ready).</p>
     </div>
@@ -557,21 +544,18 @@ export default function ComparisonTableContent() {
       controls={controls}
       info={info}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Data</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Table</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Data</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Table</button>
+      </nav>
       <div className="flex flex-col gap-4 p-4 md:p-6">
 
       {/* Editable table */}
-      {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
+      <div className="canvas-section glass-canvas-section" data-panel="input"><div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
         <table className="w-full min-w-[600px] border-collapse text-sm">
           <thead>
             <tr>
@@ -599,8 +583,7 @@ export default function ComparisonTableContent() {
                           type="text"
                           value={col}
                           onChange={(e) => updateColumnName(ci, e.target.value)}
-                          className="w-full bg-transparent text-center text-sm font-semibold outline-none placeholder:opacity-40"
-                          style={{ color: "var(--kami-cta-text)" }}
+                          className="w-full bg-transparent text-center text-sm font-semibold outline-none placeholder:opacity-40 kami-text-cta"
                           placeholder="Column name"
                         />
                         {table.columns.length > 2 && (
@@ -619,8 +602,7 @@ export default function ComparisonTableContent() {
                         <button
                           onClick={() => moveColumn(ci, "left")}
                           disabled={ci <= 1}
-                          className="rounded p-0.5 transition-colors disabled:opacity-20"
-                          style={{ color: "var(--kami-cta-text)" }}
+                          className="rounded p-0.5 transition-colors disabled:opacity-20 kami-text-cta"
                           title="Move column left"
                         >
                           <ArrowLeftIcon />
@@ -628,8 +610,7 @@ export default function ComparisonTableContent() {
                         <button
                           onClick={() => moveColumn(ci, "right")}
                           disabled={ci >= table.columns.length - 1}
-                          className="rounded p-0.5 transition-colors disabled:opacity-20"
-                          style={{ color: "var(--kami-cta-text)" }}
+                          className="rounded p-0.5 transition-colors disabled:opacity-20 kami-text-cta"
                           title="Move column right"
                         >
                           <ArrowRightIcon />
@@ -650,13 +631,12 @@ export default function ComparisonTableContent() {
                 style={{ background: ri % 2 === 0 ? "var(--kami-surface-solid)" : "var(--kami-surface)" }}
               >
                 {/* Reorder buttons */}
-                <td className="px-1 text-center align-middle" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                <td className="px-1 text-center align-middle kami-border-right">
                   <div className="flex flex-col items-center gap-0.5">
                     <button
                       onClick={() => moveRow(ri, "up")}
                       disabled={ri === 0}
-                      className="rounded p-0.5 transition-colors disabled:opacity-20"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="rounded p-0.5 transition-colors disabled:opacity-20 kami-text-muted"
                       title="Move up"
                     >
                       <ArrowUpIcon />
@@ -664,8 +644,7 @@ export default function ComparisonTableContent() {
                     <button
                       onClick={() => moveRow(ri, "down")}
                       disabled={ri === table.rows.length - 1}
-                      className="rounded p-0.5 transition-colors disabled:opacity-20"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="rounded p-0.5 transition-colors disabled:opacity-20 kami-text-muted"
                       title="Move down"
                     >
                       <ArrowDownIcon />
@@ -673,7 +652,7 @@ export default function ComparisonTableContent() {
                   </div>
                 </td>
                 {/* Feature name */}
-                <td className="px-3 py-2" style={{ borderRight: "1px solid var(--kami-border)" }}>
+                <td className="px-3 py-2 kami-border-right">
                   <input
                     type="text"
                     value={row.feature}
@@ -711,8 +690,7 @@ export default function ComparisonTableContent() {
                         />
                         <button
                           onClick={() => toggleCell(ri, ci)}
-                          className="flex-shrink-0 rounded p-0.5 opacity-30 transition-opacity hover:opacity-70"
-                          style={{ color: "var(--kami-text-muted)" }}
+                          className="flex-shrink-0 rounded p-0.5 opacity-30 transition-opacity hover:opacity-70 kami-text-muted"
                           title="Switch to icon"
                         >
                           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -738,8 +716,7 @@ export default function ComparisonTableContent() {
                 <td className="px-1 text-center align-middle">
                   <button
                     onClick={() => removeRow(ri)}
-                    className="rounded p-1 opacity-30 transition-opacity hover:opacity-100"
-                    style={{ color: "var(--kami-text-muted)" }}
+                    className="rounded p-1 opacity-30 transition-opacity hover:opacity-100 kami-text-muted"
                     title="Remove row"
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -752,14 +729,11 @@ export default function ComparisonTableContent() {
           </tbody>
         </table>
       </div></div>
-      )}
 
       {/* Preview */}
-      {(!isMetro || metroCPivot === "output") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div className="mb-6">
+      <div className="canvas-section glass-canvas-section" data-panel="output"><div className="mb-6">
         <h2
-          className="mb-3 text-sm font-semibold uppercase tracking-wide"
-          style={{ color: "var(--kami-text-muted)" }}
+          className="mb-3 text-sm font-semibold uppercase tracking-wide kami-text-muted"
         >
           Preview
         </h2>
@@ -828,7 +802,6 @@ export default function ComparisonTableContent() {
           </table>
         </div>
       </div></div>
-      )}
 
         {/* Toast */}
         {toast && (

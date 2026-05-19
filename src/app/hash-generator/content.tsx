@@ -262,21 +262,8 @@ export default function HashGeneratorContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dataRef = useRef<Uint8Array | null>(null);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const updateHashes = useCallback(async (data: Uint8Array) => {
     dataRef.current = data;
@@ -458,23 +445,21 @@ export default function HashGeneratorContent() {
               className="kc-range"
               style={{ ["--kc-fill" as string]: `${((bcryptRounds - 4) / 12) * 100}%` }}
             />
-            <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="text-xs kami-text-muted">
               ≈ {bcryptCostEstimate(bcryptRounds)} on commodity hardware
             </p>
           </ControlGroup>
         </>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Hashes</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Hashes</button>
+      </nav>
       <div
         className="flex flex-col gap-4"
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -482,7 +467,7 @@ export default function HashGeneratorContent() {
         onDrop={handleDrop}
       >
         {/* Input area (drop zone) */}
-        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="input"><>
         <div
           className="transition-colors"
           style={{
@@ -496,8 +481,8 @@ export default function HashGeneratorContent() {
           {fileName ? (
             <div className="flex items-center justify-between px-4 py-6">
               <div>
-                <span className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>{fileName}</span>
-                <p className="text-xs mt-0.5" style={{ color: "var(--kami-text-dim)" }}>{formatSize(fileSize)}</p>
+                <span className="text-sm font-medium kami-text">{fileName}</span>
+                <p className="text-xs mt-0.5 kami-text-dim">{formatSize(fileSize)}</p>
               </div>
               <ToolActionButton onClick={handleClear} variant="ghost">Remove</ToolActionButton>
             </div>
@@ -516,7 +501,7 @@ export default function HashGeneratorContent() {
         </div>
 
         <div className="flex items-center gap-3 text-xs">
-          <label className="cursor-pointer" style={{ color: "var(--kami-text-dim)" }}>
+          <label className="cursor-pointer kami-text-dim">
             <input
               ref={fileInputRef}
               type="file"
@@ -526,15 +511,15 @@ export default function HashGeneratorContent() {
             Or choose a file…
           </label>
           {!fileName && input && (
-            <span style={{ color: "var(--kami-text-dim)" }}>{new TextEncoder().encode(input).length} bytes</span>
+            <span className="kami-text-dim">{new TextEncoder().encode(input).length} bytes</span>
           )}
           {fileName && (
-            <span style={{ color: "var(--kami-text-dim)" }}>{formatSize(fileSize)}</span>
+            <span className="kami-text-dim">{formatSize(fileSize)}</span>
           )}
         </div>
-        </></div>)}
+        </></div>
 
-        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><>
         {/* Hash tab */}
         {tab === "hash" && hashBytes && (
           <div className="flex flex-col gap-2">
@@ -566,7 +551,7 @@ export default function HashGeneratorContent() {
         {tab === "hmac" && (
           <div className="flex flex-col gap-3">
             <div className="p-4" style={cardStyle}>
-              <label className="text-xs mb-1 block" style={{ color: "var(--kami-text-muted)" }}>Secret key</label>
+              <label className="text-xs mb-1 block kami-text-muted">Secret key</label>
               <input
                 type="text"
                 value={hmacSecret}
@@ -581,7 +566,7 @@ export default function HashGeneratorContent() {
             {hmacResult && hmacSecret && hashBytes && (
               <div className="px-4 py-3" style={cardStyle}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>HMAC-{hmacAlgo}</span>
+                  <span className="text-xs font-medium kami-text-muted">HMAC-{hmacAlgo}</span>
                   <ToolActionButton
                     onClick={() => handleCopy("hmac", formatHash(hmacResult, outputFormat))}
                     variant="ghost"
@@ -589,17 +574,17 @@ export default function HashGeneratorContent() {
                     {copiedKey === "hmac" ? "Copied" : "Copy"}
                   </ToolActionButton>
                 </div>
-                <p className="font-mono text-sm break-all select-all" style={{ color: "var(--kami-text)" }}>
+                <p className="font-mono text-sm break-all select-all kami-text">
                   {formatHash(hmacResult, outputFormat)}
                 </p>
               </div>
             )}
 
             {!hashBytes && (
-              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>Enter text or drop a file above to compute HMAC</p>
+              <p className="text-sm text-center py-8 kami-text-dim">Enter text or drop a file above to compute HMAC</p>
             )}
             {hashBytes && !hmacSecret && (
-              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>Enter a secret key to compute HMAC</p>
+              <p className="text-sm text-center py-8 kami-text-dim">Enter a secret key to compute HMAC</p>
             )}
           </div>
         )}
@@ -608,7 +593,7 @@ export default function HashGeneratorContent() {
         {tab === "verify" && (
           <div className="flex flex-col gap-3">
             <div className="p-4" style={cardStyle}>
-              <label className="text-xs mb-1 block" style={{ color: "var(--kami-text-muted)" }}>Expected hash</label>
+              <label className="text-xs mb-1 block kami-text-muted">Expected hash</label>
               <input
                 value={verifyHash}
                 onChange={(e) => setVerifyHash(e.target.value)}
@@ -642,10 +627,10 @@ export default function HashGeneratorContent() {
                   borderRadius: "var(--kami-card-radius, 0.75rem)",
                 }}
               >
-                <p className="font-medium" style={{ color: verifyMatch ? "#16a34a" : "#dc2626" }}>
+                <p className="font-medium" style={{ color: verifyMatch ? "var(--kami-success)" : "var(--kami-error)" }}>
                   {verifyMatch ? `✓ Match — ${verifyMatch}` : "✗ No match"}
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: "var(--kami-text-muted)" }}>
+                <p className="text-xs mt-0.5 kami-text-muted">
                   {verifyMatch
                     ? "The hash matches the input data. Integrity verified."
                     : "The hash does not match any algorithm output."}
@@ -660,7 +645,7 @@ export default function HashGeneratorContent() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col md:flex-row gap-3">
               <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Hash A</label>
+                <label className="text-xs kami-text-muted">Hash A</label>
                 <textarea
                   value={compareA}
                   onChange={(e) => setCompareA(e.target.value)}
@@ -671,7 +656,7 @@ export default function HashGeneratorContent() {
                 />
               </div>
               <div className="flex-1 min-w-0 flex flex-col gap-1">
-                <label className="text-xs" style={{ color: "var(--kami-text-muted)" }}>Hash B</label>
+                <label className="text-xs kami-text-muted">Hash B</label>
                 <textarea
                   value={compareB}
                   onChange={(e) => setCompareB(e.target.value)}
@@ -694,13 +679,13 @@ export default function HashGeneratorContent() {
                   borderRadius: "var(--kami-card-radius, 0.75rem)",
                 }}
               >
-                <p className="font-medium" style={{ color: compareDiff.equal ? "#16a34a" : "#b45309" }}>
+                <p className="font-medium" style={{ color: compareDiff.equal ? "var(--kami-success)" : "var(--kami-warning)" }}>
                   {compareDiff.equal ? "✓ Hashes are identical" : `✗ ${compareDiff.diffPositions.length} differing character${compareDiff.diffPositions.length !== 1 ? "s" : ""}`}
                 </p>
                 {!compareDiff.equal && (
-                  <div className="mt-3 font-mono text-xs break-all" style={{ color: "var(--kami-text)" }}>
+                  <div className="mt-3 font-mono text-xs break-all kami-text">
                     <div className="mb-2">
-                      <span className="block text-[10px] uppercase mb-0.5" style={{ color: "var(--kami-text-dim)" }}>A</span>
+                      <span className="block text-[10px] uppercase mb-0.5 kami-text-dim">A</span>
                       {Array.from({ length: Math.max(compareDiff.a.length, compareDiff.b.length) }).map((_, i) => (
                         <span
                           key={i}
@@ -711,7 +696,7 @@ export default function HashGeneratorContent() {
                       ))}
                     </div>
                     <div>
-                      <span className="block text-[10px] uppercase mb-0.5" style={{ color: "var(--kami-text-dim)" }}>B</span>
+                      <span className="block text-[10px] uppercase mb-0.5 kami-text-dim">B</span>
                       {Array.from({ length: Math.max(compareDiff.a.length, compareDiff.b.length) }).map((_, i) => (
                         <span
                           key={i}
@@ -727,7 +712,7 @@ export default function HashGeneratorContent() {
             )}
           </div>
         )}
-        </></div>)}
+        </></div>
       </div>
     </ToolShell>
   );
@@ -760,11 +745,10 @@ function HashRow({
       }}
     >
       <div
-        className="flex items-center justify-between px-4 py-2.5 gap-2"
-        style={{ borderBottom: "1px solid var(--kami-border)" }}
+        className="flex items-center justify-between px-4 py-2.5 gap-2 kami-border-bottom"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold" style={{ color: "var(--kami-text)" }}>{label}</span>
+          <span className="text-xs font-semibold kami-text">{label}</span>
           <span
             className="px-1.5 py-0.5 text-[10px] rounded"
             style={{ background: "var(--kami-surface)", color: "var(--kami-text-dim)" }}
@@ -778,7 +762,7 @@ function HashRow({
         <ToolActionButton onClick={onCopy} variant="ghost">{copied ? "Copied" : "Copy"}</ToolActionButton>
       </div>
       <div className="px-4 py-2.5">
-        <p className="font-mono text-sm break-all select-all" style={{ color: "var(--kami-text)" }}>{value}</p>
+        <p className="font-mono text-sm break-all select-all kami-text">{value}</p>
       </div>
     </div>
   );

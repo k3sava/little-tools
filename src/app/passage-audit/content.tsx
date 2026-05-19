@@ -81,21 +81,9 @@ export default function PassageAuditContent() {
   const [input, setInput] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  void isMaterial;
 
   const result = useMemo(() => (input.trim() ? audit(input) : null), [input]);
   const weakest = useMemo(
@@ -177,23 +165,22 @@ export default function PassageAuditContent() {
 
       <ControlGroup label="How scoring works">
         <ul
-          className="list-disc space-y-1 pl-4 text-xs"
-          style={{ color: "var(--kami-text-muted)" }}
+          className="list-disc space-y-1 pl-4 text-xs kami-text-muted"
         >
           <li>
-            <strong style={{ color: "var(--kami-text)" }}>Size (0-1):</strong> 200-1200 chars is the
+            <strong className="kami-text">Size (0-1):</strong> 200-1200 chars is the
             sweet spot.
           </li>
           <li>
-            <strong style={{ color: "var(--kami-text)" }}>Entity (+0.2):</strong> starts with a
+            <strong className="kami-text">Entity (+0.2):</strong> starts with a
             named entity.
           </li>
           <li>
-            <strong style={{ color: "var(--kami-text)" }}>Number (+0.2):</strong> a percentage,
+            <strong className="kami-text">Number (+0.2):</strong> a percentage,
             $amount, or large number.
           </li>
         </ul>
-        <p className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+        <p className="text-xs kami-text-muted">
           Max 1.4. Anything &lt; 0.6 should be rewritten.
         </p>
       </ControlGroup>
@@ -210,38 +197,19 @@ export default function PassageAuditContent() {
       controlsLabel="Insights"
     >
       <div className="flex flex-col gap-4">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Passage" : "Audit"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Passage</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
           <label
             htmlFor="input"
-            className="mb-2 block text-sm font-medium"
-            style={{ color: "var(--kami-text)" }}
+            className="mb-2 block text-sm font-medium kami-text"
           >
             Paste HTML or Markdown
           </label>
@@ -258,20 +226,19 @@ export default function PassageAuditContent() {
             }}
           />
         </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && result && result.passages.length === 0 && (
-          <p className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        {result && result.passages.length === 0 && (
+          <p className="text-sm kami-text-muted">
             Nothing scored. Paste at least one passage longer than 80 characters.
           </p>
         )}
 
-        {(!isMetro || metroCPivot === "output") && result && result.passages.length > 0 && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        {result && result.passages.length > 0 && (
+          <div className="glass-canvas-section">
           <>
             <section>
               <h2 className="text-base font-semibold">Weakest passages</h2>
-              <p className="mt-1 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <p className="mt-1 text-xs kami-text-muted">
                 Rewrite these first.
               </p>
               <div className="mt-3 grid gap-2">
@@ -291,11 +258,11 @@ export default function PassageAuditContent() {
                       >
                         Score {p.score.toFixed(2)}
                       </div>
-                      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <div className="text-xs kami-text-muted">
                         {p.chars} chars
                       </div>
                     </div>
-                    <p className="mt-2 text-sm" style={{ color: "var(--kami-text)" }}>
+                    <p className="mt-2 text-sm kami-text">
                       {p.text.length > 220 ? p.text.slice(0, 220) + "…" : p.text}
                     </p>
                   </div>
@@ -318,7 +285,7 @@ export default function PassageAuditContent() {
                     }}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                      <span className="text-xs kami-text-muted">
                         #{p.i + 1} · {p.chars} chars
                       </span>
                       <span
@@ -340,13 +307,12 @@ export default function PassageAuditContent() {
                         }}
                       />
                     </div>
-                    <p className="mt-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <p className="mt-2 text-xs kami-text-muted">
                       {p.text.slice(0, 120)}
                       {p.text.length > 120 ? "…" : ""}
                     </p>
                     <div
-                      className="mt-2 flex gap-2 text-[10px]"
-                      style={{ color: "var(--kami-text-muted)" }}
+                      className="mt-2 flex gap-2 text-[10px] kami-text-muted"
                     >
                       <span>size {p.sizeScore.toFixed(2)}</span>
                       <span>{p.entityScore ? "+entity" : "—entity"}</span>
@@ -382,8 +348,7 @@ function Stat({
       }}
     >
       <div
-        className="text-[10px] uppercase tracking-wide"
-        style={{ color: "var(--kami-text-muted)" }}
+        className="text-[10px] uppercase tracking-wide kami-text-muted"
       >
         {label}
       </div>

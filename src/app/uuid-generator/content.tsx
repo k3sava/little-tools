@@ -345,17 +345,6 @@ export default function UuidGeneratorContent() {
   const [copied, setCopied] = useState<number | "all" | "array" | null>(null);
   const [inspectInput, setInspectInput] = useState("");
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
-  useEffect(() => {
-    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   // Format options
@@ -464,7 +453,7 @@ export default function UuidGeneratorContent() {
               full
               size="sm"
             />
-            <p className="mt-2 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+            <p className="mt-2 text-xs kami-text-muted">
               {GENERATORS[activeType].description}
             </p>
           </ControlGroup>
@@ -516,7 +505,7 @@ export default function UuidGeneratorContent() {
                 className="w-full px-3 py-2 font-mono text-xs focus:outline-none"
                 style={{ ...inputStyle, minHeight: 40 }}
               />
-              <p className="text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <p className="text-xs kami-text-dim">
                 Entropy ~{Math.floor(nanoLength * Math.log2(Math.max(2, nanoAlphabet.length)))} bits
                 · {nanoAlphabet.length} chars
               </p>
@@ -529,34 +518,16 @@ export default function UuidGeneratorContent() {
       }
     >
       <div className="flex flex-col gap-4">
-        {isMetro && (
-          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
-            {(["input", "output"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setMetroCPivot(tab)}
-                style={{
-                  padding: "8px 16px",
-                  fontSize: 14,
-                  fontWeight: metroCPivot === tab ? 600 : 400,
-                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
-                  background: "none",
-                  border: "none",
-                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
-                  cursor: "pointer",
-                  fontFamily: "'Segoe UI', system-ui, sans-serif",
-                  textTransform: "capitalize",
-                }}
-              >
-                {tab === "input" ? "Settings" : "IDs"}
-              </button>
-            ))}
-          </nav>
-        )}
+        <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Settings</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
 
-        {(!isMetro || metroCPivot === "input") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="input">
             {/* Quick copy strip */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
               {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
@@ -582,14 +553,12 @@ export default function UuidGeneratorContent() {
               ))}
             </div>
           </div>
-        )}
 
-        {(!isMetro || metroCPivot === "output") && (
-          <div className={isGlass ? "glass-canvas-section" : ""}>
+        <div className="canvas-section glass-canvas-section" data-panel="output">
             {/* Generated IDs */}
             <div style={cardStyle} className="p-4">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+                <span className="text-sm font-semibold kami-text">
                   {ids.length === 0 ? "No IDs yet" : `${ids.length} × ${GENERATORS[activeType].label}`}
                 </span>
                 {ids.length > 0 && (
@@ -640,8 +609,8 @@ export default function UuidGeneratorContent() {
 
             {/* Inspector */}
             <div style={cardStyle} className="p-4 mt-4">
-              <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
-              <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>
+              <h2 className="text-sm font-semibold mb-2 kami-text">ID Inspector</h2>
+              <p className="text-xs mb-2 kami-text-muted">
                 Paste any ID to auto-detect its type and decode embedded timestamps.
               </p>
               <input
@@ -667,10 +636,10 @@ export default function UuidGeneratorContent() {
                       {inspection.valid ? inspection.type : "Invalid / Unknown"}
                     </span>
                     {inspection.bits && (
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.bits} bits</span>
+                      <span className="text-xs kami-text-muted">{inspection.bits} bits</span>
                     )}
                     {inspection.encoding && (
-                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.encoding}</span>
+                      <span className="text-xs kami-text-muted">{inspection.encoding}</span>
                     )}
                   </div>
 
@@ -682,9 +651,9 @@ export default function UuidGeneratorContent() {
                       <table className="w-full text-sm">
                         <thead>
                           <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
-                            <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
-                            <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
-                            <th className="px-3 py-2 text-left font-medium hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>Description</th>
+                            <th className="px-3 py-2 text-left font-medium kami-text-muted">Field</th>
+                            <th className="px-3 py-2 text-left font-medium kami-text-muted">Value</th>
+                            <th className="px-3 py-2 text-left font-medium hidden md:table-cell kami-text-muted">Description</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -697,9 +666,9 @@ export default function UuidGeneratorContent() {
                                   : undefined
                               }
                             >
-                              <td className="px-3 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
-                              <td className="px-3 py-2 font-mono break-all" style={{ color: "var(--kami-text)" }}>{row.value}</td>
-                              <td className="px-3 py-2 hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
+                              <td className="px-3 py-2 font-medium kami-text">{row.label}</td>
+                              <td className="px-3 py-2 font-mono break-all kami-text">{row.value}</td>
+                              <td className="px-3 py-2 hidden md:table-cell kami-text-muted">{row.description}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -710,7 +679,6 @@ export default function UuidGeneratorContent() {
               )}
             </div>
           </div>
-        )}
       </div>
     </ToolShell>
   );

@@ -363,8 +363,7 @@ function FormatRow({ label, value, onParse, parseable }: {
   return (
     <div className="flex items-center gap-2">
       <span
-        className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide"
-        style={{ color: "var(--kami-text-dim)" }}
+        className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide kami-text-dim"
       >
         {label}
       </span>
@@ -414,21 +413,8 @@ export default function ColorConverterContent() {
   const [{ color: initialColor }, setToolState] = useToolState({ color: "#ff6600" });
   const initialRgb = useMemo(() => hexToRgb(initialColor) ?? { r: 255, g: 102, b: 0 }, []);
   const [rgb, setRgb] = useState<RGB>(initialRgb);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<string>("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   // Sync from a new RGB source
   const syncAll = useCallback(
@@ -561,7 +547,7 @@ export default function ColorConverterContent() {
                   borderRadius: "var(--kami-input-radius, 0.5rem)",
                 }}
               />
-              <span className="font-mono text-sm" style={{ color: "var(--kami-text-muted)" }}>{hex.toUpperCase()}</span>
+              <span className="font-mono text-sm kami-text-muted">{hex.toUpperCase()}</span>
             </div>
           </ControlGroup>
 
@@ -582,7 +568,7 @@ export default function ColorConverterContent() {
                       borderRadius: "var(--kami-cta-radius, 0.4rem)",
                     }}
                   />
-                  <span className="truncate text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{p.label}</span>
+                  <span className="truncate text-[10px] kami-text-dim">{p.label}</span>
                 </button>
               ))}
             </div>
@@ -628,7 +614,7 @@ export default function ColorConverterContent() {
                       borderRadius: "var(--kami-cta-radius, 0.4rem)",
                     }}
                   />
-                  <span className="text-[10px] capitalize" style={{ color: "var(--kami-text-dim)" }}>{t.replace("opia", ".")}</span>
+                  <span className="text-[10px] capitalize kami-text-dim">{t.replace("opia", ".")}</span>
                 </div>
               ))}
             </div>
@@ -636,18 +622,18 @@ export default function ColorConverterContent() {
         </>
       }
       info={
-        <div className="space-y-3 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+        <div className="space-y-3 text-sm kami-text-muted">
           <p>
             Type a color in any format (hex, rgb(), hsl(), hsv()) and see it converted to
             every other format simultaneously - including modern OKLCH, OKLAB and Display-P3.
             Click any field to copy.
           </p>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Made for</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Made for</div>
             <p className="mt-1">Designers, front-end developers, brand teams.</p>
           </div>
           <div>
-            <div className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>Reach for it when</div>
+            <div className="text-xs font-medium uppercase tracking-wide kami-text-dim">Reach for it when</div>
             <ul className="mt-1 space-y-1 text-xs">
               <li>· Translating a Figma hex into HSL or OKLCH</li>
               <li>· Checking a brand color works on white or black</li>
@@ -657,20 +643,17 @@ export default function ColorConverterContent() {
         </div>
       }
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Input</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Formats</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Input</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Formats</button>
+      </nav>
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Big swatch + contrast inline */}
-        {(!isMetro || metroCPivot === "input") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><div
+        <div className="canvas-section glass-canvas-section" data-panel="input"><div
           className="flex flex-col gap-3 overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -693,16 +676,14 @@ export default function ColorConverterContent() {
           >
             <ContrastBadge label="vs white" ratio={whiteContrast} />
             <ContrastBadge label="vs black" ratio={blackContrast} />
-            <div className="col-span-2 text-[11px]" style={{ color: "var(--kami-text-dim)" }}>
+            <div className="col-span-2 text-[11px] kami-text-dim">
               Hue {Math.round(rgbToHsl(rgb).h)}° · Sat {Math.round(rgbToHsl(rgb).s)}% · Lum {Math.round(rgbToHsl(rgb).l)}%
             </div>
           </div>
         </div></div>
-        )}
 
         {/* Format rows */}
-        {(!isMetro || metroCPivot === "output") && (
-        <div className={isGlass ? "glass-canvas-section" : ""}><>
+        <div className="canvas-section glass-canvas-section" data-panel="output"><>
         <div
           className="flex flex-col gap-2 p-3"
           style={{
@@ -731,7 +712,7 @@ export default function ColorConverterContent() {
             borderRadius: "var(--kami-card-radius, 0.75rem)",
           }}
         >
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide kami-text-dim">
             Shades · 50 → 950
           </div>
           <div className="grid grid-cols-11 gap-1">
@@ -756,7 +737,6 @@ export default function ColorConverterContent() {
           </div>
         </div>
         </></div>
-        )}
       </div>
     </ToolShell>
   );

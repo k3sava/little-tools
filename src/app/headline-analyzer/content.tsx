@@ -253,8 +253,8 @@ function ScoreBar({ label, score, max }: { label: string; score: number; max: nu
   return (
     <div>
       <div className="flex items-center justify-between text-xs mb-1">
-        <span style={{ color: "var(--kami-text-muted)" }}>{label}</span>
-        <span className="tabular-nums" style={{ color: "var(--kami-text)" }}>{score}/{max}</span>
+        <span className="kami-text-muted">{label}</span>
+        <span className="tabular-nums kami-text">{score}/{max}</span>
       </div>
       <div
         className="h-2 w-full overflow-hidden"
@@ -327,10 +327,10 @@ function ResultPanel({
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <div className="text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+          <div className="text-xs uppercase tracking-wide kami-text-dim">
             {label}
           </div>
-          <div className="text-sm font-medium mt-0.5 break-words" style={{ color: "var(--kami-text)" }}>
+          <div className="text-sm font-medium mt-0.5 break-words kami-text">
             {headline || "—"}
           </div>
         </div>
@@ -338,7 +338,7 @@ function ResultPanel({
           type="button"
           onClick={onCopy}
           className="kc-segment-btn"
-          style={{ minHeight: 32 }}
+          style={{ minHeight: 44 }}
         >
           {copiedFlag ? "Copied" : "Copy"}
         </button>
@@ -364,8 +364,8 @@ function ResultPanel({
             borderRadius: 8,
           }}
         >
-          <div style={{ color: "var(--kami-text-dim)" }}>Chars</div>
-          <div className="font-bold" style={{ color: "var(--kami-text)" }}>{result.charCount}</div>
+          <div className="kami-text-dim">Chars</div>
+          <div className="font-bold kami-text">{result.charCount}</div>
         </div>
         <div
           className="px-2 py-1.5 text-center"
@@ -375,8 +375,8 @@ function ResultPanel({
             borderRadius: 8,
           }}
         >
-          <div style={{ color: "var(--kami-text-dim)" }}>Words</div>
-          <div className="font-bold" style={{ color: "var(--kami-text)" }}>{result.wordCount}</div>
+          <div className="kami-text-dim">Words</div>
+          <div className="font-bold kami-text">{result.wordCount}</div>
         </div>
         <div
           className="px-2 py-1.5 text-center"
@@ -386,16 +386,16 @@ function ResultPanel({
             borderRadius: 8,
           }}
         >
-          <div style={{ color: "var(--kami-text-dim)" }}>CTR est.</div>
-          <div className="font-bold" style={{ color: "var(--kami-text)" }}>{result.ctrEstimate}%</div>
+          <div className="kami-text-dim">CTR est.</div>
+          <div className="font-bold kami-text">{result.ctrEstimate}%</div>
         </div>
       </div>
 
       {result.suggestions.length > 0 && (
-        <ul className="text-xs flex flex-col gap-1" style={{ color: "var(--kami-text-muted)" }}>
+        <ul className="text-xs flex flex-col gap-1 kami-text-muted">
           {result.suggestions.map((s, i) => (
             <li key={i} className="flex gap-1.5">
-              <span style={{ color: "#f59e0b" }}>•</span>
+              <span className="kami-text-warning">•</span>
               <span>{s}</span>
             </li>
           ))}
@@ -409,21 +409,8 @@ export default function HeadlineAnalyzerContent() {
   const [{ q: headline }, setToolState] = useToolState({ q: "" });
   const setHeadline = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
 
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
-  const isMetro = currentTheme === "metro";
-  const isGlass    = currentTheme === "glass";
 
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [headlineB, setHeadlineB] = useState("");
@@ -486,7 +473,7 @@ export default function HeadlineAnalyzerContent() {
         />
       </ControlGroup>
       <ControlGroup label="Scoring weights" hint="100 total">
-        <ul className="text-xs flex flex-col gap-1" style={{ color: "var(--kami-text-muted)" }}>
+        <ul className="text-xs flex flex-col gap-1 kami-text-muted">
           <li>Word balance · 25</li>
           <li>Emotional value · 25</li>
           <li>Length · 25</li>
@@ -519,21 +506,18 @@ export default function HeadlineAnalyzerContent() {
       actions={actions}
       controls={controls}
     >
-      {isMetro && (
-        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
-          <button role="tab" aria-selected={metroCPivot === "input"}
-            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("input")}>Headline</button>
-          <button role="tab" aria-selected={metroCPivot === "output"}
-            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
-            onClick={() => setMetroCPivot("output")}>Analysis</button>
-        </nav>
-      )}
+      <nav className="canvas-metro-pivot" role="tablist" aria-label="View">
+        <button role="tab" aria-selected={metroCPivot === "input"}
+          className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("input")}>Headline</button>
+        <button role="tab" aria-selected={metroCPivot === "output"}
+          className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+          onClick={() => setMetroCPivot("output")}>Analysis</button>
+      </nav>
       <div className="flex flex-col gap-4 p-4 md:p-6">
         {mode === "single" ? (
           <>
-            {(!isMetro || metroCPivot === "input") && (
-              <div className={isGlass ? "glass-canvas-section" : ""}>
+            <div className="canvas-section glass-canvas-section" data-panel="input">
               <>
                 <input
                   type="text"
@@ -546,9 +530,7 @@ export default function HeadlineAnalyzerContent() {
                 />
               </>
               </div>
-            )}
-            {(!isMetro || metroCPivot === "output") && (
-              <div className={isGlass ? "glass-canvas-section" : ""}>
+            <div className="canvas-section glass-canvas-section" data-panel="output">
               <>
                 {resultA ? (
                   <ResultPanel
@@ -560,24 +542,21 @@ export default function HeadlineAnalyzerContent() {
                   />
                 ) : (
                   <div
-                    className="py-12 text-center text-sm"
-                    style={{ color: "var(--kami-text-dim)" }}
+                    className="py-12 text-center text-sm kami-text-dim"
                   >
                     Start typing a headline to see your score.
                   </div>
                 )}
               </>
               </div>
-            )}
           </>
         ) : (
           <>
-            {(!isMetro || metroCPivot === "input") && (
-              <div className={isGlass ? "glass-canvas-section" : ""}>
+            <div className="canvas-section glass-canvas-section" data-panel="input">
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
-                    <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                    <div className="mb-1 text-xs uppercase tracking-wide kami-text-dim">
                       Headline A
                     </div>
                     <input
@@ -590,7 +569,7 @@ export default function HeadlineAnalyzerContent() {
                     />
                   </div>
                   <div>
-                    <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                    <div className="mb-1 text-xs uppercase tracking-wide kami-text-dim">
                       Headline B
                     </div>
                     <input
@@ -605,9 +584,7 @@ export default function HeadlineAnalyzerContent() {
                 </div>
               </>
               </div>
-            )}
-            {(!isMetro || metroCPivot === "output") && (
-              <div className={isGlass ? "glass-canvas-section" : ""}>
+            <div className="canvas-section glass-canvas-section" data-panel="output">
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {resultA && (
@@ -651,15 +628,13 @@ export default function HeadlineAnalyzerContent() {
                 )}
                 {!resultA && !resultB && (
                   <div
-                    className="py-12 text-center text-sm"
-                    style={{ color: "var(--kami-text-dim)" }}
+                    className="py-12 text-center text-sm kami-text-dim"
                   >
                     Enter two headlines to compare them side by side.
                   </div>
                 )}
               </>
               </div>
-            )}
           </>
         )}
       </div>
