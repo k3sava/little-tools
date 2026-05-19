@@ -6237,6 +6237,245 @@ html[data-theme="metro"] .tool-shell-breadcrumb-sep {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 1b: HUB PAGE STRUCTURAL LAYOUTS per design language
+   Glass hero · Material app bar · Metro pivot header
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Glass: full-bleed gradient hero with centered frosted search ── */
+
+.hub-glass-hero {
+  position: relative;
+  width: 100%;
+  padding: 80px 24px 56px;
+  text-align: center;
+  overflow: hidden;
+  background: linear-gradient(160deg, #dce9ff 0%, #f0e8ff 45%, #d9f5e0 100%);
+  border-bottom: 0.5px solid rgba(255,255,255,0.50);
+}
+
+.hub-glass-hero-inner {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.hub-glass-hero-eyebrow {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(60,60,67,0.50);
+  margin: 0;
+}
+
+.hub-glass-hero-title {
+  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: clamp(40px, 8vw, 72px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: #1d1d1f;
+  margin: 4px 0 8px;
+}
+
+.hub-glass-hero-sub {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  color: rgba(60,60,67,0.55);
+  margin: 0 0 24px;
+}
+
+.hub-glass-hero-search {
+  width: 100%;
+  max-width: 540px;
+}
+
+.hub-glass-hero-search .tools-hub-search {
+  background: rgba(255,255,255,0.75) !important;
+  border: 1px solid rgba(255,255,255,0.60) !important;
+  border-radius: 14px !important;
+  height: 50px !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.90) !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 15px !important;
+  transition: border-color 0.25s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.25s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+.hub-glass-hero-search .tools-hub-search:focus-within {
+  border-color: rgba(0,122,255,0.45) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 0 0 3px rgba(0,122,255,0.15),
+              inset 0 0.5px 0 rgba(255,255,255,0.90) !important;
+}
+
+/* Glass hub: chips appear below hero, scrollable strip */
+html[data-theme="glass"] .tools-hub-chips {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 16px 24px;
+  scrollbar-width: none;
+  background: rgba(255,255,255,0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 0.5px solid rgba(0,0,0,0.06);
+}
+html[data-theme="glass"] .tools-hub-chips::-webkit-scrollbar { display: none; }
+
+/* ── Material: top-app-bar–style hub header ── */
+
+.hub-material-appbar {
+  width: 100%;
+  background: color-mix(in srgb, #6750a4 5%, #fffbfe);
+  border-bottom: 1px solid #cac4d0;
+  padding: 0;
+}
+
+.hub-material-appbar-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hub-material-appbar-label {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6750a4;
+  margin: 0 0 2px;
+}
+
+.hub-material-appbar-title {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: #1c1b1f;
+  margin: 0;
+}
+
+.hub-material-appbar-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+.hub-material-appbar-search .tools-hub-search {
+  background: color-mix(in srgb, #6750a4 10%, #fffbfe) !important;
+  border: none !important;
+  border-bottom: 2px solid #cac4d0 !important;
+  border-radius: 4px 4px 0 0 !important;
+  height: 48px !important;
+}
+.hub-material-appbar-search .tools-hub-search:focus-within {
+  background: color-mix(in srgb, #6750a4 14%, #fffbfe) !important;
+  border-bottom-color: #6750a4 !important;
+}
+
+/* Material: filter chips below app bar */
+html[data-theme="material"] .tools-hub-chips {
+  padding: 12px 24px;
+  gap: 8px;
+  border-bottom: 1px solid #e7e0ec;
+  background: #fffbfe;
+}
+html[data-theme="material"] .tools-hub-chip {
+  border-radius: 8px !important;
+  border: 1px solid #cac4d0 !important;
+  font-family: "Google Sans", Roboto, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  height: 32px !important;
+  padding: 0 12px !important;
+}
+html[data-theme="material"] .tools-hub-chip[data-active="true"] {
+  background: #eaddff !important;
+  border-color: #6750a4 !important;
+  color: #21005d !important;
+}
+
+/* ── Metro: compact hub header with pivot ── */
+
+.hub-metro-header {
+  width: 100%;
+  background: rgba(243,242,241,0.98);
+  backdrop-filter: saturate(120%) blur(40px);
+  -webkit-backdrop-filter: saturate(120%) blur(40px);
+  border-bottom: 1px solid #d1d1d1;
+}
+
+.hub-metro-header-top {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px 24px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hub-metro-title {
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: #201f1e;
+  margin: 0;
+}
+
+.hub-metro-search {
+  flex: 1;
+  min-width: 160px;
+  max-width: 320px;
+}
+
+.hub-metro-search .tools-hub-search {
+  background: #ffffff !important;
+  border: 1px solid #8a8a8a !important;
+  border-radius: 2px !important;
+  height: 32px !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 13px !important;
+}
+.hub-metro-search .tools-hub-search:focus-within {
+  border-color: #0078d4 !important;
+  box-shadow: 0 0 0 1px #0078d4 !important;
+}
+
+.hub-metro-pivot {
+  padding: 0 24px;
+  background: transparent;
+}
+
+/* Metro hub: no additional chip row (pivot handles navigation) */
+html[data-theme="metro"] .tools-hub-chips {
+  display: none !important;
+}
+
+/* Metro hub: compact card grid */
+html[data-theme="metro"] .tools-hub-grid {
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+  gap: 1px !important;
+  background: #d1d1d1 !important;
+  border: 1px solid #d1d1d1 !important;
+}
+html[data-theme="metro"] .tools-hub-grid > * {
+  background: #ffffff !important;
+}
+
 /* ── tool-shell theme class helpers ──────────────────────────────────────── */
 
 /* Metro: hide standard mobile FAB row */
