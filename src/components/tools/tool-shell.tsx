@@ -221,7 +221,18 @@ export function ToolShell({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>('default');
   const shortcutCtx = useContext(ShortcutContext);
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute('data-theme') || 'default';
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => obs.disconnect();
+  }, []);
   const labeledShortcuts = shortcutCtx?.shortcuts.filter((s) => s.label) ?? [];
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
@@ -310,8 +321,52 @@ export function ToolShell({
 
       </header>
 
+      {/* Glass large title — iOS HIG: large title below floating header, collapses on scroll */}
+      {currentTheme === 'glass' && title && (
+        <div className="tool-shell-large-title" aria-hidden="true">
+          <div className="tool-shell-large-title-inner">
+            <div className="tool-shell-large-title-eyebrow">tool</div>
+            <h2 className="tool-shell-large-title-text">{title}</h2>
+            {tagline && <p className="tool-shell-large-title-sub">{tagline}</p>}
+          </div>
+        </div>
+      )}
+
       {/* ── Body grid ── */}
       <div className={`tool-shell-body ${hasControls ? "has-controls" : "no-controls"}`}>
+        {currentTheme === 'material' && (
+          <nav className="tool-shell-nav-rail" aria-label="Navigation rail">
+            <a href="/" className="tool-shell-nav-rail-item" title="All tools">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+                <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+                <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+                <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+              </svg>
+              <span>All</span>
+            </a>
+            <a href="/designkit" className="tool-shell-nav-rail-item" title="Design">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+              </svg>
+              <span>Design</span>
+            </a>
+            <a href="/devkit" className="tool-shell-nav-rail-item" title="Dev">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+              <span>Dev</span>
+            </a>
+            <a href="/textkit" className="tool-shell-nav-rail-item" title="Text">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M4 6h16M4 12h10M4 18h14"/>
+              </svg>
+              <span>Text</span>
+            </a>
+          </nav>
+        )}
         <main className="tool-shell-canvas">{children}</main>
 
         {hasControls && (
