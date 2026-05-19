@@ -2057,14 +2057,17 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   .tool-shell-header { padding: 0 20px; }
 }
 
-/* Left: theme switcher */
+/* Left: theme switcher + breadcrumb */
 .tool-shell-left {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
 }
 
-/* Center: title + tagline + breadcrumb — centered in its column */
+/* Center: title + tagline — centered in its column */
 .tool-shell-center {
   display: flex;
   flex-direction: column;
@@ -2129,17 +2132,21 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   .tool-shell-tagline { display: block; }
 }
 
-/* Breadcrumb: below tagline (or title), always visible */
+/* Breadcrumb: in left column next to theme switcher */
 .tool-shell-breadcrumb {
-  display: flex;
+  display: none;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   font-size: 9px;
   line-height: 1;
   color: var(--kami-text-dim);
   white-space: nowrap;
+  overflow: hidden;
   opacity: 0.55;
-  margin: 2px 0 0;
+  min-width: 0;
+}
+@media (min-width: 480px) {
+  .tool-shell-breadcrumb { display: flex; }
 }
 .tool-shell-breadcrumb a {
   color: var(--kami-text-dim);
@@ -2233,14 +2240,14 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
     top: var(--tool-shell-header-h);
     inset: auto;
     transform: none !important;
-    height: calc(100dvh - var(--tool-shell-header-h));
-    max-height: none;
+    max-height: calc(100dvh - var(--tool-shell-header-h));
     border-top: none;
     border-left: 1px solid var(--kami-border-strong);
     border-radius: 0;
     box-shadow: none;
     background: color-mix(in srgb, var(--kami-bg) 60%, var(--kami-surface-solid));
     z-index: 5;
+    overflow-y: auto;
   }
 }
 

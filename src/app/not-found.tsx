@@ -7,8 +7,7 @@ export default function NotFound() {
     <div className="kami-scope min-h-screen" style={{ color: "var(--kami-text)" }}>
       <Breadcrumb
         items={[
-          { label: "home", href: "https://iamkesava.com" },
-          { label: "apps", href: "https://apps.iamkesava.com" },
+          { label: "home", href: "https://apps.iamkesava.com" },
           { label: "tools", href: "/" },
           { label: "404" },
         ]}

@@ -106,7 +106,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var k="kami.theme",t=localStorage.getItem(k);if(!t){t=localStorage.getItem("theme");if(t)localStorage.setItem(k,t);}if(!t){t="brutalist";localStorage.setItem(k,t);}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme");}catch(e){}})()`,
+            __html: `(function(){try{var k="kami.theme",ck=('; '+document.cookie).split('; '+k+'=')[1],t=ck?ck.split(';')[0]:null;if(!t){t=localStorage.getItem(k);if(!t){t=localStorage.getItem("theme");if(t)localStorage.setItem(k,t);}}if(!t){t="brutalist";}if(t){localStorage.setItem(k,t);document.cookie=k+'='+t+'; path=/; domain=.iamkesava.com; max-age=31536000; SameSite=Lax';}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme");}catch(e){}})()`,
           }}
         />
         <link

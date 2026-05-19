@@ -230,22 +230,9 @@ export function ToolShell({
       {/* ── Header: 3-column layout (theme | center | actions) ── */}
       <header className="tool-shell-header">
 
-        {/* Left: theme switcher */}
+        {/* Left: theme switcher + breadcrumb */}
         <div className="tool-shell-left">
           <InlineThemeSwitcher />
-        </div>
-
-        {/* Center: name + tagline + breadcrumb */}
-        <div className="tool-shell-center">
-          <div className="tool-shell-title-row">
-            {accent && (
-              <span aria-hidden="true" className="tool-shell-accent-dot" style={{ backgroundColor: accent }} />
-            )}
-            <h1 className="tool-shell-title">{title}</h1>
-          </div>
-          {tagline && (
-            <p className="tool-shell-tagline">{tagline}</p>
-          )}
           {breadcrumbs.length > 0 ? (
             <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
               {breadcrumbs.map((item, i) => (
@@ -264,6 +251,19 @@ export function ToolShell({
               <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>
               <a href="https://tools.iamkesava.com">tools</a>
             </nav>
+          )}
+        </div>
+
+        {/* Center: name + tagline */}
+        <div className="tool-shell-center">
+          <div className="tool-shell-title-row">
+            {accent && (
+              <span aria-hidden="true" className="tool-shell-accent-dot" style={{ backgroundColor: accent }} />
+            )}
+            <h1 className="tool-shell-title">{title}</h1>
+          </div>
+          {tagline && (
+            <p className="tool-shell-tagline">{tagline}</p>
           )}
         </div>
 

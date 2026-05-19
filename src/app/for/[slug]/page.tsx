@@ -53,8 +53,7 @@ export default async function CollectionPage(props: { params: Promise<Params> })
 
       <Breadcrumb
         items={[
-          { label: "home", href: "https://iamkesava.com" },
-          { label: "apps", href: "https://apps.iamkesava.com" },
+          { label: "home", href: "https://apps.iamkesava.com" },
           { label: "tools", href: "/" },
           { label: col.title.toLowerCase() },
         ]}

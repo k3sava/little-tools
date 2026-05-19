@@ -18,8 +18,7 @@ export function CollectionPage({ collection, tools }: CollectionPageProps) {
     >
       <Breadcrumb
         items={[
-          { label: "home", href: "https://iamkesava.com" },
-          { label: "apps", href: "https://apps.iamkesava.com" },
+          { label: "home", href: "https://apps.iamkesava.com" },
           { label: "tools", href: "/" },
           { label: collection.title.toLowerCase() },
         ]}

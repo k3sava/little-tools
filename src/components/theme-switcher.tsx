@@ -14,10 +14,29 @@ type ThemeId = (typeof THEMES)[number]["id"];
 
 const STORAGE_KEY = "kami.theme";
 const LEGACY_KEY = "theme";
+const COOKIE_OPTS = "path=/; domain=.iamkesava.com; max-age=31536000; SameSite=Lax";
 const DEFAULT: ThemeId = "brutalist";
+
+function readCookie(): ThemeId | null {
+  try {
+    const ck = ("; " + document.cookie).split("; " + STORAGE_KEY + "=")[1];
+    const v = ck ? ck.split(";")[0] : null;
+    if (v && THEMES.some((t) => t.id === v)) return v as ThemeId;
+  } catch { /* noop */ }
+  return null;
+}
+
+function writeCookie(id: string) {
+  try { document.cookie = `${STORAGE_KEY}=${id}; ${COOKIE_OPTS}`; } catch { /* noop */ }
+}
 
 function readStored(): ThemeId {
   try {
+    const cv = readCookie();
+    if (cv) {
+      try { localStorage.setItem(STORAGE_KEY, cv); } catch { /* noop */ }
+      return cv;
+    }
     let v = localStorage.getItem(STORAGE_KEY) as ThemeId | null;
     if (!v) {
       const legacy = localStorage.getItem(LEGACY_KEY) as ThemeId | null;
@@ -54,6 +73,7 @@ export function ThemeSwitcher() {
     setTheme(id);
     applyTheme(id);
     try { localStorage.setItem(STORAGE_KEY, id); } catch { /* noop */ }
+    writeCookie(id);
     setOpen(false);
   }, []);
 
@@ -70,6 +90,7 @@ export function ThemeSwitcher() {
           const next = THEMES[(i + 1) % THEMES.length].id;
           applyTheme(next);
           try { localStorage.setItem(STORAGE_KEY, next); } catch { /* noop */ }
+          writeCookie(next);
           return next;
         });
       }
