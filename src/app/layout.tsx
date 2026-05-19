@@ -106,7 +106,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem("theme");if(!t){t="brutalist";localStorage.setItem("theme",t)}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme")}catch(e){}})()`,
+            __html: `(function(){try{var k="kami.theme",t=localStorage.getItem(k);if(!t){t=localStorage.getItem("theme");if(t)localStorage.setItem(k,t);}if(!t){t="brutalist";localStorage.setItem(k,t);}if(t&&t!=="default")document.documentElement.setAttribute("data-theme",t);else document.documentElement.removeAttribute("data-theme");}catch(e){}})()`,
           }}
         />
         <link

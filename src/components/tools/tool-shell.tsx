@@ -3,6 +3,7 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Upload, X } from "lucide-react";
 import { ShortcutContext } from "@/contexts/shortcut-context";
+import { useBreadcrumb } from "@/contexts/breadcrumb-context";
 
 export interface ToolShellProps {
   title: string;
@@ -72,8 +73,29 @@ function InlineThemeSwitcher() {
   const select = useCallback((id: ThemeId) => {
     setTheme(id);
     applyTheme(id);
-    localStorage.setItem("kami.theme", id);
+    try { localStorage.setItem("kami.theme", id); } catch { /* noop */ }
     setOpen(false);
+  }, []);
+
+  // T key cycles themes, consistent with toys and wordart/pixart.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.documentElement.getAttribute("data-kami-shortcuts") === "off") return;
+      const t = e.target as Element | null;
+      if (t?.matches?.("input, textarea, select, [contenteditable='true']")) return;
+      if (e.key === "t" || e.key === "T") {
+        setTheme((cur) => {
+          const i = THEMES.findIndex((x) => x.id === cur);
+          const next = THEMES[(i + 1) % THEMES.length].id;
+          applyTheme(next);
+          try { localStorage.setItem("kami.theme", next); } catch { /* noop */ }
+          return next;
+        });
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   const current = THEMES.find((t) => t.id === theme)!;
@@ -84,9 +106,9 @@ function InlineThemeSwitcher() {
         type="button"
         className="theme-switcher-pill"
         onClick={() => setOpen((v) => !v)}
-        aria-label={`Theme: ${current.label}`}
+        aria-label={`Theme: ${current.label}. Press T to cycle.`}
         aria-expanded={open}
-        title={current.label}
+        title={`${current.label} (T)`}
       >
         <span className="theme-switcher-pill-icon">{current.icon}</span>
       </button>
@@ -179,6 +201,7 @@ export function ToolShell({
   const labeledShortcuts = shortcutCtx?.shortcuts.filter((s) => s.label) ?? [];
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
+  const breadcrumbs = useBreadcrumb();
 
   useEffect(() => {
     if (!sheetOpen && !infoOpen && !helpOpen) return;
@@ -223,11 +246,25 @@ export function ToolShell({
           {tagline && (
             <p className="tool-shell-tagline">{tagline}</p>
           )}
-          <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
-            <a href="https://apps.iamkesava.com">home</a>
-            <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>
-            <a href="https://tools.iamkesava.com">tools</a>
-          </nav>
+          {breadcrumbs.length > 0 ? (
+            <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
+              {breadcrumbs.map((item, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>}
+                  {item.href
+                    ? <a href={item.href}>{item.label}</a>
+                    : <span aria-current="page">{item.label}</span>
+                  }
+                </span>
+              ))}
+            </nav>
+          ) : (
+            <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
+              <a href="https://apps.iamkesava.com">home</a>
+              <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>
+              <a href="https://tools.iamkesava.com">tools</a>
+            </nav>
+          )}
         </div>
 
         {/* Right: actions */}
