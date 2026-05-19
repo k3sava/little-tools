@@ -346,6 +346,7 @@ export default function TextCleanerContent() {
       title="Text Cleaner"
       tagline="Smart quotes · whitespace · HTML strip · unicode normalize"
       accent="#6366f1"
+      materialFab={{ label: "Copy", onClick: handleCopy }}
       actions={actions}
       controls={controls}
     >

@@ -404,6 +404,7 @@ export default function PaletteContent() {
       title="Color Palette Generator"
       tagline="Five harmony rules · click to lock · export to CSS/Tailwind/SVG"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy", onClick: copyExport }}
       actions={
         <>
           <ToolActionButton onClick={copyExport} variant="outline">

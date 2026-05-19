@@ -366,6 +366,7 @@ export default function ScreenshotBeautifierContent() {
       title="Screenshot Beautifier"
       tagline="Drop a screenshot · gradient · device frame · shadow · tilt"
       accent="#8b5cf6"
+      materialFab={{ label: "Download PNG", onClick: () => download("png") }}
       actions={
         image ? (
           <>

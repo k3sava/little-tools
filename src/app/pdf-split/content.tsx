@@ -452,6 +452,7 @@ export default function PdfSplitContent() {
       title="Split PDF"
       tagline="Extract pages from a PDF - select visually or by range."
       accent={ACCENT}
+      materialFab={{ label: "Download", onClick: extract }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

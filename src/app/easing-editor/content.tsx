@@ -429,6 +429,7 @@ export default function EasingEditorContent() {
       title="Easing Editor"
       tagline="cubic-bezier and linear() curves with draggable handles and a live ball preview"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copy }}
       actions={
         <>
           <Segment

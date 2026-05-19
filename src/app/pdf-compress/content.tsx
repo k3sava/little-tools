@@ -283,6 +283,7 @@ export default function PdfCompressContent() {
       title="Compress PDF"
       tagline="Shrink PDFs in your browser - private, no upload."
       accent={ACCENT}
+      materialFab={{ label: "Download", onClick: download }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

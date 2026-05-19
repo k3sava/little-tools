@@ -465,6 +465,7 @@ export default function ReadabilityScorerContent() {
       title="Readability Scorer"
       tagline="Flesch · Kincaid · Gunning Fog · SMOG · ARI · Coleman-Liau · Linsear"
       accent="#6366f1"
+      materialFab={{ label: "Copy Scores", onClick: copyStats }}
       actions={actions}
       controls={controls}
     >

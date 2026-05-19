@@ -226,6 +226,7 @@ export default function ScrollAnimationContent() {
       title="Scroll Animation"
       tagline="scroll-driven animations with animation-range, view() and scroll() timelines"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copyCSS }}
       actions={
         <ToolActionButton onClick={copyCSS} variant="solid">
           {copied ? "Copied!" : "Copy CSS"}

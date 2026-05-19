@@ -235,6 +235,7 @@ export default function KeyframeAnimatorContent() {
       title="Keyframe Animator"
       tagline="Build @keyframes visually — timeline editor with live looping preview"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copyCSS }}
       actions={
         <>
           <ToolActionButton onClick={togglePlay} variant="outline">

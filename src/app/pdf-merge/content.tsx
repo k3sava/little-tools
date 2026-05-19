@@ -306,6 +306,7 @@ export default function PdfMergeContent() {
       title="Merge PDF"
       tagline="Combine PDFs - drag to reorder, rotate, filter pages, export."
       accent={ACCENT}
+      materialFab={{ label: "Merge & Download", onClick: merge }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

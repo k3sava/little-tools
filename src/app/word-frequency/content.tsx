@@ -277,6 +277,7 @@ export default function WordFrequencyContent() {
       title="Word Frequency"
       tagline="Words · bigrams · trigrams · stopword filter · CSV/JSON export"
       accent="#6366f1"
+      materialFab={{ label: "Copy CSV", onClick: handleCopy }}
       actions={actions}
       controls={controls}
     >
