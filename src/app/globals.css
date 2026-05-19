@@ -4683,3 +4683,34 @@ html[data-theme="metro"] .tool-shell-accent-dot {
   background: #0078d4 !important;
   border-radius: 2px !important;
 }
+
+/* ── tools-hub-grid density overrides per design language ─── */
+/* Glass: spacious 2-col wide-format cards */
+@media (min-width: 900px) {
+  html[data-theme="glass"] .tools-hub-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 20px !important;
+  }
+}
+@media (min-width: 1200px) {
+  html[data-theme="glass"] .tools-hub-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+  }
+}
+
+/* Material: enforce 4-col from 900px with 12px gap */
+@media (min-width: 900px) {
+  html[data-theme="material"] .tools-hub-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+/* Metro: 4-col from 900px with 8px gap */
+@media (min-width: 900px) {
+  html[data-theme="metro"] .tools-hub-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+}
