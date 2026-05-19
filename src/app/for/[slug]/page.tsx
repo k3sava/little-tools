@@ -5,6 +5,7 @@ import { AppCard } from "@/components/app-card";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { JsonLd, collectionLd } from "@/lib/json-ld";
+import { CollectionHeader } from "./collection-header";
 
 interface Params { slug: string }
 
@@ -59,12 +60,19 @@ export default async function CollectionPage(props: { params: Promise<Params> })
         ]}
       />
 
+      <CollectionHeader
+        title={col.title}
+        description={col.description}
+        count={inCol.length}
+        accentHex={col.accentHex}
+      />
+
       <div
         className="mx-auto max-w-5xl px-6"
         style={{ paddingTop: "5rem", paddingBottom: "4rem" }}
       >
-        {/* Header */}
-        <header className="mb-10">
+        {/* Header — hidden when glass/material/metro CollectionHeader is active */}
+        <header className="collection-default-header mb-10">
           <div className="flex items-center gap-2 mb-3">
             <span
               style={{

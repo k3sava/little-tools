@@ -6505,3 +6505,892 @@ html[data-theme="material"] .tool-shell-nav-rail-item.is-active {
   border-radius: 28px !important;
   color: #21005d !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COLLECTION PAGE PER-THEME HEADERS
+   Glass hero · Material header · Metro header
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Hide the default header when glass/material/metro themes are active */
+html[data-theme="glass"] .collection-default-header,
+html[data-theme="material"] .collection-default-header,
+html[data-theme="metro"] .collection-default-header {
+  display: none !important;
+}
+
+/* ── Glass: accent-tinted gradient hero ── */
+
+.collection-glass-hero {
+  width: 100%;
+  padding: 60px 24px 40px;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 0.5px solid rgba(255,255,255,0.40);
+}
+
+.collection-glass-hero-eyebrow {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(60,60,67,0.50);
+  margin: 0 0 12px;
+}
+
+.collection-glass-hero-title {
+  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: clamp(32px, 6vw, 56px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: #1d1d1f;
+  margin: 0 0 12px;
+}
+
+.collection-glass-hero-sub {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  color: rgba(60,60,67,0.55);
+  max-width: 540px;
+  margin: 0 auto 16px;
+  line-height: 1.55;
+}
+
+.collection-glass-hero-count {
+  display: inline-block;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(60,60,67,0.45);
+  background: rgba(255,255,255,0.60);
+  border: 0.5px solid rgba(255,255,255,0.70);
+  border-radius: 20px;
+  padding: 4px 12px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Material: accent-bordered header ── */
+
+.collection-material-header {
+  width: 100%;
+  background: #fffbfe;
+  padding: 0;
+}
+
+.collection-material-header-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 24px 20px;
+}
+
+.collection-material-header-label {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6750a4;
+  margin: 0 0 4px;
+}
+
+.collection-material-header-title {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: #1c1b1f;
+  margin: 0 0 8px;
+}
+
+.collection-material-header-desc {
+  font-family: "Google Sans", Roboto, system-ui, sans-serif;
+  font-size: 14px;
+  color: #49454f;
+  margin: 0 0 12px;
+  max-width: 56ch;
+  line-height: 1.55;
+}
+
+.collection-material-header-chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: "Google Sans", Roboto, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6750a4;
+  background: #eaddff;
+  border-radius: 8px;
+  padding: 4px 12px;
+}
+
+/* ── Metro: compact Fluent-style header ── */
+
+.collection-metro-header {
+  width: 100%;
+  background: rgba(243,242,241,0.98);
+  border-bottom: 1px solid #d1d1d1;
+  padding: 20px 24px 16px;
+}
+
+.collection-metro-title {
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  color: #201f1e;
+  margin: 0 0 6px;
+}
+
+.collection-metro-desc {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  color: #605e5c;
+  margin: 0 0 10px;
+  max-width: 60ch;
+}
+
+.collection-metro-count {
+  display: inline-block;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0078d4;
+  letter-spacing: 0.01em;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* PHASE 2: PER-THEME COMPONENT OVERRIDES                                      */
+/* Covers: tool-shell-panel, tool-shell-canvas, control-group (all parts),     */
+/* tool-action-btn, tool-icon-btn, canvas-toolbar, form elements, kc-range/    */
+/* kc-slider — for glass, material, and metro design languages.                */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  GLASS — Apple iOS / macOS style                                             */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Panel – desktop only */
+@media (min-width: 1024px) {
+  html[data-theme="glass"] .tool-shell-panel {
+    background: rgba(242,242,247,0.80);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-left: 0.5px solid rgba(255,255,255,0.50);
+  }
+}
+
+/* Canvas */
+html[data-theme="glass"] .tool-shell-canvas {
+  background: transparent;
+}
+
+/* control-group wrapper */
+html[data-theme="glass"] .tool-shell .control-group {
+  background: rgba(255,255,255,0.62);
+  border-radius: 12px;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  border: 0.5px solid rgba(255,255,255,0.55);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05), inset 0 0.5px 0 rgba(255,255,255,0.85);
+  overflow: hidden;
+  padding: 0;
+  gap: 4px;
+}
+
+/* control-group header labels */
+html[data-theme="glass"] .tool-shell .control-group-head,
+html[data-theme="glass"] .tool-shell .control-group-label {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(60,60,67,0.50);
+  padding: 0 4px 4px;
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="glass"] .tool-shell .control-group-hint {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 11px;
+  color: rgba(60,60,67,0.40);
+}
+
+/* control-group body — zero gap, hairline dividers */
+html[data-theme="glass"] .tool-shell .control-group-body {
+  gap: 0;
+  padding: 0;
+}
+
+html[data-theme="glass"] .tool-shell .control-group-body > *:not(:last-child) {
+  border-bottom: 0.5px solid rgba(0,0,0,0.08);
+}
+
+/* tool-action-btn */
+html[data-theme="glass"] .tool-shell .tool-action-btn {
+  border-radius: 980px;
+  background: rgba(255,255,255,0.60);
+  border: 0.5px solid rgba(255,255,255,0.50);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #007aff;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-weight: 600;
+  min-height: 34px;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(0,122,255,0.20);
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn[data-variant="solid"] {
+  background: #007aff;
+  color: #ffffff;
+  border-color: #007aff;
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn[data-variant="solid"]:hover {
+  background: #0a84ff;
+  transform: scale(1.03);
+  box-shadow: 0 4px 16px rgba(0,122,255,0.30);
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn[data-variant="outline"] {
+  border-color: rgba(0,122,255,0.40);
+  color: #007aff;
+  background: transparent;
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn[data-variant="danger"] {
+  background: rgba(255,59,48,0.12);
+  border-color: rgba(255,59,48,0.30);
+  color: #ff3b30;
+}
+
+html[data-theme="glass"] .tool-shell .tool-action-btn[data-variant="danger"]:hover {
+  background: rgba(255,59,48,0.20);
+  transform: scale(1.03);
+}
+
+/* tool-icon-btn */
+html[data-theme="glass"] .tool-shell .tool-icon-btn {
+  border-radius: 10px;
+  background: rgba(255,255,255,0.60);
+  border: 0.5px solid rgba(255,255,255,0.50);
+  color: #007aff;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), background 0.15s;
+}
+
+html[data-theme="glass"] .tool-shell .tool-icon-btn:hover {
+  transform: scale(1.08);
+  background: rgba(255,255,255,0.80);
+}
+
+html[data-theme="glass"] .tool-shell .tool-icon-btn[data-active="true"] {
+  background: #007aff;
+  color: #ffffff;
+  border-color: #007aff;
+}
+
+/* canvas-toolbar */
+html[data-theme="glass"] .tool-shell .canvas-toolbar {
+  background: rgba(255,255,255,0.62);
+  border: 0.5px solid rgba(255,255,255,0.55);
+  border-radius: 14px;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+/* Form elements */
+html[data-theme="glass"] .tool-shell input[type="text"],
+html[data-theme="glass"] .tool-shell input[type="number"],
+html[data-theme="glass"] .tool-shell input[type="email"],
+html[data-theme="glass"] .tool-shell input[type="url"],
+html[data-theme="glass"] .tool-shell input[type="search"],
+html[data-theme="glass"] .tool-shell select,
+html[data-theme="glass"] .tool-shell textarea {
+  background: rgba(255,255,255,0.70);
+  border: 0.5px solid rgba(0,0,0,0.12);
+  border-radius: 8px;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15px;
+  padding: 8px 12px;
+  color: #1d1d1f;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+html[data-theme="glass"] .tool-shell input[type="text"]:focus-visible,
+html[data-theme="glass"] .tool-shell input[type="number"]:focus-visible,
+html[data-theme="glass"] .tool-shell input[type="email"]:focus-visible,
+html[data-theme="glass"] .tool-shell input[type="url"]:focus-visible,
+html[data-theme="glass"] .tool-shell input[type="search"]:focus-visible,
+html[data-theme="glass"] .tool-shell select:focus-visible,
+html[data-theme="glass"] .tool-shell textarea:focus-visible {
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+  outline: none;
+}
+
+/* kc-range slider */
+html[data-theme="glass"] .tool-shell .kc-range {
+  accent-color: #007aff;
+}
+
+html[data-theme="glass"] .tool-shell .kc-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(180,200,240,0.35);
+  border-radius: 2px;
+}
+
+html[data-theme="glass"] .tool-shell .kc-range::-moz-range-track {
+  height: 4px;
+  background: rgba(180,200,240,0.35);
+  border-radius: 2px;
+}
+
+html[data-theme="glass"] .tool-shell .kc-range::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,122,255,0.40);
+  border: none;
+  border-radius: 50%;
+  transition: transform 0.24s cubic-bezier(0.34,1.56,0.64,1);
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -9px;
+}
+
+html[data-theme="glass"] .tool-shell .kc-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,122,255,0.40);
+  border: none;
+  border-radius: 50%;
+  transition: transform 0.24s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+html[data-theme="glass"] .tool-shell .kc-range:hover::-webkit-slider-thumb,
+html[data-theme="glass"] .tool-shell .kc-range:focus::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+/* kc-slider wrapper labels */
+html[data-theme="glass"] .tool-shell .kc-label {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  color: rgba(60,60,67,0.60);
+}
+
+html[data-theme="glass"] .tool-shell .kc-value {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #007aff;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  MATERIAL — Google Material Design 3 style                                  */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Panel – desktop only */
+@media (min-width: 1024px) {
+  html[data-theme="material"] .tool-shell-panel {
+    background: color-mix(in srgb, #6750a4 4%, #fffbfe);
+    border-left: 1px solid #cac4d0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Canvas */
+html[data-theme="material"] .tool-shell-canvas {
+  background: #fffbfe;
+}
+
+/* control-group wrapper */
+html[data-theme="material"] .tool-shell .control-group {
+  background: color-mix(in srgb, #6750a4 4%, #fffbfe);
+  border: 1px solid #cac4d0;
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* control-group header labels */
+html[data-theme="material"] .tool-shell .control-group-head,
+html[data-theme="material"] .tool-shell .control-group-label {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6750a4;
+  padding: 10px 16px 6px;
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="material"] .tool-shell .control-group-hint {
+  font-family: "Google Sans", Roboto, system-ui, sans-serif;
+  font-size: 11px;
+  color: #79747e;
+  padding: 0 16px 8px;
+}
+
+/* control-group body — hairline dividers, M3 row height */
+html[data-theme="material"] .tool-shell .control-group-body {
+  gap: 0;
+  padding: 0;
+}
+
+html[data-theme="material"] .tool-shell .control-group-body > *:not(:last-child) {
+  border-bottom: 1px solid #e7e0ec;
+}
+
+html[data-theme="material"] .tool-shell .control-group-body > * {
+  min-height: 48px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* tool-action-btn */
+html[data-theme="material"] .tool-shell .tool-action-btn {
+  border-radius: 20px;
+  font-family: "Google Sans", Roboto, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+  min-height: 40px;
+  padding: 0 24px;
+  transition: background 100ms cubic-bezier(0.05,0.7,0.1,1.0);
+  border: 1px solid #cac4d0;
+  color: #6750a4;
+  background: transparent;
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn:hover {
+  background: rgba(103,80,164,0.08);
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="solid"] {
+  background: #6750a4;
+  color: #ffffff;
+  border-color: #6750a4;
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="solid"]:hover {
+  background: #7965af;
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="outline"] {
+  border-color: #6750a4;
+  color: #6750a4;
+  background: transparent;
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="outline"]:hover {
+  background: rgba(103,80,164,0.08);
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="danger"] {
+  border-color: #b3261e;
+  color: #b3261e;
+  background: transparent;
+}
+
+html[data-theme="material"] .tool-shell .tool-action-btn[data-variant="danger"]:hover {
+  background: rgba(179,38,30,0.08);
+}
+
+/* tool-icon-btn */
+html[data-theme="material"] .tool-shell .tool-icon-btn {
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  color: #6750a4;
+  width: 40px;
+  height: 40px;
+  transition: background 100ms cubic-bezier(0.05,0.7,0.1,1.0);
+}
+
+html[data-theme="material"] .tool-shell .tool-icon-btn:hover {
+  background: rgba(103,80,164,0.08);
+}
+
+html[data-theme="material"] .tool-shell .tool-icon-btn[data-active="true"] {
+  background: #eaddff;
+  color: #21005d;
+}
+
+/* canvas-toolbar */
+html[data-theme="material"] .tool-shell .canvas-toolbar {
+  background: color-mix(in srgb, #6750a4 5%, #fffbfe);
+  border: 1px solid #cac4d0;
+  border-radius: 8px;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* Form elements */
+html[data-theme="material"] .tool-shell input[type="text"],
+html[data-theme="material"] .tool-shell input[type="number"],
+html[data-theme="material"] .tool-shell input[type="email"],
+html[data-theme="material"] .tool-shell input[type="url"],
+html[data-theme="material"] .tool-shell input[type="search"],
+html[data-theme="material"] .tool-shell select,
+html[data-theme="material"] .tool-shell textarea {
+  background: color-mix(in srgb, #6750a4 8%, #fffbfe);
+  border: none;
+  border-bottom: 1px solid #79747e;
+  border-radius: 4px 4px 0 0;
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 14px;
+  padding: 12px 16px 8px;
+  color: #1c1b1f;
+  transition: border-bottom-color 0.1s;
+  outline: none;
+  box-shadow: none;
+}
+
+html[data-theme="material"] .tool-shell input[type="text"]:focus-visible,
+html[data-theme="material"] .tool-shell input[type="number"]:focus-visible,
+html[data-theme="material"] .tool-shell input[type="email"]:focus-visible,
+html[data-theme="material"] .tool-shell input[type="url"]:focus-visible,
+html[data-theme="material"] .tool-shell input[type="search"]:focus-visible,
+html[data-theme="material"] .tool-shell select:focus-visible,
+html[data-theme="material"] .tool-shell textarea:focus-visible {
+  border-bottom: 2px solid #6750a4;
+  outline: none;
+}
+
+/* kc-range slider */
+html[data-theme="material"] .tool-shell .kc-range {
+  accent-color: #6750a4;
+}
+
+html[data-theme="material"] .tool-shell .kc-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: color-mix(in srgb, #6750a4 20%, #e7e0ec);
+  border-radius: 2px;
+}
+
+html[data-theme="material"] .tool-shell .kc-range::-moz-range-track {
+  height: 4px;
+  background: color-mix(in srgb, #6750a4 20%, #e7e0ec);
+  border-radius: 2px;
+}
+
+html[data-theme="material"] .tool-shell .kc-range::-webkit-slider-thumb {
+  width: 20px;
+  height: 20px;
+  background: #6750a4;
+  border: none;
+  border-radius: 50%;
+  transition: transform 100ms cubic-bezier(0.05,0.7,0.1,1.0);
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -8px;
+}
+
+html[data-theme="material"] .tool-shell .kc-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #6750a4;
+  border: none;
+  border-radius: 50%;
+  transition: transform 100ms cubic-bezier(0.05,0.7,0.1,1.0);
+}
+
+html[data-theme="material"] .tool-shell .kc-range:hover::-webkit-slider-thumb,
+html[data-theme="material"] .tool-shell .kc-range:focus::-webkit-slider-thumb {
+  transform: scale(1.2);
+}
+
+/* kc-slider wrapper labels */
+html[data-theme="material"] .tool-shell .kc-label {
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 12px;
+  color: #49454f;
+}
+
+html[data-theme="material"] .tool-shell .kc-value {
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6750a4;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────── */
+/*  METRO — Microsoft Fluent 2 / Windows style                                 */
+/* ─────────────────────────────────────────────────────────────────────────── */
+
+/* Panel – desktop only */
+@media (min-width: 1024px) {
+  html[data-theme="metro"] .tool-shell-panel {
+    background: rgba(249,249,249,0.95);
+    backdrop-filter: saturate(120%) blur(40px);
+    -webkit-backdrop-filter: saturate(120%) blur(40px);
+    border-left: 1px solid #d1d1d1;
+  }
+}
+
+/* Canvas */
+html[data-theme="metro"] .tool-shell-canvas {
+  background: #f3f2f1;
+}
+
+/* control-group wrapper */
+html[data-theme="metro"] .tool-shell .control-group {
+  background: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0;
+  gap: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* control-group header labels */
+html[data-theme="metro"] .tool-shell .control-group-head,
+html[data-theme="metro"] .tool-shell .control-group-label {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #484644;
+  padding: 8px 12px 4px;
+  background: transparent;
+  border: none;
+}
+
+html[data-theme="metro"] .tool-shell .control-group-hint {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 11px;
+  color: #797775;
+  padding: 0 12px 6px;
+}
+
+/* control-group body — hairline dividers */
+html[data-theme="metro"] .tool-shell .control-group-body {
+  gap: 0;
+  padding: 0;
+}
+
+html[data-theme="metro"] .tool-shell .control-group-body > *:not(:last-child) {
+  border-bottom: 1px solid #edebe9;
+}
+
+/* tool-action-btn */
+html[data-theme="metro"] .tool-shell .tool-action-btn {
+  border-radius: 2px;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 13px;
+  min-height: 32px;
+  padding: 0 12px;
+  transition: background 83ms linear, border-color 83ms linear;
+  border: 1px solid #8a8a8a;
+  color: #201f1e;
+  background: #ffffff;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn:hover {
+  background: rgba(0,0,0,0.04);
+  border-color: #484644;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn:active {
+  background: rgba(0,0,0,0.08);
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="solid"] {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: #0078d4;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="solid"]:hover {
+  background: #106ebe;
+  border-color: #106ebe;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="solid"]:active {
+  background: #005a9e;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="outline"] {
+  border-color: #0078d4;
+  color: #0078d4;
+  background: transparent;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="outline"]:hover {
+  background: rgba(0,120,212,0.06);
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="danger"] {
+  border-color: #d13438;
+  color: #d13438;
+  background: transparent;
+}
+
+html[data-theme="metro"] .tool-shell .tool-action-btn[data-variant="danger"]:hover {
+  background: rgba(209,52,56,0.06);
+  border-color: #a4262c;
+  color: #a4262c;
+}
+
+/* tool-icon-btn */
+html[data-theme="metro"] .tool-shell .tool-icon-btn {
+  border-radius: 2px;
+  background: transparent;
+  border: none;
+  color: #484644;
+  width: 32px;
+  height: 32px;
+  transition: background 83ms linear;
+}
+
+html[data-theme="metro"] .tool-shell .tool-icon-btn:hover {
+  background: rgba(0,0,0,0.06);
+}
+
+html[data-theme="metro"] .tool-shell .tool-icon-btn:active {
+  background: rgba(0,0,0,0.10);
+}
+
+html[data-theme="metro"] .tool-shell .tool-icon-btn[data-active="true"] {
+  background: rgba(0,120,212,0.08);
+  color: #0078d4;
+}
+
+/* canvas-toolbar */
+html[data-theme="metro"] .tool-shell .canvas-toolbar {
+  background: rgba(249,249,249,0.96);
+  border: 1px solid #d1d1d1;
+  border-radius: 2px;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+
+/* Form elements */
+html[data-theme="metro"] .tool-shell input[type="text"],
+html[data-theme="metro"] .tool-shell input[type="number"],
+html[data-theme="metro"] .tool-shell input[type="email"],
+html[data-theme="metro"] .tool-shell input[type="url"],
+html[data-theme="metro"] .tool-shell input[type="search"],
+html[data-theme="metro"] .tool-shell select,
+html[data-theme="metro"] .tool-shell textarea {
+  background: #ffffff;
+  border: 1px solid #8a8a8a;
+  border-radius: 2px;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+  padding: 5px 8px;
+  color: #201f1e;
+  transition: border-color 83ms linear, box-shadow 83ms linear;
+  outline: none;
+}
+
+html[data-theme="metro"] .tool-shell input[type="text"]:hover,
+html[data-theme="metro"] .tool-shell input[type="number"]:hover,
+html[data-theme="metro"] .tool-shell input[type="email"]:hover,
+html[data-theme="metro"] .tool-shell input[type="url"]:hover,
+html[data-theme="metro"] .tool-shell input[type="search"]:hover,
+html[data-theme="metro"] .tool-shell select:hover,
+html[data-theme="metro"] .tool-shell textarea:hover {
+  border-color: #484644;
+}
+
+html[data-theme="metro"] .tool-shell input[type="text"]:focus-visible,
+html[data-theme="metro"] .tool-shell input[type="number"]:focus-visible,
+html[data-theme="metro"] .tool-shell input[type="email"]:focus-visible,
+html[data-theme="metro"] .tool-shell input[type="url"]:focus-visible,
+html[data-theme="metro"] .tool-shell input[type="search"]:focus-visible,
+html[data-theme="metro"] .tool-shell select:focus-visible,
+html[data-theme="metro"] .tool-shell textarea:focus-visible {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
+  outline: none;
+}
+
+/* kc-range slider */
+html[data-theme="metro"] .tool-shell .kc-range {
+  accent-color: #0078d4;
+}
+
+html[data-theme="metro"] .tool-shell .kc-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: #d1d1d1;
+  border-radius: 0;
+}
+
+html[data-theme="metro"] .tool-shell .kc-range::-moz-range-track {
+  height: 2px;
+  background: #d1d1d1;
+  border-radius: 0;
+}
+
+html[data-theme="metro"] .tool-shell .kc-range::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  background: #0078d4;
+  border-radius: 2px;
+  border: none;
+  transition: background 83ms, transform 83ms;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -7px;
+}
+
+html[data-theme="metro"] .tool-shell .kc-range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #0078d4;
+  border-radius: 2px;
+  border: none;
+  transition: background 83ms, transform 83ms;
+}
+
+html[data-theme="metro"] .tool-shell .kc-range:hover::-webkit-slider-thumb {
+  background: #106ebe;
+  transform: scale(1.1);
+}
+
+html[data-theme="metro"] .tool-shell .kc-range:focus::-webkit-slider-thumb {
+  background: #005a9e;
+}
+
+/* kc-slider wrapper labels */
+html[data-theme="metro"] .tool-shell .kc-label {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  color: #484644;
+}
+
+html[data-theme="metro"] .tool-shell .kc-value {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0078d4;
+}
+
+/* ── end Phase 2 per-theme component overrides ──────────────────────────── */
