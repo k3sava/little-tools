@@ -5913,3 +5913,72 @@ video,
 img {
   transition: none !important;
 }
+
+/* ──────────────────────────────────────────────────────────
+   MOBILE BOTTOM SHEET — per design language
+   Applied when .tool-shell-panel.is-open on mobile (<1024px)
+   ────────────────────────────────────────────────────────── */
+
+/* Glass: iOS sheet — frosted, spring easing, large top radius */
+@media (max-width: 1023px) {
+  html[data-theme="glass"] .tool-shell-panel {
+    background: rgba(242,242,247,0.82) !important;
+    backdrop-filter: saturate(180%) blur(40px) !important;
+    -webkit-backdrop-filter: saturate(180%) blur(40px) !important;
+    border-radius: 22px 22px 0 0 !important;
+    border-top: 0.5px solid rgba(255,255,255,0.60) !important;
+    box-shadow: 0 -4px 40px rgba(0,0,0,0.10) !important;
+    transition: transform 500ms cubic-bezier(0.34,1.56,0.64,1) !important;
+  }
+  html[data-theme="glass"] .tool-shell-panel-handle {
+    width: 36px !important;
+    height: 5px !important;
+    background: rgba(60,60,67,0.30) !important;
+    border-radius: 999px !important;
+    margin: 8px auto 4px !important;
+  }
+  html[data-theme="glass"] .tool-shell-backdrop {
+    background: rgba(0,0,0,0.28) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+}
+
+/* Material: nav drawer — tonal surface, M3 shadow, decelerate easing */
+@media (max-width: 1023px) {
+  html[data-theme="material"] .tool-shell-panel {
+    background: color-mix(in srgb, #6750a4 5%, #fffbfe) !important;
+    border-top: 1px solid #cac4d0 !important;
+    border-radius: 28px 28px 0 0 !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+    transition: transform 300ms cubic-bezier(0.05,0.7,0.1,1.0) !important;
+  }
+  html[data-theme="material"] .tool-shell-panel-handle {
+    width: 32px !important;
+    height: 4px !important;
+    background: #cac4d0 !important;
+    border-radius: 999px !important;
+  }
+  html[data-theme="material"] .tool-shell-backdrop {
+    background: rgba(0,0,0,0.32) !important;
+  }
+}
+
+/* Metro: flyout — Acrylic, flat top, brisk easing */
+@media (max-width: 1023px) {
+  html[data-theme="metro"] .tool-shell-panel {
+    background: rgba(249,249,249,0.94) !important;
+    backdrop-filter: saturate(120%) blur(40px) !important;
+    -webkit-backdrop-filter: saturate(120%) blur(40px) !important;
+    border-radius: 0 !important;
+    border-top: 1px solid #d1d1d1 !important;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.12) !important;
+    transition: transform 167ms cubic-bezier(0,0,0.58,1) !important;
+  }
+  html[data-theme="metro"] .tool-shell-panel-handle {
+    display: none !important;
+  }
+  html[data-theme="metro"] .tool-shell-backdrop {
+    background: rgba(0,0,0,0.20) !important;
+  }
+}
