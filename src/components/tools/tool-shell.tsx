@@ -27,6 +27,9 @@ const THEMES = [
   { id: "editorial",  label: "editorial", icon: "¶" },
   { id: "terminal",   label: "phosphor",  icon: ">" },
   { id: "zen",        label: "zen",       icon: "◯" },
+  { id: "glass",      label: "glass",     icon: "◎" },
+  { id: "material",   label: "material",  icon: "◆" },
+  { id: "metro",      label: "metro",     icon: "▣" },
 ] as const;
 
 type ThemeId = (typeof THEMES)[number]["id"];

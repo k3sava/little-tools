@@ -3408,3 +3408,860 @@ html[data-theme="brutalist"] .kc-stat {
     box-shadow: 2px 2px 0 #000;
   }
 }
+
+
+/* ============================================================
+   GLASS — "Liquid Light"
+   School: Apple HIG 2024 / iOS 26 / visionOS / WWDC 2025
+   Philosophy: Every surface is a frosted window into a gradient
+   wallpaper behind it. Vibrancy, specular highlights, spring
+   motion, and SF Pro hierarchy. Translucent, layered, alive.
+   ============================================================ */
+html[data-theme="glass"] {
+  --kami-bg: #dbeafe;
+  --kami-surface: rgba(255,255,255,0.58);
+  --kami-surface-solid: rgba(255,255,255,0.82);
+  --kami-border: rgba(255,255,255,0.50);
+  --kami-border-strong: rgba(180,200,240,0.45);
+  --kami-text: #1d1d1f;
+  --kami-text-muted: #3c3c43;
+  --kami-text-dim: #6e6e73;
+  --kami-accent: #007aff;
+
+  --kami-cta-bg: #007aff;
+  --kami-cta-bg-hover: #0071e3;
+  --kami-cta-text: #ffffff;
+  --kami-cta-radius: 980px;
+  --kami-cta-shadow: 0 2px 12px rgba(0,122,255,0.40), inset 0 0.5px 0 rgba(255,255,255,0.5);
+
+  --kami-cta2-bg: rgba(255,255,255,0.65);
+  --kami-cta2-bg-hover: rgba(255,255,255,0.88);
+  --kami-cta2-text: #007aff;
+  --kami-cta2-border: rgba(0,122,255,0.30);
+
+  --kami-overlay-bg: rgba(28,28,30,0.78);
+  --kami-overlay-text: #ffffff;
+  --kami-overlay-text-dim: rgba(235,235,245,0.6);
+
+  --kami-breadcrumb: rgba(60,60,67,0.40);
+  --kami-breadcrumb-hover: #007aff;
+
+  --kami-footer: rgba(60,60,67,0.40);
+  --kami-footer-link: rgba(60,60,67,0.55);
+  --kami-footer-link-hover: #007aff;
+
+  /* SF Pro hierarchy */
+  --kami-font-display: -apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif;
+  --kami-font-body: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+  --kami-font-mono: "SF Mono", ui-monospace, "Cascadia Code", monospace;
+  --kami-heading-case: none;
+  --kami-heading-tracking: -0.025em;
+  --kami-heading-weight: 700;
+  --kami-body-tracking: -0.01em;
+  --kami-body-leading: 1.47;
+
+  --kami-card-radius: 20px;
+  --kami-card-border: 1px solid rgba(255,255,255,0.55);
+  --kami-card-shadow: 0 4px 28px rgba(0,0,0,0.08), inset 0 0.5px 0 rgba(255,255,255,0.85);
+  --kami-card-shadow-hover: 0 10px 48px rgba(0,0,0,0.14), inset 0 0.5px 0 rgba(255,255,255,0.85);
+  --kami-card-hover-transform: translateY(-3px) scale(1.01);
+
+  --kami-motion-fast: 200ms;
+  --kami-motion-base: 380ms;
+  --kami-motion-slow: 560ms;
+  --kami-motion-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --kami-divider-style: 1px solid rgba(210,220,240,0.40);
+
+  --kami-input-bg: rgba(255,255,255,0.65);
+  --kami-input-border: 1px solid rgba(180,200,240,0.50);
+  --kami-input-radius: 12px;
+  --kami-input-focus-ring: 0 0 0 3.5px rgba(0,122,255,0.28);
+  --kami-caret: #007aff;
+}
+
+/* Gradient wallpaper — fixed to viewport so surfaces "reveal" it */
+html[data-theme="glass"] {
+  background: linear-gradient(135deg, #c7e0fc 0%, #d8d4fc 28%, #e9d5fb 52%, #fbcfe8 74%, #bbf7d0 100%);
+  background-attachment: fixed;
+}
+html[data-theme="glass"] body {
+  background: transparent;
+  color: #1d1d1f;
+  font-family: var(--kami-font-body);
+}
+
+/* Glass headings */
+html[data-theme="glass"] .kami-scope h1,
+html[data-theme="glass"] .kami-scope h2,
+html[data-theme="glass"] .kami-scope h3 {
+  font-family: var(--kami-font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+/* Glass text links */
+html[data-theme="glass"] .kami-scope p a,
+html[data-theme="glass"] .kami-scope li a {
+  color: #007aff;
+  text-decoration: none;
+  font-weight: 500;
+}
+html[data-theme="glass"] .kami-scope p a:hover,
+html[data-theme="glass"] .kami-scope li a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Glass inputs */
+html[data-theme="glass"] .kami-scope input[type="text"],
+html[data-theme="glass"] .kami-scope input[type="search"],
+html[data-theme="glass"] .kami-scope input[type="number"],
+html[data-theme="glass"] .kami-scope input[type="email"],
+html[data-theme="glass"] .kami-scope input[type="date"],
+html[data-theme="glass"] .kami-scope textarea,
+html[data-theme="glass"] .kami-scope select {
+  background: rgba(255,255,255,0.65) !important;
+  border: 1px solid rgba(180,200,240,0.50) !important;
+  border-radius: 12px !important;
+  color: #1d1d1f !important;
+  caret-color: #007aff !important;
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+}
+html[data-theme="glass"] .kami-scope input:focus,
+html[data-theme="glass"] .kami-scope textarea:focus,
+html[data-theme="glass"] .kami-scope select:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3.5px rgba(0,122,255,0.28) !important;
+  border-color: rgba(0,122,255,0.5) !important;
+}
+
+/* Glass tool-shell header — frosted bar */
+html[data-theme="glass"] .tool-shell-header {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.55);
+  box-shadow: 0 1px 0 rgba(200,220,255,0.25);
+}
+
+/* Glass panel — sidebar frosted */
+html[data-theme="glass"] .tool-shell-panel {
+  background: rgba(255,255,255,0.68);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-color: rgba(200,210,240,0.40);
+  border-radius: 0;
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.5);
+}
+
+/* Glass action buttons — iOS pill buttons */
+html[data-theme="glass"] .tool-action-btn {
+  background: rgba(255,255,255,0.72);
+  color: #007aff;
+  border: 1px solid rgba(0,122,255,0.25);
+  border-radius: 980px;
+  font-family: var(--kami-font-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.8);
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease),
+              transform var(--kami-motion-fast) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="glass"] .tool-action-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.90);
+  box-shadow: 0 4px 16px rgba(0,122,255,0.20), inset 0 0.5px 0 rgba(255,255,255,0.8);
+  transform: translateY(-1px) scale(1.02);
+}
+html[data-theme="glass"] .tool-action-btn[data-variant="solid"] {
+  background: #007aff;
+  color: #ffffff;
+  border-color: rgba(0,100,200,0.30);
+  box-shadow: 0 2px 12px rgba(0,122,255,0.40), inset 0 0.5px 0 rgba(255,255,255,0.35);
+}
+html[data-theme="glass"] .tool-action-btn[data-variant="solid"]:hover:not(:disabled) {
+  background: #0071e3;
+  box-shadow: 0 4px 20px rgba(0,122,255,0.50), inset 0 0.5px 0 rgba(255,255,255,0.35);
+  transform: translateY(-1px) scale(1.02);
+}
+html[data-theme="glass"] .tool-action-btn[data-variant="ghost"] {
+  background: transparent;
+  border-color: transparent;
+  color: #007aff;
+  box-shadow: none;
+}
+html[data-theme="glass"] .tool-action-btn[data-variant="ghost"]:hover:not(:disabled) {
+  background: rgba(0,122,255,0.08);
+  transform: none;
+  box-shadow: none;
+}
+
+/* Glass icon buttons — circular capsules */
+html[data-theme="glass"] .tool-icon-btn {
+  background: rgba(255,255,255,0.68);
+  color: #007aff;
+  border: 1px solid rgba(0,122,255,0.20);
+  border-radius: 50%;
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.8);
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease),
+              transform var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="glass"] .tool-icon-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.90);
+  box-shadow: 0 4px 12px rgba(0,122,255,0.18), inset 0 0.5px 0 rgba(255,255,255,0.8);
+  transform: scale(1.08);
+}
+html[data-theme="glass"] .tool-icon-btn[data-active="true"] {
+  background: #007aff;
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(0,122,255,0.35);
+}
+html[data-theme="glass"] .tool-icon-btn[data-variant="solid"] {
+  background: #007aff;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* Glass FAB */
+html[data-theme="glass"] .tool-shell-fab {
+  background: rgba(255,255,255,0.80);
+  color: #007aff;
+  border: 1px solid rgba(0,122,255,0.20);
+  border-radius: 980px;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.8);
+}
+html[data-theme="glass"] .tool-shell-fab.is-primary {
+  background: #007aff;
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 20px rgba(0,122,255,0.45), inset 0 0.5px 0 rgba(255,255,255,0.30);
+}
+
+/* Glass segment control — iOS style pill */
+html[data-theme="glass"] .kc-segment {
+  background: rgba(120,120,128,0.12);
+  border: 1px solid rgba(180,200,240,0.35);
+  border-radius: 10px;
+  padding: 2px;
+  backdrop-filter: saturate(180%) blur(10px);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+}
+html[data-theme="glass"] .kc-segment-btn {
+  border-radius: 8px;
+  font-family: var(--kami-font-body);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="glass"] .kc-segment-btn[data-active="true"] {
+  background: rgba(255,255,255,0.90);
+  color: #1d1d1f;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 0.5px 0 rgba(255,255,255,0.9);
+}
+
+/* Glass kami-tile (homepage tiles) */
+html[data-theme="glass"] .kami-tile {
+  background: rgba(255,255,255,0.62);
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 20px;
+  backdrop-filter: saturate(180%) blur(16px);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 0.5px 0 rgba(255,255,255,0.85);
+  transition: transform var(--kami-motion-base) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-base) var(--kami-motion-ease);
+}
+html[data-theme="glass"] .kami-tile:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.13), inset 0 0.5px 0 rgba(255,255,255,0.85);
+}
+
+/* Glass kc-select / stepper */
+html[data-theme="glass"] .kc-select,
+html[data-theme="glass"] .kc-stepper {
+  border-radius: 12px;
+  border: 1px solid rgba(180,200,240,0.50);
+  background: rgba(255,255,255,0.65);
+  backdrop-filter: saturate(180%) blur(8px);
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+}
+html[data-theme="glass"] .kc-select:focus { outline: none; box-shadow: var(--kami-input-focus-ring); }
+
+/* Glass theme-switcher pill */
+html[data-theme="glass"] .theme-switcher-pill {
+  background: rgba(255,255,255,0.72);
+  border: 1px solid rgba(255,255,255,0.55);
+  border-radius: 980px;
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08), inset 0 0.5px 0 rgba(255,255,255,0.9);
+  color: #007aff;
+}
+
+/* ============================================================
+   MATERIAL — "Dynamic Elevation"
+   School: Google Material Design 3 (Material You), 2022–2025
+   Philosophy: Dynamic color derived from a seed (#6750A4 purple).
+   Tonal surfaces elevate via overlay. Type scale: Google Sans +
+   Roboto Flex. Emphasized decelerate motion. Ripple-ready.
+   ============================================================ */
+html[data-theme="material"] {
+  --kami-bg: #fffbfe;
+  --kami-surface: #fffbfe;
+  --kami-surface-solid: #fffbfe;
+  --kami-border: #cac4d0;
+  --kami-border-strong: #79747e;
+  --kami-text: #1c1b1f;
+  --kami-text-muted: #49454f;
+  --kami-text-dim: #79747e;
+  --kami-accent: #6750a4;
+
+  --kami-cta-bg: #6750a4;
+  --kami-cta-bg-hover: #7965af;
+  --kami-cta-text: #ffffff;
+  --kami-cta-radius: 20px;
+  --kami-cta-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+  --kami-cta2-bg: #eaddff;
+  --kami-cta2-bg-hover: #d0bcff;
+  --kami-cta2-text: #21005d;
+  --kami-cta2-border: #cac4d0;
+
+  --kami-overlay-bg: #1c1b1f;
+  --kami-overlay-text: #e6e1e5;
+  --kami-overlay-text-dim: #cac4d0;
+
+  --kami-breadcrumb: #79747e;
+  --kami-breadcrumb-hover: #6750a4;
+
+  --kami-footer: #79747e;
+  --kami-footer-link: #49454f;
+  --kami-footer-link-hover: #6750a4;
+
+  /* Google Sans + Roboto Flex type scale */
+  --kami-font-display: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+  --kami-font-body: "Roboto Flex", Roboto, system-ui, sans-serif;
+  --kami-font-mono: "Roboto Mono", ui-monospace, monospace;
+  --kami-heading-case: none;
+  --kami-heading-tracking: 0;
+  --kami-heading-weight: 500;
+  --kami-body-tracking: 0.01em;
+  --kami-body-leading: 1.5;
+
+  /* M3 shape scale: cards = medium (12dp), buttons = full (20dp) */
+  --kami-card-radius: 12px;
+  --kami-card-border: none;
+  --kami-card-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  --kami-card-shadow-hover: 0 2px 6px rgba(0,0,0,0.10), 0 6px 20px rgba(0,0,0,0.08);
+  --kami-card-hover-transform: translateY(-2px);
+
+  /* M3 emphasized decelerate easing */
+  --kami-motion-fast: 100ms;
+  --kami-motion-base: 200ms;
+  --kami-motion-slow: 400ms;
+  --kami-motion-ease: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+
+  --kami-divider-style: 1px solid #cac4d0;
+
+  /* M3 filled input */
+  --kami-input-bg: #e7e0ec;
+  --kami-input-border: 0 0 1px 0 rgba(0,0,0,0) / 1px solid #79747e;
+  --kami-input-radius: 4px 4px 0 0;
+  --kami-input-focus-ring: 0 2px 0 0 #6750a4;
+  --kami-caret: #6750a4;
+}
+
+html[data-theme="material"] body {
+  background-color: #fffbfe;
+  color: #1c1b1f;
+  font-family: var(--kami-font-body);
+}
+
+/* M3 headings */
+html[data-theme="material"] .kami-scope h1,
+html[data-theme="material"] .kami-scope h2,
+html[data-theme="material"] .kami-scope h3 {
+  font-family: var(--kami-font-display);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* M3 text links */
+html[data-theme="material"] .kami-scope p a,
+html[data-theme="material"] .kami-scope li a {
+  color: #6750a4;
+  text-decoration: none;
+}
+html[data-theme="material"] .kami-scope p a:hover,
+html[data-theme="material"] .kami-scope li a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* M3 inputs — filled variant with bottom border */
+html[data-theme="material"] .kami-scope input[type="text"],
+html[data-theme="material"] .kami-scope input[type="search"],
+html[data-theme="material"] .kami-scope input[type="number"],
+html[data-theme="material"] .kami-scope input[type="email"],
+html[data-theme="material"] .kami-scope input[type="date"],
+html[data-theme="material"] .kami-scope textarea {
+  background: #e7e0ec !important;
+  border: none !important;
+  border-bottom: 1px solid #79747e !important;
+  border-radius: 4px 4px 0 0 !important;
+  color: #1c1b1f !important;
+  caret-color: #6750a4 !important;
+}
+html[data-theme="material"] .kami-scope select {
+  background: #e7e0ec !important;
+  border: none !important;
+  border-bottom: 1px solid #79747e !important;
+  border-radius: 4px 4px 0 0 !important;
+  color: #1c1b1f !important;
+}
+html[data-theme="material"] .kami-scope input:focus,
+html[data-theme="material"] .kami-scope textarea:focus {
+  outline: none !important;
+  border-bottom: 2px solid #6750a4 !important;
+  box-shadow: none !important;
+}
+html[data-theme="material"] .kami-scope select:focus {
+  outline: none !important;
+  border-bottom: 2px solid #6750a4 !important;
+}
+
+/* M3 tool-shell header — surface level 2 (surface + 8% primary overlay) */
+html[data-theme="material"] .tool-shell-header {
+  background: color-mix(in srgb, #6750a4 8%, #fffbfe);
+  border-bottom: 1px solid #cac4d0;
+  box-shadow: none;
+}
+
+/* M3 panel — surface level 1 */
+html[data-theme="material"] .tool-shell-panel {
+  background: color-mix(in srgb, #6750a4 5%, #fffbfe);
+  border-color: #cac4d0;
+  border-radius: 0;
+}
+
+/* M3 action buttons — filled / tonal / text button variants */
+html[data-theme="material"] .tool-action-btn {
+  background: #eaddff;
+  color: #21005d;
+  border: none;
+  border-radius: 20px;
+  font-family: var(--kami-font-body);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-base) var(--kami-motion-ease);
+}
+html[data-theme="material"] .tool-action-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, #21005d 8%, #eaddff);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.14);
+}
+html[data-theme="material"] .tool-action-btn[data-variant="solid"] {
+  background: #6750a4;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+html[data-theme="material"] .tool-action-btn[data-variant="solid"]:hover:not(:disabled) {
+  background: color-mix(in srgb, #ffffff 8%, #6750a4);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+html[data-theme="material"] .tool-action-btn[data-variant="ghost"] {
+  background: transparent;
+  border: none;
+  color: #6750a4;
+  box-shadow: none;
+}
+html[data-theme="material"] .tool-action-btn[data-variant="ghost"]:hover:not(:disabled) {
+  background: rgba(103,80,164,0.08);
+}
+
+/* M3 icon buttons */
+html[data-theme="material"] .tool-icon-btn {
+  background: transparent;
+  color: #49454f;
+  border: 1px solid #cac4d0;
+  border-radius: 50%;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="material"] .tool-icon-btn:hover:not(:disabled) {
+  background: rgba(103,80,164,0.08);
+  border-color: #79747e;
+}
+html[data-theme="material"] .tool-icon-btn[data-active="true"] {
+  background: #e8def8;
+  color: #21005d;
+  border-color: #cac4d0;
+}
+html[data-theme="material"] .tool-icon-btn[data-variant="solid"] {
+  background: #6750a4;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* M3 FAB — primary FAB */
+html[data-theme="material"] .tool-shell-fab {
+  background: #eaddff;
+  color: #21005d;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+html[data-theme="material"] .tool-shell-fab.is-primary {
+  background: #6750a4;
+  color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 10px rgba(0,0,0,0.14), 0 1px 18px rgba(0,0,0,0.12), 0 3px 5px rgba(0,0,0,0.20);
+}
+
+/* M3 segment control */
+html[data-theme="material"] .kc-segment {
+  background: #e7e0ec;
+  border: 1px solid #cac4d0;
+  border-radius: 20px;
+  padding: 4px;
+}
+html[data-theme="material"] .kc-segment-btn {
+  border-radius: 18px;
+  font-family: var(--kami-font-body);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #49454f;
+}
+html[data-theme="material"] .kc-segment-btn[data-active="true"] {
+  background: #eaddff;
+  color: #21005d;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+}
+
+/* M3 kami-tile */
+html[data-theme="material"] .kami-tile {
+  background: color-mix(in srgb, #6750a4 5%, #fffbfe);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  transition: transform var(--kami-motion-base) var(--kami-motion-ease),
+              box-shadow var(--kami-motion-base) var(--kami-motion-ease);
+}
+html[data-theme="material"] .kami-tile:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* M3 theme-switcher pill */
+html[data-theme="material"] .theme-switcher-pill {
+  background: #eaddff;
+  border: 1px solid #cac4d0;
+  border-radius: 20px;
+  color: #21005d;
+  box-shadow: none;
+}
+
+/* M3 select / kc-select */
+html[data-theme="material"] .kc-select {
+  background: #e7e0ec !important;
+  border: none !important;
+  border-bottom: 1px solid #79747e !important;
+  border-radius: 4px 4px 0 0 !important;
+}
+html[data-theme="material"] .kc-select:focus {
+  outline: none;
+  border-bottom: 2px solid #6750a4 !important;
+  box-shadow: none;
+}
+
+/* ============================================================
+   METRO — "Fluent Grid"
+   School: Microsoft Metro 2010 / Fluent Design 2 (2025)
+   Philosophy: Typography IS the design. Flat color fields,
+   Segoe UI Variable, dense 4px grid, Mica/Acrylic materials.
+   Motion: brisk 83ms / 167ms / 250ms durations. Windows accent
+   blue #0078D4 signals every interactive element.
+   ============================================================ */
+html[data-theme="metro"] {
+  --kami-bg: #f3f3f3;
+  --kami-surface: rgba(255,255,255,0.85);
+  --kami-surface-solid: #ffffff;
+  --kami-border: #d1d1d1;
+  --kami-border-strong: #8a8a8a;
+  --kami-text: #201f1e;
+  --kami-text-muted: #484644;
+  --kami-text-dim: #797775;
+  --kami-accent: #0078d4;
+
+  --kami-cta-bg: #0078d4;
+  --kami-cta-bg-hover: #106ebe;
+  --kami-cta-text: #ffffff;
+  --kami-cta-radius: 4px;
+  --kami-cta-shadow: none;
+
+  --kami-cta2-bg: #ffffff;
+  --kami-cta2-bg-hover: #f3f2f1;
+  --kami-cta2-text: #201f1e;
+  --kami-cta2-border: #8a8a8a;
+
+  --kami-overlay-bg: #201f1e;
+  --kami-overlay-text: #ffffff;
+  --kami-overlay-text-dim: #d2d0ce;
+
+  --kami-breadcrumb: #797775;
+  --kami-breadcrumb-hover: #0078d4;
+
+  --kami-footer: #797775;
+  --kami-footer-link: #484644;
+  --kami-footer-link-hover: #0078d4;
+
+  /* Segoe UI Variable — Windows 11 system font */
+  --kami-font-display: "Segoe UI Variable Display", "Segoe UI", Inter, system-ui, sans-serif;
+  --kami-font-body: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif;
+  --kami-font-mono: "Cascadia Code", "Cascadia Mono", ui-monospace, monospace;
+  --kami-heading-case: none;
+  --kami-heading-tracking: -0.01em;
+  --kami-heading-weight: 600;
+  --kami-body-tracking: 0;
+  --kami-body-leading: 1.45;
+
+  /* Fluent shape: small radius — buttons 4px, cards 8px */
+  --kami-card-radius: 8px;
+  --kami-card-border: 1px solid #d1d1d1;
+  --kami-card-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  --kami-card-shadow-hover: 0 4px 16px rgba(0,0,0,0.14);
+  --kami-card-hover-transform: translateY(-1px);
+
+  /* Fluent motion: fast + brisk */
+  --kami-motion-fast: 83ms;
+  --kami-motion-base: 167ms;
+  --kami-motion-slow: 250ms;
+  --kami-motion-ease: cubic-bezier(0, 0, 0.58, 1.0);
+
+  --kami-divider-style: 1px solid #d1d1d1;
+
+  --kami-input-bg: #ffffff;
+  --kami-input-border: 1px solid #8a8a8a;
+  --kami-input-radius: 4px;
+  --kami-input-focus-ring: 0 0 0 1px #0078d4;
+  --kami-caret: #0078d4;
+}
+
+/* Metro/Fluent body — Mica-lite: subtle backdrop noise */
+html[data-theme="metro"] body {
+  background-color: #f3f3f3;
+  color: #201f1e;
+  font-family: var(--kami-font-body);
+}
+
+/* Metro headings */
+html[data-theme="metro"] .kami-scope h1,
+html[data-theme="metro"] .kami-scope h2,
+html[data-theme="metro"] .kami-scope h3 {
+  font-family: var(--kami-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Metro text links */
+html[data-theme="metro"] .kami-scope p a,
+html[data-theme="metro"] .kami-scope li a {
+  color: #0078d4;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+html[data-theme="metro"] .kami-scope p a:hover,
+html[data-theme="metro"] .kami-scope li a:hover {
+  color: #106ebe;
+  text-decoration-thickness: 2px;
+}
+
+/* Metro inputs */
+html[data-theme="metro"] .kami-scope input[type="text"],
+html[data-theme="metro"] .kami-scope input[type="search"],
+html[data-theme="metro"] .kami-scope input[type="number"],
+html[data-theme="metro"] .kami-scope input[type="email"],
+html[data-theme="metro"] .kami-scope input[type="date"],
+html[data-theme="metro"] .kami-scope textarea,
+html[data-theme="metro"] .kami-scope select {
+  background: #ffffff !important;
+  border: 1px solid #8a8a8a !important;
+  border-bottom: 2px solid #8a8a8a !important;
+  border-radius: 4px !important;
+  color: #201f1e !important;
+  caret-color: #0078d4 !important;
+  font-family: var(--kami-font-body) !important;
+}
+html[data-theme="metro"] .kami-scope input:focus,
+html[data-theme="metro"] .kami-scope textarea:focus {
+  outline: none !important;
+  border-bottom-color: #0078d4 !important;
+  box-shadow: none !important;
+}
+html[data-theme="metro"] .kami-scope select:focus {
+  outline: none !important;
+  border-color: #0078d4 !important;
+}
+
+/* Metro tool-shell header — Acrylic (luminous mica surface) */
+html[data-theme="metro"] .tool-shell-header {
+  background: rgba(243,243,243,0.82);
+  backdrop-filter: saturate(120%) blur(20px);
+  -webkit-backdrop-filter: saturate(120%) blur(20px);
+  border-bottom: 1px solid #d1d1d1;
+  box-shadow: none;
+}
+
+/* Metro panel */
+html[data-theme="metro"] .tool-shell-panel {
+  background: #faf9f8;
+  border-color: #d1d1d1;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Metro action buttons — Fluent command button */
+html[data-theme="metro"] .tool-action-btn {
+  background: #ffffff;
+  color: #201f1e;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  font-family: var(--kami-font-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  box-shadow: none;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease),
+              border-color var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="metro"] .tool-action-btn:hover:not(:disabled) {
+  background: #f3f2f1;
+  border-color: #8a8a8a;
+}
+html[data-theme="metro"] .tool-action-btn:active:not(:disabled) {
+  background: #edebe9;
+}
+html[data-theme="metro"] .tool-action-btn[data-variant="solid"] {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: transparent;
+}
+html[data-theme="metro"] .tool-action-btn[data-variant="solid"]:hover:not(:disabled) {
+  background: #106ebe;
+}
+html[data-theme="metro"] .tool-action-btn[data-variant="solid"]:active:not(:disabled) {
+  background: #005a9e;
+}
+html[data-theme="metro"] .tool-action-btn[data-variant="ghost"] {
+  background: transparent;
+  border-color: transparent;
+  color: #0078d4;
+}
+html[data-theme="metro"] .tool-action-btn[data-variant="ghost"]:hover:not(:disabled) {
+  background: rgba(0,120,212,0.08);
+  border-color: transparent;
+}
+
+/* Metro icon buttons */
+html[data-theme="metro"] .tool-icon-btn {
+  background: transparent;
+  color: #484644;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="metro"] .tool-icon-btn:hover:not(:disabled) {
+  background: rgba(0,0,0,0.057);
+  border-color: transparent;
+}
+html[data-theme="metro"] .tool-icon-btn:active:not(:disabled) {
+  background: rgba(0,0,0,0.097);
+}
+html[data-theme="metro"] .tool-icon-btn[data-active="true"] {
+  background: rgba(0,120,212,0.10);
+  color: #0078d4;
+  border-color: transparent;
+}
+html[data-theme="metro"] .tool-icon-btn[data-variant="solid"] {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: transparent;
+}
+
+/* Metro FAB */
+html[data-theme="metro"] .tool-shell-fab {
+  background: #ffffff;
+  color: #201f1e;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
+html[data-theme="metro"] .tool-shell-fab.is-primary {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: transparent;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+/* Metro segment control — pivot-style */
+html[data-theme="metro"] .kc-segment {
+  background: transparent;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  padding: 2px;
+}
+html[data-theme="metro"] .kc-segment-btn {
+  border-radius: 2px;
+  font-family: var(--kami-font-body);
+  font-weight: 400;
+  color: #484644;
+  transition: background var(--kami-motion-fast) var(--kami-motion-ease);
+}
+html[data-theme="metro"] .kc-segment-btn[data-active="true"] {
+  background: #0078d4;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+/* Metro kami-tile */
+html[data-theme="metro"] .kami-tile {
+  background: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  transition: box-shadow var(--kami-motion-base) var(--kami-motion-ease),
+              transform var(--kami-motion-base) var(--kami-motion-ease);
+}
+html[data-theme="metro"] .kami-tile:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+/* Metro kc-select / stepper */
+html[data-theme="metro"] .kc-select,
+html[data-theme="metro"] .kc-stepper {
+  border-radius: 4px;
+  border: 1px solid #8a8a8a;
+  background: #ffffff;
+}
+html[data-theme="metro"] .kc-stepper { border-radius: 4px; }
+
+/* Metro theme-switcher pill */
+html[data-theme="metro"] .theme-switcher-pill {
+  background: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  color: #0078d4;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+}
