@@ -7394,3 +7394,202 @@ html[data-theme="metro"] .tool-shell .kc-value {
 }
 
 /* ── end Phase 2 per-theme component overrides ──────────────────────────── */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHASE 3 — Canvas content area per-theme treatment
+   Targets .tool-shell-canvas > div (tool's root element) + large textareas
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── GLASS canvas content ─────────────────────────────────────────────────── */
+
+/* Large standalone textareas in the canvas get full iOS text-view treatment */
+html[data-theme="glass"] .tool-shell-canvas textarea {
+  background: rgba(255,255,255,0.72) !important;
+  border: 0.5px solid rgba(180,200,240,0.45) !important;
+  border-radius: 14px !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 15px !important;
+  padding: 14px 16px !important;
+  backdrop-filter: saturate(160%) blur(12px) !important;
+  -webkit-backdrop-filter: saturate(160%) blur(12px) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.90) !important;
+  transition: border-color 0.18s, box-shadow 0.18s !important;
+  resize: vertical !important;
+}
+html[data-theme="glass"] .tool-shell-canvas textarea:focus {
+  border-color: rgba(0,122,255,0.45) !important;
+  box-shadow: 0 0 0 3.5px rgba(0,122,255,0.18), 0 2px 12px rgba(0,0,0,0.06) !important;
+  outline: none !important;
+}
+
+/* Code blocks / pre in canvas */
+html[data-theme="glass"] .tool-shell-canvas pre,
+html[data-theme="glass"] .tool-shell-canvas code {
+  background: rgba(255,255,255,0.62) !important;
+  border: 0.5px solid rgba(180,200,240,0.35) !important;
+  border-radius: 10px !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Select elements in canvas */
+html[data-theme="glass"] .tool-shell-canvas select {
+  background: rgba(255,255,255,0.70) !important;
+  border: 0.5px solid rgba(180,200,240,0.45) !important;
+  border-radius: 10px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+/* Stat / badge chips in canvas */
+html[data-theme="glass"] .tool-shell-canvas [style*="kami-surface"] {
+  background: rgba(255,255,255,0.60) !important;
+  border-color: rgba(180,200,240,0.40) !important;
+  border-radius: 12px !important;
+}
+
+/* ── MATERIAL canvas content ──────────────────────────────────────────────── */
+
+/* Textareas get M3 filled text field — tonal surface, underline on focus */
+html[data-theme="material"] .tool-shell-canvas textarea {
+  background: color-mix(in srgb, #6750a4 8%, #fffbfe) !important;
+  border: none !important;
+  border-bottom: 1px solid #79747e !important;
+  border-radius: 4px 4px 0 0 !important;
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  padding: 12px 16px 8px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-bottom-color 100ms cubic-bezier(0.05,0.7,0.1,1.0) !important;
+  resize: vertical !important;
+}
+html[data-theme="material"] .tool-shell-canvas textarea:focus {
+  border-bottom: 2px solid #6750a4 !important;
+  outline: none !important;
+}
+
+/* Code / pre in canvas */
+html[data-theme="material"] .tool-shell-canvas pre,
+html[data-theme="material"] .tool-shell-canvas code {
+  background: color-mix(in srgb, #6750a4 5%, #f3edf7) !important;
+  border: 1px solid #e7e0ec !important;
+  border-radius: 8px !important;
+}
+
+/* Select in canvas */
+html[data-theme="material"] .tool-shell-canvas select {
+  background: color-mix(in srgb, #6750a4 8%, #fffbfe) !important;
+  border: none !important;
+  border-bottom: 1px solid #79747e !important;
+  border-radius: 4px 4px 0 0 !important;
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif !important;
+}
+
+/* ── METRO canvas content ─────────────────────────────────────────────────── */
+
+/* Textareas — flat Windows ComboBox style */
+html[data-theme="metro"] .tool-shell-canvas textarea {
+  background: #ffffff !important;
+  border: 1px solid #8a8a8a !important;
+  border-radius: 4px !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 13px !important;
+  padding: 6px 8px !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 83ms linear !important;
+  resize: vertical !important;
+}
+html[data-theme="metro"] .tool-shell-canvas textarea:hover {
+  border-color: #484644 !important;
+}
+html[data-theme="metro"] .tool-shell-canvas textarea:focus {
+  border-color: #0078d4 !important;
+  box-shadow: 0 0 0 1px #0078d4 !important;
+  outline: none !important;
+}
+
+/* Code / pre in canvas */
+html[data-theme="metro"] .tool-shell-canvas pre,
+html[data-theme="metro"] .tool-shell-canvas code {
+  background: #f5f5f5 !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 2px !important;
+  font-family: "Cascadia Code", "Consolas", monospace !important;
+}
+
+/* Select in canvas */
+html[data-theme="metro"] .tool-shell-canvas select {
+  background: #ffffff !important;
+  border: 1px solid #8a8a8a !important;
+  border-radius: 4px !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 13px !important;
+}
+
+/* ── Toys hub — reuse tools hub search styles for .toys-hub-search ─────── */
+.toys-hub-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 0 14px;
+  background: var(--kami-surface-solid);
+  border: var(--kami-card-border);
+  border-radius: var(--kami-card-radius);
+  box-shadow: var(--kami-card-shadow);
+  transition: box-shadow 0.18s;
+}
+.toys-hub-search-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: var(--kami-text);
+  caret-color: var(--kami-caret, currentColor);
+  outline: none;
+  padding: 13px 0;
+}
+.toys-hub-search-input::placeholder {
+  color: var(--kami-text-dim);
+}
+.toys-hub-search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--kami-text-dim);
+  padding: 0 2px;
+}
+
+/* Glass toys hub search */
+html[data-theme="glass"] .toys-hub-search {
+  background: rgba(255,255,255,0.55);
+  border: 0.5px solid rgba(255,255,255,0.50);
+  border-radius: 14px;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+/* Material toys hub search */
+html[data-theme="material"] .toys-hub-search {
+  background: color-mix(in srgb, #6750a4 6%, #fffbfe);
+  border: 1px solid #cac4d0;
+  border-radius: 28px;
+  box-shadow: none;
+}
+
+/* Metro toys hub search */
+html[data-theme="metro"] .toys-hub-search {
+  background: #ffffff;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+/* ── end Phase 3 canvas content + toys hub ──────────────────────────────── */
