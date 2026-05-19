@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -286,6 +286,20 @@ export default function GradientContent() {
   const previewRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef<{ index: number; pointerId: number } | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const layer = layers[activeLayer] || defaultLayer();
 
@@ -722,6 +736,17 @@ export default function GradientContent() {
         </div>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Visual</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Preview */}
         <div
@@ -789,7 +814,9 @@ export default function GradientContent() {
           </div>
         </div>
 
-        {/* Output tabs + preview */}
+      </div>
+      )}
+      {(!isMetro || metroCPivot === "code") && (
         <div className="overflow-hidden" style={cardStyle}>
           <div
             className="flex items-center justify-between gap-2 px-3 py-2"
@@ -839,7 +866,7 @@ export default function GradientContent() {
             }}
           ><code>{outputMap[outputTab]}</code></pre>
         </div>
-      </div>
+      )}
     </ToolShell>
   );
 }

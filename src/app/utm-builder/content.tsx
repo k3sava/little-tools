@@ -131,11 +131,25 @@ export default function UtmBuilderContent() {
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkUrls, setBulkUrls] = useState("");
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   // Load history on mount
   useEffect(() => {
     setHistory(loadHistory());
   }, []);
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const urlWarning = params.url.length > 0 && !isValidUrl(params.url);
 
@@ -378,77 +392,92 @@ export default function UtmBuilderContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Parameters</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>URL</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
-        {/* URL input(s) */}
-        {!bulkMode ? (
-          <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Website URL <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={params.url}
-              onChange={(e) => updateParam("url", e.target.value)}
-              placeholder="https://example.com/page"
-              className="w-full px-4 py-3 text-base font-mono focus:outline-none"
-              style={{
-                ...inputStyle,
-                borderColor: urlWarning ? "#ef4444" : "var(--kami-border-strong)",
-              }}
-              autoFocus
-            />
-            {urlWarning && (
-              <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>
-                Enter a valid URL (e.g. example.com/page or https://example.com)
-              </p>
+        {/* Input section: URL input(s) + UTM fields */}
+        {(!isMetro || metroCPivot === "input") && (
+          <>
+            {/* URL input(s) */}
+            {!bulkMode ? (
+              <div>
+                <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  Website URL <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={params.url}
+                  onChange={(e) => updateParam("url", e.target.value)}
+                  placeholder="https://example.com/page"
+                  className="w-full px-4 py-3 text-base font-mono focus:outline-none"
+                  style={{
+                    ...inputStyle,
+                    borderColor: urlWarning ? "#ef4444" : "var(--kami-border-strong)",
+                  }}
+                  autoFocus
+                />
+                {urlWarning && (
+                  <p className="mt-1 text-xs" style={{ color: "#ef4444" }}>
+                    Enter a valid URL (e.g. example.com/page or https://example.com)
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                  Base URLs <span style={{ color: "var(--kami-text-dim)" }}>(one per line)</span>
+                </label>
+                <textarea
+                  value={bulkUrls}
+                  onChange={(e) => setBulkUrls(e.target.value)}
+                  placeholder={"https://example.com/page-1\nhttps://example.com/page-2"}
+                  className="w-full px-4 py-3 text-sm font-mono focus:outline-none"
+                  style={inputStyle}
+                  rows={4}
+                />
+              </div>
             )}
-          </div>
-        ) : (
-          <div>
-            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Base URLs <span style={{ color: "var(--kami-text-dim)" }}>(one per line)</span>
-            </label>
-            <textarea
-              value={bulkUrls}
-              onChange={(e) => setBulkUrls(e.target.value)}
-              placeholder={"https://example.com/page-1\nhttps://example.com/page-2"}
-              className="w-full px-4 py-3 text-sm font-mono focus:outline-none"
-              style={inputStyle}
-              rows={4}
-            />
-          </div>
+
+            {/* UTM Fields */}
+            <div className="grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  { key: "source", label: "utm_source", required: true, placeholder: "google", span: false },
+                  { key: "medium", label: "utm_medium", required: true, placeholder: "cpc", span: false },
+                  { key: "campaign", label: "utm_campaign", required: true, placeholder: "spring_sale", span: true },
+                  { key: "term", label: "utm_term", required: false, placeholder: "paid keywords", span: false },
+                  { key: "content", label: "utm_content", required: false, placeholder: "ad variant", span: false },
+                ] as { key: keyof UtmParams; label: string; required: boolean; placeholder: string; span: boolean }[]
+              ).map((field) => (
+                <div key={field.key} className={field.span ? "sm:col-span-2" : ""}>
+                  <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                    {field.label}
+                    {field.required && <span style={{ color: "#ef4444" }}> *</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={params[field.key]}
+                    onChange={(e) => updateParam(field.key, e.target.value)}
+                    placeholder={field.placeholder}
+                    className="w-full px-3 py-2.5 text-sm focus:outline-none"
+                    style={inputStyle}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
-        {/* UTM Fields */}
-        <div className="grid gap-3 sm:grid-cols-2">
-          {(
-            [
-              { key: "source", label: "utm_source", required: true, placeholder: "google", span: false },
-              { key: "medium", label: "utm_medium", required: true, placeholder: "cpc", span: false },
-              { key: "campaign", label: "utm_campaign", required: true, placeholder: "spring_sale", span: true },
-              { key: "term", label: "utm_term", required: false, placeholder: "paid keywords", span: false },
-              { key: "content", label: "utm_content", required: false, placeholder: "ad variant", span: false },
-            ] as { key: keyof UtmParams; label: string; required: boolean; placeholder: string; span: boolean }[]
-          ).map((field) => (
-            <div key={field.key} className={field.span ? "sm:col-span-2" : ""}>
-              <label className="mb-1 block text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                {field.label}
-                {field.required && <span style={{ color: "#ef4444" }}> *</span>}
-              </label>
-              <input
-                type="text"
-                value={params[field.key]}
-                onChange={(e) => updateParam(field.key, e.target.value)}
-                placeholder={field.placeholder}
-                className="w-full px-3 py-2.5 text-sm focus:outline-none"
-                style={inputStyle}
-              />
-            </div>
-          ))}
-        </div>
-
-        {/* Generated URL (single) */}
-        {!bulkMode && generatedUrl && (
+        {/* Output section: Generated URL + bulk results */}
+        {(!isMetro || metroCPivot === "output") && (!bulkMode && generatedUrl) && (
           <div
             className="p-4 rounded-xl"
             style={{
@@ -472,7 +501,7 @@ export default function UtmBuilderContent() {
         )}
 
         {/* Bulk results */}
-        {bulkMode && bulkGenerated.length > 0 && (
+        {(!isMetro || metroCPivot === "output") && bulkMode && bulkGenerated.length > 0 && (
           <div>
             <div className="mb-2 text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
               {bulkGenerated.filter((b) => b.generated).length} tagged URLs

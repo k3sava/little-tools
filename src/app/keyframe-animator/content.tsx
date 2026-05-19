@@ -150,6 +150,20 @@ export default function KeyframeAnimatorContent() {
   const [copied, setCopied] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const css = useMemo(() => generateCSS(config, stops), [config, stops]);
 
@@ -417,79 +431,106 @@ export default function KeyframeAnimatorContent() {
         </div>
       }
     >
-      <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
-        {/* Live Preview */}
-        <div
-          className="relative flex flex-1 items-center justify-center overflow-hidden bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#fff_0%_50%)] bg-[length:20px_20px]"
-          style={{
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            minHeight: 260,
-          }}
-        >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Editor</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (
+        <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
+          {/* Live Preview */}
           <div
-            ref={previewRef}
-            key={animKey}
-            className="h-24 w-24 rounded-2xl"
+            className="relative flex flex-1 items-center justify-center overflow-hidden bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#fff_0%_50%)] bg-[length:20px_20px]"
             style={{
-              backgroundColor: current.backgroundColor,
-              animation: playing
-                ? `__kf_preview__ ${config.duration}s ${config.timing} ${config.iterations === "infinite" ? "infinite" : config.iterations} ${config.direction} ${config.fillMode}`
-                : "none",
-            }}
-          />
-        </div>
-
-        {/* Timeline */}
-        <div
-          className="p-4"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-          }}
-        >
-          <div className="mb-3 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
-            <span className="font-semibold">Timeline</span>
-            <span className="font-mono">{config.duration}s · {stops.length} stops</span>
-          </div>
-          <div
-            className="relative h-12"
-            style={{
-              background: "var(--kami-surface)",
               border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.5rem)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              minHeight: 260,
             }}
           >
-            {[0, 25, 50, 75, 100].map((t) => (
-              <div
-                key={t}
-                className="absolute top-0 h-full"
-                style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
-              >
-                <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
-              </div>
-            ))}
-            {sorted.map((s) => (
-              <button
-                key={s._i}
-                type="button"
-                onClick={() => setSelected(s._i)}
-                className="absolute top-1/2 h-6 w-6 rounded-full transition-all"
-                style={{
-                  left: `${s.percent}%`,
-                  transform: `translate(-50%, -50%) ${selected === s._i ? "scale(1.2)" : "scale(1)"}`,
-                  background: selected === s._i ? "var(--kami-text)" : s.backgroundColor,
-                  border: "2px solid var(--kami-surface-solid)",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-                }}
-                title={`${s.percent}%`}
-                aria-label={`Keyframe at ${s.percent}%`}
-              />
-            ))}
+            <div
+              ref={previewRef}
+              key={animKey}
+              className="h-24 w-24 rounded-2xl"
+              style={{
+                backgroundColor: current.backgroundColor,
+                animation: playing
+                  ? `__kf_preview__ ${config.duration}s ${config.timing} ${config.iterations === "infinite" ? "infinite" : config.iterations} ${config.direction} ${config.fillMode}`
+                  : "none",
+              }}
+            />
+          </div>
+
+          {/* Timeline */}
+          <div
+            className="p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <div className="mb-3 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="font-semibold">Timeline</span>
+              <span className="font-mono">{config.duration}s · {stops.length} stops</span>
+            </div>
+            <div
+              className="relative h-12"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.5rem)",
+              }}
+            >
+              {[0, 25, 50, 75, 100].map((t) => (
+                <div
+                  key={t}
+                  className="absolute top-0 h-full"
+                  style={{ left: `${t}%`, borderLeft: "1px solid var(--kami-border)" }}
+                >
+                  <span className="absolute -top-5 -translate-x-1/2 text-[10px]" style={{ color: "var(--kami-text-dim)" }}>{t}%</span>
+                </div>
+              ))}
+              {sorted.map((s) => (
+                <button
+                  key={s._i}
+                  type="button"
+                  onClick={() => setSelected(s._i)}
+                  className="absolute top-1/2 h-6 w-6 rounded-full transition-all"
+                  style={{
+                    left: `${s.percent}%`,
+                    transform: `translate(-50%, -50%) ${selected === s._i ? "scale(1.2)" : "scale(1)"}`,
+                    background: selected === s._i ? "var(--kami-text)" : s.backgroundColor,
+                    border: "2px solid var(--kami-surface-solid)",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
+                  }}
+                  title={`${s.percent}%`}
+                  aria-label={`Keyframe at ${s.percent}%`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+      {(!isMetro || metroCPivot === "code") && (
+        <div className="p-4">
+          <pre
+            className="overflow-x-auto p-4 text-xs leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              maxHeight: 500,
+            }}
+          >
+            <code>{css}</code>
+          </pre>
+        </div>
+      )}
     </ToolShell>
   );
 }

@@ -525,6 +525,20 @@ export default function QrCodeContent() {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState<"" | "png" | "svg">("");
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const getPayload = useCallback((): string => {
     switch (inputType) {
@@ -562,7 +576,7 @@ export default function QrCodeContent() {
     } catch (e) {
       setError("Failed to generate QR code");
     }
-  }, [getPayload, fgColor, bgColor, cellSize, dotStyle, eyeStyle, logo, logoScale]);
+  }, [getPayload, fgColor, bgColor, cellSize, dotStyle, eyeStyle, logo, logoScale, metroCPivot]);
 
   const download = useCallback(() => {
     if (!canvasRef.current) return;
@@ -880,28 +894,61 @@ export default function QrCodeContent() {
         </div>
       }
     >
-      <div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
-        <div
-          className="flex flex-col items-center justify-center p-6 sm:p-10"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <canvas
-            ref={canvasRef}
-            className="max-h-[60vh] max-w-full"
-            style={{ imageRendering: dotStyle === "square" ? "pixelated" : "auto" }}
-          />
-          {error && (
-            <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
-              {error}
-            </p>
-          )}
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>QR Code</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "input") && (
+        <div className="flex flex-col gap-4 p-4 md:p-6">
+          <div>
+            <label className="mb-1 block text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
+              {inputType === "url" ? "URL" : inputType === "text" ? "Text" : inputType === "wifi" ? "Wi-Fi SSID" : "Contact name"}
+            </label>
+            <textarea
+              value={inputType === "wifi" ? wifiSsid : inputType === "vcard" ? vcardName : text}
+              onChange={(e) => {
+                if (inputType === "wifi") setWifiSsid(e.target.value);
+                else if (inputType === "vcard") setVcardName(e.target.value);
+                else setText(e.target.value);
+              }}
+              rows={3}
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={inputStyle}
+              placeholder={inputType === "url" ? "https://example.com" : inputType === "wifi" ? "Network name" : "Enter content..."}
+            />
+          </div>
         </div>
-      </div>
+      )}
+      {(!isMetro || metroCPivot === "output") && (
+        <div className="flex h-full min-h-[60vh] flex-col items-center justify-center gap-3">
+          <div
+            className="flex flex-col items-center justify-center p-6 sm:p-10"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+              boxShadow: "var(--kami-card-shadow, none)",
+            }}
+          >
+            <canvas
+              ref={canvasRef}
+              className="max-h-[60vh] max-w-full"
+              style={{ imageRendering: dotStyle === "square" ? "pixelated" : "auto" }}
+            />
+            {error && (
+              <p className="mt-3 text-sm" style={{ color: "var(--kami-accent, #ef4444)" }}>
+                {error}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </ToolShell>
   );
 }

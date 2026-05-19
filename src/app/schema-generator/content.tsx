@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -584,6 +584,20 @@ const EVENT_AVAILABILITIES = ["InStock", "SoldOut", "PreOrder"];
 export default function SchemaGeneratorContent() {
   const [schemaType, setSchemaType] = useState<SchemaType>("Article");
   const [copied, setCopied] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const [article, setArticle] = useState<ArticleFields>(EMPTY_ARTICLE);
   const [faqItems, setFaqItems] = useState<FAQItem[]>([{ question: "", answer: "" }]);
@@ -1107,40 +1121,54 @@ export default function SchemaGeneratorContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Form</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>JSON-LD</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
-        <div
-          className="rounded-xl p-4"
-          style={{
-            border: "1px solid var(--kami-border)",
-            background: "var(--kami-surface)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          {renderForm()}
-        </div>
-
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>JSON-LD output</span>
-            <span className="text-xs" style={{ color: errors > 0 ? "#ef4444" : "#22c55e" }}>
-              {errors > 0 ? `${errors} error${errors === 1 ? "" : "s"}` : "Valid"}
-            </span>
-          </div>
-          <pre
-            className="overflow-auto whitespace-pre rounded-xl p-4 text-xs font-mono max-h-[500px]"
+        {(!isMetro || metroCPivot === "input") && (
+          <div
+            className="rounded-xl p-4"
             style={{
-              background: "var(--kami-overlay-bg)",
-              color: "var(--kami-overlay-text)",
-              border: "1px solid var(--kami-border-strong)",
+              border: "1px solid var(--kami-border)",
+              background: "var(--kami-surface)",
+              boxShadow: "var(--kami-card-shadow, none)",
             }}
           >
-            <span style={{ opacity: 0.6 }}>&lt;script type=&quot;application/ld+json&quot;&gt;</span>
-            {"\n"}
-            {jsonLd}
-            {"\n"}
-            <span style={{ opacity: 0.6 }}>&lt;/script&gt;</span>
-          </pre>
-        </div>
+            {renderForm()}
+          </div>
+        )}
+
+        {(!isMetro || metroCPivot === "output") && (
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>JSON-LD output</span>
+              <span className="text-xs" style={{ color: errors > 0 ? "#ef4444" : "#22c55e" }}>
+                {errors > 0 ? `${errors} error${errors === 1 ? "" : "s"}` : "Valid"}
+              </span>
+            </div>
+            <pre
+              className="overflow-auto whitespace-pre rounded-xl p-4 text-xs font-mono max-h-[500px]"
+              style={{
+                background: "var(--kami-overlay-bg)",
+                color: "var(--kami-overlay-text)",
+                border: "1px solid var(--kami-border-strong)",
+              }}
+            >
+              <span style={{ opacity: 0.6 }}>&lt;script type=&quot;application/ld+json&quot;&gt;</span>
+              {"\n"}
+              {jsonLd}
+              {"\n"}
+              <span style={{ opacity: 0.6 }}>&lt;/script&gt;</span>
+            </pre>
+          </div>
+        )}
       </div>
     </ToolShell>
   );

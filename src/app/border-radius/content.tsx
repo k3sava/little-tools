@@ -205,6 +205,20 @@ export default function BorderRadiusContent() {
   const [copied, setCopied] = useState(false);
   const [dragging, setDragging] = useState<CornerKey | null>(null);
   const previewRef = useRef<HTMLDivElement>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const output = getOutput(radius, advanced, outputFmt);
   const styleRadius = radiusToStyle(radius, advanced);
@@ -453,51 +467,78 @@ export default function BorderRadiusContent() {
         </div>
       }
     >
-      <div
-        className="flex h-full min-h-[60vh] w-full items-center justify-center p-6"
-        style={{
-          background: "var(--kami-surface)",
-          borderRadius: "var(--kami-card-radius, 0.75rem)",
-          border: "1px solid var(--kami-border-strong)",
-        }}
-      >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Visual</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (
         <div
-          ref={previewRef}
-          onMouseDown={handlePreviewMouseDown}
-          className="relative transition-all duration-150"
+          className="flex h-full min-h-[60vh] w-full items-center justify-center p-6"
           style={{
-            width: "min(70vw, 320px)",
-            height: "min(70vw, 320px)",
-            borderRadius: styleRadius,
-            background: bgColor,
-            cursor: dragging ? "grabbing" : "default",
-            touchAction: "none",
+            background: "var(--kami-surface)",
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            border: "1px solid var(--kami-border-strong)",
           }}
         >
-          {corners.map((key) => {
-            const pos = CORNER_POSITIONS[key];
-            return (
-              <div
-                key={key}
-                className="absolute h-3 w-3 rounded-full"
-                style={{
-                  background: "var(--kami-text)",
-                  border: "2px solid var(--kami-surface-solid)",
-                  ...pos,
-                  ...(pos.top !== undefined && pos.left !== undefined && { transform: "translate(50%, 50%)" }),
-                  ...(pos.top !== undefined && pos.right !== undefined && { transform: "translate(-50%, 50%)" }),
-                  ...(pos.bottom !== undefined && pos.right !== undefined && { transform: "translate(-50%, -50%)" }),
-                  ...(pos.bottom !== undefined && pos.left !== undefined && { transform: "translate(50%, -50%)" }),
-                  cursor: "grab",
-                  opacity: 0.6,
-                  zIndex: 10,
-                }}
-                title={`Drag to adjust ${CORNER_LABELS[key]}`}
-              />
-            );
-          })}
+          <div
+            ref={previewRef}
+            onMouseDown={handlePreviewMouseDown}
+            className="relative transition-all duration-150"
+            style={{
+              width: "min(70vw, 320px)",
+              height: "min(70vw, 320px)",
+              borderRadius: styleRadius,
+              background: bgColor,
+              cursor: dragging ? "grabbing" : "default",
+              touchAction: "none",
+            }}
+          >
+            {corners.map((key) => {
+              const pos = CORNER_POSITIONS[key];
+              return (
+                <div
+                  key={key}
+                  className="absolute h-3 w-3 rounded-full"
+                  style={{
+                    background: "var(--kami-text)",
+                    border: "2px solid var(--kami-surface-solid)",
+                    ...pos,
+                    ...(pos.top !== undefined && pos.left !== undefined && { transform: "translate(50%, 50%)" }),
+                    ...(pos.top !== undefined && pos.right !== undefined && { transform: "translate(-50%, 50%)" }),
+                    ...(pos.bottom !== undefined && pos.right !== undefined && { transform: "translate(-50%, -50%)" }),
+                    ...(pos.bottom !== undefined && pos.left !== undefined && { transform: "translate(50%, -50%)" }),
+                    cursor: "grab",
+                    opacity: 0.6,
+                    zIndex: 10,
+                  }}
+                  title={`Drag to adjust ${CORNER_LABELS[key]}`}
+                />
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
+      {(!isMetro || metroCPivot === "code") && (
+        <div className="p-4">
+          <pre
+            className="overflow-x-auto p-4 text-xs leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              maxHeight: 400,
+            }}
+          >
+            <code>{output}</code>
+          </pre>
+        </div>
+      )}
     </ToolShell>
   );
 }

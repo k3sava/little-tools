@@ -645,6 +645,20 @@ export default function OgImageContent() {
 
   const [validatorInput, setValidatorInput] = useState("");
   const [validatorResults, setValidatorResults] = useState<OgTagResult[]>([]);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const template = TEMPLATES.find((t) => t.id === templateId) ?? TEMPLATES[0];
 
@@ -991,9 +1005,29 @@ export default function OgImageContent() {
         </div>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Design</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Preview</button>
+        </nav>
+      )}
+      {/* Hidden canvas kept alive in Metro Preview mode so platform thumbnails can read it */}
+      {isMetro && metroCPivot === "output" && (
+        <canvas
+          ref={canvasRef}
+          width={OG_WIDTH}
+          height={OG_HEIGHT}
+          className="hidden"
+          aria-hidden="true"
+        />
+      )}
       {/* Live canvas — visible across all tabs so platform previews can read it */}
       <div className="flex flex-col gap-4">
-        {activeTab === "editor" && (
+        {(!isMetro || metroCPivot === "input") && activeTab === "editor" && (
           <div className="p-3 sm:p-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1018,7 +1052,7 @@ export default function OgImageContent() {
           </div>
         )}
 
-        {activeTab === "preview" && (
+        {(!isMetro ? activeTab === "preview" : metroCPivot === "output") && (
           <div className="p-3 sm:p-4 space-y-4" style={cardStyle}>
             <canvas
               ref={canvasRef}
@@ -1067,7 +1101,7 @@ export default function OgImageContent() {
           </div>
         )}
 
-        {activeTab === "validator" && (
+        {(!isMetro ? activeTab === "validator" : false) && (
           <>
             <canvas ref={canvasRef} className="hidden" />
             <div className="p-4 space-y-3" style={cardStyle}>

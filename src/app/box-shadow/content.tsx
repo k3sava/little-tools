@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -168,6 +168,20 @@ export default function BoxShadowContent() {
   const [cardRadius, setCardRadius] = useState(16);
   const [cardSize, setCardSize] = useState(192);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("css");
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const cssValue = layers.map(layerToCSS).join(",\n    ");
   const fullCSS = `box-shadow: ${cssValue};`;
@@ -437,28 +451,55 @@ export default function BoxShadowContent() {
         </div>
       }
     >
-      <div
-        className="flex h-full min-h-[60vh] w-full items-center justify-center p-6 sm:p-10"
-        style={{
-          backgroundColor: bgColor,
-          borderRadius: "var(--kami-card-radius, 0.75rem)",
-          border: "1px solid var(--kami-border-strong)",
-        }}
-      >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Visual</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (
         <div
-          onPointerDown={onPreviewDrag}
+          className="flex h-full min-h-[60vh] w-full items-center justify-center p-6 sm:p-10"
           style={{
-            width: cardSize,
-            height: cardSize,
-            backgroundColor: cardColor,
-            boxShadow: layers.map(layerToCSS).join(", "),
-            borderRadius: cardRadius,
-            cursor: "grab",
-            touchAction: "none",
+            backgroundColor: bgColor,
+            borderRadius: "var(--kami-card-radius, 0.75rem)",
+            border: "1px solid var(--kami-border-strong)",
           }}
-          title="Drag to set offset of active layer"
-        />
-      </div>
+        >
+          <div
+            onPointerDown={onPreviewDrag}
+            style={{
+              width: cardSize,
+              height: cardSize,
+              backgroundColor: cardColor,
+              boxShadow: layers.map(layerToCSS).join(", "),
+              borderRadius: cardRadius,
+              cursor: "grab",
+              touchAction: "none",
+            }}
+            title="Drag to set offset of active layer"
+          />
+        </div>
+      )}
+      {(!isMetro || metroCPivot === "code") && (
+        <div className="p-4">
+          <pre
+            className="overflow-x-auto p-4 text-xs leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              maxHeight: 400,
+            }}
+          >
+            <code>{outputCode}</code>
+          </pre>
+        </div>
+      )}
     </ToolShell>
   );
 }

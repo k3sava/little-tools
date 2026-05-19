@@ -376,6 +376,20 @@ export default function EasingEditorContent() {
   const [outputFmt, setOutputFmt] = useState<OutputFormat>("function");
   const [copied, setCopied] = useState(false);
   const [playKey, setPlayKey] = useState(0);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const easingCSS = mode === "cubic-bezier" ? bezierStr(bezier) : linearStr(linearPoints);
 
@@ -565,40 +579,67 @@ export default function EasingEditorContent() {
         </div>
       }
     >
-      <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
-        <div
-          className="flex flex-1 flex-col items-center justify-center gap-3 p-4"
-          style={{
-            background: "var(--kami-surface)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-          }}
-        >
-          {mode === "cubic-bezier" ? (
-            <BezierCanvas bezier={bezier} onChange={setBezier} />
-          ) : (
-            <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
-          )}
-          <code className="text-xs font-mono" style={{ color: "var(--kami-text-muted)" }}>
-            {easingCSS}
-          </code>
-        </div>
-
-        <div
-          className="p-4"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-          }}
-        >
-          <div className="mb-2 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
-            <span className="font-semibold">Preview</span>
-            <span className="font-mono">{duration.toFixed(1)}s</span>
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Editor</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (
+        <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
+          <div
+            className="flex flex-1 flex-col items-center justify-center gap-3 p-4"
+            style={{
+              background: "var(--kami-surface)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            {mode === "cubic-bezier" ? (
+              <BezierCanvas bezier={bezier} onChange={setBezier} />
+            ) : (
+              <LinearCanvas points={linearPoints} onChange={setLinearPoints} />
+            )}
+            <code className="text-xs font-mono" style={{ color: "var(--kami-text-muted)" }}>
+              {easingCSS}
+            </code>
           </div>
-          <AnimationPreview easingCSS={easingCSS} duration={duration} playKey={playKey} />
+
+          <div
+            className="p-4"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <div className="mb-2 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-muted)" }}>
+              <span className="font-semibold">Preview</span>
+              <span className="font-mono">{duration.toFixed(1)}s</span>
+            </div>
+            <AnimationPreview easingCSS={easingCSS} duration={duration} playKey={playKey} />
+          </div>
         </div>
-      </div>
+      )}
+      {(!isMetro || metroCPivot === "code") && (
+        <div className="p-4">
+          <pre
+            className="overflow-x-auto p-4 text-xs leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              maxHeight: 400,
+            }}
+          >
+            <code>{outputCode}</code>
+          </pre>
+        </div>
+      )}
     </ToolShell>
   );
 }

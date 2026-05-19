@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -41,6 +41,20 @@ export default function GlassmorphismContent() {
   const [neuDark, setNeuDark] = useState(false);
 
   const [copied, setCopied] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"visual" | "code">("visual");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Glass CSS
   const glassR = parseInt(glassBg.slice(1, 3), 16);
@@ -281,7 +295,17 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         </div>
       }
     >
-      {mode === "glass" ? (
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "visual"}
+            className={`metro-pivot-item${metroCPivot === "visual" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("visual")}>Visual</button>
+          <button role="tab" aria-selected={metroCPivot === "code"}
+            className={`metro-pivot-item${metroCPivot === "code" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("code")}>CSS</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "visual") && (mode === "glass" ? (
         <div
           className="relative flex h-full min-h-[60vh] w-full items-center justify-center overflow-hidden"
           style={{
@@ -333,6 +357,21 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
           >
             <span className={`text-sm font-medium ${neuDark ? "text-gray-300" : "text-gray-500"}`}>Soft Card</span>
           </div>
+        </div>
+      ))}
+      {(!isMetro || metroCPivot === "code") && (
+        <div className="p-4">
+          <pre
+            className="overflow-x-auto p-4 text-xs leading-relaxed"
+            style={{
+              background: "var(--kami-overlay-bg, #0d1117)",
+              color: "var(--kami-overlay-text, #f1f5f9)",
+              borderRadius: "var(--kami-input-radius, 0.5rem)",
+              maxHeight: 400,
+            }}
+          >
+            <code>{currentCSS}</code>
+          </pre>
         </div>
       )}
     </ToolShell>

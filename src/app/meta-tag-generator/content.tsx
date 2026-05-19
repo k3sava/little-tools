@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -307,6 +307,20 @@ export default function MetaTagGeneratorContent() {
   const [locale, setLocale] = useState("en_US");
   const [copied, setCopied] = useState(false);
   const [imageWarning, setImageWarning] = useState<string | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const title = state.title;
   const description = state.description;
@@ -496,8 +510,20 @@ export default function MetaTagGeneratorContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Settings</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Tags</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {/* Inputs */}
+        {(!isMetro || metroCPivot === "input") && (
+        <>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="flex flex-col gap-3">
             <div>
@@ -544,8 +570,11 @@ export default function MetaTagGeneratorContent() {
           <FacebookPreview title={title} description={description} image={image} siteName={siteName} />
           <TwitterPreview title={title} description={description} image={image} url={url} />
         </div>
+        </>
+        )}
 
         {/* Generated HTML */}
+        {(!isMetro || metroCPivot === "output") && (
         <div>
           <div className="mb-2 flex items-center justify-between">
             <span className="text-xs uppercase tracking-wide" style={{ color: ACCENT }}>
@@ -563,6 +592,7 @@ export default function MetaTagGeneratorContent() {
             <code>{metaTags}</code>
           </pre>
         </div>
+        )}
       </div>
     </ToolShell>
   );
