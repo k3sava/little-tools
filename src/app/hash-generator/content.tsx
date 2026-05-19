@@ -262,6 +262,21 @@ export default function HashGeneratorContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dataRef = useRef<Uint8Array | null>(null);
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const updateHashes = useCallback(async (data: Uint8Array) => {
     dataRef.current = data;
     const result = await computeAllHashes(data);
@@ -449,6 +464,16 @@ export default function HashGeneratorContent() {
         </>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Hashes</button>
+        </nav>
+      )}
       <div
         className="flex flex-col gap-4"
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -456,6 +481,7 @@ export default function HashGeneratorContent() {
         onDrop={handleDrop}
       >
         {/* Input area (drop zone) */}
+        {(!isMetro || metroCPivot === "input") && (<>
         <div
           className="transition-colors"
           style={{
@@ -505,7 +531,9 @@ export default function HashGeneratorContent() {
             <span style={{ color: "var(--kami-text-dim)" }}>{formatSize(fileSize)}</span>
           )}
         </div>
+        </>)}
 
+        {(!isMetro || metroCPivot === "output") && (<>
         {/* Hash tab */}
         {tab === "hash" && hashBytes && (
           <div className="flex flex-col gap-2">
@@ -698,6 +726,7 @@ export default function HashGeneratorContent() {
             )}
           </div>
         )}
+        </>)}
       </div>
     </ToolShell>
   );

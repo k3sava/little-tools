@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -619,6 +619,21 @@ export default function SeoContentAnalyzerContent() {
     [setToolState]
   );
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const [content, setContent] = useState("");
   const [copyFeedback, setCopyFeedback] = useState(false);
 
@@ -725,303 +740,319 @@ export default function SeoContentAnalyzerContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Analysis</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Paste your article content here (plain text or HTML)..."
-          className="w-full px-4 py-3 text-base focus:outline-none"
-          style={{
-            background: "var(--kami-input-bg, var(--kami-surface-solid))",
-            color: "var(--kami-text)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-input-radius, 0.75rem)",
-            minHeight: 220,
-          }}
-        />
+        {(!isMetro || metroCPivot === "input") && (
+          <>
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Paste your article content here (plain text or HTML)..."
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                minHeight: 220,
+              }}
+            />
+          </>
+        )}
 
-        {analysis && (
-          <div className="space-y-5">
-            <div className="flex flex-col items-center gap-3">
-              <ScoreBadge score={analysis.score} />
-              <ScoreBreakdown analysis={analysis} />
-            </div>
+        {(!isMetro || metroCPivot === "output") && analysis && (
+          <>
+            <div className="space-y-5">
+              <div className="flex flex-col items-center gap-3">
+                <ScoreBadge score={analysis.score} />
+                <ScoreBreakdown analysis={analysis} />
+              </div>
 
-            {/* Cards grid */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {/* Content Stats */}
-              <Card title="Content Stats" icon={<StatsIcon />}>
-                <div className="grid grid-cols-2 gap-3">
-                  <StatItem
-                    label="Word Count"
-                    value={analysis.stats.wordCount.toLocaleString()}
-                    note={
-                      analysis.stats.wordCount >= 2000
-                        ? "Excellent"
-                        : analysis.stats.wordCount >= 1000
-                        ? "Good"
-                        : analysis.stats.wordCount >= 600
-                        ? "OK"
-                        : "Thin"
-                    }
-                    noteColor={
-                      analysis.stats.wordCount >= 1000
-                        ? "text-green-600"
-                        : analysis.stats.wordCount >= 600
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                    }
-                  />
-                  <StatItem
-                    label="Sentences"
-                    value={analysis.stats.sentenceCount.toString()}
-                  />
-                  <StatItem
-                    label="Paragraphs"
-                    value={analysis.stats.paragraphCount.toString()}
-                  />
-                  <StatItem
-                    label="Avg Sentence Length"
-                    value={`${analysis.stats.avgSentenceLength} words`}
-                    note={
-                      analysis.stats.avgSentenceLength >= 15 &&
-                      analysis.stats.avgSentenceLength <= 20
-                        ? "Ideal"
-                        : analysis.stats.avgSentenceLength > 20
-                        ? "Long"
-                        : "Short"
-                    }
-                    noteColor={
-                      analysis.stats.avgSentenceLength >= 15 &&
-                      analysis.stats.avgSentenceLength <= 20
-                        ? "text-green-600"
-                        : "text-yellow-600"
-                    }
-                  />
-                  <StatItem
-                    label="Avg Word Length"
-                    value={`${analysis.stats.avgWordLength} chars`}
-                  />
-                  <StatItem
-                    label="Reading Time"
-                    value={formatTime(analysis.stats.readingTimeMin)}
-                  />
-                </div>
-              </Card>
+              {/* Cards grid */}
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                {/* Content Stats */}
+                <Card title="Content Stats" icon={<StatsIcon />}>
+                  <div className="grid grid-cols-2 gap-3">
+                    <StatItem
+                      label="Word Count"
+                      value={analysis.stats.wordCount.toLocaleString()}
+                      note={
+                        analysis.stats.wordCount >= 2000
+                          ? "Excellent"
+                          : analysis.stats.wordCount >= 1000
+                          ? "Good"
+                          : analysis.stats.wordCount >= 600
+                          ? "OK"
+                          : "Thin"
+                      }
+                      noteColor={
+                        analysis.stats.wordCount >= 1000
+                          ? "text-green-600"
+                          : analysis.stats.wordCount >= 600
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }
+                    />
+                    <StatItem
+                      label="Sentences"
+                      value={analysis.stats.sentenceCount.toString()}
+                    />
+                    <StatItem
+                      label="Paragraphs"
+                      value={analysis.stats.paragraphCount.toString()}
+                    />
+                    <StatItem
+                      label="Avg Sentence Length"
+                      value={`${analysis.stats.avgSentenceLength} words`}
+                      note={
+                        analysis.stats.avgSentenceLength >= 15 &&
+                        analysis.stats.avgSentenceLength <= 20
+                          ? "Ideal"
+                          : analysis.stats.avgSentenceLength > 20
+                          ? "Long"
+                          : "Short"
+                      }
+                      noteColor={
+                        analysis.stats.avgSentenceLength >= 15 &&
+                        analysis.stats.avgSentenceLength <= 20
+                          ? "text-green-600"
+                          : "text-yellow-600"
+                      }
+                    />
+                    <StatItem
+                      label="Avg Word Length"
+                      value={`${analysis.stats.avgWordLength} chars`}
+                    />
+                    <StatItem
+                      label="Reading Time"
+                      value={formatTime(analysis.stats.readingTimeMin)}
+                    />
+                  </div>
+                </Card>
 
-              {/* Keyword Analysis */}
-              {analysis.keyword && (
-                <Card title="Keyword Analysis" icon={<KeywordIcon />}>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <StatItem
-                        label="Keyword Count"
-                        value={analysis.keyword.keywordCount.toString()}
-                      />
-                      <StatItem
-                        label="Keyword Density"
-                        value={`${analysis.keyword.keywordDensity}%`}
-                        note={
-                          analysis.keyword.keywordDensity >= 1 &&
-                          analysis.keyword.keywordDensity <= 3
-                            ? "Ideal"
-                            : analysis.keyword.keywordDensity > 3
-                            ? "Too high"
-                            : "Too low"
-                        }
-                        noteColor={
-                          analysis.keyword.keywordDensity >= 1 &&
-                          analysis.keyword.keywordDensity <= 3
-                            ? "text-green-600"
-                            : "text-red-600"
-                        }
-                      />
-                    </div>
+                {/* Keyword Analysis */}
+                {analysis.keyword && (
+                  <Card title="Keyword Analysis" icon={<KeywordIcon />}>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <StatItem
+                          label="Keyword Count"
+                          value={analysis.keyword.keywordCount.toString()}
+                        />
+                        <StatItem
+                          label="Keyword Density"
+                          value={`${analysis.keyword.keywordDensity}%`}
+                          note={
+                            analysis.keyword.keywordDensity >= 1 &&
+                            analysis.keyword.keywordDensity <= 3
+                              ? "Ideal"
+                              : analysis.keyword.keywordDensity > 3
+                              ? "Too high"
+                              : "Too low"
+                          }
+                          noteColor={
+                            analysis.keyword.keywordDensity >= 1 &&
+                            analysis.keyword.keywordDensity <= 3
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }
+                        />
+                      </div>
 
-                    <div className="flex items-center gap-2 text-sm">
-                      {analysis.keyword.inFirst100Words ? (
-                        <CheckCircle className="text-green-500" />
-                      ) : (
-                        <WarningTriangle className="text-yellow-500" />
-                      )}
-                      <span style={{ color: "var(--kami-text-muted)" }}>
-                        Keyword in first 100 words
-                      </span>
-                    </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        {analysis.keyword.inFirst100Words ? (
+                          <CheckCircle className="text-green-500" />
+                        ) : (
+                          <WarningTriangle className="text-yellow-500" />
+                        )}
+                        <span style={{ color: "var(--kami-text-muted)" }}>
+                          Keyword in first 100 words
+                        </span>
+                      </div>
 
-                    {analysis.keyword.topPhrases.length > 0 && (
-                      <div>
-                        <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
-                          Related 2-word phrases
+                      {analysis.keyword.topPhrases.length > 0 && (
+                        <div>
+                          <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
+                            Related 2-word phrases
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {analysis.keyword.topPhrases.map((p) => (
+                              <span
+                                key={p.phrase}
+                                className="px-2.5 py-0.5 text-xs"
+                                style={{
+                                  background: "var(--kami-surface)",
+                                  color: "var(--kami-text-muted)",
+                                  border: "1px solid var(--kami-border)",
+                                  borderRadius: "999px",
+                                }}
+                              >
+                                {p.phrase}{" "}
+                                <span style={{ color: "var(--kami-text-dim)" }}>({p.count})</span>
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {analysis.keyword.topPhrases.map((p) => (
+                      )}
+                    </div>
+                  </Card>
+                )}
+
+                {/* Heading Structure */}
+                <Card title="Heading Structure" icon={<HeadingIcon />}>
+                  {analysis.headings.headings.length === 0 ? (
+                    <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
+                      No headings detected. Add headings to improve content
+                      structure.
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {/* Heading tree */}
+                      <div className="space-y-1">
+                        {analysis.headings.headings.map((h, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 text-sm"
+                            style={{ paddingLeft: `${(h.level - 1) * 16}px` }}
+                          >
                             <span
-                              key={p.phrase}
-                              className="px-2.5 py-0.5 text-xs"
+                              className="shrink-0 px-1.5 py-0.5 text-xs font-mono font-medium"
                               style={{
                                 background: "var(--kami-surface)",
                                 color: "var(--kami-text-muted)",
                                 border: "1px solid var(--kami-border)",
-                                borderRadius: "999px",
+                                borderRadius: "4px",
                               }}
                             >
-                              {p.phrase}{" "}
-                              <span style={{ color: "var(--kami-text-dim)" }}>({p.count})</span>
+                              H{h.level}
                             </span>
-                          ))}
+                            <span className="truncate" style={{ color: "var(--kami-text-muted)" }}>
+                              {h.text}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Checks */}
+                      <div className="space-y-1.5 pt-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
+                        <HeadingCheck
+                          passing={analysis.headings.hasH1}
+                          label="Has H1 heading"
+                        />
+                        <HeadingCheck
+                          passing={analysis.headings.singleH1}
+                          label="Only one H1"
+                        />
+                        <HeadingCheck
+                          passing={analysis.headings.logicalOrder}
+                          label="Logical heading order"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </Card>
+
+                {/* Readability */}
+                <Card title="Readability" icon={<ReadabilityIcon />}>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <div
+                          className={`text-3xl font-bold ${
+                            analysis.readability.fleschScore >= 60
+                              ? "text-green-600"
+                              : analysis.readability.fleschScore >= 40
+                              ? "text-yellow-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {analysis.readability.fleschScore}
+                        </div>
+                        <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                          Flesch Score
                         </div>
                       </div>
-                    )}
+                      <div className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                        {analysis.readability.gradeLevel}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
+                        Sentence Length Distribution
+                      </div>
+                      <div className="space-y-1.5">
+                        <DistBar
+                          label="Short (<10)"
+                          count={
+                            analysis.readability.sentenceDistribution.short
+                          }
+                          total={analysis.stats.sentenceCount}
+                          color="bg-green-400"
+                        />
+                        <DistBar
+                          label="Medium (10-20)"
+                          count={
+                            analysis.readability.sentenceDistribution.medium
+                          }
+                          total={analysis.stats.sentenceCount}
+                          color="bg-blue-400"
+                        />
+                        <DistBar
+                          label="Long (20-30)"
+                          count={
+                            analysis.readability.sentenceDistribution.long
+                          }
+                          total={analysis.stats.sentenceCount}
+                          color="bg-yellow-400"
+                        />
+                        <DistBar
+                          label="Very long (>30)"
+                          count={
+                            analysis.readability.sentenceDistribution.veryLong
+                          }
+                          total={analysis.stats.sentenceCount}
+                          color="bg-red-400"
+                        />
+                      </div>
+                    </div>
                   </div>
+                </Card>
+              </div>
+
+              {/* Keyword density treemap */}
+              {analysis.keyword && analysis.keyword.topPhrases.length > 0 && (
+                <Card title="Keyword Density Treemap" icon={<KeywordIcon />}>
+                  <Treemap phrases={analysis.keyword.topPhrases} />
                 </Card>
               )}
 
-              {/* Heading Structure */}
-              <Card title="Heading Structure" icon={<HeadingIcon />}>
-                {analysis.headings.headings.length === 0 ? (
-                  <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-                    No headings detected. Add headings to improve content
-                    structure.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Heading tree */}
-                    <div className="space-y-1">
-                      {analysis.headings.headings.map((h, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-2 text-sm"
-                          style={{ paddingLeft: `${(h.level - 1) * 16}px` }}
-                        >
-                          <span
-                            className="shrink-0 px-1.5 py-0.5 text-xs font-mono font-medium"
-                            style={{
-                              background: "var(--kami-surface)",
-                              color: "var(--kami-text-muted)",
-                              border: "1px solid var(--kami-border)",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            H{h.level}
-                          </span>
-                          <span className="truncate" style={{ color: "var(--kami-text-muted)" }}>
-                            {h.text}
-                          </span>
-                        </div>
-                      ))}
+              {/* Recommendations - full width */}
+              <Card title="Recommendations" icon={<RecommendationIcon />}>
+                <div className="space-y-2">
+                  {analysis.recommendations.map((rec, i) => (
+                    <div key={i} className="flex items-start gap-2.5 text-sm">
+                      {rec.passing ? (
+                        <CheckCircle className="text-green-500 mt-0.5 shrink-0" />
+                      ) : (
+                        <WarningTriangle className="text-yellow-500 mt-0.5 shrink-0" />
+                      )}
+                      <span style={{ color: "var(--kami-text-muted)" }}>{rec.text}</span>
                     </div>
-
-                    {/* Checks */}
-                    <div className="space-y-1.5 pt-3" style={{ borderTop: "1px solid var(--kami-border)" }}>
-                      <HeadingCheck
-                        passing={analysis.headings.hasH1}
-                        label="Has H1 heading"
-                      />
-                      <HeadingCheck
-                        passing={analysis.headings.singleH1}
-                        label="Only one H1"
-                      />
-                      <HeadingCheck
-                        passing={analysis.headings.logicalOrder}
-                        label="Logical heading order"
-                      />
-                    </div>
-                  </div>
-                )}
-              </Card>
-
-              {/* Readability */}
-              <Card title="Readability" icon={<ReadabilityIcon />}>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div
-                        className={`text-3xl font-bold ${
-                          analysis.readability.fleschScore >= 60
-                            ? "text-green-600"
-                            : analysis.readability.fleschScore >= 40
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                        }`}
-                      >
-                        {analysis.readability.fleschScore}
-                      </div>
-                      <div className="text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                        Flesch Score
-                      </div>
-                    </div>
-                    <div className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                      {analysis.readability.gradeLevel}
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-xs font-medium mb-2" style={{ color: "var(--kami-text-muted)" }}>
-                      Sentence Length Distribution
-                    </div>
-                    <div className="space-y-1.5">
-                      <DistBar
-                        label="Short (<10)"
-                        count={
-                          analysis.readability.sentenceDistribution.short
-                        }
-                        total={analysis.stats.sentenceCount}
-                        color="bg-green-400"
-                      />
-                      <DistBar
-                        label="Medium (10-20)"
-                        count={
-                          analysis.readability.sentenceDistribution.medium
-                        }
-                        total={analysis.stats.sentenceCount}
-                        color="bg-blue-400"
-                      />
-                      <DistBar
-                        label="Long (20-30)"
-                        count={
-                          analysis.readability.sentenceDistribution.long
-                        }
-                        total={analysis.stats.sentenceCount}
-                        color="bg-yellow-400"
-                      />
-                      <DistBar
-                        label="Very long (>30)"
-                        count={
-                          analysis.readability.sentenceDistribution.veryLong
-                        }
-                        total={analysis.stats.sentenceCount}
-                        color="bg-red-400"
-                      />
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </Card>
             </div>
-
-            {/* Keyword density treemap */}
-            {analysis.keyword && analysis.keyword.topPhrases.length > 0 && (
-              <Card title="Keyword Density Treemap" icon={<KeywordIcon />}>
-                <Treemap phrases={analysis.keyword.topPhrases} />
-              </Card>
-            )}
-
-            {/* Recommendations - full width */}
-            <Card title="Recommendations" icon={<RecommendationIcon />}>
-              <div className="space-y-2">
-                {analysis.recommendations.map((rec, i) => (
-                  <div key={i} className="flex items-start gap-2.5 text-sm">
-                    {rec.passing ? (
-                      <CheckCircle className="text-green-500 mt-0.5 shrink-0" />
-                    ) : (
-                      <WarningTriangle className="text-yellow-500 mt-0.5 shrink-0" />
-                    )}
-                    <span style={{ color: "var(--kami-text-muted)" }}>{rec.text}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
+          </>
         )}
       </div>
     </ToolShell>

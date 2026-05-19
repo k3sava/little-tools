@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -483,6 +483,21 @@ export default function JsonFormatterContent() {
   const [convertFormat, setConvertFormat] = useState<"yaml" | "toml" | "csv">("yaml");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const indent = useMemo<number | "tab">(() => {
     if (indentChoice === "tab") return "tab";
     return parseInt(indentChoice, 10);
@@ -698,8 +713,19 @@ export default function JsonFormatterContent() {
         </>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-3">
         {/* Input */}
+        {(!isMetro || metroCPivot === "input") && (<>
         <textarea
           ref={textareaRef}
           value={input}
@@ -739,8 +765,10 @@ export default function JsonFormatterContent() {
             </span>
           )}
         </div>
+        </>)}
 
         {/* Format Tab */}
+        {(!isMetro || metroCPivot === "output") && (<>
         {hasData && activeTab === "format" && (
           <div className="flex flex-col gap-3">
             {/* Search */}
@@ -977,6 +1005,7 @@ export default function JsonFormatterContent() {
             </pre>
           </div>
         )}
+        </>)}
       </div>
     </ToolShell>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -409,6 +409,21 @@ export default function HeadlineAnalyzerContent() {
   const [{ q: headline }, setToolState] = useToolState({ q: "" });
   const setHeadline = useCallback((v: string) => setToolState({ q: v }), [setToolState]);
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [headlineB, setHeadlineB] = useState("");
   const [copiedA, setCopiedA] = useState(false);
@@ -503,112 +518,138 @@ export default function HeadlineAnalyzerContent() {
       actions={actions}
       controls={controls}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Headline</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Analysis</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4 p-4 md:p-6">
         {mode === "single" ? (
           <>
-            <input
-              type="text"
-              value={headline}
-              onChange={(e) => setHeadline(e.target.value)}
-              placeholder="Type your headline here..."
-              className="w-full px-4 py-3 text-lg focus:outline-none"
-              style={inputStyle}
-              autoFocus
-            />
-            {resultA ? (
-              <ResultPanel
-                label="Your headline"
-                headline={headline}
-                result={resultA}
-                onCopy={() => copyHeadline(headline, "A")}
-                copiedFlag={copiedA}
-              />
-            ) : (
-              <div
-                className="py-12 text-center text-sm"
-                style={{ color: "var(--kami-text-dim)" }}
-              >
-                Start typing a headline to see your score.
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div>
-                <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-                  Headline A
-                </div>
+            {(!isMetro || metroCPivot === "input") && (
+              <>
                 <input
                   type="text"
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
-                  placeholder="First headline..."
-                  className="w-full px-3 py-2.5 text-base focus:outline-none"
+                  placeholder="Type your headline here..."
+                  className="w-full px-4 py-3 text-lg focus:outline-none"
                   style={inputStyle}
+                  autoFocus
                 />
-              </div>
-              <div>
-                <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-                  Headline B
-                </div>
-                <input
-                  type="text"
-                  value={headlineB}
-                  onChange={(e) => setHeadlineB(e.target.value)}
-                  placeholder="Second headline..."
-                  className="w-full px-3 py-2.5 text-base focus:outline-none"
-                  style={inputStyle}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              {resultA && (
-                <ResultPanel
-                  label="Headline A"
-                  headline={headline}
-                  result={resultA}
-                  onCopy={() => copyHeadline(headline, "A")}
-                  copiedFlag={copiedA}
-                />
-              )}
-              {resultB && (
-                <ResultPanel
-                  label="Headline B"
-                  headline={headlineB}
-                  result={resultB}
-                  onCopy={() => copyHeadline(headlineB, "B")}
-                  copiedFlag={copiedB}
-                />
-              )}
-            </div>
-            {resultA && resultB && (
-              <div
-                className="px-4 py-3 text-center text-sm font-medium"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  color:
-                    resultA.overall === resultB.overall
-                      ? "color-mix(in srgb, #eab308 70%, var(--kami-text))"
-                      : "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
-                }}
-              >
-                {resultA.overall > resultB.overall
-                  ? `Headline A wins (${resultA.overall} vs ${resultB.overall})`
-                  : resultB.overall > resultA.overall
-                  ? `Headline B wins (${resultB.overall} vs ${resultA.overall})`
-                  : `Tie (${resultA.overall} each)`}
-              </div>
+              </>
             )}
-            {!resultA && !resultB && (
-              <div
-                className="py-12 text-center text-sm"
-                style={{ color: "var(--kami-text-dim)" }}
-              >
-                Enter two headlines to compare them side by side.
-              </div>
+            {(!isMetro || metroCPivot === "output") && (
+              <>
+                {resultA ? (
+                  <ResultPanel
+                    label="Your headline"
+                    headline={headline}
+                    result={resultA}
+                    onCopy={() => copyHeadline(headline, "A")}
+                    copiedFlag={copiedA}
+                  />
+                ) : (
+                  <div
+                    className="py-12 text-center text-sm"
+                    style={{ color: "var(--kami-text-dim)" }}
+                  >
+                    Start typing a headline to see your score.
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <>
+            {(!isMetro || metroCPivot === "input") && (
+              <>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div>
+                    <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                      Headline A
+                    </div>
+                    <input
+                      type="text"
+                      value={headline}
+                      onChange={(e) => setHeadline(e.target.value)}
+                      placeholder="First headline..."
+                      className="w-full px-3 py-2.5 text-base focus:outline-none"
+                      style={inputStyle}
+                    />
+                  </div>
+                  <div>
+                    <div className="mb-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                      Headline B
+                    </div>
+                    <input
+                      type="text"
+                      value={headlineB}
+                      onChange={(e) => setHeadlineB(e.target.value)}
+                      placeholder="Second headline..."
+                      className="w-full px-3 py-2.5 text-base focus:outline-none"
+                      style={inputStyle}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+            {(!isMetro || metroCPivot === "output") && (
+              <>
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {resultA && (
+                    <ResultPanel
+                      label="Headline A"
+                      headline={headline}
+                      result={resultA}
+                      onCopy={() => copyHeadline(headline, "A")}
+                      copiedFlag={copiedA}
+                    />
+                  )}
+                  {resultB && (
+                    <ResultPanel
+                      label="Headline B"
+                      headline={headlineB}
+                      result={resultB}
+                      onCopy={() => copyHeadline(headlineB, "B")}
+                      copiedFlag={copiedB}
+                    />
+                  )}
+                </div>
+                {resultA && resultB && (
+                  <div
+                    className="px-4 py-3 text-center text-sm font-medium"
+                    style={{
+                      background: "var(--kami-surface-solid)",
+                      border: "1px solid var(--kami-border-strong)",
+                      borderRadius: "var(--kami-card-radius, 0.75rem)",
+                      color:
+                        resultA.overall === resultB.overall
+                          ? "color-mix(in srgb, #eab308 70%, var(--kami-text))"
+                          : "color-mix(in srgb, #16a34a 70%, var(--kami-text))",
+                    }}
+                  >
+                    {resultA.overall > resultB.overall
+                      ? `Headline A wins (${resultA.overall} vs ${resultB.overall})`
+                      : resultB.overall > resultA.overall
+                      ? `Headline B wins (${resultB.overall} vs ${resultA.overall})`
+                      : `Tie (${resultA.overall} each)`}
+                  </div>
+                )}
+                {!resultA && !resultB && (
+                  <div
+                    className="py-12 text-center text-sm"
+                    style={{ color: "var(--kami-text-dim)" }}
+                  >
+                    Enter two headlines to compare them side by side.
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

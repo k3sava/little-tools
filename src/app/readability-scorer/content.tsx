@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -340,6 +340,21 @@ export default function ReadabilityScorerContent() {
   const scores = useMemo(() => computeScores(words, stats.totalSentences, input), [words, stats.totalSentences, input]);
   const suggestions = useMemo(() => generateSuggestions(input), [input]);
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const overallGrade = scores ? getOverallGrade(scores) : null;
   const hasContent = words.length > 0 && stats.totalSentences > 0;
 
@@ -469,160 +484,178 @@ export default function ReadabilityScorerContent() {
       actions={actions}
       controls={controls}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Scores</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Paste or type your text to analyze readability..."
-          className="w-full px-4 py-3 text-base focus:outline-none"
-          style={{
-            background: "var(--kami-input-bg, var(--kami-surface-solid))",
-            color: "var(--kami-text)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-input-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-            minHeight: 180,
-          }}
-          rows={8}
-          autoFocus
-        />
-
-        {/* Overall summary */}
-        {hasContent && scores && overallGrade !== null && (
-          <div
-            className="px-5 py-4 flex flex-wrap items-center justify-between gap-4"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-            }}
-          >
-            <div>
-              <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
-                Overall grade
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span
-                  className="text-4xl font-bold tabular-nums"
-                  style={{ color: `color-mix(in srgb, ${getScoreSemanticHex(overallGrade)} 80%, var(--kami-text))` }}
-                >
-                  {overallGrade}
-                </span>
-                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
-                  {getGradeLevelLabel(overallGrade)}
-                </span>
-              </div>
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
-                Reading ease
-              </div>
-              <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                {getFleschLabel(scores.fleschReadingEase)}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
-                Reading time
-              </div>
-              <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
-                {formatTime(stats.readingTimeMin)}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Suggestions */}
-        {hasContent && suggestions.length > 0 && (
-          <div
-            className="px-5 py-4"
-            style={{
-              background: "color-mix(in srgb, #f59e0b 8%, var(--kami-surface-solid))",
-              border: "1px solid color-mix(in srgb, #f59e0b 30%, var(--kami-border-strong))",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-            }}
-          >
-            <div className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text)" }}>
-              Rewrite suggestions ({suggestions.length})
-            </div>
-            <ul className="flex flex-col gap-2.5">
-              {suggestions.map((s, i) => (
-                <li key={i}>
-                  <div
-                    className="text-sm"
-                    style={{
-                      color:
-                        s.severity === "warning"
-                          ? "color-mix(in srgb, #ef4444 80%, var(--kami-text))"
-                          : "var(--kami-text-muted)",
-                    }}
-                  >
-                    {s.suggestion}
-                  </div>
-                  <div className="text-xs truncate mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
-                    “{s.sentence}”
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Sentence highlighting */}
-        {hasContent && sentences.length > 0 && (
-          <div
-            className="px-5 py-4"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-            }}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
-                Sentence difficulty
-              </span>
-              <div className="flex flex-wrap gap-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
-                <Legend color="#22c55e" label="< 14" />
-                <Legend color="transparent" label="14-20" border />
-                <Legend color="#eab308" label="21-30" />
-                <Legend color="#ef4444" label="30+" />
-              </div>
-            </div>
-            <div
-              className="max-h-72 overflow-auto p-4 text-sm leading-relaxed"
+        {(!isMetro || metroCPivot === "input") && (
+          <>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Paste or type your text to analyze readability..."
+              className="w-full px-4 py-3 text-base focus:outline-none"
               style={{
-                background: "var(--kami-surface)",
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
                 color: "var(--kami-text)",
-                border: "1px solid var(--kami-border)",
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+                minHeight: 180,
               }}
-            >
-              {sentences.map((s, i) => (
-                <span
-                  key={i}
-                  title={`${s.wordCount} words`}
+              rows={8}
+              autoFocus
+            />
+          </>
+        )}
+
+        {(!isMetro || metroCPivot === "output") && (
+          <>
+            {/* Overall summary */}
+            {hasContent && scores && overallGrade !== null && (
+              <div
+                className="px-5 py-4 flex flex-wrap items-center justify-between gap-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
+                <div>
+                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                    Overall grade
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className="text-4xl font-bold tabular-nums"
+                      style={{ color: `color-mix(in srgb, ${getScoreSemanticHex(overallGrade)} 80%, var(--kami-text))` }}
+                    >
+                      {overallGrade}
+                    </span>
+                    <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>
+                      {getGradeLevelLabel(overallGrade)}
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                    Reading ease
+                  </div>
+                  <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                    {getFleschLabel(scores.fleschReadingEase)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--kami-text-dim)" }}>
+                    Reading time
+                  </div>
+                  <div className="text-lg font-semibold" style={{ color: "var(--kami-text-muted)" }}>
+                    {formatTime(stats.readingTimeMin)}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Suggestions */}
+            {hasContent && suggestions.length > 0 && (
+              <div
+                className="px-5 py-4"
+                style={{
+                  background: "color-mix(in srgb, #f59e0b 8%, var(--kami-surface-solid))",
+                  border: "1px solid color-mix(in srgb, #f59e0b 30%, var(--kami-border-strong))",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
+                <div className="text-sm font-semibold mb-3" style={{ color: "var(--kami-text)" }}>
+                  Rewrite suggestions ({suggestions.length})
+                </div>
+                <ul className="flex flex-col gap-2.5">
+                  {suggestions.map((s, i) => (
+                    <li key={i}>
+                      <div
+                        className="text-sm"
+                        style={{
+                          color:
+                            s.severity === "warning"
+                              ? "color-mix(in srgb, #ef4444 80%, var(--kami-text))"
+                              : "var(--kami-text-muted)",
+                        }}
+                      >
+                        {s.suggestion}
+                      </div>
+                      <div className="text-xs truncate mt-0.5" style={{ color: "var(--kami-text-dim)" }}>
+                        "{s.sentence}"
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Sentence highlighting */}
+            {hasContent && sentences.length > 0 && (
+              <div
+                className="px-5 py-4"
+                style={{
+                  background: "var(--kami-surface-solid)",
+                  border: "1px solid var(--kami-border-strong)",
+                  borderRadius: "var(--kami-card-radius, 0.75rem)",
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+                    Sentence difficulty
+                  </span>
+                  <div className="flex flex-wrap gap-3 text-xs" style={{ color: "var(--kami-text-muted)" }}>
+                    <Legend color="#22c55e" label="< 14" />
+                    <Legend color="transparent" label="14-20" border />
+                    <Legend color="#eab308" label="21-30" />
+                    <Legend color="#ef4444" label="30+" />
+                  </div>
+                </div>
+                <div
+                  className="max-h-72 overflow-auto p-4 text-sm leading-relaxed"
                   style={{
-                    background: SENTENCE_BG[s.category],
-                    padding: s.category !== "medium" ? "0 2px" : 0,
-                    borderRadius: 3,
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
                   }}
                 >
-                  {s.text}
-                  {i < sentences.length - 1 ? " " : ""}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+                  {sentences.map((s, i) => (
+                    <span
+                      key={i}
+                      title={`${s.wordCount} words`}
+                      style={{
+                        background: SENTENCE_BG[s.category],
+                        padding: s.category !== "medium" ? "0 2px" : 0,
+                        borderRadius: 3,
+                      }}
+                    >
+                      {s.text}
+                      {i < sentences.length - 1 ? " " : ""}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {!hasContent && (
-          <div
-            className="text-center py-8 text-sm"
-            style={{ color: "var(--kami-text-dim)" }}
-          >
-            Paste text above to see readability scores.
-          </div>
+            {!hasContent && (
+              <div
+                className="text-center py-8 text-sm"
+                style={{ color: "var(--kami-text-dim)" }}
+              >
+                Paste text above to see readability scores.
+              </div>
+            )}
+          </>
         )}
       </div>
     </ToolShell>

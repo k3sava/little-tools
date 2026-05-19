@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -256,6 +256,21 @@ export default function TextCleanerContent() {
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [handleCopy, setInput]));
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const diffSegments = useMemo(() => {
     if (!hasChanges) return null;
     if (input.length > 5000) return null;
@@ -350,7 +365,18 @@ export default function TextCleanerContent() {
       actions={actions}
       controls={controls}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-3 p-4 md:p-6">
+        {(!isMetro || metroCPivot === "input") && (<>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -381,7 +407,9 @@ export default function TextCleanerContent() {
             </span>
           )}
         </div>
+        </>)}
 
+        {(!isMetro || metroCPivot === "output") && (<>
         {/* Output area */}
         {input && (view === "after" || (!hasChanges && view === "diff")) && (
           <div
@@ -436,6 +464,7 @@ export default function TextCleanerContent() {
             })}
           </div>
         )}
+        </>)}
       </div>
     </ToolShell>
   );

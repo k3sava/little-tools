@@ -593,6 +593,8 @@ function DecodeWorkspace({
   secret,
   verifyState,
   verifyMessage,
+  isMetro,
+  metroCPivot,
 }: {
   input: string;
   setInput: (v: string) => void;
@@ -601,6 +603,8 @@ function DecodeWorkspace({
   secret: string;
   verifyState: VerifyState;
   verifyMessage: string;
+  isMetro?: boolean;
+  metroCPivot?: "input" | "output";
 }) {
   const [toggledTimestamps, setToggledTimestamps] = useState<Set<string>>(new Set());
   const [showSamples, setShowSamples] = useState(false);
@@ -637,6 +641,7 @@ function DecodeWorkspace({
   return (
     <div className="space-y-4">
       {/* Token input */}
+      {(!isMetro || metroCPivot === "input") && (<>
       <div>
         <textarea
           value={input}
@@ -710,8 +715,9 @@ function DecodeWorkspace({
           </div>
         </div>
       )}
+      </>)}
 
-      {decoded && (
+      {(!isMetro || metroCPivot === "output") && decoded && (
         <>
           {/* Color-coded token preview */}
           <div className="px-4 py-3 overflow-auto" style={cardStyle}>
@@ -1270,6 +1276,21 @@ export default function JwtDecoderContent() {
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("decode");
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   // Builder state lifted so it's accessible from controls panel
   const [algorithm, setAlgorithm] = useState("HS256");
   const [duration, setDuration] = useState(86400);
@@ -1466,6 +1487,16 @@ export default function JwtDecoderContent() {
         </div>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Token</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Decoded</button>
+        </nav>
+      )}
       <div className="space-y-4">
         {activeTab === "decode" && (
           <DecodeWorkspace
@@ -1476,6 +1507,8 @@ export default function JwtDecoderContent() {
             secret={secret}
             verifyState={verifyState}
             verifyMessage={verifyMessage}
+            isMetro={isMetro}
+            metroCPivot={metroCPivot}
           />
         )}
         {activeTab === "builder" && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -193,6 +193,21 @@ export default function WordFrequencyContent() {
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [handleCopy, setInput]));
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const tabLabel = activeTab === "words" ? "words" : "phrases";
 
   const inputStyle = {
@@ -281,115 +296,133 @@ export default function WordFrequencyContent() {
       actions={actions}
       controls={controls}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Analysis</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-3 p-4 md:p-6">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Paste your text here..."
-          className="w-full px-4 py-3 text-base focus:outline-none"
-          style={{ ...inputStyle, minHeight: 140 }}
-          rows={6}
-          autoFocus
-        />
+        {(!isMetro || metroCPivot === "input") && (
+          <>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Paste your text here..."
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={{ ...inputStyle, minHeight: 140 }}
+              rows={6}
+              autoFocus
+            />
 
-        <div
-          className="flex items-center justify-between text-xs"
-          style={{ color: "var(--kami-text-dim)" }}
-        >
-          <span>
-            {entries.length} unique {tabLabel}
-          </span>
-          {input && (
-            <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
-              Clear
-            </button>
-          )}
-        </div>
-
-        {/* Search within results */}
-        {entries.length > 0 && (
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={`Filter ${tabLabel} (e.g. "ing")`}
-            className="w-full px-3 py-2 text-sm focus:outline-none"
-            style={inputStyle}
-          />
+            <div
+              className="flex items-center justify-between text-xs"
+              style={{ color: "var(--kami-text-dim)" }}
+            >
+              <span>
+                {entries.length} unique {tabLabel}
+              </span>
+              {input && (
+                <button onClick={() => setInput("")} style={{ color: "var(--kami-text-dim)" }}>
+                  Clear
+                </button>
+              )}
+            </div>
+          </>
         )}
 
-        {/* Bar chart of top 20 */}
-        {filteredEntries.length > 0 && (
-          <div
-            className="px-4 py-4"
-            style={cardStyle}
-          >
-            <div className="text-xs font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>
-              Top {Math.min(20, filteredEntries.length)} {tabLabel}
-            </div>
-            <div className="space-y-1.5">
-              {top20.map((e) => (
-                <div key={e.word} className="grid grid-cols-[minmax(80px,auto)_1fr_auto_auto] items-center gap-2 text-sm">
-                  <span className="truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
-                    {e.word}
-                  </span>
-                  <div
-                    className="h-4 overflow-hidden"
-                    style={{ background: "var(--kami-surface)", borderRadius: 4 }}
-                  >
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${(e.count / maxCount) * 100}%`,
-                        background: "#6366f1",
-                        borderRadius: 4,
-                      }}
-                    />
-                  </div>
-                  <span className="w-10 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
-                    {e.count}
-                  </span>
-                  <span className="w-12 text-right text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
-                    {e.pct.toFixed(1)}%
-                  </span>
+        {(!isMetro || metroCPivot === "output") && (
+          <>
+            {/* Search within results */}
+            {entries.length > 0 && (
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={`Filter ${tabLabel} (e.g. "ing")`}
+                className="w-full px-3 py-2 text-sm focus:outline-none"
+                style={inputStyle}
+              />
+            )}
+
+            {/* Bar chart of top 20 */}
+            {filteredEntries.length > 0 && (
+              <div
+                className="px-4 py-4"
+                style={cardStyle}
+              >
+                <div className="text-xs font-medium mb-3" style={{ color: "var(--kami-text-muted)" }}>
+                  Top {Math.min(20, filteredEntries.length)} {tabLabel}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+                <div className="space-y-1.5">
+                  {top20.map((e) => (
+                    <div key={e.word} className="grid grid-cols-[minmax(80px,auto)_1fr_auto_auto] items-center gap-2 text-sm">
+                      <span className="truncate text-right font-mono" style={{ color: "var(--kami-text-muted)" }}>
+                        {e.word}
+                      </span>
+                      <div
+                        className="h-4 overflow-hidden"
+                        style={{ background: "var(--kami-surface)", borderRadius: 4 }}
+                      >
+                        <div
+                          className="h-full"
+                          style={{
+                            width: `${(e.count / maxCount) * 100}%`,
+                            background: "#6366f1",
+                            borderRadius: 4,
+                          }}
+                        />
+                      </div>
+                      <span className="w-10 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                        {e.count}
+                      </span>
+                      <span className="w-12 text-right text-xs tabular-nums" style={{ color: "var(--kami-text-dim)" }}>
+                        {e.pct.toFixed(1)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Full table */}
-        {filteredEntries.length > 0 && (
-          <div className="overflow-auto max-h-96" style={cardStyle}>
-            <table className="w-full text-sm">
-              <thead className="sticky top-0" style={{ background: "var(--kami-surface-solid)" }}>
-                <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                  <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    {activeTab === "words" ? "Word" : "Phrase"}
-                  </th>
-                  <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    Count
-                  </th>
-                  <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
-                    %
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEntries.map((e) => (
-                  <tr key={e.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
-                    <td className="px-4 py-1.5 font-mono">{e.word}</td>
-                    <td className="px-4 py-1.5 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
-                      {e.count}
-                    </td>
-                    <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
-                      {e.pct.toFixed(2)}%
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+            {/* Full table */}
+            {filteredEntries.length > 0 && (
+              <div className="overflow-auto max-h-96" style={cardStyle}>
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0" style={{ background: "var(--kami-surface-solid)" }}>
+                    <tr style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                      <th className="px-4 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                        {activeTab === "words" ? "Word" : "Phrase"}
+                      </th>
+                      <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                        Count
+                      </th>
+                      <th className="px-4 py-2 text-right font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                        %
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEntries.map((e) => (
+                      <tr key={e.word} style={{ borderBottom: "1px solid var(--kami-border)" }}>
+                        <td className="px-4 py-1.5 font-mono">{e.word}</td>
+                        <td className="px-4 py-1.5 text-right font-mono tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                          {e.count}
+                        </td>
+                        <td className="px-4 py-1.5 text-right tabular-nums" style={{ color: "var(--kami-text-muted)" }}>
+                          {e.pct.toFixed(2)}%
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
         )}
       </div>
     </ToolShell>

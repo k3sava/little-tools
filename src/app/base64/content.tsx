@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -122,6 +122,21 @@ export default function Base64Content() {
   const [showImagePreviewTab, setShowImagePreviewTab] = useState(true);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const lineWrapNum = useMemo(() => parseInt(lineWrap, 10), [lineWrap]);
 
@@ -284,6 +299,16 @@ export default function Base64Content() {
         </>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
+      )}
       <div
         className="flex flex-col gap-3"
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -298,6 +323,7 @@ export default function Base64Content() {
         {/* Dual editor */}
         <div className="flex flex-col md:flex-row gap-3">
           {/* Plain text side */}
+          {(!isMetro || metroCPivot === "input") && (
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
@@ -323,8 +349,10 @@ export default function Base64Content() {
               <span>{plainText.length} chars · {new TextEncoder().encode(plainText).length} bytes</span>
             </div>
           </div>
+          )}
 
           {/* Base64 side */}
+          {(!isMetro || metroCPivot === "output") && (
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
@@ -357,9 +385,11 @@ export default function Base64Content() {
               </span>
             </div>
           </div>
+          )}
         </div>
 
         {/* Drop zone integrated into canvas */}
+        {(!isMetro || metroCPivot === "input") && (
         <div
           className="flex flex-col items-center justify-center text-center px-4 py-6 transition-colors"
           style={{
@@ -392,8 +422,10 @@ export default function Base64Content() {
             Any file type — converts to Base64 with auto-detected MIME
           </p>
         </div>
+        )}
 
         {/* Data URL + Image preview */}
+        {(!isMetro || metroCPivot === "output") && (<>
         {base64Text && dataUrl && (
           <div className="flex flex-col gap-3">
             <div className="p-4" style={cardStyle}>
@@ -443,6 +475,7 @@ export default function Base64Content() {
             )}
           </div>
         )}
+        </>)}
       </div>
     </ToolShell>
   );

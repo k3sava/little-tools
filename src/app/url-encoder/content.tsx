@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -61,6 +61,21 @@ export default function UrlEncoderContent() {
   const [copied, setCopied] = useState<string | null>(null);
   const [plusEncode, setPlusEncode] = useState(false);
   const [paramRows, setParamRows] = useState<[string, string][]>([]);
+
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const output = useMemo(() => {
     if (!input) return "";
@@ -161,7 +176,18 @@ export default function UrlEncoderContent() {
         </>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4">
+        {(!isMetro || metroCPivot === "input") && (<>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -187,7 +213,9 @@ export default function UrlEncoderContent() {
             <span>{output.length} chars out</span>
           )}
         </div>
+        </>)}
 
+        {(!isMetro || metroCPivot === "output") && (<>
         {/* Encode/decode output */}
         {(mode === "encode" || mode === "decode") && input && output && (
           <div>
@@ -318,6 +346,7 @@ export default function UrlEncoderContent() {
             Not a valid URL — needs protocol (e.g. <code>https://</code>) and host.
           </div>
         )}
+        </>)}
       </div>
     </ToolShell>
   );
