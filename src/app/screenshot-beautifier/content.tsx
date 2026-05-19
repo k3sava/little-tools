@@ -71,6 +71,20 @@ function roundRect(
 
 export default function ScreenshotBeautifierContent() {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
   const [frame, setFrame] = useState<DeviceFrame>("browser");
   const [bgMode, setBgMode] = useState<BgMode>("gradient");
   const [bgColor, setBgColor] = useState("#6366f1");
@@ -531,7 +545,17 @@ export default function ScreenshotBeautifierContent() {
         </div>
       }
     >
-      {!image ? (
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Upload</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Preview</button>
+        </nav>
+      )}
+      {(!isMetro || metroCPivot === "input") && !image && (
         <FileDropZone
           accept={[".png", ".jpg", ".jpeg", ".webp"]}
           onFiles={handleFiles}
@@ -539,8 +563,8 @@ export default function ScreenshotBeautifierContent() {
           hint="PNG, JPG, WebP — nothing is uploaded"
           multiple={false}
         />
-      ) : (
-        <div
+      )}
+      {(!isMetro || metroCPivot === "output") && image && (<div
           className="overflow-hidden p-3 sm:p-4 select-none"
           style={cardStyle}
           onMouseMove={handleDragMove}

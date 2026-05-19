@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -160,6 +160,20 @@ export default function LinkInBioContent() {
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE);
   const [copied, setCopied] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   const update = useCallback((patch: Partial<Profile>) => {
     setProfile((p) => ({ ...p, ...patch }));
@@ -381,8 +395,18 @@ export default function LinkInBioContent() {
       controls={controls}
       controlsLabel="Design"
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Links</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Preview</button>
+        </nav>
+      )}
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="flex flex-col gap-2">
+        {(!isMetro || metroCPivot === "input") && <section className="flex flex-col gap-2">
           <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
             Links
           </h2>
@@ -460,9 +484,9 @@ export default function LinkInBioContent() {
               </button>
             </div>
           ))}
-        </section>
+        </section>}
 
-        <section className="flex flex-col gap-2">
+        {(!isMetro || metroCPivot === "output") && <section className="flex flex-col gap-2">
           <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
             Mobile preview
           </h2>
@@ -564,7 +588,7 @@ export default function LinkInBioContent() {
               </div>
             </div>
           </div>
-        </section>
+        </section>}
       </div>
     </ToolShell>
   );

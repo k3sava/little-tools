@@ -245,6 +245,20 @@ export default function ComparisonTableContent() {
   const [toast, setToast] = useState<string | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState("feature");
   const previewRef = useRef<HTMLDivElement>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // --- Undo stack (max 20) ---
   const MAX_UNDO = 20;
@@ -542,10 +556,20 @@ export default function ComparisonTableContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Data</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Table</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4 p-4 md:p-6">
 
       {/* Editable table */}
-      <div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
+      {(!isMetro || metroCPivot === "input") && <div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
         <table className="w-full min-w-[600px] border-collapse text-sm">
           <thead>
             <tr>
@@ -725,10 +749,10 @@ export default function ComparisonTableContent() {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
 
       {/* Preview */}
-      <div className="mb-6">
+      {(!isMetro || metroCPivot === "output") && <div className="mb-6">
         <h2
           className="mb-3 text-sm font-semibold uppercase tracking-wide"
           style={{ color: "var(--kami-text-muted)" }}
@@ -799,7 +823,7 @@ export default function ComparisonTableContent() {
             </tbody>
           </table>
         </div>
-      </div>
+      </div>}
 
         {/* Toast */}
         {toast && (

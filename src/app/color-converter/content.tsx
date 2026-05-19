@@ -414,6 +414,20 @@ export default function ColorConverterContent() {
   const [{ color: initialColor }, setToolState] = useToolState({ color: "#ff6600" });
   const initialRgb = useMemo(() => hexToRgb(initialColor) ?? { r: 255, g: 102, b: 0 }, []);
   const [rgb, setRgb] = useState<RGB>(initialRgb);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Sync from a new RGB source
   const syncAll = useCallback(
@@ -642,9 +656,19 @@ export default function ColorConverterContent() {
         </div>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Input</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Formats</button>
+        </nav>
+      )}
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Big swatch + contrast inline */}
-        <div
+        {(!isMetro || metroCPivot === "input") && <div
           className="flex flex-col gap-3 overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -671,9 +695,10 @@ export default function ColorConverterContent() {
               Hue {Math.round(rgbToHsl(rgb).h)}° · Sat {Math.round(rgbToHsl(rgb).s)}% · Lum {Math.round(rgbToHsl(rgb).l)}%
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* Format rows */}
+        {(!isMetro || metroCPivot === "output") && (<>
         <div
           className="flex flex-col gap-2 p-3"
           style={{
@@ -726,6 +751,7 @@ export default function ColorConverterContent() {
             ))}
           </div>
         </div>
+        </>)}
       </div>
     </ToolShell>
   );

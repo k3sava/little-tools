@@ -46,6 +46,21 @@ function formatLabel(mime: OutputFormat): string {
 }
 
 export default function ImageConverterContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
+
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("image/png");
   const [quality, setQuality] = useState(85);
@@ -422,16 +437,26 @@ export default function ImageConverterContent() {
       controls={controls}
       controlsLabel="Settings"
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Upload</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Convert</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4">
-        <FileDropZone
+        {(!isMetro || metroCPivot === "input") && (<FileDropZone
           accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
           onFiles={handleFileDrop}
           label="Drop images here or click to browse"
           hint="PNG, JPG, WebP, GIF, BMP, SVG"
           multiple={true}
-        />
+        />)}
 
-        {selected && (
+        {(!isMetro || metroCPivot === "output") && selected && (
           <div
             className="rounded-xl border p-4"
             style={{

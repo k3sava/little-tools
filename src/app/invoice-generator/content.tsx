@@ -442,6 +442,20 @@ function generatePDF(data: InvoiceData) {
 export default function InvoiceGeneratorContent() {
   const [invoice, setInvoice] = useState<InvoiceData>(defaultInvoice);
   const [loaded, setLoaded] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Load sender defaults on mount
   useEffect(() => {
@@ -620,8 +634,18 @@ export default function InvoiceGeneratorContent() {
       controls={controls}
       controlsLabel="Settings"
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Details</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Preview</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-6">
-        <div className="grid gap-6 lg:grid-cols-2">
+        {(!isMetro || metroCPivot === "input") && (<><div className="grid gap-6 lg:grid-cols-2">
           {/* From */}
           <fieldset
             className="p-5"
@@ -774,7 +798,9 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </fieldset>
+        </>)}
 
+        {(!isMetro || metroCPivot === "output") && <>
         {/* Line items */}
         <fieldset
           className="mt-6 p-5"
@@ -1017,6 +1043,7 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </div>
+        </>}
 
       </div>
     </ToolShell>

@@ -143,6 +143,20 @@ const ACCENT = "#6366f1";
 export default function EmailSignatureContent() {
   const [sig, setSig] = useState<SigData>(DEFAULTS);
   const [copied, setCopied] = useState<"html" | "url" | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Load from URL on mount
   useEffect(() => {
@@ -238,9 +252,19 @@ export default function EmailSignatureContent() {
         </>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Form</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Preview</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-4 w-full">
         {/* Live preview */}
-        <div className="p-6" style={cardStyle}>
+        {(!isMetro || metroCPivot === "output") && <div className="p-6" style={cardStyle}>
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--kami-text-dim)" }}>
             Preview
           </p>
@@ -254,10 +278,10 @@ export default function EmailSignatureContent() {
               Fill in your name and email to see the preview.
             </p>
           )}
-        </div>
+        </div>}
 
-        {/* Raw HTML */}
-        {hasContent && (
+        {(!isMetro || metroCPivot === "output") && hasContent && (<>
+          {/* Raw HTML */}
           <div className="p-5" style={cardStyle}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs uppercase tracking-widest" style={{ color: "var(--kami-text-dim)" }}>
@@ -290,10 +314,8 @@ export default function EmailSignatureContent() {
               {html}
             </pre>
           </div>
-        )}
 
-        {/* Share */}
-        {hasContent && (
+          {/* Share */}
           <div className="p-5 flex items-center justify-between gap-4" style={cardStyle}>
             <div>
               <p className="text-sm font-medium" style={{ color: "var(--kami-text)" }}>
@@ -313,6 +335,12 @@ export default function EmailSignatureContent() {
             >
               {copied === "url" ? "Copied!" : "Copy link"}
             </div>
+          </div>
+        </>)}
+
+        {isMetro && metroCPivot === "input" && (
+          <div className="p-6 text-sm" style={{ color: "var(--kami-text-muted)" }}>
+            Fill in your details in the panel on the right, then switch to Preview to see and copy your signature.
           </div>
         )}
       </div>

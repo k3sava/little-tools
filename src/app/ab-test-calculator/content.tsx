@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -239,6 +239,20 @@ function formatNumber(n: number): string {
 
 export default function ABTestCalculatorContent() {
   const [tab, setTab] = useState<Tab>("results");
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Results Analyzer state - pre-filled with example data
   const [resultsInput, setResultsInput] = useState<ResultsInput>({
@@ -389,6 +403,16 @@ export default function ABTestCalculatorContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Inputs</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Results</button>
+        </nav>
+      )}
       <div className="flex flex-col gap-5 p-4 md:p-6">
         {tab === "results" ? (
           <ResultsAnalyzer
@@ -396,9 +420,11 @@ export default function ABTestCalculatorContent() {
             significance={resultsSignificance}
             output={resultsOutput}
             onUpdateInput={updateResults}
+            isMetro={isMetro}
+            metroCPivot={metroCPivot}
           />
         ) : (
-          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} />
+          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} isMetro={isMetro} metroCPivot={metroCPivot} />
         )}
       </div>
     </ToolShell>
@@ -413,16 +439,20 @@ function ResultsAnalyzer({
   input,
   output,
   onUpdateInput,
+  isMetro,
+  metroCPivot,
 }: {
   input: ResultsInput;
   significance: number;
   output: ResultsOutput | null;
   onUpdateInput: (key: keyof ResultsInput, value: string) => void;
+  isMetro: boolean;
+  metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
       {/* Input cards */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {(!isMetro || metroCPivot === "input") && (<div className="grid gap-6 lg:grid-cols-2">
         {/* Control */}
         <div
           className="p-5"
@@ -544,10 +574,10 @@ function ResultsAnalyzer({
             </div>
           </div>
         </div>
-      </div>
+      </div>)}
 
       {/* Results */}
-      {output && <ResultsDisplay output={output} />}
+      {(!isMetro || metroCPivot === "output") && output && <ResultsDisplay output={output} />}
     </div>
   );
 }
@@ -871,14 +901,18 @@ function SampleSizePlanner({
   input,
   output,
   onUpdate,
+  isMetro,
+  metroCPivot,
 }: {
   input: PlannerInput;
   output: PlannerOutput | null;
   onUpdate: (key: keyof PlannerInput, value: string | number) => void;
+  isMetro: boolean;
+  metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
-      <div
+      {(!isMetro || metroCPivot === "input") && (<div
         className="p-5"
         style={{
           background: "var(--kami-surface-solid)",
@@ -963,10 +997,10 @@ function SampleSizePlanner({
             duration.
           </p>
         </div>
-      </div>
+      </div>)}
 
       {/* Results */}
-      {output && (
+      {(!isMetro || metroCPivot === "output") && output && (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div

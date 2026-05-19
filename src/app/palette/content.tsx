@@ -228,6 +228,20 @@ export default function PaletteContent() {
     setMounted(true);
   }, []);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("css");
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
   const [showAdjacentContrast, setShowAdjacentContrast] = useState(true);
   const [copied, setCopied] = useState<number | null>(null);
   const [exportCopied, setExportCopied] = useState(false);
@@ -507,9 +521,19 @@ export default function PaletteContent() {
         </div>
       }
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Controls</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Palette</button>
+        </nav>
+      )}
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Palette swatches */}
-        <div
+        {(!isMetro || metroCPivot === "output") && (<><div
           className="flex flex-1 min-h-[260px] flex-col overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -633,9 +657,10 @@ export default function PaletteContent() {
             })}
           </div>
         )}
+        </>)}
 
         {/* Export preview */}
-        <div
+        {(!isMetro || metroCPivot === "input") && <div
           className="overflow-hidden"
           style={{
             background: "var(--kami-overlay-bg, #111827)",
@@ -670,7 +695,7 @@ export default function PaletteContent() {
           <pre className="overflow-x-auto p-4 text-xs leading-relaxed">
             <code>{exportText}</code>
           </pre>
-        </div>
+        </div>}
       </div>
     </ToolShell>
   );

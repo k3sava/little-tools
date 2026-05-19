@@ -173,6 +173,20 @@ function exportMarkdown(brief: ContentBrief): string {
 export default function ContentBriefBuilderContent() {
   const [brief, setBrief] = useState<ContentBrief>(DEFAULT_BRIEF);
   const [copied, setCopied] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<string>("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMetro = currentTheme === "metro";
 
   // Load from localStorage
   useEffect(() => {
@@ -392,9 +406,19 @@ export default function ContentBriefBuilderContent() {
       controls={controls}
       info={info}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button role="tab" aria-selected={metroCPivot === "input"}
+            className={`metro-pivot-item${metroCPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("input")}>Brief</button>
+          <button role="tab" aria-selected={metroCPivot === "output"}
+            className={`metro-pivot-item${metroCPivot === "output" ? " is-active" : ""}`}
+            onClick={() => setMetroCPivot("output")}>Output</button>
+        </nav>
+      )}
       <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-3">
           {/* Left column: form */}
-          <div className="space-y-4 lg:col-span-2">
+          {(!isMetro || metroCPivot === "input") && (<div className="space-y-4 lg:col-span-2">
             {/* Core */}
             <div className="p-5" style={cardStyle}>
               <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
@@ -720,10 +744,10 @@ export default function ContentBriefBuilderContent() {
                 style={inputStyle}
               />
             </div>
-          </div>
+          </div>)}
 
           {/* Right column: preview */}
-          <div className="lg:col-span-1">
+          {(!isMetro || metroCPivot === "output") && (<div className="lg:col-span-1">
             <div className="sticky top-4" style={cardStyle}>
               <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--kami-border)" }}>
                 <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
@@ -736,7 +760,7 @@ export default function ContentBriefBuilderContent() {
                 </pre>
               </div>
             </div>
-          </div>
+          </div>)}
       </div>
     </ToolShell>
   );
