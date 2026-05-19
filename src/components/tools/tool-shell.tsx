@@ -45,7 +45,16 @@ function InlineThemeSwitcher() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("theme") as ThemeId | null;
+    // Canonical key shared with toys.iamkesava.com. Fall back to legacy "theme"
+    // key that older tool-shell versions wrote, then migrate it.
+    let saved = localStorage.getItem("kami.theme") as ThemeId | null;
+    if (!saved) {
+      const legacy = localStorage.getItem("theme") as ThemeId | null;
+      if (legacy && THEMES.some((t) => t.id === legacy)) {
+        saved = legacy;
+        try { localStorage.setItem("kami.theme", legacy); } catch { /* noop */ }
+      }
+    }
     const id = (saved && THEMES.some((t) => t.id === saved)) ? saved : "brutalist";
     setTheme(id);
     applyTheme(id);
@@ -63,7 +72,7 @@ function InlineThemeSwitcher() {
   const select = useCallback((id: ThemeId) => {
     setTheme(id);
     applyTheme(id);
-    localStorage.setItem("theme", id);
+    localStorage.setItem("kami.theme", id);
     setOpen(false);
   }, []);
 
