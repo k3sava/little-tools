@@ -6025,24 +6025,24 @@ html[data-theme="metro"] .kami-scope .text-7xl {
    combined with Tailwind border utilities.
    ────────────────────────────────────────────────────────── */
 
-html[data-theme="glass"] .kami-scope [class*="rounded"][class*="border"],
-html[data-theme="glass"] .kami-scope [class*="p-4"][class*="border"],
-html[data-theme="glass"] .kami-scope [class*="p-6"][class*="border"] {
+/* Card/panel containers only — exclude buttons/links to prevent text invisibility.
+   Use padding+border combos which are more specific to card containers. */
+html[data-theme="glass"] .kami-scope div[class*="p-4"][class*="border"],
+html[data-theme="glass"] .kami-scope div[class*="p-6"][class*="border"] {
   background: rgba(255,255,255,0.55) !important;
   border-color: rgba(255,255,255,0.50) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
 }
 
-html[data-theme="material"] .kami-scope [class*="rounded-"][class*="border"],
-html[data-theme="material"] .kami-scope [class*="p-4"][class*="border"],
-html[data-theme="material"] .kami-scope [class*="p-6"][class*="border"] {
+html[data-theme="material"] .kami-scope div[class*="p-4"][class*="border"],
+html[data-theme="material"] .kami-scope div[class*="p-6"][class*="border"] {
   background: color-mix(in srgb, #6750a4 4%, #fffbfe) !important;
   border-color: #cac4d0 !important;
 }
 
-html[data-theme="metro"] .kami-scope [class*="p-4"][class*="border"],
-html[data-theme="metro"] .kami-scope [class*="p-6"][class*="border"] {
+html[data-theme="metro"] .kami-scope div[class*="p-4"][class*="border"],
+html[data-theme="metro"] .kami-scope div[class*="p-6"][class*="border"] {
   background: #ffffff !important;
   border-color: #d1d1d1 !important;
   border-radius: 4px !important;
