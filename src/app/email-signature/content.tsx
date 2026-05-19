@@ -157,6 +157,7 @@ export default function EmailSignatureContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Load from URL on mount
   useEffect(() => {
@@ -264,7 +265,8 @@ export default function EmailSignatureContent() {
       )}
       <div className="flex flex-col gap-4 w-full">
         {/* Live preview */}
-        {(!isMetro || metroCPivot === "output") && <div className="p-6" style={cardStyle}>
+        {(!isMetro || metroCPivot === "output") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-6" style={cardStyle}>
           <p className="text-xs uppercase tracking-widest mb-4" style={{ color: "var(--kami-text-dim)" }}>
             Preview
           </p>
@@ -278,9 +280,11 @@ export default function EmailSignatureContent() {
               Fill in your name and email to see the preview.
             </p>
           )}
-        </div>}
+        </div></div>
+        )}
 
-        {(!isMetro || metroCPivot === "output") && hasContent && (<>
+        {(!isMetro || metroCPivot === "output") && hasContent && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><>
           {/* Raw HTML */}
           <div className="p-5" style={cardStyle}>
             <div className="flex items-center justify-between mb-3">
@@ -336,7 +340,8 @@ export default function EmailSignatureContent() {
               {copied === "url" ? "Copied!" : "Copy link"}
             </div>
           </div>
-        </>)}
+        </></div>
+        )}
 
         {isMetro && metroCPivot === "input" && (
           <div className="p-6 text-sm" style={{ color: "var(--kami-text-muted)" }}>

@@ -219,6 +219,7 @@ export default function BorderRadiusContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const output = getOutput(radius, advanced, outputFmt);
   const styleRadius = radiusToStyle(radius, advanced);
@@ -478,7 +479,7 @@ export default function BorderRadiusContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "visual") && (
-        <div
+        <div className={isGlass ? "glass-canvas-section" : ""}><div
           className="flex h-full min-h-[60vh] w-full items-center justify-center p-6"
           style={{
             background: "var(--kami-surface)",
@@ -522,10 +523,10 @@ export default function BorderRadiusContent() {
               );
             })}
           </div>
-        </div>
+        </div></div>
       )}
       {(!isMetro || metroCPivot === "code") && (
-        <div className="p-4">
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
             style={{
@@ -537,7 +538,7 @@ export default function BorderRadiusContent() {
           >
             <code>{output}</code>
           </pre>
-        </div>
+        </div></div>
       )}
     </ToolShell>
   );

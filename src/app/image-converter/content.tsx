@@ -60,6 +60,7 @@ export default function ImageConverterContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const [files, setFiles] = useState<QueuedFile[]>([]);
   const [outputFormat, setOutputFormat] = useState<OutputFormat>("image/png");
@@ -448,16 +449,20 @@ export default function ImageConverterContent() {
         </nav>
       )}
       <div className="flex flex-col gap-4">
-        {(!isMetro || metroCPivot === "input") && (<FileDropZone
-          accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
-          onFiles={handleFileDrop}
-          label="Drop images here or click to browse"
-          hint="PNG, JPG, WebP, GIF, BMP, SVG"
-          multiple={true}
-        />)}
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            <FileDropZone
+              accept={[".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp", ".svg"]}
+              onFiles={handleFileDrop}
+              label="Drop images here or click to browse"
+              hint="PNG, JPG, WebP, GIF, BMP, SVG"
+              multiple={true}
+            />
+          </div>
+        )}
 
         {(!isMetro || metroCPivot === "output") && selected && (
-          <div
+          <div className={isGlass ? "glass-canvas-section" : ""}><div
             className="rounded-xl border p-4"
             style={{
               background: "var(--kami-surface-solid)",
@@ -528,7 +533,7 @@ export default function ImageConverterContent() {
                 </button>
               </div>
             )}
-          </div>
+          </div></div>
         )}
       </div>
     </ToolShell>

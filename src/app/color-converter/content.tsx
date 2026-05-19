@@ -428,6 +428,7 @@ export default function ColorConverterContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Sync from a new RGB source
   const syncAll = useCallback(
@@ -668,7 +669,8 @@ export default function ColorConverterContent() {
       )}
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Big swatch + contrast inline */}
-        {(!isMetro || metroCPivot === "input") && <div
+        {(!isMetro || metroCPivot === "input") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><div
           className="flex flex-col gap-3 overflow-hidden sm:flex-row"
           style={{
             border: "1px solid var(--kami-border-strong)",
@@ -695,10 +697,12 @@ export default function ColorConverterContent() {
               Hue {Math.round(rgbToHsl(rgb).h)}° · Sat {Math.round(rgbToHsl(rgb).s)}% · Lum {Math.round(rgbToHsl(rgb).l)}%
             </div>
           </div>
-        </div>}
+        </div></div>
+        )}
 
         {/* Format rows */}
-        {(!isMetro || metroCPivot === "output") && (<>
+        {(!isMetro || metroCPivot === "output") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><>
         <div
           className="flex flex-col gap-2 p-3"
           style={{
@@ -751,7 +755,8 @@ export default function ColorConverterContent() {
             ))}
           </div>
         </div>
-        </>)}
+        </></div>
+        )}
       </div>
     </ToolShell>
   );

@@ -292,6 +292,20 @@ export default function FeatureBenefitMapperContent() {
     </div>
   );
 
+  const [currentTheme, setCurrentTheme] = React.useState<string>("default");
+
+  React.useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isGlass    = currentTheme === "glass";
+
   return (
     <ToolShell
       title="Feature-Benefit Mapper"
@@ -301,6 +315,7 @@ export default function FeatureBenefitMapperContent() {
       controls={controls}
       info={info}
     >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
       <div className="flex flex-col gap-4 p-4 md:p-6">
         {/* Table */}
         <div
@@ -455,6 +470,7 @@ export default function FeatureBenefitMapperContent() {
             </button>
           </div>
         </div>
+      </div>
       </div>
     </ToolShell>
   );

@@ -55,6 +55,7 @@ export default function GlassmorphismContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Glass CSS
   const glassR = parseInt(glassBg.slice(1, 3), 16);
@@ -360,6 +361,7 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
         </div>
       ))}
       {(!isMetro || metroCPivot === "code") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -372,6 +374,7 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
           >
             <code>{currentCSS}</code>
           </pre>
+        </div>
         </div>
       )}
     </ToolShell>

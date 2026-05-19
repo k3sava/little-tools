@@ -300,6 +300,7 @@ export default function GradientContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const layer = layers[activeLayer] || defaultLayer();
 
@@ -747,7 +748,7 @@ export default function GradientContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "visual") && (
-      <div className="flex h-full min-h-[60vh] flex-col gap-3">
+      <div className={isGlass ? "glass-canvas-section" : ""}><div className="flex h-full min-h-[60vh] flex-col gap-3">
         {/* Preview */}
         <div
           ref={previewRef}
@@ -814,10 +815,10 @@ export default function GradientContent() {
           </div>
         </div>
 
-      </div>
+      </div></div>
       )}
       {(!isMetro || metroCPivot === "code") && (
-        <div className="overflow-hidden" style={cardStyle}>
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="overflow-hidden" style={cardStyle}>
           <div
             className="flex items-center justify-between gap-2 px-3 py-2"
             style={{ borderBottom: "1px solid var(--kami-border)" }}
@@ -865,7 +866,7 @@ export default function GradientContent() {
               maxHeight: 200,
             }}
           ><code>{outputMap[outputTab]}</code></pre>
-        </div>
+        </div></div>
       )}
     </ToolShell>
   );

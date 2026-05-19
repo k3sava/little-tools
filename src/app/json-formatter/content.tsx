@@ -497,6 +497,7 @@ export default function JsonFormatterContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const indent = useMemo<number | "tab">(() => {
     if (indentChoice === "tab") return "tab";
@@ -725,7 +726,7 @@ export default function JsonFormatterContent() {
       )}
       <div className="flex flex-col gap-3">
         {/* Input */}
-        {(!isMetro || metroCPivot === "input") && (<>
+        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
         <textarea
           ref={textareaRef}
           value={input}
@@ -765,10 +766,10 @@ export default function JsonFormatterContent() {
             </span>
           )}
         </div>
-        </>)}
+        </></div>)}
 
         {/* Format Tab */}
-        {(!isMetro || metroCPivot === "output") && (<>
+        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
         {hasData && activeTab === "format" && (
           <div className="flex flex-col gap-3">
             {/* Search */}
@@ -1005,7 +1006,7 @@ export default function JsonFormatterContent() {
             </pre>
           </div>
         )}
-        </>)}
+        </></div>)}
       </div>
     </ToolShell>
   );

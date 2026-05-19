@@ -456,6 +456,7 @@ export default function InvoiceGeneratorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Load sender defaults on mount
   useEffect(() => {
@@ -645,7 +646,7 @@ export default function InvoiceGeneratorContent() {
         </nav>
       )}
       <div className="flex flex-col gap-6">
-        {(!isMetro || metroCPivot === "input") && (<><div className="grid gap-6 lg:grid-cols-2">
+        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><><div className="grid gap-6 lg:grid-cols-2">
           {/* From */}
           <fieldset
             className="p-5"
@@ -798,9 +799,9 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </fieldset>
-        </>)}
+        </></div>)}
 
-        {(!isMetro || metroCPivot === "output") && <>
+        {(!isMetro || metroCPivot === "output") && <div className={isGlass ? "glass-canvas-section" : ""}><>
         {/* Line items */}
         <fieldset
           className="mt-6 p-5"
@@ -1043,7 +1044,7 @@ export default function InvoiceGeneratorContent() {
             </div>
           </div>
         </div>
-        </>}
+        </></div>}
 
       </div>
     </ToolShell>

@@ -174,6 +174,7 @@ export default function LinkInBioContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const update = useCallback((patch: Partial<Profile>) => {
     setProfile((p) => ({ ...p, ...patch }));
@@ -406,7 +407,9 @@ export default function LinkInBioContent() {
         </nav>
       )}
       <div className="grid gap-4 md:grid-cols-2">
-        {(!isMetro || metroCPivot === "input") && <section className="flex flex-col gap-2">
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+          <section className="flex flex-col gap-2">
           <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
             Links
           </h2>
@@ -484,9 +487,13 @@ export default function LinkInBioContent() {
               </button>
             </div>
           ))}
-        </section>}
+        </section>
+          </div>
+        )}
 
-        {(!isMetro || metroCPivot === "output") && <section className="flex flex-col gap-2">
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+          <section className="flex flex-col gap-2">
           <h2 className="text-xs font-semibold uppercase" style={{ color: "var(--kami-text-muted)" }}>
             Mobile preview
           </h2>
@@ -588,7 +595,9 @@ export default function LinkInBioContent() {
               </div>
             </div>
           </div>
-        </section>}
+        </section>
+          </div>
+        )}
       </div>
     </ToolShell>
   );

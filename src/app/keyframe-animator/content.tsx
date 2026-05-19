@@ -164,6 +164,7 @@ export default function KeyframeAnimatorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const css = useMemo(() => generateCSS(config, stops), [config, stops]);
 
@@ -442,6 +443,7 @@ export default function KeyframeAnimatorContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "visual") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
           {/* Live Preview */}
           <div
@@ -515,8 +517,10 @@ export default function KeyframeAnimatorContent() {
             </div>
           </div>
         </div>
+        </div>
       )}
       {(!isMetro || metroCPivot === "code") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -529,6 +533,7 @@ export default function KeyframeAnimatorContent() {
           >
             <code>{css}</code>
           </pre>
+        </div>
         </div>
       )}
     </ToolShell>

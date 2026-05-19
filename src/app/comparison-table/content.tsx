@@ -259,6 +259,7 @@ export default function ComparisonTableContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // --- Undo stack (max 20) ---
   const MAX_UNDO = 20;
@@ -569,7 +570,8 @@ export default function ComparisonTableContent() {
       <div className="flex flex-col gap-4 p-4 md:p-6">
 
       {/* Editable table */}
-      {(!isMetro || metroCPivot === "input") && <div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
+      {(!isMetro || metroCPivot === "input") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
         <table className="w-full min-w-[600px] border-collapse text-sm">
           <thead>
             <tr>
@@ -749,10 +751,12 @@ export default function ComparisonTableContent() {
             ))}
           </tbody>
         </table>
-      </div>}
+      </div></div>
+      )}
 
       {/* Preview */}
-      {(!isMetro || metroCPivot === "output") && <div className="mb-6">
+      {(!isMetro || metroCPivot === "output") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="mb-6">
         <h2
           className="mb-3 text-sm font-semibold uppercase tracking-wide"
           style={{ color: "var(--kami-text-muted)" }}
@@ -823,7 +827,8 @@ export default function ComparisonTableContent() {
             </tbody>
           </table>
         </div>
-      </div>}
+      </div></div>
+      )}
 
         {/* Toast */}
         {toast && (

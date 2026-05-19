@@ -423,6 +423,7 @@ export default function HeadlineAnalyzerContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const [mode, setMode] = useState<"single" | "compare">("single");
   const [headlineB, setHeadlineB] = useState("");
@@ -532,6 +533,7 @@ export default function HeadlineAnalyzerContent() {
         {mode === "single" ? (
           <>
             {(!isMetro || metroCPivot === "input") && (
+              <div className={isGlass ? "glass-canvas-section" : ""}>
               <>
                 <input
                   type="text"
@@ -543,8 +545,10 @@ export default function HeadlineAnalyzerContent() {
                   autoFocus
                 />
               </>
+              </div>
             )}
             {(!isMetro || metroCPivot === "output") && (
+              <div className={isGlass ? "glass-canvas-section" : ""}>
               <>
                 {resultA ? (
                   <ResultPanel
@@ -563,11 +567,13 @@ export default function HeadlineAnalyzerContent() {
                   </div>
                 )}
               </>
+              </div>
             )}
           </>
         ) : (
           <>
             {(!isMetro || metroCPivot === "input") && (
+              <div className={isGlass ? "glass-canvas-section" : ""}>
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   <div>
@@ -598,8 +604,10 @@ export default function HeadlineAnalyzerContent() {
                   </div>
                 </div>
               </>
+              </div>
             )}
             {(!isMetro || metroCPivot === "output") && (
+              <div className={isGlass ? "glass-canvas-section" : ""}>
               <>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {resultA && (
@@ -650,6 +658,7 @@ export default function HeadlineAnalyzerContent() {
                   </div>
                 )}
               </>
+              </div>
             )}
           </>
         )}

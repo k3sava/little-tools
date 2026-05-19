@@ -595,6 +595,7 @@ function DecodeWorkspace({
   verifyMessage,
   isMetro,
   metroCPivot,
+  isGlass,
 }: {
   input: string;
   setInput: (v: string) => void;
@@ -605,6 +606,7 @@ function DecodeWorkspace({
   verifyMessage: string;
   isMetro?: boolean;
   metroCPivot?: "input" | "output";
+  isGlass?: boolean;
 }) {
   const [toggledTimestamps, setToggledTimestamps] = useState<Set<string>>(new Set());
   const [showSamples, setShowSamples] = useState(false);
@@ -641,7 +643,7 @@ function DecodeWorkspace({
   return (
     <div className="space-y-4">
       {/* Token input */}
-      {(!isMetro || metroCPivot === "input") && (<>
+      {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
       <div>
         <textarea
           value={input}
@@ -715,10 +717,10 @@ function DecodeWorkspace({
           </div>
         </div>
       )}
-      </>)}
+      </></div>)}
 
       {(!isMetro || metroCPivot === "output") && decoded && (
-        <>
+        <div className={isGlass ? "glass-canvas-section" : ""}><>
           {/* Color-coded token preview */}
           <div className="px-4 py-3 overflow-auto" style={cardStyle}>
             <span className="text-xs font-medium mb-2 block" style={{ color: "var(--kami-text-muted)" }}>Encoded Token</span>
@@ -911,7 +913,7 @@ function DecodeWorkspace({
             toggledTimestamps={toggledTimestamps}
             onToggleTimestamp={handleToggleTimestamp}
           />
-        </>
+        </></div>
       )}
     </div>
   );
@@ -1290,6 +1292,7 @@ export default function JwtDecoderContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Builder state lifted so it's accessible from controls panel
   const [algorithm, setAlgorithm] = useState("HS256");
@@ -1509,6 +1512,7 @@ export default function JwtDecoderContent() {
             verifyMessage={verifyMessage}
             isMetro={isMetro}
             metroCPivot={metroCPivot}
+            isGlass={isGlass}
           />
         )}
         {activeTab === "builder" && (

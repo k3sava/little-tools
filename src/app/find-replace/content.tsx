@@ -207,6 +207,7 @@ export default function FindReplaceContent() {
 
   const isMaterial = currentTheme === "material";
   const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Load presets
   useEffect(() => {
@@ -443,7 +444,7 @@ export default function FindReplaceContent() {
         </nav>
       )}
       <div className="relative flex flex-col gap-3 p-4 md:p-6">
-      {(!isMetro || metroFRPivot === "input") && (<>
+      {(!isMetro || metroFRPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -560,8 +561,8 @@ export default function FindReplaceContent() {
             </button>
           )}
         </div>
-      </>)}
-      {(!isMetro || metroFRPivot === "output") && (<>
+      </></div>)}
+      {(!isMetro || metroFRPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
 
         {/* Preview diff */}
         {hasChanges && showPreview && diffSegments && (
@@ -621,7 +622,7 @@ export default function FindReplaceContent() {
             </div>
           </div>
         )}
-      </>)}
+      </></div>)}
       {isMaterial && hasChanges && (
         <button
           onClick={handleCopy}

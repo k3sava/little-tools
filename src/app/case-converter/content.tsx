@@ -280,6 +280,7 @@ export default function CaseConverterContent() {
 
   const isMaterial = currentTheme === "material";
   const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
@@ -426,6 +427,7 @@ export default function CaseConverterContent() {
       <div className="relative flex flex-col gap-4 p-4 md:p-6">
         {/* Input section — hidden on Metro Results tab */}
         {(!isMetro || metroCanvasPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div>
             {detected && input.trim() && (
               <div className="mb-2">
@@ -473,6 +475,7 @@ export default function CaseConverterContent() {
                 </button>
               )}
             </div>
+          </div>
           </div>
         )}
 

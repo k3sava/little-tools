@@ -137,6 +137,7 @@ export default function Base64Content() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const lineWrapNum = useMemo(() => parseInt(lineWrap, 10), [lineWrap]);
 
@@ -324,6 +325,7 @@ export default function Base64Content() {
         <div className="flex flex-col md:flex-row gap-3">
           {/* Plain text side */}
           {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
@@ -349,10 +351,12 @@ export default function Base64Content() {
               <span>{plainText.length} chars · {new TextEncoder().encode(plainText).length} bytes</span>
             </div>
           </div>
+          </div>
           )}
 
           {/* Base64 side */}
           {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
           <div className="flex-1 min-w-0 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium" style={{ color: "var(--kami-text-muted)" }}>
@@ -385,11 +389,13 @@ export default function Base64Content() {
               </span>
             </div>
           </div>
+          </div>
           )}
         </div>
 
         {/* Drop zone integrated into canvas */}
         {(!isMetro || metroCPivot === "input") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div
           className="flex flex-col items-center justify-center text-center px-4 py-6 transition-colors"
           style={{
@@ -421,6 +427,7 @@ export default function Base64Content() {
           <p className="mt-2 text-xs" style={{ color: "var(--kami-text-dim)" }}>
             Any file type — converts to Base64 with auto-detected MIME
           </p>
+        </div>
         </div>
         )}
 

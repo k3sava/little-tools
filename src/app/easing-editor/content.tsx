@@ -390,6 +390,7 @@ export default function EasingEditorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const easingCSS = mode === "cubic-bezier" ? bezierStr(bezier) : linearStr(linearPoints);
 
@@ -590,6 +591,7 @@ export default function EasingEditorContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "visual") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="flex h-full min-h-[60vh] w-full flex-col gap-4 p-4">
           <div
             className="flex flex-1 flex-col items-center justify-center gap-3 p-4"
@@ -624,8 +626,10 @@ export default function EasingEditorContent() {
             <AnimationPreview easingCSS={easingCSS} duration={duration} playKey={playKey} />
           </div>
         </div>
+        </div>
       )}
       {(!isMetro || metroCPivot === "code") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
@@ -638,6 +642,7 @@ export default function EasingEditorContent() {
           >
             <code>{outputCode}</code>
           </pre>
+        </div>
         </div>
       )}
     </ToolShell>

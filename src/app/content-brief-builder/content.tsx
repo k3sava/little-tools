@@ -187,6 +187,7 @@ export default function ContentBriefBuilderContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Load from localStorage
   useEffect(() => {
@@ -418,7 +419,7 @@ export default function ContentBriefBuilderContent() {
       )}
       <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-3">
           {/* Left column: form */}
-          {(!isMetro || metroCPivot === "input") && (<div className="space-y-4 lg:col-span-2">
+          {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="space-y-4 lg:col-span-2">
             {/* Core */}
             <div className="p-5" style={cardStyle}>
               <h2 className="mb-4 text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
@@ -744,10 +745,10 @@ export default function ContentBriefBuilderContent() {
                 style={inputStyle}
               />
             </div>
-          </div>)}
+          </div></div>)}
 
           {/* Right column: preview */}
-          {(!isMetro || metroCPivot === "output") && (<div className="lg:col-span-1">
+          {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="lg:col-span-1">
             <div className="sticky top-4" style={cardStyle}>
               <div className="px-5 py-3" style={{ borderBottom: "1px solid var(--kami-border)" }}>
                 <h2 className="text-sm font-semibold" style={{ color: "var(--kami-text-muted)" }}>
@@ -760,7 +761,7 @@ export default function ContentBriefBuilderContent() {
                 </pre>
               </div>
             </div>
-          </div>)}
+          </div></div>)}
       </div>
     </ToolShell>
   );

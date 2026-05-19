@@ -182,6 +182,7 @@ export default function BoxShadowContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const cssValue = layers.map(layerToCSS).join(",\n    ");
   const fullCSS = `box-shadow: ${cssValue};`;
@@ -462,7 +463,7 @@ export default function BoxShadowContent() {
         </nav>
       )}
       {(!isMetro || metroCPivot === "visual") && (
-        <div
+        <div className={isGlass ? "glass-canvas-section" : ""}><div
           className="flex h-full min-h-[60vh] w-full items-center justify-center p-6 sm:p-10"
           style={{
             backgroundColor: bgColor,
@@ -483,10 +484,10 @@ export default function BoxShadowContent() {
             }}
             title="Drag to set offset of active layer"
           />
-        </div>
+        </div></div>
       )}
       {(!isMetro || metroCPivot === "code") && (
-        <div className="p-4">
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="p-4">
           <pre
             className="overflow-x-auto p-4 text-xs leading-relaxed"
             style={{
@@ -498,7 +499,7 @@ export default function BoxShadowContent() {
           >
             <code>{outputCode}</code>
           </pre>
-        </div>
+        </div></div>
       )}
     </ToolShell>
   );

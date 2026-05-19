@@ -276,6 +276,7 @@ export default function HashGeneratorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const updateHashes = useCallback(async (data: Uint8Array) => {
     dataRef.current = data;
@@ -481,7 +482,7 @@ export default function HashGeneratorContent() {
         onDrop={handleDrop}
       >
         {/* Input area (drop zone) */}
-        {(!isMetro || metroCPivot === "input") && (<>
+        {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
         <div
           className="transition-colors"
           style={{
@@ -531,9 +532,9 @@ export default function HashGeneratorContent() {
             <span style={{ color: "var(--kami-text-dim)" }}>{formatSize(fileSize)}</span>
           )}
         </div>
-        </>)}
+        </></div>)}
 
-        {(!isMetro || metroCPivot === "output") && (<>
+        {(!isMetro || metroCPivot === "output") && (<div className={isGlass ? "glass-canvas-section" : ""}><>
         {/* Hash tab */}
         {tab === "hash" && hashBytes && (
           <div className="flex flex-col gap-2">
@@ -726,7 +727,7 @@ export default function HashGeneratorContent() {
             )}
           </div>
         )}
-        </>)}
+        </></div>)}
       </div>
     </ToolShell>
   );

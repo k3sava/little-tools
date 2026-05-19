@@ -253,6 +253,7 @@ export default function ABTestCalculatorContent() {
   }, []);
 
   const isMetro = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   // Results Analyzer state - pre-filled with example data
   const [resultsInput, setResultsInput] = useState<ResultsInput>({
@@ -421,10 +422,11 @@ export default function ABTestCalculatorContent() {
             output={resultsOutput}
             onUpdateInput={updateResults}
             isMetro={isMetro}
+            isGlass={isGlass}
             metroCPivot={metroCPivot}
           />
         ) : (
-          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} isMetro={isMetro} metroCPivot={metroCPivot} />
+          <SampleSizePlanner input={plannerInput} output={plannerOutput} onUpdate={updatePlanner} isMetro={isMetro} isGlass={isGlass} metroCPivot={metroCPivot} />
         )}
       </div>
     </ToolShell>
@@ -440,6 +442,7 @@ function ResultsAnalyzer({
   output,
   onUpdateInput,
   isMetro,
+  isGlass,
   metroCPivot,
 }: {
   input: ResultsInput;
@@ -447,12 +450,13 @@ function ResultsAnalyzer({
   output: ResultsOutput | null;
   onUpdateInput: (key: keyof ResultsInput, value: string) => void;
   isMetro: boolean;
+  isGlass: boolean;
   metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
       {/* Input cards */}
-      {(!isMetro || metroCPivot === "input") && (<div className="grid gap-6 lg:grid-cols-2">
+      {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div className="grid gap-6 lg:grid-cols-2">
         {/* Control */}
         <div
           className="p-5"
@@ -574,10 +578,14 @@ function ResultsAnalyzer({
             </div>
           </div>
         </div>
-      </div>)}
+      </div></div>)}
 
       {/* Results */}
-      {(!isMetro || metroCPivot === "output") && output && <ResultsDisplay output={output} />}
+      {(!isMetro || metroCPivot === "output") && output && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+          <ResultsDisplay output={output} />
+        </div>
+      )}
     </div>
   );
 }
@@ -902,17 +910,19 @@ function SampleSizePlanner({
   output,
   onUpdate,
   isMetro,
+  isGlass,
   metroCPivot,
 }: {
   input: PlannerInput;
   output: PlannerOutput | null;
   onUpdate: (key: keyof PlannerInput, value: string | number) => void;
   isMetro: boolean;
+  isGlass: boolean;
   metroCPivot: string;
 }) {
   return (
     <div className="space-y-6">
-      {(!isMetro || metroCPivot === "input") && (<div
+      {(!isMetro || metroCPivot === "input") && (<div className={isGlass ? "glass-canvas-section" : ""}><div
         className="p-5"
         style={{
           background: "var(--kami-surface-solid)",
@@ -997,11 +1007,11 @@ function SampleSizePlanner({
             duration.
           </p>
         </div>
-      </div>)}
+      </div></div>)}
 
       {/* Results */}
       {(!isMetro || metroCPivot === "output") && output && (
-        <div className="space-y-4">
+        <div className={isGlass ? "glass-canvas-section" : ""}><div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div
               className="p-5 text-center"
@@ -1117,7 +1127,7 @@ function SampleSizePlanner({
               </div>
             </div>
           </details>
-        </div>
+        </div></div>
       )}
     </div>
   );
