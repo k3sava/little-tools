@@ -621,6 +621,7 @@ export default function CronBuilderContent() {
       title="Cron Builder"
       tagline="Visual builder · presets · next 5 runs · plain-English"
       accent={ACCENT_DEV}
+      materialFab={{ label: "Copy cron", onClick: handleCopy }}
       actions={actions}
       controls={controls}
       info={info}

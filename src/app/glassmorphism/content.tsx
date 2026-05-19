@@ -106,6 +106,7 @@ box-shadow: ${neuDistance}px ${neuDistance}px ${neuBlur}px ${darkShadow},
       title="Glassmorphism"
       tagline="Frosted glass and soft UI with backdrop-filter and layered shadows"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copy }}
       actions={
         <>
           <Segment

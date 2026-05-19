@@ -417,6 +417,7 @@ export default function ImageConverterContent() {
       title="Image Converter"
       tagline="Convert and batch-optimize images - PNG, JPG, WebP."
       accent={ACCENT}
+      materialFab={{ label: "Download", onClick: downloadAll }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

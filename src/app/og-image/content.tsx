@@ -738,6 +738,7 @@ export default function OgImageContent() {
       title="OG Image Generator"
       tagline="1200x630 social cards · live preview · platform validator"
       accent="#8b5cf6"
+      materialFab={{ label: "Download", onClick: handleExport }}
       actions={
         <>
           <ToolActionButton variant="outline" onClick={handleCopyMetaTags}>

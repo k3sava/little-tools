@@ -489,6 +489,7 @@ export default function ClipboardManagerContent() {
       title="Clipboard Manager"
       tagline="Local-only clipboard history with templates."
       accent={ACCENT}
+      materialFab={{ label: "Copy", onClick: () => filteredClips[0] && copyToClipboard(filteredClips[0].text, filteredClips[0].id) }}
       actions={actions}
       controls={controls}
       controlsLabel="Tools"

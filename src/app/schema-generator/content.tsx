@@ -1102,6 +1102,7 @@ export default function SchemaGeneratorContent() {
       title="Schema Generator"
       tagline="Article · Product · FAQ · How-To · Recipe · LocalBusiness · Event · Person · Org · Breadcrumb"
       accent={ACCENT}
+      materialFab={{ label: "Copy JSON-LD", onClick: handleCopy }}
       actions={actions}
       controls={controls}
       info={info}

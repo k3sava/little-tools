@@ -276,6 +276,7 @@ export default function BoxShadowContent() {
       title="Box Shadow"
       tagline="Multi-layer shadows with live drag-to-offset preview"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copy }}
       actions={
         <>
           <Segment

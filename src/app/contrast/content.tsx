@@ -199,6 +199,7 @@ export default function ContrastContent() {
       title="Contrast Checker"
       tagline="WCAG AA / AAA · live preview · suggested fixes"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy hex", onClick: copyRatio }}
       actions={
         <>
           <ToolActionButton onClick={swap} variant="outline">Swap</ToolActionButton>

@@ -323,6 +323,7 @@ export default function BorderRadiusContent() {
       title="Border Radius"
       tagline="Per-corner control with elliptical mode, drag handles, and squircle preset"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: () => copy() }}
       actions={
         <>
           <Segment
