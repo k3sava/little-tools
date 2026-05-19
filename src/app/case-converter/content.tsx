@@ -265,6 +265,21 @@ export default function CaseConverterContent() {
   const [selectionOnly, setSelectionOnly] = useState(false);
   const [groupFilter, setGroupFilter] = useState<"all" | CaseInfo["group"]>("all");
   const [history, setHistory] = useState<string[]>([]);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCanvasPivot, setMetroCanvasPivot] = useState<"input" | "results">("input");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
 
   useKeyboardShortcuts(useMemo(() => [
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
@@ -387,102 +402,160 @@ export default function CaseConverterContent() {
       actions={actions}
       controls={controls}
     >
-      <div className="flex flex-col gap-4 p-4 md:p-6">
-        <div>
-          {detected && input.trim() && (
-            <div className="mb-2">
-              <span
-                className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium"
-                style={{
-                  background: "var(--kami-surface)",
-                  color: "var(--kami-text-muted)",
-                  border: "1px solid var(--kami-border)",
-                  borderRadius: "var(--kami-cta-radius, 0.375rem)",
-                }}
-              >
+      {/* Metro: in-canvas pivot for Input | Results */}
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="View" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button
+            role="tab"
+            aria-selected={metroCanvasPivot === "input"}
+            className={`metro-pivot-item${metroCanvasPivot === "input" ? " is-active" : ""}`}
+            onClick={() => setMetroCanvasPivot("input")}
+          >
+            Input
+          </button>
+          <button
+            role="tab"
+            aria-selected={metroCanvasPivot === "results"}
+            className={`metro-pivot-item${metroCanvasPivot === "results" ? " is-active" : ""}`}
+            onClick={() => setMetroCanvasPivot("results")}
+          >
+            Results
+          </button>
+        </nav>
+      )}
+      <div className="relative flex flex-col gap-4 p-4 md:p-6">
+        {/* Input section — hidden on Metro Results tab */}
+        {(!isMetro || metroCanvasPivot === "input") && (
+          <div>
+            {detected && input.trim() && (
+              <div className="mb-2">
                 <span
-                  className="h-1.5 w-1.5"
-                  style={{ background: "#6366f1", borderRadius: 999 }}
-                />
-                Detected: {detected}
+                  className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium"
+                  style={{
+                    background: "var(--kami-surface)",
+                    color: "var(--kami-text-muted)",
+                    border: "1px solid var(--kami-border)",
+                    borderRadius: "var(--kami-cta-radius, 0.375rem)",
+                  }}
+                >
+                  <span className="h-1.5 w-1.5" style={{ background: "#6366f1", borderRadius: 999 }} />
+                  Detected: {detected}
+                </span>
+              </div>
+            )}
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type or paste text — conversions appear below."
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+                minHeight: 120,
+              }}
+              rows={4}
+              autoFocus
+            />
+            <div className="mt-1.5 flex items-center justify-between text-xs" style={{ color: "var(--kami-text-dim)" }}>
+              <span>
+                {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount} {charCount === 1 ? "char" : "chars"}
               </span>
+              {isMetro && input.trim() && (
+                <button
+                  className="metro-pivot-item is-active"
+                  style={{ fontSize: 11, padding: "2px 10px", height: "auto" }}
+                  onClick={() => setMetroCanvasPivot("results")}
+                >
+                  See results →
+                </button>
+              )}
             </div>
-          )}
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type or paste text — conversions appear below."
-            className="w-full px-4 py-3 text-base focus:outline-none"
-            style={{
-              background: "var(--kami-input-bg, var(--kami-surface-solid))",
-              color: "var(--kami-text)",
-              border: "1px solid var(--kami-border-strong)",
-              borderRadius: "var(--kami-input-radius, 0.75rem)",
-              boxShadow: "var(--kami-card-shadow, none)",
-              minHeight: 120,
-            }}
-            rows={4}
-            autoFocus
-          />
-          <div
-            className="mt-1.5 flex items-center justify-between text-xs"
-            style={{ color: "var(--kami-text-dim)" }}
-          >
-            <span>
-              {wordCount} {wordCount === 1 ? "word" : "words"} · {charCount}{" "}
-              {charCount === 1 ? "char" : "chars"}
-            </span>
           </div>
-        </div>
+        )}
 
-        {filteredConversions.length === 0 ? (
-          <div
-            className="p-8 text-center text-sm"
+        {/* Results section — hidden on Metro Input tab */}
+        {(!isMetro || metroCanvasPivot === "results") && (
+          filteredConversions.length === 0 ? (
+            <div
+              className="p-8 text-center text-sm"
+              style={{
+                background: "var(--kami-surface)",
+                border: "1px dashed var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                color: "var(--kami-text-dim)",
+              }}
+            >
+              {isMetro
+                ? "Switch to Input tab to enter text."
+                : "Type something above to see all 13 case conversions."}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              {filteredConversions.map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => handleCardCopy(c.value, c.result)}
+                  className="case-preserve group relative p-3 text-left transition-all"
+                  style={{
+                    background: "var(--kami-surface-solid)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-card-radius, 0.75rem)",
+                    boxShadow: "var(--kami-card-shadow, none)",
+                    color: "var(--kami-text)",
+                    minHeight: 64,
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--kami-text-muted)" }}>
+                      {c.label}
+                    </span>
+                    <span className="text-xs" style={{ color: copiedCard === c.value ? "#16a34a" : "var(--kami-text-dim)" }}>
+                      {copiedCard === c.value ? "Copied" : "Tap to copy"}
+                    </span>
+                  </div>
+                  <div className="truncate font-mono text-sm" style={{ color: "var(--kami-text)" }}>
+                    {c.result}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* Material: FAB for copy top result */}
+        {isMaterial && filteredConversions.length > 0 && (
+          <button
+            onClick={() => handleCardCopy(filteredConversions[0].value, filteredConversions[0].result)}
+            title={`Copy ${filteredConversions[0].label}`}
+            aria-label={`Copy ${filteredConversions[0].label}`}
             style={{
-              background: "var(--kami-surface)",
-              border: "1px dashed var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius, 0.75rem)",
-              color: "var(--kami-text-dim)",
+              position: "fixed",
+              bottom: 88,
+              right: 24,
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              background: "#6750a4",
+              color: "#fff",
+              border: "none",
+              boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
+              fontSize: 22,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              zIndex: 20,
+              transition: "box-shadow 0.2s, background 0.2s",
             }}
           >
-            Type something above to see all 13 case conversions.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-            {filteredConversions.map((c) => (
-              <button
-                key={c.value}
-                onClick={() => handleCardCopy(c.value, c.result)}
-                className="case-preserve group relative p-3 text-left transition-all"
-                style={{
-                  background: "var(--kami-surface-solid)",
-                  border: "1px solid var(--kami-border-strong)",
-                  borderRadius: "var(--kami-card-radius, 0.75rem)",
-                  boxShadow: "var(--kami-card-shadow, none)",
-                  color: "var(--kami-text)",
-                  minHeight: 64,
-                }}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className="text-xs font-medium uppercase tracking-wide"
-                    style={{ color: "var(--kami-text-muted)" }}
-                  >
-                    {c.label}
-                  </span>
-                  <span
-                    className="text-xs"
-                    style={{ color: copiedCard === c.value ? "#16a34a" : "var(--kami-text-dim)" }}
-                  >
-                    {copiedCard === c.value ? "Copied" : "Tap to copy"}
-                  </span>
-                </div>
-                <div className="truncate font-mono text-sm" style={{ color: "var(--kami-text)" }}>
-                  {c.result}
-                </div>
-              </button>
-            ))}
-          </div>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+          </button>
         )}
       </div>
     </ToolShell>

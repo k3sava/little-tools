@@ -450,6 +450,22 @@ export default function TextDiffContent() {
   const [currentChangeIdx, setCurrentChangeIdx] = useState(0);
   const changeRefs = useRef<(HTMLElement | null)[]>([]);
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroDiffPivot, setMetroDiffPivot] = useState<"a" | "b" | "diff">("a");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+
   const diff = useMemo(() => {
     if (!original && !modified) return [];
     const procOriginal = preprocessText(original, { ignoreWhitespace, ignoreCase, ignoreBlankLines, ignoreLineEndings });
@@ -609,39 +625,72 @@ export default function TextDiffContent() {
       actions={actions}
       controls={controls}
     >
+      {isMetro && (
+        <nav className="metro-pivot" role="tablist" aria-label="Pane" style={{ borderBottom: "1px solid var(--kami-border)", padding: "0 16px" }}>
+          <button
+            role="tab"
+            aria-selected={metroDiffPivot === "a"}
+            className={`metro-pivot-item${metroDiffPivot === "a" ? " is-active" : ""}`}
+            onClick={() => setMetroDiffPivot("a")}
+          >
+            Text A
+          </button>
+          <button
+            role="tab"
+            aria-selected={metroDiffPivot === "b"}
+            className={`metro-pivot-item${metroDiffPivot === "b" ? " is-active" : ""}`}
+            onClick={() => setMetroDiffPivot("b")}
+          >
+            Text B
+          </button>
+          <button
+            role="tab"
+            aria-selected={metroDiffPivot === "diff"}
+            className={`metro-pivot-item${metroDiffPivot === "diff" ? " is-active" : ""}`}
+            onClick={() => setMetroDiffPivot("diff")}
+          >
+            Diff
+          </button>
+        </nav>
+      )}
+
       <div className="flex flex-col gap-3 p-4 md:p-6">
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div>
-            <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Original
+          {(!isMetro || metroDiffPivot === "a") && (
+            <div>
+              <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                Original
+              </div>
+              <textarea
+                value={original}
+                onChange={(e) => setOriginal(e.target.value)}
+                placeholder="Paste original text..."
+                className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+                style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
+                rows={6}
+                autoFocus
+              />
             </div>
-            <textarea
-              value={original}
-              onChange={(e) => setOriginal(e.target.value)}
-              placeholder="Paste original text..."
-              className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
-              style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
-              rows={6}
-              autoFocus
-            />
-          </div>
-          <div>
-            <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
-              Modified
+          )}
+          {(!isMetro || metroDiffPivot === "b") && (
+            <div>
+              <div className="mb-1 text-xs font-medium" style={{ color: "var(--kami-text-muted)" }}>
+                Modified
+              </div>
+              <textarea
+                value={modified}
+                onChange={(e) => setModified(e.target.value)}
+                placeholder="Paste modified text..."
+                className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
+                style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
+                rows={6}
+              />
             </div>
-            <textarea
-              value={modified}
-              onChange={(e) => setModified(e.target.value)}
-              placeholder="Paste modified text..."
-              className="w-full px-3 py-2 text-sm font-mono focus:outline-none"
-              style={{ ...inputStyle, minHeight: 140, resize: "vertical" }}
-              rows={6}
-            />
-          </div>
+          )}
         </div>
 
         {/* Stats row */}
-        {diff.length > 0 && (
+        {(!isMetro || metroDiffPivot === "diff") && diff.length > 0 && (
           <div
             className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm"
             style={{
@@ -685,7 +734,7 @@ export default function TextDiffContent() {
         )}
 
         {/* Diff output */}
-        {diff.length > 0 &&
+        {(!isMetro || metroDiffPivot === "diff") && diff.length > 0 &&
           (viewMode === "inline" || diffMode === "char" ? (
             <InlineDiffView
               diff={diff}
@@ -701,7 +750,7 @@ export default function TextDiffContent() {
             />
           ))}
 
-        {(original || modified) && diff.length === 0 && (
+        {(!isMetro || metroDiffPivot === "diff") && (original || modified) && diff.length === 0 && (
           <div
             className="text-center py-8 text-sm"
             style={{ color: "var(--kami-text-dim)" }}
@@ -710,6 +759,37 @@ export default function TextDiffContent() {
           </div>
         )}
       </div>
+
+      {isMaterial && (
+        <button
+          onClick={handleCopy}
+          title="Copy diff"
+          aria-label="Copy diff"
+          style={{
+            position: "fixed",
+            bottom: 88,
+            right: 24,
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: "#6750a4",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
+            fontSize: 22,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 20,
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          </svg>
+        </button>
+      )}
     </ToolShell>
   );
 }
