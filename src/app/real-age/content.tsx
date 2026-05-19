@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import {
-  ToolShell,
-  ControlGroup,
-} from "@/components/tools/tool-shell";
+import { ToolShell } from "@/components/tools/tool-shell";
 
 // --- Helpers ---
 
@@ -147,27 +144,22 @@ export default function RealAgeContent() {
       title="Life in Numbers"
       tagline="Your age in units that actually mean something."
       accent="#f43f5e"
-      controls={
-        <ControlGroup label="Date of birth">
+    >
+      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
+        <div className="p-4 flex items-center gap-3" style={cardStyle}>
+          <label htmlFor="dob-input" className="text-sm shrink-0" style={{ color: "var(--kami-text-dim)" }}>
+            Date of birth
+          </label>
           <input
+            id="dob-input"
             type="date"
             value={dob}
             max={new Date().toISOString().split("T")[0]}
             onChange={(e) => setDob(e.target.value)}
-            className="w-full px-3 py-2 text-sm focus:outline-none"
-            style={{ ...inputStyle, minHeight: 40 }}
+            className="flex-1 px-3 py-2 text-sm focus:outline-none"
+            style={{ ...inputStyle, minHeight: 36 }}
           />
-        </ControlGroup>
-      }
-    >
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
-        {!stats && (
-          <div className="p-6 text-center" style={cardStyle}>
-            <p className="text-sm" style={{ color: "var(--kami-text-dim)" }}>
-              Enter your date of birth to see your life in numbers.
-            </p>
-          </div>
-        )}
+        </div>
 
         {stats && (
           <>

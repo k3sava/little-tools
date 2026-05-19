@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import {
   ToolShell,
-  ControlGroup,
   ToolActionButton,
 } from "@/components/tools/tool-shell";
 import { Segment } from "@/components/tools/controls";
@@ -241,21 +240,18 @@ export default function OutsideContent() {
       title="How's Outside?"
       tagline="Weather, without the numbers."
       accent={ACCENT}
-      hideControls={!data}
-      controls={
-        <ControlGroup label="Temperature">
-          <Segment
-            value={units}
-            options={[{ value: "C", label: "°C" }, { value: "F", label: "°F" }]}
-            onChange={(v) => setUnits(v as Units)}
-          />
-        </ControlGroup>
-      }
       actions={
         data ? (
-          <ToolActionButton onClick={loadWeather} disabled={loading}>
-            {loading ? "Checking…" : "Refresh"}
-          </ToolActionButton>
+          <>
+            <Segment
+              value={units}
+              options={[{ value: "C", label: "°C" }, { value: "F", label: "°F" }]}
+              onChange={(v) => setUnits(v as Units)}
+            />
+            <ToolActionButton onClick={loadWeather} disabled={loading}>
+              {loading ? "Checking…" : "Refresh"}
+            </ToolActionButton>
+          </>
         ) : undefined
       }
     >

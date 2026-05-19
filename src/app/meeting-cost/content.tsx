@@ -225,7 +225,7 @@ export default function MeetingCostContent() {
         </>
       }
     >
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
+      <div className="flex flex-col gap-4 w-full">
         {/* Main cost display */}
         <div className="p-6 flex flex-col items-center justify-center min-h-48" style={cardStyle}>
           {!running && elapsed === 0 ? (

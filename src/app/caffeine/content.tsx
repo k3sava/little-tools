@@ -352,7 +352,7 @@ export default function CaffeineContent() {
         </>
       }
     >
-      <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
+      <div className="flex flex-col gap-4 w-full">
         {/* Chart */}
         <div className="p-4" style={cardStyle}>
           <p className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: "var(--kami-text-dim)" }}>
