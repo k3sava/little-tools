@@ -4999,3 +4999,212 @@ html[data-theme="metro"] input[type=checkbox]:focus {
   outline: 2px solid #0078d4;
   outline-offset: 2px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 5 — Homepage hero section per-theme
+   Target: .tools-hub > main > div.mb-5 (the h1 + p block)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass hero */
+html[data-theme="glass"] .tools-hub main > div:first-child {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+html[data-theme="glass"] .tools-hub main > div:first-child h1 {
+  font-size: clamp(32px, 5vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #1c1c1e 0%, #3a3a3c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif;
+}
+html[data-theme="glass"] .tools-hub main > div:first-child p {
+  font-size: 17px;
+  color: rgba(60,60,67,0.65);
+  margin-top: 8px;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* Material hero */
+html[data-theme="material"] .tools-hub main > div:first-child {
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+html[data-theme="material"] .tools-hub main > div:first-child h1 {
+  font-size: clamp(40px, 6vw, 57px);
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  color: #1c1b1f;
+  font-family: "Google Sans Display", "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+}
+html[data-theme="material"] .tools-hub main > div:first-child p {
+  font-size: 16px;
+  color: #6750a4;
+  margin-top: 8px;
+  font-weight: 500;
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif;
+}
+
+/* Metro hero */
+html[data-theme="metro"] .tools-hub main > div:first-child {
+  padding-top: 32px;
+  padding-bottom: 32px;
+}
+html[data-theme="metro"] .tools-hub main > div:first-child h1 {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: #0078d4;
+  font-family: "Segoe UI Variable Display", "Segoe UI", Inter, system-ui, sans-serif;
+}
+html[data-theme="metro"] .tools-hub main > div:first-child p {
+  font-size: 14px;
+  color: #605e5c;
+  margin-top: 6px;
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 3 — Per-theme tool canvas layout
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass canvas: generous max-width, centered, spacious */
+html[data-theme="glass"] .tool-shell-canvas {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  html[data-theme="glass"] .tool-shell-canvas {
+    padding: 32px;
+  }
+}
+
+/* Material canvas: full-width, M3 standard padding */
+html[data-theme="material"] .tool-shell-canvas {
+  padding: 16px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  html[data-theme="material"] .tool-shell-canvas {
+    padding: 24px;
+  }
+}
+
+/* Metro canvas: dense, compact padding on 4px grid */
+html[data-theme="metro"] .tool-shell-canvas {
+  padding: 12px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  html[data-theme="metro"] .tool-shell-canvas {
+    padding: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 3 — Per-theme control group density
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass: spacious, iOS-style grouped controls */
+html[data-theme="glass"] .control-group {
+  margin-bottom: 20px !important;
+  background: rgba(255,255,255,0.45);
+  border-radius: 14px;
+  padding: 14px 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.40);
+}
+html[data-theme="glass"] .control-group-label {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: rgba(60,60,67,0.60) !important;
+  text-transform: none !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+/* Material: M3 list-item style control groups */
+html[data-theme="material"] .control-group {
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid #e7e0ec;
+  padding-bottom: 16px;
+}
+html[data-theme="material"] .control-group:last-child {
+  border-bottom: none;
+}
+html[data-theme="material"] .control-group-label {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: #6750a4 !important;
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif !important;
+}
+
+/* Metro: compact 4px-grid control groups */
+html[data-theme="metro"] .control-group {
+  margin-bottom: 8px !important;
+  border-bottom: 1px solid #edebe9;
+  padding-bottom: 8px;
+}
+html[data-theme="metro"] .control-group:last-child {
+  border-bottom: none;
+}
+html[data-theme="metro"] .control-group-label {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: #797775 !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif !important;
+  margin-bottom: 4px !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PHASE 3 — Per-theme file drop zone (.kami-file-drop)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Glass: frosted card with blue dashed border */
+html[data-theme="glass"] .kami-file-drop {
+  background: rgba(255,255,255,0.55) !important;
+  border: 2px dashed rgba(0,122,255,0.35) !important;
+  border-radius: 20px !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  transition: border-color 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              background 0.3s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+html[data-theme="glass"] .kami-file-drop:hover {
+  border-color: #007aff !important;
+  background: rgba(0,122,255,0.08) !important;
+}
+
+/* Material: M3 dashed outlined container */
+html[data-theme="material"] .kami-file-drop {
+  background: #f4eff4 !important;
+  border: 2px dashed #cac4d0 !important;
+  border-radius: 12px !important;
+}
+html[data-theme="material"] .kami-file-drop:hover {
+  border-color: #6750a4 !important;
+  background: rgba(103,80,164,0.05) !important;
+}
+
+/* Metro: flat white with Fluent dashed border */
+html[data-theme="metro"] .kami-file-drop {
+  background: #ffffff !important;
+  border: 1px dashed #8a8a8a !important;
+  border-radius: 4px !important;
+}
+html[data-theme="metro"] .kami-file-drop:hover {
+  border-color: #0078d4 !important;
+  background: rgba(0,120,212,0.03) !important;
+}
