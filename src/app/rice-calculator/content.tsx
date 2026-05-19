@@ -145,6 +145,22 @@ async function copyText(text: string): Promise<boolean> {
 // ---------------------------------------------------------------------------
 
 export default function RiceCalculatorContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  void isMaterial;
+
   const [items, setItems] = useState<RiceItem[]>(() => loadItems());
   const [sortField, setSortField] = useState<SortField>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -398,9 +414,35 @@ export default function RiceCalculatorContent() {
       info={info}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Inputs" : "Score"}
+              </button>
+            ))}
+          </nav>
+        )}
 
       {/* Desktop table */}
-      {items.length > 0 ? (
+      {(!isMetro || metroCPivot === "input") && items.length > 0 ? (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <>
           {/* Table view (hidden on mobile) */}
           <div className="hidden sm:block mb-8 overflow-x-auto rounded-xl" style={{ border: "var(--kami-card-border)" }}>
@@ -759,6 +801,7 @@ export default function RiceCalculatorContent() {
             })}
           </div>
         </>
+        </div>
       ) : (
         /* Empty state */
         <div
@@ -788,6 +831,53 @@ export default function RiceCalculatorContent() {
           >
             or load example features
           </button>
+        </div>
+      )}
+
+      {/* Metro Score panel */}
+      {isMetro && metroCPivot === "output" && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+          <div
+            className="rounded-xl p-6"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            {items.length === 0 ? (
+              <p className="text-sm text-center py-8" style={{ color: "var(--kami-text-dim)" }}>
+                Add features in the Inputs tab to see scores here.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                <h2 className="text-sm font-semibold uppercase tracking-wide mb-4" style={{ color: "var(--kami-text-muted)" }}>RICE Scores</h2>
+                {sortedItems.map((item, i) => {
+                  const score = calcScore(item);
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg"
+                      style={{
+                        background: i % 2 === 0 ? "var(--kami-surface)" : "var(--kami-surface-solid)",
+                        border: "1px solid var(--kami-border)",
+                      }}
+                    >
+                      <span className="text-sm font-medium flex-1 truncate" style={{ color: "var(--kami-text)" }}>
+                        {item.name || "Unnamed feature"}
+                      </span>
+                      <span
+                        className="text-lg font-bold tabular-nums shrink-0"
+                        style={{ color: scoreColorHex(score) }}
+                      >
+                        {score.toFixed(1)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

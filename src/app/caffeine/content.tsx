@@ -194,12 +194,28 @@ export default function CaffeineContent() {
   const [drinks, setDrinks] = useState<DrinkEntry[]>(defaultDrinks);
   const [bedtime, setBedtime] = useState<string>(defaultBedtime);
   const [now, setNow] = useState<Date | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   useEffect(() => {
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 10000);
     return () => clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  void isMaterial;
 
   const addDrink = useCallback(() => {
     if (drinks.length >= 3) return;
@@ -353,7 +369,35 @@ export default function CaffeineContent() {
       }
     >
       <div className="flex flex-col gap-4 w-full">
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Log" : "Timeline"}
+              </button>
+            ))}
+          </nav>
+        )}
+
         {/* Chart */}
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+        {(!isMetro || metroCPivot === "input") && (
         <div className="p-4" style={cardStyle}>
           <p className="text-xs font-medium uppercase tracking-wider mb-3" style={{ color: "var(--kami-text-dim)" }}>
             Caffeine in system — today
@@ -440,8 +484,13 @@ export default function CaffeineContent() {
             </div>
           )}
         </div>
+        )}
+        </div>
 
         {/* Stats — 3 columns */}
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+        {(!isMetro || metroCPivot === "output") && (
+        <div className="flex flex-col gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Right now */}
           <div className="p-4" style={cardStyle}>
@@ -528,6 +577,9 @@ export default function CaffeineContent() {
             </p>
           </div>
         )}
+        </div>
+        )}
+        </div>
       </div>
     </ToolShell>
   );

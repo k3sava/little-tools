@@ -390,7 +390,11 @@ export default function LoremIpsumContent() {
     return () => obs.disconnect();
   }, []);
 
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
 
   const output = useMemo(() => {
     if (!mounted) return "";
@@ -562,6 +566,54 @@ export default function LoremIpsumContent() {
       controls={controls}
     >
       <div className="flex flex-col gap-3 p-4 md:p-6">
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Settings" : "Output"}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {(!isMetro || metroCPivot === "input") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+          <div
+            className="px-4 py-3 text-sm"
+            style={{
+              background: "var(--kami-surface-solid)",
+              border: "1px solid var(--kami-border-strong)",
+              borderRadius: "var(--kami-card-radius, 0.75rem)",
+            }}
+          >
+            <p style={{ color: "var(--kami-text-dim)" }}>
+              Flavor: <strong style={{ color: "var(--kami-text-muted)" }}>{flavor}</strong>
+              {" · "}Mode: <strong style={{ color: "var(--kami-text-muted)" }}>{activeTemplate ? `template: ${activeTemplate}` : `${count} ${mode}`}</strong>
+              {" · "}HTML: <strong style={{ color: "var(--kami-text-muted)" }}>{htmlTag === "none" ? "plain" : htmlTag}</strong>
+              {" · "}Start classic: <strong style={{ color: "var(--kami-text-muted)" }}>{startClassic ? "yes" : "no"}</strong>
+            </p>
+          </div>
+        </div>
+        )}
+
+        {(!isMetro || metroCPivot === "output") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
         <div
           className="flex items-center justify-between text-xs"
           style={{ color: "var(--kami-text-dim)" }}
@@ -610,6 +662,8 @@ export default function LoremIpsumContent() {
           >
             {output || "Configure options to generate text."}
           </div>
+        )}
+        </div>
         )}
       </div>
       {isMaterial && output && (

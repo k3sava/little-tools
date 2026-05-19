@@ -187,6 +187,22 @@ Fixed timezone display bug in scheduled reports`;
 // --- Component ---
 
 export default function ReleaseNotesFormatterContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  void isMaterial;
+
   const [rawText, setRawText] = useState(EXAMPLE_RAW);
   const [items, setItems] = useState<ChangeItem[]>(() => parseRawText(EXAMPLE_RAW));
   const [version, setVersion] = useState("v2.4.0");
@@ -387,9 +403,35 @@ export default function ReleaseNotesFormatterContent() {
       controls={controls}
       info={info}
     >
-      <div className="grid grid-cols-1 gap-4 p-4 md:p-6 lg:grid-cols-2">
+      <div className="flex flex-col gap-4 p-4 md:p-6">
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Input" : "Formatted"}
+              </button>
+            ))}
+          </nav>
+        )}
+      <div className={`grid grid-cols-1 gap-4 lg:grid-cols-2`}>
           {/* Left: Input */}
-          <div className="space-y-4">
+          {(!isMetro || metroCPivot === "input") && <div className={`space-y-4${isGlass ? " glass-canvas-section" : ""}`}>
             {/* Raw input */}
             <div
               className="p-5"
@@ -528,10 +570,11 @@ export default function ReleaseNotesFormatterContent() {
                 </div>
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Right: Preview / Source */}
-          <div
+          {(!isMetro || metroCPivot === "output") && <div
+            className={isGlass ? "glass-canvas-section" : ""}
             style={{
               background: "var(--kami-surface-solid)",
               border: "1px solid var(--kami-border-strong)",
@@ -595,7 +638,8 @@ export default function ReleaseNotesFormatterContent() {
                   </pre>
                 )}
               </div>
-          </div>
+          </div>}
+      </div>
       </div>
     </ToolShell>
   );

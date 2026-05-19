@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -345,6 +345,19 @@ export default function UuidGeneratorContent() {
   const [copied, setCopied] = useState<number | "all" | "array" | null>(null);
   const [inspectInput, setInspectInput] = useState("");
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   // Format options
   const [uppercase, setUppercase] = useState(false);
   const [hyphens, setHyphens] = useState(true);
@@ -516,154 +529,188 @@ export default function UuidGeneratorContent() {
       }
     >
       <div className="flex flex-col gap-4">
-        {/* Quick copy strip */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-          {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
-            <button
-              key={type}
-              type="button"
-              onClick={() => {
-                setActiveType(type);
-                setCount(1);
-                setTimeout(() => generate(), 0);
-              }}
-              className="px-3 py-2 text-sm font-semibold transition-colors"
-              style={{
-                background: activeType === type ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
-                color: activeType === type ? "var(--kami-cta-text)" : "var(--kami-text)",
-                border: "1px solid var(--kami-border-strong)",
-                borderRadius: "var(--kami-cta-radius, 0.5rem)",
-                minHeight: 44,
-              }}
-            >
-              {GENERATORS[type].shortLabel}
-            </button>
-          ))}
-        </div>
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Settings" : "IDs"}
+              </button>
+            ))}
+          </nav>
+        )}
 
-        {/* Generated IDs */}
-        <div style={cardStyle} className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
-              {ids.length === 0 ? "No IDs yet" : `${ids.length} × ${GENERATORS[activeType].label}`}
-            </span>
-            {ids.length > 0 && (
-              <div className="flex items-center gap-1">
-                <ToolActionButton onClick={handleCopyArray} variant="outline">
-                  {copied === "array" ? "Copied" : "Copy as array"}
-                </ToolActionButton>
-                <ToolActionButton onClick={handleCopyAll} variant="outline">
-                  {copied === "all" ? "Copied" : "Copy all"}
-                </ToolActionButton>
-              </div>
-            )}
-          </div>
-
-          {ids.length === 0 ? (
-            <div
-              className="flex items-center justify-center py-12 text-sm"
-              style={{
-                border: "1px dashed var(--kami-border-strong)",
-                borderRadius: "var(--kami-input-radius, 0.5rem)",
-                color: "var(--kami-text-dim)",
-              }}
-            >
-              Tap Generate to create {count} {GENERATORS[activeType].shortLabel} ID{count > 1 ? "s" : ""}.
-            </div>
-          ) : (
-            <div className={`flex flex-col gap-1 ${ids.length > 20 ? "max-h-[600px] overflow-y-auto" : ""}`}>
-              {ids.map((id, i) => (
-                <div
-                  key={`${id}-${i}`}
-                  className="flex items-center justify-between gap-2 px-3 py-2"
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {/* Quick copy strip */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+              {(Object.keys(GENERATORS) as GeneratorType[]).map((type) => (
+                <button
+                  key={type}
+                  type="button"
+                  onClick={() => {
+                    setActiveType(type);
+                    setCount(1);
+                    setTimeout(() => generate(), 0);
+                  }}
+                  className="px-3 py-2 text-sm font-semibold transition-colors"
                   style={{
-                    background: "var(--kami-surface)",
-                    border: "1px solid var(--kami-border)",
-                    borderRadius: "var(--kami-input-radius, 0.5rem)",
-                    color: "var(--kami-text)",
+                    background: activeType === type ? "var(--kami-cta-bg)" : "var(--kami-surface-solid)",
+                    color: activeType === type ? "var(--kami-cta-text)" : "var(--kami-text)",
+                    border: "1px solid var(--kami-border-strong)",
+                    borderRadius: "var(--kami-cta-radius, 0.5rem)",
+                    minHeight: 44,
                   }}
                 >
-                  <span className="font-mono text-sm select-all break-all min-w-0 flex-1">{id}</span>
-                  <ToolActionButton onClick={() => handleCopy(id, i)} variant="ghost">
-                    {copied === i ? "✓" : "Copy"}
-                  </ToolActionButton>
-                </div>
+                  {GENERATORS[type].shortLabel}
+                </button>
               ))}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Inspector */}
-        <div style={cardStyle} className="p-4">
-          <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
-          <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>
-            Paste any ID to auto-detect its type and decode embedded timestamps.
-          </p>
-          <input
-            ref={countInputRef}
-            type="text"
-            value={inspectInput}
-            onChange={(e) => setInspectInput(e.target.value)}
-            placeholder="Paste a UUID, ULID, NanoID, or CUID2..."
-            className="w-full px-4 py-3 font-mono text-sm focus:outline-none"
-            style={{ ...inputStyle, minHeight: 44 }}
-          />
-
-          {inspection && (
-            <div className="mt-4">
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span
-                  className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${
-                    inspection.valid
-                      ? "bg-green-50 text-green-700 ring-1 ring-green-200"
-                      : "bg-red-50 text-red-600 ring-1 ring-red-200"
-                  }`}
-                >
-                  {inspection.valid ? inspection.type : "Invalid / Unknown"}
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {/* Generated IDs */}
+            <div style={cardStyle} className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold" style={{ color: "var(--kami-text)" }}>
+                  {ids.length === 0 ? "No IDs yet" : `${ids.length} × ${GENERATORS[activeType].label}`}
                 </span>
-                {inspection.bits && (
-                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.bits} bits</span>
-                )}
-                {inspection.encoding && (
-                  <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.encoding}</span>
+                {ids.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <ToolActionButton onClick={handleCopyArray} variant="outline">
+                      {copied === "array" ? "Copied" : "Copy as array"}
+                    </ToolActionButton>
+                    <ToolActionButton onClick={handleCopyAll} variant="outline">
+                      {copied === "all" ? "Copied" : "Copy all"}
+                    </ToolActionButton>
+                  </div>
                 )}
               </div>
 
-              {inspection.breakdown && inspection.breakdown.length > 0 && (
+              {ids.length === 0 ? (
                 <div
-                  className="overflow-x-auto"
-                  style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}
+                  className="flex items-center justify-center py-12 text-sm"
+                  style={{
+                    border: "1px dashed var(--kami-border-strong)",
+                    borderRadius: "var(--kami-input-radius, 0.5rem)",
+                    color: "var(--kami-text-dim)",
+                  }}
                 >
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
-                        <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
-                        <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
-                        <th className="px-3 py-2 text-left font-medium hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {inspection.breakdown.map((row, i) => (
-                        <tr
-                          key={i}
-                          style={
-                            i < inspection.breakdown!.length - 1
-                              ? { borderBottom: "1px solid var(--kami-border)" }
-                              : undefined
-                          }
-                        >
-                          <td className="px-3 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
-                          <td className="px-3 py-2 font-mono break-all" style={{ color: "var(--kami-text)" }}>{row.value}</td>
-                          <td className="px-3 py-2 hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  Tap Generate to create {count} {GENERATORS[activeType].shortLabel} ID{count > 1 ? "s" : ""}.
+                </div>
+              ) : (
+                <div className={`flex flex-col gap-1 ${ids.length > 20 ? "max-h-[600px] overflow-y-auto" : ""}`}>
+                  {ids.map((id, i) => (
+                    <div
+                      key={`${id}-${i}`}
+                      className="flex items-center justify-between gap-2 px-3 py-2"
+                      style={{
+                        background: "var(--kami-surface)",
+                        border: "1px solid var(--kami-border)",
+                        borderRadius: "var(--kami-input-radius, 0.5rem)",
+                        color: "var(--kami-text)",
+                      }}
+                    >
+                      <span className="font-mono text-sm select-all break-all min-w-0 flex-1">{id}</span>
+                      <ToolActionButton onClick={() => handleCopy(id, i)} variant="ghost">
+                        {copied === i ? "✓" : "Copy"}
+                      </ToolActionButton>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Inspector */}
+            <div style={cardStyle} className="p-4 mt-4">
+              <h2 className="text-sm font-semibold mb-2" style={{ color: "var(--kami-text)" }}>ID Inspector</h2>
+              <p className="text-xs mb-2" style={{ color: "var(--kami-text-muted)" }}>
+                Paste any ID to auto-detect its type and decode embedded timestamps.
+              </p>
+              <input
+                ref={countInputRef}
+                type="text"
+                value={inspectInput}
+                onChange={(e) => setInspectInput(e.target.value)}
+                placeholder="Paste a UUID, ULID, NanoID, or CUID2..."
+                className="w-full px-4 py-3 font-mono text-sm focus:outline-none"
+                style={{ ...inputStyle, minHeight: 44 }}
+              />
+
+              {inspection && (
+                <div className="mt-4">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${
+                        inspection.valid
+                          ? "bg-green-50 text-green-700 ring-1 ring-green-200"
+                          : "bg-red-50 text-red-600 ring-1 ring-red-200"
+                      }`}
+                    >
+                      {inspection.valid ? inspection.type : "Invalid / Unknown"}
+                    </span>
+                    {inspection.bits && (
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.bits} bits</span>
+                    )}
+                    {inspection.encoding && (
+                      <span className="text-xs" style={{ color: "var(--kami-text-muted)" }}>{inspection.encoding}</span>
+                    )}
+                  </div>
+
+                  {inspection.breakdown && inspection.breakdown.length > 0 && (
+                    <div
+                      className="overflow-x-auto"
+                      style={{ border: "1px solid var(--kami-border)", borderRadius: "var(--kami-input-radius, 0.5rem)" }}
+                    >
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr style={{ background: "var(--kami-surface)", borderBottom: "1px solid var(--kami-border)" }}>
+                            <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Field</th>
+                            <th className="px-3 py-2 text-left font-medium" style={{ color: "var(--kami-text-muted)" }}>Value</th>
+                            <th className="px-3 py-2 text-left font-medium hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>Description</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {inspection.breakdown.map((row, i) => (
+                            <tr
+                              key={i}
+                              style={
+                                i < inspection.breakdown!.length - 1
+                                  ? { borderBottom: "1px solid var(--kami-border)" }
+                                  : undefined
+                              }
+                            >
+                              <td className="px-3 py-2 font-medium" style={{ color: "var(--kami-text)" }}>{row.label}</td>
+                              <td className="px-3 py-2 font-mono break-all" style={{ color: "var(--kami-text)" }}>{row.value}</td>
+                              <td className="px-3 py-2 hidden md:table-cell" style={{ color: "var(--kami-text-muted)" }}>{row.description}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </ToolShell>
   );

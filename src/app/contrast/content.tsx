@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -94,6 +94,19 @@ export default function ContrastContent() {
   const [textSize, setTextSize] = useState(18);
   const [textWeight, setTextWeight] = useState<"400" | "700">("400");
   const [sampleText, setSampleText] = useState("The quick brown fox jumps over the lazy dog.");
+
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const ratio = useMemo(() => contrastRatio(fg, bg), [fg, bg]);
   const levels = useMemo(() => getLevel(ratio, false), [ratio]);
@@ -312,66 +325,100 @@ export default function ContrastContent() {
       }
     >
       <div className="flex h-full min-h-[60vh] flex-col gap-3">
-        {/* Large preview pane */}
-        <div
-          className="flex flex-1 min-h-[260px] flex-col justify-center overflow-hidden p-6 sm:p-10"
-          style={{
-            backgroundColor: bg,
-            color: fg,
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <p
-            style={{
-              fontSize: `${textSize}px`,
-              fontWeight: textWeight,
-              lineHeight: 1.35,
-            }}
-          >
-            {sampleText}
-          </p>
-          <p
-            className="mt-3"
-            style={{
-              fontSize: `${Math.max(10, textSize - 6)}px`,
-              opacity: 0.85,
-            }}
-          >
-            Sample at {textSize}px {textWeight === "700" ? "bold" : "regular"} · {fg} on {bg}
-          </p>
-        </div>
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Colors" : "Results"}
+              </button>
+            ))}
+          </nav>
+        )}
 
-        {/* Ratio + badges */}
-        <div
-          className="flex flex-wrap items-center justify-between gap-4 p-4"
-          style={{
-            background: "var(--kami-surface-solid)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-card-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-          }}
-        >
-          <div>
-            <div className="text-4xl font-bold tabular-nums leading-none">
-              {ratio.toFixed(2)}
-              <span className="text-base font-normal" style={{ color: "var(--kami-text-dim)" }}>:1</span>
-            </div>
-            <div className="mt-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
-              Contrast ratio
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {/* Large preview pane */}
+            <div
+              className="flex flex-1 min-h-[260px] flex-col justify-center overflow-hidden p-6 sm:p-10"
+              style={{
+                backgroundColor: bg,
+                color: fg,
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: `${textSize}px`,
+                  fontWeight: textWeight,
+                  lineHeight: 1.35,
+                }}
+              >
+                {sampleText}
+              </p>
+              <p
+                className="mt-3"
+                style={{
+                  fontSize: `${Math.max(10, textSize - 6)}px`,
+                  opacity: 0.85,
+                }}
+              >
+                Sample at {textSize}px {textWeight === "700" ? "bold" : "regular"} · {fg} on {bg}
+              </p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge level={levels.normal} label="Normal" req={levels.normal === "AAA" ? "7:1" : "4.5:1"} />
-            <Badge level={levels.large} label="Large" req={levels.large === "AAA" ? "4.5:1" : "3:1"} />
-            <Badge
-              level={ratio >= 3 ? "AA" : "Fail"}
-              label="UI"
-              req="3:1"
-            />
+        )}
+
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            {/* Ratio + badges */}
+            <div
+              className="flex flex-wrap items-center justify-between gap-4 p-4"
+              style={{
+                background: "var(--kami-surface-solid)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-card-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+              }}
+            >
+              <div>
+                <div className="text-4xl font-bold tabular-nums leading-none">
+                  {ratio.toFixed(2)}
+                  <span className="text-base font-normal" style={{ color: "var(--kami-text-dim)" }}>:1</span>
+                </div>
+                <div className="mt-1 text-xs uppercase tracking-wide" style={{ color: "var(--kami-text-dim)" }}>
+                  Contrast ratio
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge level={levels.normal} label="Normal" req={levels.normal === "AAA" ? "7:1" : "4.5:1"} />
+                <Badge level={levels.large} label="Large" req={levels.large === "AAA" ? "4.5:1" : "3:1"} />
+                <Badge
+                  level={ratio >= 3 ? "AA" : "Fail"}
+                  label="UI"
+                  req="3:1"
+                />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </ToolShell>
   );

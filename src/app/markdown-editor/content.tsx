@@ -178,6 +178,10 @@ export default function MarkdownEditorContent() {
   }, []);
 
   const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const content = useMemo(() => {
     const tab = tabs.find((t) => t.id === activeTabId);
@@ -821,6 +825,33 @@ export default function MarkdownEditorContent() {
       />
 
       <div className="flex flex-col h-[calc(100dvh-220px)] min-h-[420px] md:h-[calc(100dvh-160px)]">
+        {/* Metro in-canvas pivot */}
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Markdown" : "Preview"}
+              </button>
+            ))}
+          </nav>
+        )}
+
         {/* Mobile: tab switcher between editor / preview */}
         <div className="md:hidden p-2" style={{ borderBottom: "1px solid var(--kami-border)" }}>
           <Segment
@@ -836,23 +867,43 @@ export default function MarkdownEditorContent() {
 
         {/* Mobile single-pane */}
         <div className="md:hidden flex-1 min-h-0">
-          {mobileTab === "editor" ? editorPane : previewPane}
+          {isMetro ? (
+            metroCPivot === "input" ? (
+              <div className={isGlass ? "glass-canvas-section" : ""}>{editorPane}</div>
+            ) : (
+              <div className={isGlass ? "glass-canvas-section" : ""}>{previewPane}</div>
+            )
+          ) : mobileTab === "editor" ? (
+            <div className={isGlass ? "glass-canvas-section" : ""}>{editorPane}</div>
+          ) : (
+            <div className={isGlass ? "glass-canvas-section" : ""}>{previewPane}</div>
+          )}
         </div>
 
         {/* Desktop layout */}
         <div className="hidden md:flex flex-1 min-h-0">
-          {paneView !== "preview" && (
-            <div
-              className="flex-1 min-w-0"
-              style={{
-                borderRight: paneView === "split" ? "1px solid var(--kami-border)" : "none",
-              }}
-            >
-              {editorPane}
-            </div>
-          )}
-          {paneView !== "editor" && (
-            <div className="flex-1 min-w-0">{previewPane}</div>
+          {isMetro ? (
+            metroCPivot === "input" ? (
+              <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{editorPane}</div>
+            ) : (
+              <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{previewPane}</div>
+            )
+          ) : (
+            <>
+              {paneView !== "preview" && (
+                <div
+                  className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}
+                  style={{
+                    borderRight: paneView === "split" ? "1px solid var(--kami-border)" : "none",
+                  }}
+                >
+                  {editorPane}
+                </div>
+              )}
+              {paneView !== "editor" && (
+                <div className={`flex-1 min-w-0${isGlass ? " glass-canvas-section" : ""}`}>{previewPane}</div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -123,12 +123,28 @@ export default function ClipboardManagerContent() {
   const [fillingTemplate, setFillingTemplate] = useState<Template | null>(null);
   const [templateValues, setTemplateValues] = useState<Record<string, string>>({});
   const [templateCopied, setTemplateCopied] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
 
   useEffect(() => {
     setClips(loadClips());
     setTemplates(loadTemplates());
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  void isMaterial;
+  void isMetro;
 
   useEffect(() => {
     if (mounted) saveClips(clips);
@@ -494,6 +510,7 @@ export default function ClipboardManagerContent() {
       controls={controls}
       controlsLabel="Tools"
     >
+      <div className={isGlass ? "glass-canvas-section" : ""}>
       <div className="flex flex-col gap-2">
         {activeTab === "clips" && mounted && (
           <>
@@ -722,6 +739,7 @@ export default function ClipboardManagerContent() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </ToolShell>
   );

@@ -92,6 +92,8 @@ export default function MeetingCostContent() {
   const startTimeRef = useRef<number | null>(null);
   const baseElapsedRef = useRef(0); // seconds accumulated before latest start
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
 
   const cpm = costPerMinute(attendees, salary);
   const totalCost = cpm * (elapsed / 60);
@@ -137,6 +139,20 @@ export default function MeetingCostContent() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [running]);
+
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  void isMaterial;
 
   const has30MinWarning = elapsed >= 30 * 60;
   const hasEmailVerdict = elapsed >= 45 * 60;
@@ -226,7 +242,36 @@ export default function MeetingCostContent() {
       }
     >
       <div className="flex flex-col gap-4 w-full">
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Setup" : "Cost"}
+              </button>
+            ))}
+          </nav>
+        )}
+
         {/* Main cost display */}
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+        {(!isMetro || metroCPivot === "output") && (
+        <div className="flex flex-col gap-4">
         <div className="p-6 flex flex-col items-center justify-center min-h-48" style={cardStyle}>
           {!running && elapsed === 0 ? (
             <>
@@ -316,6 +361,33 @@ export default function MeetingCostContent() {
             · Current rate: {formatDollars(cpm)}/min · {attendees} people · ${salary.toLocaleString("en-US")}/yr avg salary
           </p>
         </div>
+        </div>
+        )}
+        </div>
+
+        {(!isMetro || metroCPivot === "input") && (
+        <div className={isGlass ? "glass-canvas-section" : ""}>
+          <div className="p-4" style={cardStyle}>
+            <p className="text-xs font-medium uppercase tracking-wider mb-2" style={{ color: "var(--kami-text-dim)" }}>
+              Meeting setup
+            </p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Attendees</span>
+                <span className="text-sm font-semibold tabular-nums">{attendees} people</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Avg salary</span>
+                <span className="text-sm font-semibold tabular-nums">${salary.toLocaleString("en-US")}/yr</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm" style={{ color: "var(--kami-text-muted)" }}>Cost per minute</span>
+                <span className="text-sm font-semibold tabular-nums" style={{ color: "#ef4444" }}>{formatDollars(cpm)}/min</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        )}
       </div>
     </ToolShell>
   );

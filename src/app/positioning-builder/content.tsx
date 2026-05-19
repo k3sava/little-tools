@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
   ToolShell,
@@ -364,6 +364,22 @@ function statementToMarkdown(
 type ViewMode = "edit" | "compare";
 
 export default function PositioningBuilderContent() {
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
+  void isMaterial;
+
   const [activeFramework, setActiveFramework] = useState<FrameworkId>("moore");
   const [allValues, setAllValues] = useState<Record<FrameworkId, Record<string, string>>>({
     moore: {},
@@ -555,6 +571,31 @@ export default function PositioningBuilderContent() {
       info={info}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
+        {isMetro && viewMode === "edit" && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Form" : "Statement"}
+              </button>
+            ))}
+          </nav>
+        )}
 
         {/* Comparison view */}
         {viewMode === "compare" && (
@@ -639,7 +680,7 @@ export default function PositioningBuilderContent() {
         )}
 
         {/* Guided form */}
-        {viewMode === "edit" && <><div
+        {viewMode === "edit" && <>{(!isMetro || metroCPivot === "input") && <div className={isGlass ? "glass-canvas-section" : ""}><div
           className="mb-8 p-6"
           style={{
             background: "var(--kami-surface-solid)",
@@ -726,7 +767,9 @@ export default function PositioningBuilderContent() {
             ))}
           </div>
         </div>
+        </div>}
 
+        {(!isMetro || metroCPivot === "output") && <div className={isGlass ? "glass-canvas-section" : ""}>
         {/* Live preview */}
         <div
           className="mb-8 p-6"
@@ -762,6 +805,7 @@ export default function PositioningBuilderContent() {
             )}
           </p>
         </div>
+        </div>}
 
         </>}
       </div>

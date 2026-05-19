@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useToolState } from "@/hooks/use-tool-state";
 import { useKeyboardShortcuts } from "@/hooks/use-keyboard-shortcuts";
 import {
@@ -291,6 +291,19 @@ export default function CharacterCounterContent() {
   const [includeSpaces, setIncludeSpaces] = useState(true);
   const [view, setView] = useState<"stats" | "limits" | "keywords" | "lines">("stats");
 
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+  useEffect(() => {
+    const readTheme = () => document.documentElement.getAttribute("data-theme") ?? "default";
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  const isMaterial = currentTheme === "material";
+  const isMetro    = currentTheme === "metro";
+  const isGlass    = currentTheme === "glass";
+  const [metroCPivot, setMetroCPivot] = useState<"input" | "output">("input");
+
   useKeyboardShortcuts(useMemo(() => [
     { key: "k", meta: true, action: () => setInput(""), label: "Clear" },
   ], [setInput]));
@@ -390,22 +403,55 @@ export default function CharacterCounterContent() {
       controls={controls}
     >
       <div className="flex flex-col gap-4 p-4 md:p-6">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type or paste your text here..."
-          className="w-full px-4 py-3 text-base focus:outline-none"
-          style={{
-            background: "var(--kami-input-bg, var(--kami-surface-solid))",
-            color: "var(--kami-text)",
-            border: "1px solid var(--kami-border-strong)",
-            borderRadius: "var(--kami-input-radius, 0.75rem)",
-            boxShadow: "var(--kami-card-shadow, none)",
-            minHeight: 200,
-          }}
-          rows={8}
-          autoFocus
-        />
+        {isMetro && (
+          <nav style={{ display: "flex", borderBottom: "1px solid #d1d1d1", marginBottom: 12 }}>
+            {(["input", "output"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setMetroCPivot(tab)}
+                style={{
+                  padding: "8px 16px",
+                  fontSize: 14,
+                  fontWeight: metroCPivot === tab ? 600 : 400,
+                  color: metroCPivot === tab ? "#0078d4" : "#605e5c",
+                  background: "none",
+                  border: "none",
+                  borderBottom: metroCPivot === tab ? "2px solid #0078d4" : "2px solid transparent",
+                  cursor: "pointer",
+                  fontFamily: "'Segoe UI', system-ui, sans-serif",
+                  textTransform: "capitalize",
+                }}
+              >
+                {tab === "input" ? "Input" : "Stats"}
+              </button>
+            ))}
+          </nav>
+        )}
+
+        {(!isMetro || metroCPivot === "input") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type or paste your text here..."
+              className="w-full px-4 py-3 text-base focus:outline-none"
+              style={{
+                background: "var(--kami-input-bg, var(--kami-surface-solid))",
+                color: "var(--kami-text)",
+                border: "1px solid var(--kami-border-strong)",
+                borderRadius: "var(--kami-input-radius, 0.75rem)",
+                boxShadow: "var(--kami-card-shadow, none)",
+                minHeight: 200,
+              }}
+              rows={8}
+              autoFocus
+            />
+          </div>
+        )}
+
+        {(!isMetro || metroCPivot === "output") && (
+          <div className={isGlass ? "glass-canvas-section" : ""}>
 
         {/* Goal bar */}
         {target > 0 && (
@@ -571,6 +617,8 @@ export default function CharacterCounterContent() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
           </div>
         )}
       </div>
