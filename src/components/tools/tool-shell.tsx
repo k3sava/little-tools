@@ -203,6 +203,124 @@ function formatShortcutKey(key: string, meta?: boolean, shift?: boolean, alt?: b
   return parts.join("");
 }
 
+// ── Material ripple effect ───────────────────────────────────────────────────
+
+function useRipple(enabled: boolean, ref: React.RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    if (!enabled) return;
+    const el = ref.current;
+    if (!el) return;
+    function onPointerDown(e: PointerEvent) {
+      const target = (e.target as Element)?.closest('button, a[href], [role="button"]') as HTMLElement | null;
+      if (!target || !el!.contains(target)) return;
+      const rect = target.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const r = Math.hypot(Math.max(x, rect.width - x), Math.max(y, rect.height - y));
+      const ripple = document.createElement('span');
+      ripple.className = 'md-ripple';
+      ripple.style.cssText = `left:${x}px;top:${y}px;width:${r * 2}px;height:${r * 2}px`;
+      // Ensure target has position:relative for ripple containment
+      const pos = getComputedStyle(target).position;
+      if (pos === 'static') target.style.position = 'relative';
+      target.style.overflow = 'hidden';
+      target.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+    }
+    el.addEventListener('pointerdown', onPointerDown);
+    return () => el.removeEventListener('pointerdown', onPointerDown);
+  }, [enabled, ref]);
+}
+
+// ── Metro Pivot control ──────────────────────────────────────────────────────
+
+const METRO_PIVOT_ITEMS = [
+  { label: 'Tool', id: 'tool' },
+  { label: 'Controls', id: 'controls' },
+  { label: 'About', id: 'about' },
+] as const;
+
+type MetroPivotId = (typeof METRO_PIVOT_ITEMS)[number]['id'];
+
+function MetroPivot({ active, onChange, hasControls, hasInfo }: {
+  active: MetroPivotId;
+  onChange: (id: MetroPivotId) => void;
+  hasControls: boolean;
+  hasInfo: boolean;
+}) {
+  const items = METRO_PIVOT_ITEMS.filter(item =>
+    item.id === 'tool' || (item.id === 'controls' && hasControls) || (item.id === 'about' && hasInfo)
+  );
+  return (
+    <nav className="metro-pivot" aria-label="Sections" role="tablist">
+      {items.map(item => (
+        <button
+          key={item.id}
+          type="button"
+          role="tab"
+          aria-selected={active === item.id}
+          className={`metro-pivot-item${active === item.id ? ' is-active' : ''}`}
+          onClick={() => onChange(item.id)}
+        >
+          {item.label}
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+// ── Glass bottom tab bar ─────────────────────────────────────────────────────
+
+function GlassTabBar({ onControls, onInfo, hasControls, hasInfo }: {
+  onControls: () => void;
+  onInfo: () => void;
+  hasControls: boolean;
+  hasInfo: boolean;
+}) {
+  return (
+    <nav className="glass-tab-bar" aria-label="Navigation">
+      <a href="https://tools.iamkesava.com" className="glass-tab-bar-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+          <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+          <rect x="13" y="13" width="8" height="8" rx="1.5"/>
+        </svg>
+        <span>Tools</span>
+      </a>
+      <a href="https://tools.iamkesava.com#search" className="glass-tab-bar-item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <span>Search</span>
+      </a>
+      {hasControls && (
+        <button type="button" className="glass-tab-bar-item" onClick={onControls}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <circle cx="8" cy="6" r="2" fill="var(--kami-bg,#fff)" stroke="currentColor"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <circle cx="16" cy="12" r="2" fill="var(--kami-bg,#fff)" stroke="currentColor"/>
+            <line x1="4" y1="18" x2="20" y2="18"/>
+            <circle cx="10" cy="18" r="2" fill="var(--kami-bg,#fff)" stroke="currentColor"/>
+          </svg>
+          <span>Controls</span>
+        </button>
+      )}
+      {hasInfo && (
+        <button type="button" className="glass-tab-bar-item" onClick={onInfo}>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 8v4M12 16h.01"/>
+          </svg>
+          <span>About</span>
+        </button>
+      )}
+    </nav>
+  );
+}
+
 // ── ToolShell ────────────────────────────────────────────────────────────────
 
 export function ToolShell({
@@ -222,17 +340,32 @@ export function ToolShell({
   const [infoOpen, setInfoOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('default');
+  const [metroPivot, setMetroPivot] = useState<MetroPivotId>('tool');
   const shortcutCtx = useContext(ShortcutContext);
+  const shellRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function readTheme() {
       return document.documentElement.getAttribute('data-theme') || 'default';
     }
     setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    const obs = new MutationObserver(() => {
+      const t = readTheme();
+      setCurrentTheme(t);
+      // Reset pivot to 'tool' when switching away from metro
+      if (t !== 'metro') setMetroPivot('tool');
+    });
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     return () => obs.disconnect();
   }, []);
+
+  const isGlass = currentTheme === 'glass';
+  const isMaterial = currentTheme === 'material';
+  const isMetro = currentTheme === 'metro';
+
+  // Material ripple — active when material theme
+  useRipple(isMaterial, shellRef as React.RefObject<HTMLElement | null>);
+
   const labeledShortcuts = shortcutCtx?.shortcuts.filter((s) => s.label) ?? [];
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
@@ -257,9 +390,18 @@ export function ToolShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  // Metro: pivot-driven visibility
+  const showCanvas   = !isMetro || metroPivot === 'tool';
+  const showControls = hasControls && (!isMetro || metroPivot === 'controls');
+  const showInfo     = hasInfo && (!isMetro || metroPivot === 'about');
+
+  // Metro breadcrumb separator is > not ·
+  const breadcrumbSep = isMetro ? '›' : '·';
+
   return (
     <div
-      className="tool-shell"
+      ref={shellRef}
+      className={`tool-shell theme-${currentTheme}`}
       style={{ "--tool-shell-panel-w": panelWidth, color: "var(--kami-text)" } as React.CSSProperties}
     >
       {/* ── Header: 3-column layout (theme | center | actions) ── */}
@@ -272,7 +414,7 @@ export function ToolShell({
             <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
               {breadcrumbs.map((item, i) => (
                 <span key={i}>
-                  {i > 0 && <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>}
+                  {i > 0 && <span className="tool-shell-breadcrumb-sep" aria-hidden="true">{breadcrumbSep}</span>}
                   {item.href
                     ? <a href={item.href}>{item.label}</a>
                     : <span aria-current="page">{item.label}</span>
@@ -283,7 +425,7 @@ export function ToolShell({
           ) : (
             <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
               <a href="https://apps.iamkesava.com">home</a>
-              <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>
+              <span className="tool-shell-breadcrumb-sep" aria-hidden="true">{breadcrumbSep}</span>
               <a href="https://tools.iamkesava.com">tools</a>
             </nav>
           )}
@@ -302,8 +444,8 @@ export function ToolShell({
           )}
         </div>
 
-        {/* Right: actions */}
-        <div className="tool-shell-actions">
+        {/* Right: actions (Metro: command bar labels) */}
+        <div className={`tool-shell-actions${isMetro ? ' is-command-bar' : ''}`}>
           {actions}
           <ToolShareButton />
           {labeledShortcuts.length > 0 && (
@@ -322,8 +464,23 @@ export function ToolShell({
 
       </header>
 
+      {/* Metro Pivot — horizontal tab row below header */}
+      {isMetro && (
+        <MetroPivot
+          active={metroPivot}
+          onChange={(id) => {
+            setMetroPivot(id);
+            if (id === 'controls') { setSheetOpen(true); setInfoOpen(false); }
+            else if (id === 'about') { setInfoOpen(true); setSheetOpen(false); }
+            else { setSheetOpen(false); setInfoOpen(false); }
+          }}
+          hasControls={hasControls}
+          hasInfo={hasInfo}
+        />
+      )}
+
       {/* Glass large title — iOS HIG: large title below floating header, collapses on scroll */}
-      {currentTheme === 'glass' && title && (
+      {isGlass && title && (
         <div className="tool-shell-large-title" aria-hidden="true">
           <div className="tool-shell-large-title-inner">
             <div className="tool-shell-large-title-eyebrow">tool</div>
@@ -335,7 +492,7 @@ export function ToolShell({
 
       {/* ── Body grid ── */}
       <div className={`tool-shell-body ${hasControls ? "has-controls" : "no-controls"}`}>
-        {currentTheme === 'material' && (
+        {isMaterial && (
           <nav className="tool-shell-nav-rail" aria-label="Navigation rail">
             <a href="/" className="tool-shell-nav-rail-item" title="All tools">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -368,51 +525,70 @@ export function ToolShell({
             </a>
           </nav>
         )}
-        <main className="tool-shell-canvas">{children}</main>
 
-        {hasControls && (
+        {showCanvas && (
+          <main className="tool-shell-canvas">{children}</main>
+        )}
+
+        {showControls && (
           <aside className={`tool-shell-panel ${sheetOpen ? "is-open" : ""}`} aria-label="Controls">
             <div className="tool-shell-panel-handle" aria-hidden="true" />
             <div className="tool-shell-panel-header md:hidden">
               <span className="text-sm font-semibold uppercase tracking-wide">{controlsLabel}</span>
-              <button type="button" onClick={() => setSheetOpen(false)} className="tool-shell-icon-btn" aria-label="Close controls">
+              <button type="button" onClick={() => { setSheetOpen(false); if (isMetro) setMetroPivot('tool'); }} className="tool-shell-icon-btn" aria-label="Close controls">
                 <X size={16} />
               </button>
             </div>
             <div className="tool-shell-panel-inner">{controls}</div>
           </aside>
         )}
+
+        {/* Metro: About panel renders inline in body when pivot=about */}
+        {isMetro && showInfo && (
+          <div className="tool-shell-canvas metro-about-pane">
+            <div className="tool-shell-panel-inner">{info}</div>
+          </div>
+        )}
       </div>
 
-      {/* ── Mobile FAB row ── */}
-      <div className="tool-shell-fab-row">
-        {mobileAction}
-        {hasInfo && (
-          <button type="button" className="tool-shell-fab" onClick={() => setInfoOpen((v) => !v)} aria-label="Show info">
-            <span aria-hidden="true">?</span>
-          </button>
-        )}
-        {hasControls && (
-          <button
-            type="button"
-            className="tool-shell-fab is-primary"
-            onClick={() => setSheetOpen((v) => !v)}
-            aria-label={sheetOpen ? "Hide controls" : "Show controls"}
-            aria-expanded={sheetOpen}
-          >
-            {sheetOpen ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-            <span className="tool-shell-fab-label">{controlsLabel}</span>
-          </button>
-        )}
-      </div>
+      {/* ── Mobile nav: Glass tab bar OR Material FAB row OR default FAB ── */}
+      {isGlass ? (
+        <GlassTabBar
+          onControls={() => setSheetOpen((v) => !v)}
+          onInfo={() => setInfoOpen((v) => !v)}
+          hasControls={hasControls}
+          hasInfo={hasInfo}
+        />
+      ) : !isMetro ? (
+        <div className="tool-shell-fab-row">
+          {mobileAction}
+          {hasInfo && (
+            <button type="button" className="tool-shell-fab" onClick={() => setInfoOpen((v) => !v)} aria-label="Show info">
+              <span aria-hidden="true">?</span>
+            </button>
+          )}
+          {hasControls && (
+            <button
+              type="button"
+              className={`tool-shell-fab${isMaterial ? ' is-material-fab' : ''} is-primary`}
+              onClick={() => setSheetOpen((v) => !v)}
+              aria-label={sheetOpen ? "Hide controls" : "Show controls"}
+              aria-expanded={sheetOpen}
+            >
+              {sheetOpen ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+              <span className="tool-shell-fab-label">{controlsLabel}</span>
+            </button>
+          )}
+        </div>
+      ) : null}
 
       {/* ── Sheet backdrop ── */}
       {(sheetOpen || infoOpen) && (
-        <button type="button" aria-label="Close panel" className="tool-shell-backdrop" onClick={() => { setSheetOpen(false); setInfoOpen(false); }} />
+        <button type="button" aria-label="Close panel" className="tool-shell-backdrop" onClick={() => { setSheetOpen(false); setInfoOpen(false); if (isMetro) setMetroPivot('tool'); }} />
       )}
 
-      {/* ── Info drawer ── */}
-      {hasInfo && (
+      {/* ── Info drawer — not shown on Metro (uses pivot instead) ── */}
+      {hasInfo && !isMetro && (
         <div className={`tool-shell-info ${infoOpen ? "is-open" : ""}`}>
           <div className="tool-shell-panel-handle" aria-hidden="true" />
           <div className="tool-shell-panel-header">
