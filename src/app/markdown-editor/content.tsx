@@ -165,6 +165,19 @@ export default function MarkdownEditorContent() {
   const previewRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isScrollingSynced = useRef(false);
+  const [currentTheme, setCurrentTheme] = useState<string>("default");
+
+  useEffect(() => {
+    function readTheme() {
+      return document.documentElement.getAttribute("data-theme") || "default";
+    }
+    setCurrentTheme(readTheme());
+    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+
+  const isMaterial = currentTheme === "material";
 
   const content = useMemo(() => {
     const tab = tabs.find((t) => t.id === activeTabId);
@@ -843,6 +856,38 @@ export default function MarkdownEditorContent() {
           )}
         </div>
       </div>
+
+      {isMaterial && (
+        <button
+          onClick={exportMd}
+          title="Download .md"
+          aria-label="Download .md"
+          style={{
+            position: "fixed",
+            bottom: 88,
+            right: 24,
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: "#6750a4",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
+            fontSize: 22,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 20,
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </button>
+      )}
 
       {/* Table dialog */}
       {showTableDialog && (
