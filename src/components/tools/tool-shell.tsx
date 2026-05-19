@@ -2,7 +2,6 @@
 
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp, Upload, X } from "lucide-react";
-import { useBreadcrumb } from "@/contexts/breadcrumb-context";
 import { ShortcutContext } from "@/contexts/shortcut-context";
 
 export interface ToolShellProps {
@@ -77,6 +76,7 @@ function InlineThemeSwitcher() {
         className="theme-switcher-pill"
         onClick={() => setOpen((v) => !v)}
         aria-label={`Theme: ${current.label}`}
+        aria-expanded={open}
         title={current.label}
       >
         <span className="theme-switcher-pill-icon">{current.icon}</span>
@@ -166,14 +166,10 @@ export function ToolShell({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const breadcrumb = useBreadcrumb();
   const shortcutCtx = useContext(ShortcutContext);
   const labeledShortcuts = shortcutCtx?.shortcuts.filter((s) => s.label) ?? [];
   const hasControls = !hideControls && controls != null;
   const hasInfo = info != null;
-
-  // Show only home · apps · tools (first 3 items)
-  const navCrumbs = breadcrumb.slice(0, 3);
 
   useEffect(() => {
     if (!sheetOpen && !infoOpen && !helpOpen) return;
@@ -199,48 +195,33 @@ export function ToolShell({
       className="tool-shell"
       style={{ "--tool-shell-panel-w": panelWidth, color: "var(--kami-text)" } as React.CSSProperties}
     >
-      {/* ── Header ── */}
+      {/* ── Header: 3-column layout (theme | center | actions) ── */}
       <header className="tool-shell-header">
-        <div className="tool-shell-title-block">
-          {/* Theme switcher — leftmost */}
+
+        {/* Left: theme switcher */}
+        <div className="tool-shell-left">
           <InlineThemeSwitcher />
+        </div>
 
-          {/* Vertical divider */}
-          <span className="tool-shell-header-div" aria-hidden="true" />
-
-          {/* Breadcrumb: home · apps · tools */}
-          {navCrumbs.length > 0 && (
-            <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
-              {navCrumbs.map((item, i) => (
-                <span key={i}>
-                  {i > 0 && <span className="tool-shell-breadcrumb-sep">·</span>}
-                  {item.href
-                    ? <a href={item.href}>{item.label}</a>
-                    : <span>{item.label}</span>
-                  }
-                </span>
-              ))}
-            </nav>
-          )}
-
-          {/* Separator dot between breadcrumb and title */}
-          {navCrumbs.length > 0 && (
-            <span className="tool-shell-breadcrumb-sep tool-shell-title-sep" aria-hidden="true">·</span>
-          )}
-
-          {/* Title + accent dot + tagline — all inline */}
+        {/* Center: name + tagline + breadcrumb */}
+        <div className="tool-shell-center">
           <div className="tool-shell-title-row">
             {accent && (
               <span aria-hidden="true" className="tool-shell-accent-dot" style={{ backgroundColor: accent }} />
             )}
             <h1 className="tool-shell-title">{title}</h1>
-            {tagline && (
-              <span className="tool-shell-tagline" aria-label={tagline}>— {tagline}</span>
-            )}
           </div>
+          {tagline && (
+            <p className="tool-shell-tagline">{tagline}</p>
+          )}
+          <nav className="tool-shell-breadcrumb" aria-label="Breadcrumb">
+            <a href="https://apps.iamkesava.com">home</a>
+            <span className="tool-shell-breadcrumb-sep" aria-hidden="true">·</span>
+            <a href="https://tools.iamkesava.com">tools</a>
+          </nav>
         </div>
 
-        {/* Actions — rightmost */}
+        {/* Right: actions */}
         <div className="tool-shell-actions">
           {actions}
           <ToolShareButton />
@@ -256,6 +237,7 @@ export function ToolShell({
             </button>
           )}
         </div>
+
       </header>
 
       {/* ── Body grid ── */}
