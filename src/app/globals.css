@@ -1137,8 +1137,12 @@ html[data-theme] [style*="color:#bbb"] {
   color: var(--kami-text-dim) !important;
 }
 
-/* --- Footer + Breadcrumb (rendered via `.kami-footer` / `.kami-breadcrumb` classes) --- */
+/* --- Footer (`.kami-footer`) --- */
 .kami-footer {
+  font-family: var(--kami-font-body, 'DM Sans', sans-serif);
+  font-size: 0.8rem;
+  padding: 3rem 0 2rem;
+  text-align: center;
   color: var(--kami-footer);
 }
 .kami-footer a {
@@ -1150,6 +1154,41 @@ html[data-theme] [style*="color:#bbb"] {
 .kami-footer a:hover {
   color: var(--kami-footer-link-hover) !important;
   background: transparent !important;
+}
+.kami-footer-aeo {
+  font-family: var(--kami-font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  color: var(--kami-text-muted, #4a4a4a);
+  margin-bottom: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.kami-footer-nav {
+  font-family: var(--kami-font-mono, ui-monospace, monospace);
+  font-size: 0.72rem;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  color: var(--kami-text-muted, #4a4a4a);
+  margin-bottom: 0.6rem;
+}
+.kami-footer-credit {
+  font-family: var(--kami-font-body, 'DM Sans', sans-serif);
+  font-size: 0.75rem;
+  opacity: 0.85;
+}
+.kami-footer-sep {
+  opacity: 0.4;
+  margin: 0 0.35rem;
+  user-select: none;
+}
+.kami-footer-current {
+  font-weight: 600;
+  color: var(--kami-text);
 }
 .kami-breadcrumb {
   color: var(--kami-breadcrumb);
@@ -2026,7 +2065,6 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
 .tool-shell {
   --tool-shell-panel-w: 320px;
   --tool-shell-header-h: 64px;
-  --tool-shell-fab-gap: 12px;
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -2098,6 +2136,7 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   height: 6px;
   border-radius: 999px;
   flex: 0 0 auto;
+  background-color: var(--tool-accent, transparent);
 }
 .tool-shell-title {
   font-family: var(--kami-font-display);
@@ -2314,46 +2353,78 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   .tool-shell-backdrop { display: none; }
 }
 
-/* FAB row */
-.tool-shell-fab-row {
-  position: fixed;
-  right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  z-index: 45;
-  display: flex;
-  align-items: center;
-  gap: var(--tool-shell-fab-gap);
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  max-width: calc(100% - 32px);
-}
-@media (min-width: 1024px) {
-  .tool-shell-fab-row { display: none; }
+/* ── Mobile bottom action bar (matches .wa-mode-bottom pattern from wordart) ── */
+/* Hidden on desktop; revealed on mobile above the footer. */
+.tool-mode-bottom { display: none; }
+@media (max-width: 640px) {
+  .tool-mode-bottom {
+    position: fixed;
+    left: 0; right: 0;
+    bottom: env(safe-area-inset-bottom, 0px);
+    height: 44px;
+    display: flex;
+    z-index: 49;
+    background: var(--bar-bg, var(--kami-header-bg, rgba(246,246,244,0.92)));
+    border-top: 1px solid var(--bar-border, var(--kami-border, rgba(0,0,0,0.08)));
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .tool-mode-btn {
+    flex: 1;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    border-right: 1px solid var(--bar-border, var(--kami-border, rgba(0,0,0,0.08)));
+    background: transparent;
+    color: var(--kami-text);
+    font-family: var(--kami-font-body, system-ui, sans-serif);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s, color 0.15s;
+  }
+  .tool-mode-btn:last-child { border-right: none; }
+  .tool-mode-btn.is-active {
+    background: var(--kami-accent, #0a0a0a);
+    color: var(--kami-accent-text, #ffffff);
+  }
+  /* Add bottom padding to tool content so it's not hidden behind mode bar */
+  .tool-shell-canvas { padding-bottom: 52px; }
+  /* Panel bottom sheet clears the mode bar */
+  .tool-shell-panel, .tool-shell-info {
+    bottom: calc(44px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
-.tool-shell-fab {
-  display: inline-flex;
+/* ── Material FAB (desktop + mobile, shown only on material theme) ────────── */
+.tool-material-fab {
+  display: none;
+}
+html[data-theme="material"] .tool-material-fab {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: 999px;
-  background: var(--kami-surface-solid);
-  color: var(--kami-text);
-  border: 1px solid var(--kami-border-strong);
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.10);
+  justify-content: center;
+  position: fixed;
+  bottom: 88px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--md-primary, #6750a4);
+  color: var(--md-on-primary, #fff);
+  border: none;
+  box-shadow: 0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25);
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 200ms ease;
+  z-index: 20;
+  transition: box-shadow 0.2s, transform 0.15s;
 }
-.tool-shell-fab:active { transform: scale(0.97); }
-.tool-shell-fab.is-primary {
-  background: var(--kami-cta-bg);
-  color: var(--kami-cta-text);
-  border-color: var(--kami-cta-bg);
+html[data-theme="material"] .tool-material-fab:hover {
+  box-shadow: 0 6px 20px rgba(103,80,164,0.55);
+  transform: scale(1.04);
 }
-.tool-shell-fab-label { white-space: nowrap; }
 
 .tool-shell-icon-btn {
   display: inline-flex;
@@ -2746,7 +2817,6 @@ html[data-theme="brutalist"] .kc-segment,
 html[data-theme="brutalist"] .kc-stepper,
 html[data-theme="brutalist"] .kc-select { border-radius: 0; border: 2px solid #000; }
 html[data-theme="brutalist"] .kc-segment-btn { border-radius: 0; }
-html[data-theme="brutalist"] .tool-shell-fab { border-radius: 0; border: 2px solid #000; box-shadow: 3px 3px 0 #000; }
 html[data-theme="brutalist"] .kc-swatch { border-radius: 0; border: 2px solid #000; }
 html[data-theme="brutalist"] .tool-action-btn {
   border-radius: 0;
@@ -2800,13 +2870,7 @@ html[data-theme="brutalist"] .tool-icon-btn[data-variant="solid"] {
   border: 2px solid #000;
 }
 
-/* Brutalist FAB and kc component overrides */
-html[data-theme="brutalist"] .tool-shell-fab.is-primary {
-  background: #000;
-  color: #fff;
-  border-color: #000;
-  box-shadow: 4px 4px 0 #000;
-}
+/* Brutalist kc component overrides */
 html[data-theme="brutalist"] .kc-segment-btn[data-active="true"] {
   background: #000;
   color: #fff;
@@ -2863,13 +2927,6 @@ html[data-theme="editorial"] .kami-scope button.w-full {
   letter-spacing: 0.04em;
 }
 
-/* Editorial FAB */
-html[data-theme="editorial"] .tool-shell-fab.is-primary {
-  background: #2f2a26;
-  color: #f8f3ea;
-  border-color: #2f2a26;
-  border-radius: 2px;
-}
 html[data-theme="editorial"] .kc-segment-btn[data-active="true"] {
   background: #2f2a26;
   color: #f8f3ea;
@@ -2879,18 +2936,6 @@ html[data-theme="editorial"] .kc-segment-btn[data-active="true"] {
 /* Terminal theme overrides — phosphor amber, dashed, instant */
 html[data-theme="terminal"] .tool-shell-header { background: rgba(13,17,23,0.96); border-bottom: 1px dashed rgba(138,247,167,0.3); }
 html[data-theme="terminal"] .tool-shell-panel { background: #0d1117; border-color: rgba(138,247,167,0.3); }
-html[data-theme="terminal"] .tool-shell-fab {
-  background: #0d1117;
-  color: #8af7a7;
-  border: 1px dashed rgba(138,247,167,0.4);
-  border-radius: 0;
-}
-html[data-theme="terminal"] .tool-shell-fab.is-primary {
-  background: #ffd166;
-  color: #0d1117;
-  border-color: #ffd166;
-  border-style: solid;
-}
 html[data-theme="terminal"] .kc-segment-btn[data-active="true"] {
   background: rgba(255,209,102,0.15);
   color: #ffd166;
@@ -2942,17 +2987,6 @@ html[data-theme="terminal"] .tool-icon-btn[data-active="true"] {
 /* Zen theme overrides — moss, thin pill, slow breath */
 html[data-theme="zen"] .tool-shell-header { background: rgba(247,249,251,0.95); border-bottom: 1px solid rgba(122,132,113,0.15); }
 html[data-theme="zen"] .tool-shell-panel { background: rgba(247,249,251,0.98); border-color: rgba(122,132,113,0.15); }
-html[data-theme="zen"] .tool-shell-fab {
-  background: transparent;
-  color: #7a8471;
-  border: 1px solid rgba(122,132,113,0.3);
-  border-radius: 999px;
-}
-html[data-theme="zen"] .tool-shell-fab.is-primary {
-  background: #7a8471;
-  color: #f7f9fb;
-  border-color: #7a8471;
-}
 html[data-theme="zen"] .kc-segment-btn[data-active="true"] {
   background: rgba(122,132,113,0.15);
   color: #334155;
@@ -3152,65 +3186,84 @@ body:has(.tool-shell) .kami-mobile-bar { display: none; }
 body:has(.tool-shell) .kami-share-btn { display: none !important; }
 body:has(.tool-shell) .theme-switcher-container { display: none !important; }
 
-/* Keyboard shortcuts modal */
-.tool-shortcuts-overlay {
+/* ── Tool splash / help overlay (matches .wa-splash pattern from wordart) ── */
+.tool-splash {
   position: fixed;
   inset: 0;
-  z-index: 10050;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-}
-.tool-shortcuts-modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10051;
-  width: min(360px, calc(100vw - 32px));
-  background: var(--kami-surface-solid);
-  border: 1px solid var(--kami-border-strong);
-  border-radius: var(--kami-card-radius, 0.75rem);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-}
-.tool-shortcuts-modal-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--kami-border);
-}
-.tool-shortcuts-modal-body {
-  padding: 12px 0;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-.tool-shortcuts-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-}
-.tool-shortcuts-kbd {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  padding: 3px 7px;
+  background: rgba(0, 0, 0, 0.86);
+  color: #fff;
+  font-family: var(--kami-font-body, system-ui, sans-serif);
+  z-index: 1000;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+.tool-splash-inner {
+  max-width: 580px;
+  padding: 40px;
+  text-align: center;
+}
+.tool-splash-title {
+  font-size: 42px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  line-height: 1.1;
+}
+.tool-splash-tag {
+  font-size: 13px;
+  opacity: 0.6;
+  margin-bottom: 36px;
+  font-family: var(--kami-font-mono, ui-monospace, monospace);
+  letter-spacing: 0.02em;
+}
+.tool-splash-grid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 24px;
+  text-align: left;
+  margin-bottom: 36px;
+  font-family: var(--kami-font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.tool-splash-grid > span:nth-child(odd)  { justify-self: end; opacity: 0.9; }
+.tool-splash-grid > span:nth-child(even) { opacity: 0.7; }
+.tool-splash-grid kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 1px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 3px;
   font-family: var(--kami-font-mono, ui-monospace, monospace);
   font-size: 11px;
-  font-weight: 600;
-  line-height: 1;
-  background: var(--kami-input-bg, rgba(0,0,0,0.06));
-  border: 1px solid var(--kami-border-strong);
-  border-radius: 5px;
-  color: var(--kami-text);
-  flex: 0 0 auto;
+  min-width: 18px;
+  text-align: center;
 }
-.tool-shortcuts-label {
-  font-size: 13px;
-  color: var(--kami-text-muted);
+.tool-splash-tap {
+  font-size: 10px;
+  opacity: 0.45;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: var(--kami-font-mono, ui-monospace, monospace);
+}
+@media (max-width: 640px) {
+  .tool-splash-inner { padding: 24px 20px; max-width: 100%; }
+  .tool-splash-title { font-size: 30px; margin-bottom: 6px; }
+  .tool-splash-tag   { font-size: 11px; margin-bottom: 22px; }
+  .tool-splash-grid  {
+    grid-template-columns: 1fr;
+    gap: 14px 0;
+    margin-bottom: 24px;
+    font-size: 11px;
+    text-align: center;
+  }
+  .tool-splash-grid > span:nth-child(odd)  { justify-self: center; }
+  .tool-splash-grid > span:nth-child(even) { margin-top: -8px; }
 }
 .tool-help-btn {
   font-size: 14px;
@@ -3385,7 +3438,6 @@ html[data-theme="brutalist"] .kc-stat {
 /* Prevent iOS double-tap zoom on buttons */
 .tool-action-btn,
 .tool-icon-btn,
-.tool-shell-fab,
 .kc-segment-btn,
 .kc-stepper-btn,
 .tool-shell-icon-btn {
@@ -3397,7 +3449,6 @@ html[data-theme="brutalist"] .kc-stat {
 
 /* On touch devices, remove hover-only shadow effects that don't translate */
 @media (hover: none) {
-  .tool-shell-fab:hover { transform: none; box-shadow: 0 4px 14px rgba(0,0,0,0.10); }
   .kami-tile:hover { transform: none; }
   html[data-theme="brutalist"] .tool-action-btn:hover:not(:disabled) {
     transform: none;
@@ -3627,23 +3678,6 @@ html[data-theme="glass"] .tool-icon-btn[data-variant="solid"] {
   background: #007aff;
   color: #ffffff;
   border-color: transparent;
-}
-
-/* Glass FAB */
-html[data-theme="glass"] .tool-shell-fab {
-  background: rgba(255,255,255,0.80);
-  color: #007aff;
-  border: 1px solid rgba(0,122,255,0.20);
-  border-radius: 980px;
-  backdrop-filter: saturate(180%) blur(16px);
-  -webkit-backdrop-filter: saturate(180%) blur(16px);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.8);
-}
-html[data-theme="glass"] .tool-shell-fab.is-primary {
-  background: #007aff;
-  color: #ffffff;
-  border-color: transparent;
-  box-shadow: 0 4px 20px rgba(0,122,255,0.45), inset 0 0.5px 0 rgba(255,255,255,0.30);
 }
 
 /* Glass segment control — iOS style pill */
@@ -3913,21 +3947,6 @@ html[data-theme="material"] .tool-icon-btn[data-variant="solid"] {
   border-color: transparent;
 }
 
-/* M3 FAB — primary FAB */
-html[data-theme="material"] .tool-shell-fab {
-  background: #eaddff;
-  color: #21005d;
-  border: none;
-  border-radius: 16px;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-}
-html[data-theme="material"] .tool-shell-fab.is-primary {
-  background: #6750a4;
-  color: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 6px 10px rgba(0,0,0,0.14), 0 1px 18px rgba(0,0,0,0.12), 0 3px 5px rgba(0,0,0,0.20);
-}
-
 /* M3 segment control */
 html[data-theme="material"] .kc-segment {
   background: #e7e0ec;
@@ -3993,8 +4012,8 @@ html[data-theme="material"] .kc-select:focus {
    blue #0078D4 signals every interactive element.
    ============================================================ */
 html[data-theme="metro"] {
-  --kami-bg: #f3f3f3;
-  --kami-surface: rgba(255,255,255,0.85);
+  --kami-bg: #ffffff;
+  --kami-surface: #ffffff;
   --kami-surface-solid: #ffffff;
   --kami-border: #d1d1d1;
   --kami-border-strong: #8a8a8a;
@@ -4057,10 +4076,10 @@ html[data-theme="metro"] {
   --kami-caret: #0078d4;
 }
 
-/* Metro/Fluent body — Mica-lite: subtle backdrop noise */
+/* Metro/Zune body — pure white like the Zune HD and Windows Phone 7/8 */
 html[data-theme="metro"] body {
-  background-color: #f3f3f3;
-  color: #201f1e;
+  background-color: #ffffff;
+  color: #000000;
   font-family: var(--kami-font-body);
 }
 
@@ -4115,18 +4134,19 @@ html[data-theme="metro"] .kami-scope select:focus {
 }
 
 /* Metro tool-shell header — Acrylic (luminous mica surface) */
+/* Metro header style — see later rule for the definitive override */
 html[data-theme="metro"] .tool-shell-header {
-  background: rgba(243,243,243,0.82);
-  backdrop-filter: saturate(120%) blur(20px);
-  -webkit-backdrop-filter: saturate(120%) blur(20px);
-  border-bottom: 1px solid #d1d1d1;
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom: none;
   box-shadow: none;
 }
 
-/* Metro panel */
+/* Metro panel — no background, no shadow, flat border */
 html[data-theme="metro"] .tool-shell-panel {
-  background: #faf9f8;
-  border-color: #d1d1d1;
+  background: #ffffff;
+  border-color: #e5e5e5;
   border-radius: 0;
   box-shadow: none;
 }
@@ -4196,22 +4216,6 @@ html[data-theme="metro"] .tool-icon-btn[data-variant="solid"] {
   background: #0078d4;
   color: #ffffff;
   border-color: transparent;
-}
-
-/* Metro FAB */
-html[data-theme="metro"] .tool-shell-fab {
-  background: #ffffff;
-  color: #201f1e;
-  border: 1px solid #d1d1d1;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
-}
-html[data-theme="metro"] .tool-shell-fab.is-primary {
-  background: #0078d4;
-  color: #ffffff;
-  border-color: transparent;
-  border-radius: 4px;
-  box-shadow: none;
 }
 
 /* Metro segment control — pivot-style */
@@ -4399,7 +4403,6 @@ html[data-theme="glass"] input[type=range]:focus::-webkit-slider-thumb {
 /* Glass spring easing on all interactive elements */
 html[data-theme="glass"] .tool-action-btn,
 html[data-theme="glass"] .tool-icon-btn,
-html[data-theme="glass"] .tool-shell-fab,
 html[data-theme="glass"] .kami-tile,
 html[data-theme="glass"] .theme-switcher-pill {
   transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1) !important;
@@ -4566,18 +4569,9 @@ html[data-theme="metro"] .tool-shell-header {
   html[data-theme="metro"] .tool-shell-header { padding: 0 16px; }
 }
 
-/* Fluent type ramp */
-html[data-theme="metro"] .tool-shell-title {
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0 !important;
-}
-@media (min-width: 640px) {
-  html[data-theme="metro"] .tool-shell-title { font-size: 13px !important; }
-}
-html[data-theme="metro"] .tool-shell-tagline {
-  font-size: 10px !important;
-  letter-spacing: 0 !important;
+/* Metro: title and tagline hidden in header — shown as panoramic large-title block instead */
+html[data-theme="metro"] .tool-shell-center {
+  display: none !important;
 }
 html[data-theme="metro"] .kami-scope h1,
 html[data-theme="metro"] h1.kami-text {
@@ -4754,6 +4748,47 @@ html[data-theme="glass"] .tool-shell-large-title-sub {
   margin: 6px 0 0;
   font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
   line-height: 1.4;
+}
+
+/* ── Metro: Zune/WP7-8 panoramic large title ──────────────── */
+html[data-theme="metro"] .tool-shell-large-title {
+  display: block;
+  padding: 40px 24px 0;
+  background: #ffffff;
+}
+html[data-theme="metro"] .tool-shell-large-title-inner {
+  padding-bottom: 0;
+  border-bottom: none;
+  overflow: visible;
+}
+html[data-theme="metro"] .tool-shell-large-title-text {
+  font-family: "Segoe UI Variable Display", "Segoe UI", Inter, system-ui, sans-serif !important;
+  font-size: clamp(52px, 8.5vw, 92px) !important;
+  font-weight: 100 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 0.95 !important;
+  text-transform: lowercase !important;
+  color: #000000 !important;
+  margin: 0 !important;
+  /* Panoramic: allow slight overflow to imply horizontal depth */
+  white-space: nowrap;
+  overflow: visible;
+}
+html[data-theme="metro"] .tool-shell-large-title-sub {
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  color: #767676 !important;
+  margin: 10px 0 0 !important;
+  letter-spacing: 0 !important;
+  white-space: normal;
+}
+/* On mobile clip the panoramic overflow */
+@media (max-width: 639px) {
+  html[data-theme="metro"] .tool-shell-large-title-text {
+    white-space: normal;
+    font-size: clamp(40px, 12vw, 64px) !important;
+  }
 }
 
 /* ── Material: Navigation Rail ─────────────────────────────── */
@@ -6079,6 +6114,10 @@ html[data-theme="material"] .tool-shell a[href] {
 
 /* ── Metro Pivot control ─────────────────────────────────────────────────── */
 
+/* Hidden unless metro theme is active */
+.tool-shell .metro-pivot { display: none; }
+html[data-theme="metro"] .tool-shell .metro-pivot { display: flex; }
+
 .metro-pivot {
   display: flex;
   align-items: flex-end;
@@ -6141,100 +6180,23 @@ html[data-theme="metro"] .tool-shell-actions.is-command-bar .tool-icon-btn {
   font-size: 11px;
 }
 
-/* Metro header: flat command bar style (no blur, full border-bottom) */
+/* Metro header: minimal breadcrumb-only bar — title lives in the panoramic large-title block */
 html[data-theme="metro"] .tool-shell-header {
-  background: rgba(243,242,241,0.98) !important;
-  backdrop-filter: saturate(120%) blur(40px) !important;
-  -webkit-backdrop-filter: saturate(120%) blur(40px) !important;
-  border-bottom: 1px solid #d1d1d1 !important;
+  background: #ffffff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-bottom: none !important;
   height: 44px !important;
-  padding: 0 16px !important;
+  padding: 0 24px !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 100 !important;
 }
 
 /* Metro breadcrumb: › separator */
 html[data-theme="metro"] .tool-shell-breadcrumb-sep {
   font-size: 10px !important;
   opacity: 0.5 !important;
-}
-
-/* ── Glass Bottom Tab Bar ────────────────────────────────────────────────── */
-
-.glass-tab-bar {
-  display: none; /* desktop: hidden, shown on mobile */
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 9990;
-  height: 83px; /* 49px bar + safe area */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: rgba(249,249,249,0.80);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-top: 0.5px solid rgba(0,0,0,0.12);
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-around;
-  padding-top: 6px;
-  gap: 0;
-}
-
-/* Only show on mobile; on desktop the standard FAB row handles this */
-@media (min-width: 768px) {
-  html[data-theme="glass"] .glass-tab-bar {
-    display: none !important;
-  }
-  html[data-theme="glass"] .tool-shell-fab-row {
-    display: flex !important;
-  }
-}
-@media (max-width: 767px) {
-  html[data-theme="glass"] .tool-shell-fab-row {
-    display: none !important;
-  }
-}
-
-.glass-tab-bar-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
-  padding: 4px 0;
-  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0;
-  color: rgba(60,60,67,0.55);
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  transition: color 0.18s cubic-bezier(0.34,1.56,0.64,1),
-              transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-  min-width: 64px;
-  -webkit-tap-highlight-color: transparent;
-}
-.glass-tab-bar-item:hover,
-.glass-tab-bar-item:focus-visible {
-  color: #007aff;
-  transform: scale(1.08) translateY(-1px);
-}
-.glass-tab-bar-item svg {
-  width: 22px;
-  height: 22px;
-  stroke-width: 1.6;
-  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-
-/* Push canvas content above tab bar on mobile in glass theme */
-@media (max-width: 767px) {
-  html[data-theme="glass"] .tool-shell-body {
-    padding-bottom: 83px !important;
-  }
-  html[data-theme="glass"] .tool-shell-panel.is-open {
-    bottom: 83px !important;
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -6474,28 +6436,6 @@ html[data-theme="metro"] .tools-hub-grid {
 }
 html[data-theme="metro"] .tools-hub-grid > * {
   background: #ffffff !important;
-}
-
-/* ── tool-shell theme class helpers ──────────────────────────────────────── */
-
-/* Metro: hide standard mobile FAB row */
-html[data-theme="metro"] .tool-shell-fab-row {
-  display: none !important;
-}
-
-/* Material: elevate the FAB */
-html[data-theme="material"] .tool-shell-fab.is-material-fab.is-primary {
-  background: #6750a4 !important;
-  color: #ffffff !important;
-  border-radius: 16px !important;
-  box-shadow: 0 3px 8px rgba(103,80,164,0.30) !important;
-  border: none !important;
-  padding: 14px 20px !important;
-  font-family: "Google Sans", Roboto, system-ui, sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  gap: 8px !important;
-  height: auto !important;
 }
 
 /* Material: nav rail active item indicator */

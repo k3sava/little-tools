@@ -1,71 +1,41 @@
 "use client";
 
-// Cross-domain footer. Every site links to the other two so authority
-// triangulates and a stranger landing on one finds the others.
-
 const links = [
-  { label: "apps", href: "https://apps.iamkesava.com/" },
+  { label: "apps",  href: "https://apps.iamkesava.com/" },
   { label: "tools", href: "https://tools.iamkesava.com/", self: true },
-  { label: "toys", href: "https://toys.iamkesava.com/" },
+  { label: "toys",  href: "https://toys.iamkesava.com/" },
   { label: "codex", href: "https://codex.iamkesava.com/" },
 ];
 
 export function Footer() {
   return (
-    <footer
-      className="kami-footer"
-      style={{
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: ".8rem",
-        padding: "3rem 0 2rem",
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          fontSize: ".72rem",
-          color: "var(--kami-text-muted, #4a4a4a)",
-          marginBottom: "0.6rem",
-        }}
-      >
-        <a href="/llms.txt" style={{ color: "inherit" }}>llms.txt</a>
-        {" · "}
-        <a href="/sitemap.xml" style={{ color: "inherit" }}>sitemap</a>
-        {" · "}
-        <a href="/feed.xml" style={{ color: "inherit" }}>rss</a>
-        {" · "}
-        <a href="/tools.json" style={{ color: "inherit" }}>tools.json</a>
+    <footer className="kami-footer">
+      <div className="kami-footer-aeo">
+        <a href="/llms.txt">llms.txt</a>
+        <span className="kami-footer-sep" aria-hidden="true">·</span>
+        <a href="/sitemap.xml">sitemap</a>
+        <span className="kami-footer-sep" aria-hidden="true">·</span>
+        <a href="/feed.xml">rss</a>
+        <span className="kami-footer-sep" aria-hidden="true">·</span>
+        <a href="/tools.json">tools.json</a>
       </div>
-      <nav
-        aria-label="Sister sites"
-        style={{
-          fontFamily: "'JetBrains Mono', ui-monospace, monospace",
-          fontSize: ".72rem",
-          display: "flex",
-          gap: "0.5rem",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          color: "var(--kami-text-muted, #4a4a4a)",
-          marginBottom: "0.6rem",
-        }}
-      >
+      <nav className="kami-footer-nav" aria-label="Sister sites">
         {links.map((l, i) => (
           <span key={l.href}>
             {l.self ? (
-              <span aria-current="page" style={{ fontWeight: 600, color: "var(--kami-text, #0a0a0a)" }}>{l.label}</span>
+              <span aria-current="page" className="kami-footer-current">{l.label}</span>
             ) : (
-              <a href={l.href} style={{ color: "inherit" }}>{l.label}</a>
+              <a href={l.href}>{l.label}</a>
             )}
             {i < links.length - 1 && (
-              <span aria-hidden="true" style={{ marginLeft: "0.5rem" }}>·</span>
+              <span className="kami-footer-sep" aria-hidden="true">·</span>
             )}
           </span>
         ))}
       </nav>
-      <div>
+      <div className="kami-footer-credit">
         made by <a href="https://iamkesava.com" rel="author">kesava</a>
-        {" · "}
+        <span className="kami-footer-sep" aria-hidden="true">·</span>
         <a href="https://github.com/k3sava/little-tools" rel="noopener">github</a>
       </div>
     </footer>
