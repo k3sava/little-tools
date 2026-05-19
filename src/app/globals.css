@@ -4803,3 +4803,199 @@ html[data-theme="material"] .tool-shell-nav-rail-item svg {
   width: 24px;
   height: 24px;
 }
+
+/* ── Metro: AppBarButton pattern — icon + label stacked ────── */
+.tool-action-btn-label {
+  display: none;
+  font-size: 10px;
+  letter-spacing: 0;
+  line-height: 1;
+  font-weight: 400;
+}
+html[data-theme="metro"] .tool-action-btn-label {
+  display: block;
+}
+html[data-theme="metro"] .tool-action-btn {
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  height: auto;
+  padding: 6px 8px;
+  min-width: 48px;
+}
+
+/* ── Per-theme toast positioning and style ─────────────────── */
+/* Glass: frosted pill, bottom center, spring slide-up */
+html[data-theme="glass"] .copy-toast,
+html[data-theme="glass"] [class*="toast"],
+html[data-theme="glass"] [class*="Toast"] {
+  border-radius: 980px !important;
+  background: rgba(50,50,54,0.82) !important;
+  backdrop-filter: saturate(180%) blur(16px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
+  color: #ffffff !important;
+  bottom: 32px !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(0) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.20) !important;
+  padding: 10px 20px !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+/* Material: Snackbar — bottom left, dark surface, M3 */
+html[data-theme="material"] .copy-toast,
+html[data-theme="material"] [class*="toast"],
+html[data-theme="material"] [class*="Toast"] {
+  border-radius: 4px !important;
+  background: #1c1b1f !important;
+  color: #e6e1e5 !important;
+  bottom: 24px !important;
+  left: 24px !important;
+  right: auto !important;
+  transform: none !important;
+  max-width: 480px !important;
+  padding: 14px 16px !important;
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23) !important;
+}
+
+/* Metro: Info bar — top below command bar, light surface */
+html[data-theme="metro"] .copy-toast,
+html[data-theme="metro"] [class*="toast"],
+html[data-theme="metro"] [class*="Toast"] {
+  border-radius: 4px !important;
+  background: #fff !important;
+  color: #201f1e !important;
+  border: 1px solid #d1d1d1 !important;
+  top: calc(44px + 8px) !important;
+  bottom: auto !important;
+  left: 12px !important;
+  right: 12px !important;
+  transform: none !important;
+  padding: 8px 12px !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07) !important;
+}
+
+/* ── Per-theme checkbox redesign ──────────────────────────── */
+
+/* Glass: blue rounded checkbox with spring */
+html[data-theme="glass"] input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(180,200,240,0.60);
+  background: rgba(255,255,255,0.65);
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  transition: background 0.2s cubic-bezier(0.34,1.56,0.64,1),
+              border-color 0.2s cubic-bezier(0.34,1.56,0.64,1),
+              transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+html[data-theme="glass"] input[type=checkbox]:checked {
+  background: #007aff;
+  border-color: #007aff;
+  transform: scale(1.05);
+}
+html[data-theme="glass"] input[type=checkbox]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+html[data-theme="glass"] input[type=checkbox]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3.5px rgba(0,122,255,0.28);
+}
+
+/* Material: M3 checkbox */
+html[data-theme="material"] input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 2px solid #79747e;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  transition: background 100ms cubic-bezier(0.05,0.7,0.1,1.0),
+              border-color 100ms cubic-bezier(0.05,0.7,0.1,1.0);
+}
+html[data-theme="material"] input[type=checkbox]:checked {
+  background: #6750a4;
+  border-color: #6750a4;
+}
+html[data-theme="material"] input[type=checkbox]:checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 0px;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+html[data-theme="material"] input[type=checkbox]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(103,80,164,0.20);
+}
+
+/* Metro: Fluent checkbox */
+html[data-theme="metro"] input[type=checkbox] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 1px solid #8a8a8a;
+  background: #ffffff;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  transition: background 83ms, border-color 83ms;
+}
+html[data-theme="metro"] input[type=checkbox]:checked {
+  background: #0078d4;
+  border-color: #0078d4;
+}
+html[data-theme="metro"] input[type=checkbox]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: 2px solid #fff;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+}
+html[data-theme="metro"] input[type=checkbox]:hover {
+  border-color: #0078d4;
+  background: rgba(0,120,212,0.04);
+}
+html[data-theme="metro"] input[type=checkbox]:focus {
+  outline: 2px solid #0078d4;
+  outline-offset: 2px;
+}

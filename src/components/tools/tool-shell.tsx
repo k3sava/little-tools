@@ -315,6 +315,7 @@ export function ToolShell({
               className="tool-action-btn tool-help-btn"
             >
               ?
+              <span className="tool-action-btn-label">Help</span>
             </button>
           )}
         </div>
