@@ -633,6 +633,7 @@ export default function QrCodeContent() {
       title="QR Code Generator"
       tagline="URLs · Wi-Fi · vCard · custom colors / dots / eyes / logo · PNG + SVG"
       accent="#f97316"
+      materialFab={{ label: "Download QR", onClick: download }}
       actions={
         <>
           <ToolActionButton onClick={copySvg} variant="ghost">

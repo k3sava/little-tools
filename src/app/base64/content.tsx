@@ -230,6 +230,7 @@ export default function Base64Content() {
       title="Base64 Encode / Decode"
       tagline="Text · files · data URLs · image preview"
       accent="#10b981"
+      materialFab={{ label: "Copy", onClick: () => handleCopy(b64Output, "base64") }}
       actions={
         <>
           {(plainText || base64Text) && (

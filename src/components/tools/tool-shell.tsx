@@ -17,6 +17,8 @@ export interface ToolShellProps {
   hideControls?: boolean;
   controlsLabel?: string;
   panelWidth?: string;
+  /** M3 primary FAB — only rendered when theme=material */
+  materialFab?: { label: string; onClick: () => void; icon?: React.ReactNode };
 }
 
 // ── Inline Theme Switcher ────────────────────────────────────────────────────
@@ -323,6 +325,13 @@ function GlassTabBar({ onControls, onInfo, hasControls, hasInfo }: {
 
 // ── ToolShell ────────────────────────────────────────────────────────────────
 
+const DEFAULT_FAB_ICON = (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+  </svg>
+);
+
 export function ToolShell({
   title,
   tagline,
@@ -335,6 +344,7 @@ export function ToolShell({
   hideControls,
   controlsLabel = "Controls",
   panelWidth = "320px",
+  materialFab,
 }: ToolShellProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
@@ -581,6 +591,36 @@ export function ToolShell({
           )}
         </div>
       ) : null}
+
+      {/* ── Material: primary FAB (desktop, above mobile FAB row) ── */}
+      {isMaterial && materialFab && (
+        <button
+          type="button"
+          onClick={materialFab.onClick}
+          title={materialFab.label}
+          aria-label={materialFab.label}
+          style={{
+            position: "fixed",
+            bottom: 88,
+            right: 24,
+            width: 56,
+            height: 56,
+            borderRadius: 16,
+            background: "#6750a4",
+            color: "#fff",
+            border: "none",
+            boxShadow: "0 3px 12px rgba(103,80,164,0.45), 0 1px 4px rgba(103,80,164,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            zIndex: 20,
+            transition: "box-shadow 0.2s",
+          }}
+        >
+          {materialFab.icon ?? DEFAULT_FAB_ICON}
+        </button>
+      )}
 
       {/* ── Sheet backdrop ── */}
       {(sheetOpen || infoOpen) && (

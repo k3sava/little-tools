@@ -425,6 +425,7 @@ export default function UuidGeneratorContent() {
       title="Universal ID Generator"
       tagline="UUID v1/v4/v7 · ULID · NanoID · CUID2 — bulk + inspect"
       accent="#10b981"
+      materialFab={{ label: "Copy", onClick: handleCopyAll }}
       actions={
         <>
           <ToolActionButton onClick={generate} variant="solid">

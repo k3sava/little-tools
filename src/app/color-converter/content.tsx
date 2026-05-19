@@ -524,6 +524,7 @@ export default function ColorConverterContent() {
       title="Color Converter"
       tagline="HEX · RGB · HSL · HSV · OKLCH · OKLAB · Display-P3 · CMYK · contrast"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy HEX", onClick: copyHex }}
       actions={
         <>
           <ToolActionButton onClick={copyAll} variant="outline">Copy all</ToolActionButton>

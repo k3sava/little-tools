@@ -314,6 +314,7 @@ export default function RegexTesterContent() {
       title="Regex Tester"
       tagline="Live highlight · captures · replace · explain"
       accent="#10b981"
+      materialFab={{ label: "Copy result", onClick: () => { if (mode === "replace" && replaceResult) handleCopy(replaceResult, "result"); else if (matches.length) handleCopy(matches.map((m) => m.fullMatch).join("\n"), "matches"); } }}
       actions={
         <>
           {(pattern || testString) && (

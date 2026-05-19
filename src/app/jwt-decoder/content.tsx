@@ -1354,6 +1354,7 @@ export default function JwtDecoderContent() {
       title="JWT Decoder"
       tagline="Decode · inspect · verify · build JSON Web Tokens"
       accent="#10b981"
+      materialFab={{ label: "Copy payload", onClick: () => { if (decoded) handleCopy("payload", JSON.stringify(decoded.payload, null, 2)); } }}
       actions={
         <>
           {activeTab === "decode" && decoded && (

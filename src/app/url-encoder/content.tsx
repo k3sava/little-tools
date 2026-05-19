@@ -121,6 +121,7 @@ export default function UrlEncoderContent() {
       title="URL Encode / Decode"
       tagline="Encode, decode, and dissect URLs"
       accent="#10b981"
+      materialFab={{ label: "Copy", onClick: () => handleCopy(output) }}
       actions={
         <>
           {input && (

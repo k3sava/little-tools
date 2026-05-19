@@ -373,6 +373,7 @@ export default function UtmBuilderContent() {
       title="UTM Builder"
       tagline="Tagged campaign URLs · presets · bulk · history"
       accent={ACCENT}
+      materialFab={{ label: "Copy URL", onClick: () => generatedUrl && handleCopy(generatedUrl) }}
       actions={actions}
       controls={controls}
       info={info}

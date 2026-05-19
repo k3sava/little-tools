@@ -385,6 +385,7 @@ export default function CharacterCounterContent() {
       title="Character Counter"
       tagline="Chars · words · sentences · UTF-8 bytes · platform limits"
       accent="#6366f1"
+      materialFab={{ label: "Copy stats", onClick: handleCopyStats }}
       actions={actions}
       controls={controls}
     >

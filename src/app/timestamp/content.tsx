@@ -268,6 +268,7 @@ export default function TimestampContent() {
       title="Timestamp Converter"
       tagline="Epoch ↔ ISO · timezone picker · date math"
       accent="#10b981"
+      materialFab={{ label: "Copy", onClick: () => handleCopy(nowDisplay, "now") }}
       actions={
         <>
           <ToolActionButton onClick={() => handleCopy(nowDisplay, "now")} variant="outline">

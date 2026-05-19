@@ -379,6 +379,7 @@ export default function HashGeneratorContent() {
       title="Hash Generator"
       tagline="MD5 · SHA · HMAC · verify · compare · file hashing"
       accent="#10b981"
+      materialFab={{ label: "Copy hash", onClick: () => { if (hashBytes) handleCopy("SHA-256", formatHash(hashBytes["SHA-256"], outputFormat)); } }}
       actions={
         <>
           {(input || fileName) && (

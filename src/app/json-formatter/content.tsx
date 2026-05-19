@@ -602,6 +602,7 @@ export default function JsonFormatterContent() {
       title="JSON Formatter"
       tagline="Beautify · validate · query · tree · types · convert"
       accent="#10b981"
+      materialFab={{ label: "Copy JSON", onClick: () => handleCopy(formatted, "output") }}
       actions={
         <>
           {input && (

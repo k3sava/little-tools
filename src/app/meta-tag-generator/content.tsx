@@ -491,6 +491,7 @@ export default function MetaTagGeneratorContent() {
       title="Meta Tag Generator"
       tagline="Live SERP + social previews · char limits · OG image checks"
       accent={ACCENT}
+      materialFab={{ label: "Copy tags", onClick: handleCopy }}
       actions={actions}
       controls={controls}
       info={info}

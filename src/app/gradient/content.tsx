@@ -439,6 +439,7 @@ export default function GradientContent() {
       title="Gradient Generator"
       tagline="Linear · radial · conic · multi-stop · export CSS / Tailwind / SCSS / SVG"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copyCSS }}
       actions={
         <>
           <ToolActionButton onClick={applyRandom} variant="ghost">Random</ToolActionButton>
