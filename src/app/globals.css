@@ -5864,3 +5864,52 @@ html[data-theme="metro"] .kami-scope select {
   -webkit-appearance: none !important;
   appearance: none !important;
 }
+
+/* ──────────────────────────────────────────────────────────
+   MARKDOWN PREVIEW CONTENT — reset M3 display scale
+   .preview-content headings use em-based relative sizing;
+   the M3 clamp() override would dwarf them. Reset to em here.
+   ────────────────────────────────────────────────────────── */
+html[data-theme="material"] .kami-scope .preview-content h1 {
+  font-size: 1.75em !important;
+  font-weight: 700 !important;
+  letter-spacing: normal !important;
+  line-height: 1.3 !important;
+}
+html[data-theme="material"] .kami-scope .preview-content h2 {
+  font-size: 1.4em !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+  line-height: 1.35 !important;
+}
+html[data-theme="material"] .kami-scope .preview-content h3 {
+  font-size: 1.2em !important;
+  font-weight: 600 !important;
+  letter-spacing: normal !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   THEME TRANSITION ANIMATIONS
+   Smooth 300ms transitions when switching themes via the
+   theme switcher pill. Applied globally on html element.
+   ────────────────────────────────────────────────────────── */
+html {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease;
+}
+*, *::before, *::after {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+/* Exclude transitions on elements where animation is already defined or unwanted */
+input[type="range"],
+input[type="range"]::-webkit-slider-thumb,
+canvas,
+video,
+img {
+  transition: none !important;
+}
