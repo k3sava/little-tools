@@ -5208,3 +5208,659 @@ html[data-theme="metro"] .kami-file-drop:hover {
   border-color: #0078d4 !important;
   background: rgba(0,120,212,0.03) !important;
 }
+
+/* ============================================================
+   PER-COMPONENT PATTERN OVERRIDES — ALL TOOLS
+   Covers every UI pattern across 55+ tools. These rules ensure
+   each tool is genuinely redesigned per design language, not
+   just token-swapped.
+   ============================================================ */
+
+/* ──────────────────────────────────────────────────────────
+   CODE / MONO OUTPUT BLOCKS
+   Affects: JSON formatter, JWT decoder, hash generator,
+   base64, regex tester, URL encoder, cron builder, etc.
+   ────────────────────────────────────────────────────────── */
+
+/* Glass: frosted mono output */
+html[data-theme="glass"] .kami-scope pre,
+html[data-theme="glass"] .kami-scope code,
+html[data-theme="glass"] .kami-scope [class*="output"],
+html[data-theme="glass"] .kami-scope [class*="result"],
+html[data-theme="glass"] .kami-scope [class*="mono"] {
+  font-family: "SF Mono", ui-monospace, "Cascadia Code", monospace !important;
+  background: rgba(255,255,255,0.55) !important;
+  border: 1px solid rgba(255,255,255,0.40) !important;
+  border-radius: 14px !important;
+  padding: 16px 20px !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  color: #1d1d1f !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+/* Material: M3 outlined surface for code */
+html[data-theme="material"] .kami-scope pre,
+html[data-theme="material"] .kami-scope code,
+html[data-theme="material"] .kami-scope [class*="output"],
+html[data-theme="material"] .kami-scope [class*="result"] {
+  font-family: "Roboto Mono", ui-monospace, monospace !important;
+  background: color-mix(in srgb, #6750a4 4%, #fffbfe) !important;
+  border: 1px solid #cac4d0 !important;
+  border-radius: 4px !important;
+  padding: 16px !important;
+  color: #1c1b1f !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+/* Metro: flat outlined code */
+html[data-theme="metro"] .kami-scope pre,
+html[data-theme="metro"] .kami-scope code,
+html[data-theme="metro"] .kami-scope [class*="output"],
+html[data-theme="metro"] .kami-scope [class*="result"] {
+  font-family: "Cascadia Code", "Cascadia Mono", ui-monospace, monospace !important;
+  background: #ffffff !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 4px !important;
+  padding: 12px 16px !important;
+  color: #201f1e !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   PREVIEW / OUTPUT CARDS
+   Affects: OG image, QR code, email signature, favicon,
+   screenshot beautifier, link-in-bio, gradient preview
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="preview"],
+html[data-theme="glass"] .kami-scope [class*="Preview"] {
+  background: rgba(255,255,255,0.62) !important;
+  border: 1px solid rgba(255,255,255,0.55) !important;
+  border-radius: 20px !important;
+  backdrop-filter: saturate(180%) blur(16px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(16px) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07), inset 0 0.5px 0 rgba(255,255,255,0.85) !important;
+  padding: 20px !important;
+}
+
+html[data-theme="material"] .kami-scope [class*="preview"],
+html[data-theme="material"] .kami-scope [class*="Preview"] {
+  background: color-mix(in srgb, #6750a4 5%, #fffbfe) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05) !important;
+  padding: 16px !important;
+}
+
+html[data-theme="metro"] .kami-scope [class*="preview"],
+html[data-theme="metro"] .kami-scope [class*="Preview"] {
+  background: #ffffff !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.07) !important;
+  padding: 12px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   COLOR SWATCHES & CHIPS
+   Affects: palette generator, contrast checker,
+   color converter, gradient editor
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="swatch"],
+html[data-theme="glass"] .kami-scope [class*="chip"],
+html[data-theme="glass"] .kami-scope [class*="color-block"] {
+  border-radius: 14px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12), inset 0 0.5px 0 rgba(255,255,255,0.40) !important;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1),
+              box-shadow 0.3s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+html[data-theme="glass"] .kami-scope [class*="swatch"]:hover,
+html[data-theme="glass"] .kami-scope [class*="chip"]:hover {
+  transform: scale(1.06) translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18), inset 0 0.5px 0 rgba(255,255,255,0.40) !important;
+}
+
+html[data-theme="material"] .kami-scope [class*="swatch"],
+html[data-theme="material"] .kami-scope [class*="chip"],
+html[data-theme="material"] .kami-scope [class*="color-block"] {
+  border-radius: 12px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
+  transition: transform 100ms cubic-bezier(0.05,0.7,0.1,1.0),
+              box-shadow 100ms cubic-bezier(0.05,0.7,0.1,1.0) !important;
+}
+html[data-theme="material"] .kami-scope [class*="swatch"]:hover {
+  transform: scale(1.04) !important;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.16) !important;
+}
+
+html[data-theme="metro"] .kami-scope [class*="swatch"],
+html[data-theme="metro"] .kami-scope [class*="chip"],
+html[data-theme="metro"] .kami-scope [class*="color-block"] {
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  transition: transform 83ms !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   DATA TABLES
+   Affects: comparison table, word frequency, rice calculator,
+   aeo scorer, ab-test calculator
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope table {
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06), inset 0 0.5px 0 rgba(255,255,255,0.80) !important;
+}
+html[data-theme="glass"] .kami-scope th {
+  background: rgba(255,255,255,0.72) !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid rgba(200,210,240,0.35) !important;
+  color: rgba(60,60,67,0.60) !important;
+}
+html[data-theme="glass"] .kami-scope td {
+  padding: 11px 16px !important;
+  border-bottom: 1px solid rgba(200,210,240,0.20) !important;
+  background: rgba(255,255,255,0.45) !important;
+  backdrop-filter: blur(4px) !important;
+  font-size: 14px !important;
+}
+html[data-theme="glass"] .kami-scope tr:last-child td {
+  border-bottom: none !important;
+}
+
+html[data-theme="material"] .kami-scope table {
+  border-radius: 0 !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+html[data-theme="material"] .kami-scope th {
+  background: color-mix(in srgb, #6750a4 8%, #fffbfe) !important;
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #cac4d0 !important;
+  color: #49454f !important;
+}
+html[data-theme="material"] .kami-scope td {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #e7e0ec !important;
+  font-size: 14px !important;
+  color: #1c1b1f !important;
+}
+
+html[data-theme="metro"] .kami-scope table {
+  border-radius: 0 !important;
+  border-collapse: collapse !important;
+  width: 100% !important;
+  border: 1px solid #d1d1d1 !important;
+}
+html[data-theme="metro"] .kami-scope th {
+  background: #f3f2f1 !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0 !important;
+  padding: 8px 12px !important;
+  border-bottom: 1px solid #d1d1d1 !important;
+  text-align: left !important;
+  color: #201f1e !important;
+}
+html[data-theme="metro"] .kami-scope td {
+  padding: 7px 12px !important;
+  border-bottom: 1px solid #edebe9 !important;
+  font-size: 13px !important;
+  color: #201f1e !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   LARGE NUMBER / STAT DISPLAYS
+   Affects: meeting cost, year progress, real-age,
+   word frequency, caffeine tracker
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="stat"],
+html[data-theme="glass"] .kami-scope [class*="value"],
+html[data-theme="glass"] .kami-scope [class*="number"],
+html[data-theme="glass"] .kami-scope [class*="count"],
+html[data-theme="glass"] .kami-scope [class*="display"] {
+  font-family: -apple-system, "SF Pro Display", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.05 !important;
+}
+
+html[data-theme="material"] .kami-scope [class*="stat"],
+html[data-theme="material"] .kami-scope [class*="value"],
+html[data-theme="material"] .kami-scope [class*="number"],
+html[data-theme="material"] .kami-scope [class*="count"] {
+  font-family: "Google Sans", "Roboto Flex", Roboto, system-ui, sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.1 !important;
+  color: #6750a4 !important;
+}
+
+html[data-theme="metro"] .kami-scope [class*="stat"],
+html[data-theme="metro"] .kami-scope [class*="value"],
+html[data-theme="metro"] .kami-scope [class*="number"],
+html[data-theme="metro"] .kami-scope [class*="count"] {
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  line-height: 1.15 !important;
+  color: #0078d4 !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   PROGRESS BARS / METERS
+   Affects: year-progress, caffeine, passage-audit,
+   readability-scorer, aeo-readiness-scorer
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope progress,
+html[data-theme="glass"] .kami-scope [class*="progress"],
+html[data-theme="glass"] .kami-scope [class*="meter"],
+html[data-theme="glass"] .kami-scope [class*="bar"][class*="fill"],
+html[data-theme="glass"] .kami-scope [role="progressbar"] {
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: rgba(180,200,240,0.30) !important;
+  overflow: hidden !important;
+}
+html[data-theme="glass"] .kami-scope [class*="progress-fill"],
+html[data-theme="glass"] .kami-scope [class*="bar-fill"] {
+  background: linear-gradient(90deg, #007aff, #34c759) !important;
+  border-radius: 3px !important;
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+
+html[data-theme="material"] .kami-scope progress,
+html[data-theme="material"] .kami-scope [class*="progress"],
+html[data-theme="material"] .kami-scope [class*="meter"],
+html[data-theme="material"] .kami-scope [role="progressbar"] {
+  height: 4px !important;
+  border-radius: 2px !important;
+  background: color-mix(in srgb, #6750a4 20%, #e7e0ec) !important;
+}
+html[data-theme="material"] .kami-scope [class*="progress-fill"],
+html[data-theme="material"] .kami-scope [class*="bar-fill"] {
+  background: #6750a4 !important;
+  border-radius: 2px !important;
+  transition: width 200ms cubic-bezier(0.05,0.7,0.1,1.0) !important;
+}
+
+html[data-theme="metro"] .kami-scope progress,
+html[data-theme="metro"] .kami-scope [class*="progress"],
+html[data-theme="metro"] .kami-scope [class*="meter"],
+html[data-theme="metro"] .kami-scope [role="progressbar"] {
+  height: 2px !important;
+  border-radius: 0 !important;
+  background: #d1d1d1 !important;
+}
+html[data-theme="metro"] .kami-scope [class*="progress-fill"],
+html[data-theme="metro"] .kami-scope [class*="bar-fill"] {
+  background: #0078d4 !important;
+  border-radius: 0 !important;
+  transition: width 167ms !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SPLIT PANE / EDITOR LAYOUTS
+   Affects: markdown editor, text diff, find-replace,
+   JSON formatter
+   ────────────────────────────────────────────────────────── */
+
+/* Glass: frosted glass between panes */
+html[data-theme="glass"] .kami-scope [class*="pane"],
+html[data-theme="glass"] .kami-scope [class*="editor"],
+html[data-theme="glass"] .kami-scope [class*="split"] {
+  background: rgba(255,255,255,0.52) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255,255,255,0.45) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* Material: elevation-0 for editors, tonal divider */
+html[data-theme="material"] .kami-scope [class*="pane"],
+html[data-theme="material"] .kami-scope [class*="split"] {
+  background: #fffbfe !important;
+  border: 1px solid #cac4d0 !important;
+  border-radius: 4px 4px 0 0 !important;
+}
+
+/* Metro: flat editors with 1px border */
+html[data-theme="metro"] .kami-scope [class*="pane"],
+html[data-theme="metro"] .kami-scope [class*="split"] {
+  background: #ffffff !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 4px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   BADGES / TAGS / PILLS
+   Affects: aeo-readiness-scorer, readability-scorer,
+   headline-analyzer, schema-generator
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="badge"],
+html[data-theme="glass"] .kami-scope [class*="tag"],
+html[data-theme="glass"] .kami-scope [class*="pill"] {
+  border-radius: 980px !important;
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  padding: 3px 10px !important;
+  background: rgba(0,122,255,0.10) !important;
+  color: #007aff !important;
+  border: none !important;
+}
+
+html[data-theme="material"] .kami-scope [class*="badge"],
+html[data-theme="material"] .kami-scope [class*="tag"] {
+  border-radius: 8px !important;
+  font-family: "Google Sans", Roboto, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  padding: 4px 8px !important;
+  background: #eaddff !important;
+  color: #21005d !important;
+  border: none !important;
+}
+
+html[data-theme="metro"] .kami-scope [class*="badge"],
+html[data-theme="metro"] .kami-scope [class*="tag"] {
+  border-radius: 2px !important;
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  padding: 2px 6px !important;
+  background: rgba(0,120,212,0.08) !important;
+  color: #0078d4 !important;
+  border: 1px solid rgba(0,120,212,0.20) !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   KEYBOARD SHORTCUTS / KBD ELEMENTS
+   Affects: all tools (shortcuts modal)
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] kbd {
+  font-family: "SF Mono", ui-monospace, monospace !important;
+  background: rgba(255,255,255,0.72) !important;
+  border: 1px solid rgba(200,210,240,0.40) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.08), inset 0 0.5px 0 rgba(255,255,255,0.9) !important;
+  padding: 2px 7px !important;
+  font-size: 11px !important;
+  color: #1d1d1f !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+html[data-theme="material"] kbd {
+  font-family: "Roboto Mono", ui-monospace, monospace !important;
+  background: #e7e0ec !important;
+  border: none !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  padding: 3px 8px !important;
+  font-size: 11px !important;
+  color: #21005d !important;
+}
+
+html[data-theme="metro"] kbd {
+  font-family: "Cascadia Code", ui-monospace, monospace !important;
+  background: #ffffff !important;
+  border: 1px solid #8a8a8a !important;
+  border-bottom-width: 2px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  color: #201f1e !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   DIVIDERS / SECTION SEPARATORS
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope hr,
+html[data-theme="glass"] .kami-scope [class*="divider"],
+html[data-theme="glass"] .kami-scope [class*="separator"] {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(200,210,240,0.40), transparent) !important;
+  margin: 20px 0 !important;
+}
+
+html[data-theme="material"] .kami-scope hr,
+html[data-theme="material"] .kami-scope [class*="divider"] {
+  border: none !important;
+  height: 1px !important;
+  background: #cac4d0 !important;
+  margin: 16px 0 !important;
+}
+
+html[data-theme="metro"] .kami-scope hr,
+html[data-theme="metro"] .kami-scope [class*="divider"] {
+  border: none !important;
+  height: 1px !important;
+  background: #d1d1d1 !important;
+  margin: 12px 0 !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   VALUE DISPLAY / LABEL PAIRS
+   Affects: all form-heavy tools (meeting cost, caffeine,
+   rice calculator, real-age, etc.)
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope label {
+  font-family: -apple-system, "SF Pro Text", BlinkMacSystemFont, system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  color: rgba(60,60,67,0.60) !important;
+}
+
+html[data-theme="material"] .kami-scope label {
+  font-family: "Roboto Flex", Roboto, system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+  color: #49454f !important;
+}
+
+html[data-theme="metro"] .kami-scope label {
+  font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  color: #484644 !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   COLOR INPUT (color picker swatch)
+   Affects: all tools with color pickers
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] input[type=color] {
+  border-radius: 10px !important;
+  border: 2px solid rgba(255,255,255,0.60) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  cursor: pointer !important;
+  height: 36px !important;
+  width: 44px !important;
+  padding: 2px !important;
+  background: transparent !important;
+}
+
+html[data-theme="material"] input[type=color] {
+  border-radius: 50% !important;
+  border: 2px solid #cac4d0 !important;
+  cursor: pointer !important;
+  height: 40px !important;
+  width: 40px !important;
+  padding: 3px !important;
+  background: transparent !important;
+}
+
+html[data-theme="metro"] input[type=color] {
+  border-radius: 4px !important;
+  border: 1px solid #8a8a8a !important;
+  cursor: pointer !important;
+  height: 32px !important;
+  width: 40px !important;
+  padding: 2px !important;
+  background: transparent !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SCROLL CONTAINERS / OVERFLOW PANELS
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="scroll"],
+html[data-theme="glass"] .kami-scope [class*="overflow"] {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,122,255,0.25) transparent;
+}
+html[data-theme="glass"] .kami-scope ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html[data-theme="glass"] .kami-scope ::-webkit-scrollbar-track {
+  background: transparent;
+}
+html[data-theme="glass"] .kami-scope ::-webkit-scrollbar-thumb {
+  background: rgba(0,122,255,0.25);
+  border-radius: 3px;
+}
+
+html[data-theme="material"] .kami-scope ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+html[data-theme="material"] .kami-scope ::-webkit-scrollbar-thumb {
+  background: rgba(103,80,164,0.30);
+  border-radius: 4px;
+}
+
+html[data-theme="metro"] .kami-scope ::-webkit-scrollbar {
+  width: 6px;
+}
+html[data-theme="metro"] .kami-scope ::-webkit-scrollbar-thumb {
+  background: #d1d1d1;
+  border-radius: 0;
+}
+html[data-theme="metro"] .kami-scope ::-webkit-scrollbar-thumb:hover {
+  background: #8a8a8a;
+}
+
+/* ──────────────────────────────────────────────────────────
+   TOOL PANEL INNER SECTIONS (panel header title, panel body)
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .tool-shell-panel-inner {
+  padding: 16px !important;
+}
+html[data-theme="glass"] .tool-shell-panel-inner > * + * {
+  margin-top: 12px;
+}
+
+html[data-theme="material"] .tool-shell-panel-inner {
+  padding: 16px !important;
+}
+
+html[data-theme="metro"] .tool-shell-panel-inner {
+  padding: 12px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   COPY BUTTON / ACTION INLINE BUTTONS
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope [class*="copy"],
+html[data-theme="glass"] .kami-scope [class*="Copy"] {
+  background: rgba(255,255,255,0.72) !important;
+  border: 1px solid rgba(0,122,255,0.25) !important;
+  border-radius: 980px !important;
+  color: #007aff !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+  backdrop-filter: blur(8px) !important;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+}
+html[data-theme="glass"] .kami-scope [class*="copy"]:hover {
+  transform: scale(1.05) !important;
+  background: rgba(255,255,255,0.90) !important;
+}
+
+html[data-theme="material"] .kami-scope [class*="copy"],
+html[data-theme="material"] .kami-scope [class*="Copy"] {
+  background: #eaddff !important;
+  border: none !important;
+  border-radius: 20px !important;
+  color: #21005d !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+}
+
+html[data-theme="metro"] .kami-scope [class*="copy"],
+html[data-theme="metro"] .kami-scope [class*="Copy"] {
+  background: #ffffff !important;
+  border: 1px solid #d1d1d1 !important;
+  border-radius: 4px !important;
+  color: #201f1e !important;
+  font-size: 12px !important;
+  padding: 3px 10px !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SELECT / DROPDOWN ARROW STYLING
+   ────────────────────────────────────────────────────────── */
+
+html[data-theme="glass"] .kami-scope select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23007aff' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 32px !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+html[data-theme="material"] .kami-scope select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%236750a4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  padding-right: 32px !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+html[data-theme="metro"] .kami-scope select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%230078d4' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  padding-right: 28px !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
