@@ -2300,7 +2300,7 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   }
 }
 
-/* Side panel: desktop = sticky sidebar, mobile = bottom sheet */
+/* Side panel: desktop = sticky sidebar, mobile = snapping bottom sheet */
 .tool-shell-panel {
   position: fixed;
   inset: auto 0 0 0;
@@ -2309,15 +2309,19 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   border-top: 1px solid var(--kami-border-strong);
   border-radius: 20px 20px 0 0;
   box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
-  transform: translateY(100%);
+  height: 85dvh;
+  max-height: 85dvh;
+  transform: translateY(85dvh);
   transition: transform 280ms var(--kami-motion-ease, cubic-bezier(0.2,0,0,1));
-  max-height: 80dvh;
   display: flex;
   flex-direction: column;
 }
-.tool-shell-panel.is-open {
-  transform: translateY(0);
-}
+/* Snap states */
+.tool-shell-panel[data-snap="peek"] { transform: translateY(calc(85dvh - 40dvh)); }
+.tool-shell-panel[data-snap="full"] { transform: translateY(0); }
+.tool-shell-panel[data-snap="closed"] { transform: translateY(85dvh); }
+/* Legacy class fallback */
+.tool-shell-panel.is-open { transform: translateY(0); }
 @media (min-width: 1024px) {
   .tool-shell-panel {
     position: sticky;
@@ -2342,9 +2346,46 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   border-radius: 999px;
   margin: 8px auto;
   flex: 0 0 auto;
+  cursor: grab;
+  touch-action: none;
+  padding: 10px 24px; /* fat hit target */
+  box-sizing: content-box;
+  background-clip: content-box;
 }
+.tool-shell-panel-handle:active { cursor: grabbing; }
 @media (min-width: 1024px) {
   .tool-shell-panel-handle { display: none; }
+}
+
+/* FAB — controls sheet trigger, mobile only */
+.tool-sheet-fab { display: none; }
+@media (max-width: 768px) {
+  .tool-sheet-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: none;
+    background: var(--kami-accent, #0a0a0a);
+    color: var(--kami-accent-text, #fff);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+    z-index: 48;
+    cursor: pointer;
+    transition: transform 0.18s, box-shadow 0.18s, background 0.18s;
+  }
+  .tool-sheet-fab.is-active {
+    background: var(--kami-text, #0a0a0a);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .tool-sheet-fab.is-active svg {
+    transform: rotate(90deg);
+    transition: transform 0.18s;
+  }
 }
 
 .tool-shell-panel-header {

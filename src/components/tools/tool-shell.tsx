@@ -297,6 +297,15 @@ const DEFAULT_FAB_ICON = (
 
 const SPLASH_SEEN_KEY = 'kami.splash.seen';
 
+type SnapState = 'closed' | 'peek' | 'full';
+
+function getSnapYPx(snap: SnapState, innerHeight: number): number {
+  const panelH = innerHeight * 0.85;
+  if (snap === 'full') return 0;
+  if (snap === 'peek') return Math.round(panelH - innerHeight * 0.40);
+  return Math.round(panelH); // closed
+}
+
 export function ToolShell({
   title,
   tagline,
@@ -311,7 +320,8 @@ export function ToolShell({
   panelWidth = "320px",
   materialFab,
 }: ToolShellProps) {
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [snapState, setSnapState] = useState<SnapState>('closed');
+  const sheetOpen = snapState !== 'closed';
   const [infoOpen, setInfoOpen] = useState(false);
   const [splashOpen, setSplashOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -319,6 +329,41 @@ export function ToolShell({
   const [metroPivot, setMetroPivot] = useState<MetroPivotId>('tool');
   const shortcutCtx = useContext(ShortcutContext);
   const shellRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const isDragging = useRef(false);
+  const dragStartClientY = useRef(0);
+  const dragStartSnapY = useRef(0);
+
+  const onHandlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (window.innerWidth >= 1024) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDragging.current = true;
+    dragStartClientY.current = e.clientY;
+    dragStartSnapY.current = getSnapYPx(snapState, window.innerHeight);
+    if (panelRef.current) panelRef.current.style.transition = 'none';
+  }, [snapState]);
+
+  const onHandlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current || !panelRef.current) return;
+    const dy = e.clientY - dragStartClientY.current;
+    const panelH = window.innerHeight * 0.85;
+    const newY = Math.max(0, Math.min(panelH, dragStartSnapY.current + dy));
+    panelRef.current.style.transform = `translateY(${newY}px)`;
+  }, []);
+
+  const onHandlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    isDragging.current = false;
+    const dy = e.clientY - dragStartClientY.current;
+    const newY = dragStartSnapY.current + dy;
+    const h = window.innerHeight;
+    let next: SnapState;
+    if (newY > h * 0.62) next = 'closed';
+    else if (newY > h * 0.25) next = 'peek';
+    else next = 'full';
+    if (panelRef.current) { panelRef.current.style.transition = ''; panelRef.current.style.transform = ''; }
+    setSnapState(next);
+  }, []);
 
   // Restore sidebar collapsed state from localStorage
   useEffect(() => {
@@ -384,7 +429,7 @@ export function ToolShell({
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setSplashOpen(false);
-        setSheetOpen(false);
+        setSnapState('closed');
         setInfoOpen(false);
         return;
       }
@@ -485,7 +530,7 @@ export function ToolShell({
           type="button" role="tab"
           aria-selected={metroPivot === 'tool'}
           className={`metro-pivot-item${metroPivot === 'tool' ? ' is-active' : ''}`}
-          onClick={() => { setMetroPivot('tool'); setSheetOpen(false); setInfoOpen(false); }}
+          onClick={() => { setMetroPivot('tool'); setSnapState('closed'); setInfoOpen(false); }}
         >
           Tool
         </button>
@@ -494,7 +539,7 @@ export function ToolShell({
             type="button" role="tab"
             aria-selected={metroPivot === 'controls'}
             className={`metro-pivot-item${metroPivot === 'controls' ? ' is-active' : ''}`}
-            onClick={() => { setMetroPivot('controls'); setSheetOpen(true); setInfoOpen(false); }}
+            onClick={() => { setMetroPivot('controls'); setSnapState('peek'); setInfoOpen(false); }}
           >
             Controls
           </button>
@@ -504,7 +549,7 @@ export function ToolShell({
             type="button" role="tab"
             aria-selected={metroPivot === 'about'}
             className={`metro-pivot-item${metroPivot === 'about' ? ' is-active' : ''}`}
-            onClick={() => { setMetroPivot('about'); setInfoOpen(true); setSheetOpen(false); }}
+            onClick={() => { setMetroPivot('about'); setInfoOpen(true); setSnapState('closed'); }}
           >
             About
           </button>
@@ -525,13 +570,25 @@ export function ToolShell({
         <main className="tool-shell-canvas">{children}</main>
 
         {hasControls && (
-          <aside className={`tool-shell-panel${sheetOpen ? " is-open" : ""}`} aria-label="Controls">
-            <div className="tool-shell-panel-handle" aria-hidden="true" />
+          <aside
+            ref={panelRef}
+            data-snap={snapState}
+            className="tool-shell-panel"
+            aria-label="Controls"
+          >
+            <div
+              className="tool-shell-panel-handle"
+              aria-hidden="true"
+              onPointerDown={onHandlePointerDown}
+              onPointerMove={onHandlePointerMove}
+              onPointerUp={onHandlePointerUp}
+              onPointerCancel={onHandlePointerUp}
+            />
             <div className="tool-shell-panel-header">
               <span className="tool-shell-panel-label">{controlsLabel}</span>
               <button
                 type="button"
-                onClick={() => { setSheetOpen(false); if (isMetro) setMetroPivot('tool'); }}
+                onClick={() => { setSnapState('closed'); if (isMetro) setMetroPivot('tool'); }}
                 className="tool-shell-icon-btn"
                 aria-label="Close controls"
               >
@@ -556,6 +613,23 @@ export function ToolShell({
         </button>
       )}
 
+      {/* ── Mobile FAB (controls sheet trigger, ≤768px) ── */}
+      {hasControls && (
+        <button
+          type="button"
+          className={`tool-sheet-fab${sheetOpen ? ' is-active' : ''}`}
+          onClick={() => setSnapState(s => s === 'closed' ? 'peek' : 'closed')}
+          aria-label={sheetOpen ? `Close ${controlsLabel}` : `Open ${controlsLabel}`}
+          title={controlsLabel}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <line x1="4" y1="6" x2="20" y2="6"/>
+            <line x1="4" y1="12" x2="20" y2="12"/>
+            <line x1="4" y1="18" x2="20" y2="18"/>
+          </svg>
+        </button>
+      )}
+
       {/* ── Mobile bottom action bar ── */}
       <div className="tool-mode-bottom">
         {mobileAction}
@@ -572,7 +646,7 @@ export function ToolShell({
           <button
             type="button"
             className={`tool-mode-btn is-primary${sheetOpen ? ' is-active' : ''}`}
-            onClick={() => setSheetOpen(v => !v)}
+            onClick={() => setSnapState(s => s === 'closed' ? 'peek' : 'closed')}
             aria-expanded={sheetOpen}
           >
             {controlsLabel}
@@ -587,7 +661,7 @@ export function ToolShell({
           aria-label="Close panel"
           className="tool-shell-backdrop"
           onClick={() => {
-            setSheetOpen(false);
+            setSnapState('closed');
             setInfoOpen(false);
             if (isMetro) setMetroPivot('tool');
           }}
