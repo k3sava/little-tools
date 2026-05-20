@@ -1416,6 +1416,7 @@ html[data-theme="editorial"] .kami-tile:hover .kami-overlay-btn-primary {
   box-shadow: none !important;
   filter: none;
 }
+html[data-theme="editorial"] .kami-tile { border-radius: 0 !important; }
 /* Zen overlay CTA - thin pill */
 html[data-theme="zen"] .kami-overlay-btn-primary,
 html[data-theme="zen"] a.kami-overlay-btn-primary {
@@ -6448,11 +6449,16 @@ html[data-theme="material"] .tools-hub-chip[data-active="true"] {
 
 .hub-metro-title {
   font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
-  font-size: 28px;
-  font-weight: 300;
-  letter-spacing: -0.01em;
   color: #201f1e;
   margin: 0;
+  text-transform: lowercase;
+}
+/* specificity 0,0,3,1 beats 0,0,2,2 of the global metro h1 rule */
+html[data-theme="metro"] .hub-metro-header .hub-metro-title {
+  font-size: clamp(60px, 10vw, 96px) !important;
+  font-weight: 100 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1 !important;
 }
 
 .hub-metro-search {
