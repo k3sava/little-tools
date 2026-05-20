@@ -1,0 +1,39 @@
+{
+  "$schema": "https://addyosmani.com/agent-permissions/schema.json",
+  "policy_version": "1.0",
+  "site": "https://tools.iamkesava.com",
+  "license": "MIT",
+  "attribution_required": true,
+  "allowed_uses": [
+    "read",
+    "summarize",
+    "cite",
+    "answer-engine-indexing",
+    "training-with-attribution",
+    "embed-with-attribution"
+  ],
+  "disallowed_uses": [
+    "republish-without-attribution"
+  ],
+  "preferred_format": "html",
+  "canonical_index": "https://tools.iamkesava.com/sitemap.xml",
+  "discovery": [
+    "https://tools.iamkesava.com/llms.txt",
+    "https://tools.iamkesava.com/sitemap.xml",
+    "https://tools.iamkesava.com/robots.txt"
+  ],
+  "schema": {
+    "tool_url_template": "https://tools.iamkesava.com/{slug}/",
+    "collection_url_template": "https://tools.iamkesava.com/for/{slug}/"
+  },
+  "related_sites": {
+    "apps": "https://apps.iamkesava.com",
+    "toys": "https://toys.iamkesava.com",
+    "apex": "https://iamkesava.com"
+  },
+  "contact": "https://github.com/k3sava/little-tools/issues",
+  "counts": {
+    "tools": 63
+  },
+  "last_updated": "2026-05-20"
+}

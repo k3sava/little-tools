@@ -1,0 +1,361 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>little tools, what's new</title>
+    <description>New free, ad-free, privacy-first browser tools by Kesava. Every entry is a tool that landed at tools.iamkesava.com. Subscribe to know when new ones ship.</description>
+    <link>https://tools.iamkesava.com/</link>
+    <language>en</language>
+    <atom:link href="https://tools.iamkesava.com/feed.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 20 May 2026 09:58:42 GMT</lastBuildDate>
+    <item>
+      <title>Case Converter</title>
+      <description>Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.</description>
+      <link>https://tools.iamkesava.com/case-converter/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/case-converter/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Character Counter</title>
+      <description>Count characters, words, sentences, paragraphs, and estimate reading time.</description>
+      <link>https://tools.iamkesava.com/character-counter/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/character-counter/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Lorem Ipsum Generator</title>
+      <description>Generate placeholder text by paragraphs, sentences, or words.</description>
+      <link>https://tools.iamkesava.com/lorem-ipsum/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/lorem-ipsum/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Text Cleaner</title>
+      <description>Remove extra whitespace, line breaks, special characters, duplicate lines.</description>
+      <link>https://tools.iamkesava.com/text-cleaner/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/text-cleaner/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Find &amp; Replace</title>
+      <description>Search and replace text with regex support and case sensitivity toggle.</description>
+      <link>https://tools.iamkesava.com/find-replace/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/find-replace/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Word Frequency</title>
+      <description>Analyze word frequency with bar charts, filtering, and CSV export.</description>
+      <link>https://tools.iamkesava.com/word-frequency/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/word-frequency/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Headline Analyzer</title>
+      <description>Score headlines for emotional value, power words, readability, and click potential.</description>
+      <link>https://tools.iamkesava.com/headline-analyzer/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/headline-analyzer/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Text Diff</title>
+      <description>Compare two texts side-by-side or inline with line-by-line diff.</description>
+      <link>https://tools.iamkesava.com/text-diff/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/text-diff/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Clipboard Manager</title>
+      <description>Save, search, and organize text clips in your browser.</description>
+      <link>https://tools.iamkesava.com/clipboard-manager/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/clipboard-manager/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Markdown Editor</title>
+      <description>Write and preview Markdown with live rendering and export.</description>
+      <link>https://tools.iamkesava.com/markdown-editor/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/markdown-editor/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Invoice Generator</title>
+      <description>Create professional invoices with PDF export and local storage.</description>
+      <link>https://tools.iamkesava.com/invoice-generator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/invoice-generator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Link-in-Bio Builder</title>
+      <description>Create a link-in-bio page with custom links and themes.</description>
+      <link>https://tools.iamkesava.com/link-in-bio/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/link-in-bio/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Color Palette</title>
+      <description>Generate harmonious color palettes with multiple harmony rules.</description>
+      <link>https://tools.iamkesava.com/palette/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/palette/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Color Converter</title>
+      <description>Convert between HEX, RGB, HSL, and other color formats.</description>
+      <link>https://tools.iamkesava.com/color-converter/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/color-converter/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Contrast Checker</title>
+      <description>Check WCAG contrast ratios for accessibility compliance.</description>
+      <link>https://tools.iamkesava.com/contrast/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/contrast/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Gradient Generator</title>
+      <description>Create CSS gradients with visual editor and code export.</description>
+      <link>https://tools.iamkesava.com/gradient/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/gradient/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Box Shadow</title>
+      <description>Design CSS box shadows with visual controls.</description>
+      <link>https://tools.iamkesava.com/box-shadow/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/box-shadow/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Border Radius</title>
+      <description>Visualize and generate CSS border-radius values.</description>
+      <link>https://tools.iamkesava.com/border-radius/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/border-radius/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Glassmorphism</title>
+      <description>Generate glass and soft-UI effects with CSS output.</description>
+      <link>https://tools.iamkesava.com/glassmorphism/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/glassmorphism/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Flexbox Playground</title>
+      <description>Learn and experiment with CSS Flexbox interactively.</description>
+      <link>https://tools.iamkesava.com/flexbox/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/flexbox/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>CSS Grid</title>
+      <description>Build CSS Grid layouts visually with template controls.</description>
+      <link>https://tools.iamkesava.com/grid/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/grid/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>OG Image Generator</title>
+      <description>Create Open Graph images for social sharing.</description>
+      <link>https://tools.iamkesava.com/og-image/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/og-image/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Favicon Generator</title>
+      <description>Generate favicons from text, emoji, or images.</description>
+      <link>https://tools.iamkesava.com/favicon/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/favicon/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Screenshot Beautifier</title>
+      <description>Add backgrounds, shadows, and frames to screenshots.</description>
+      <link>https://tools.iamkesava.com/screenshot-beautifier/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/screenshot-beautifier/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>QR Code Generator</title>
+      <description>Generate QR codes with custom colors and sizes.</description>
+      <link>https://tools.iamkesava.com/qr-code/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/qr-code/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Keyframe Animator</title>
+      <description>Build CSS @keyframes animations visually with timeline editor.</description>
+      <link>https://tools.iamkesava.com/keyframe-animator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/keyframe-animator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Easing Editor</title>
+      <description>Design cubic-bezier, spring, and linear() easing curves.</description>
+      <link>https://tools.iamkesava.com/easing-editor/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/easing-editor/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Scroll Animation</title>
+      <description>Generate scroll-driven CSS animations with live preview.</description>
+      <link>https://tools.iamkesava.com/scroll-animation/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/scroll-animation/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>JSON Formatter</title>
+      <description>Format, beautify, minify, and validate JSON.</description>
+      <link>https://tools.iamkesava.com/json-formatter/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/json-formatter/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Regex Tester</title>
+      <description>Test regex patterns with real-time match highlighting.</description>
+      <link>https://tools.iamkesava.com/regex-tester/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/regex-tester/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Base64 Encode/Decode</title>
+      <description>Encode and decode Base64 text and files.</description>
+      <link>https://tools.iamkesava.com/base64/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/base64/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>URL Encode/Decode</title>
+      <description>Encode and decode URLs, parse query parameters.</description>
+      <link>https://tools.iamkesava.com/url-encoder/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/url-encoder/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Hash Generator</title>
+      <description>Generate MD5, SHA-1, SHA-256, SHA-512 hashes.</description>
+      <link>https://tools.iamkesava.com/hash-generator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/hash-generator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>JWT Decoder</title>
+      <description>Decode JSON Web Tokens with color-coded output.</description>
+      <link>https://tools.iamkesava.com/jwt-decoder/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/jwt-decoder/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>UUID / ULID Generator</title>
+      <description>Generate UUID v4 and ULID identifiers in bulk.</description>
+      <link>https://tools.iamkesava.com/uuid-generator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/uuid-generator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Timestamp Converter</title>
+      <description>Convert between Unix timestamps and dates.</description>
+      <link>https://tools.iamkesava.com/timestamp/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/timestamp/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Cron Builder</title>
+      <description>Build and validate cron expressions visually.</description>
+      <link>https://tools.iamkesava.com/cron-builder/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/cron-builder/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Image Converter</title>
+      <description>Convert images between formats in your browser.</description>
+      <link>https://tools.iamkesava.com/image-converter/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/image-converter/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>PDF Merge</title>
+      <description>Combine multiple PDF files into one. Files never leave your browser.</description>
+      <link>https://tools.iamkesava.com/pdf-merge/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/pdf-merge/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>PDF Compress</title>
+      <description>Reduce PDF file size without uploading. 100% client-side.</description>
+      <link>https://tools.iamkesava.com/pdf-compress/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/pdf-compress/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>PDF Split</title>
+      <description>Extract specific pages from a PDF. 100% client-side.</description>
+      <link>https://tools.iamkesava.com/pdf-split/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/pdf-split/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Meta Tag Generator</title>
+      <description>Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.</description>
+      <link>https://tools.iamkesava.com/meta-tag-generator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/meta-tag-generator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Schema Generator</title>
+      <description>Build JSON-LD structured data for Articles, FAQs, Products, and more.</description>
+      <link>https://tools.iamkesava.com/schema-generator/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/schema-generator/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>SEO Content Analyzer</title>
+      <description>Analyze content for keyword density, heading structure, readability, and SEO score.</description>
+      <link>https://tools.iamkesava.com/seo-content-analyzer/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/seo-content-analyzer/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>AEO Readiness Scorer</title>
+      <description>Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.</description>
+      <link>https://tools.iamkesava.com/aeo-readiness-scorer/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/aeo-readiness-scorer/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Passage Audit</title>
+      <description>Score every passage on your page for AI retrievability. Catches thin copy that disappears when an AI chunks the page.</description>
+      <link>https://tools.iamkesava.com/passage-audit/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/passage-audit/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Readability Scorer</title>
+      <description>Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.</description>
+      <link>https://tools.iamkesava.com/readability-scorer/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/readability-scorer/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>UTM Builder</title>
+      <description>Build campaign URLs with UTM parameters, presets, and bulk generation.</description>
+      <link>https://tools.iamkesava.com/utm-builder/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/utm-builder/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Comparison Table Builder</title>
+      <description>Create feature comparison tables with export to HTML, PNG, and Markdown.</description>
+      <link>https://tools.iamkesava.com/comparison-table/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/comparison-table/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+    <item>
+      <title>Positioning Statement Builder</title>
+      <description>Build positioning statements with guided frameworks from Dunford, Moore, and more.</description>
+      <link>https://tools.iamkesava.com/positioning-builder/</link>
+      <guid isPermaLink="true">https://tools.iamkesava.com/positioning-builder/</guid>
+      <pubDate>Wed, 20 May 2026 08:41:52 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,167 @@
+# little tools
+
+> Free, ad-free, privacy-first browser tools by Kesava. All processing happens client-side. No accounts, no data collection.
+
+Counts: 63 tools across 8 collections.
+
+## Index
+
+- [Sitemap](https://tools.iamkesava.com/sitemap.xml): every canonical URL.
+- [Home](https://tools.iamkesava.com/): all tools by collection.
+
+## Agent discovery
+
+- [tools.json](https://tools.iamkesava.com/tools.json): machine-readable catalog of all 60 tools and 8 collections.
+- [Agent permissions](https://tools.iamkesava.com/.well-known/agent-permissions.json): use rights, attribution, license.
+- [API catalog](https://tools.iamkesava.com/.well-known/api-catalog): RFC 9727 linkset to discoverable resources.
+- [Agent skills](https://tools.iamkesava.com/.well-known/agent-skills/index.json): Agent Skills Discovery v0.2 index.
+
+## Sister sites
+
+- [apps.iamkesava.com](https://apps.iamkesava.com/): Kami Studios apps and AI playgrounds.
+- [toys.iamkesava.com](https://toys.iamkesava.com/): creative experiments (audio, visual, generative).
+- [iamkesava.com](https://iamkesava.com/): Kesava's blog and writing.
+
+## Collections
+
+- [Developers](https://tools.iamkesava.com/for/developers/): Encoding, hashing, formatting, and debugging utilities.
+- [Designers](https://tools.iamkesava.com/for/designers/): Color, layout, animation, and visual design tools.
+- [Writers](https://tools.iamkesava.com/for/writers/): Headline testing, readability scoring, and text editing.
+- [PMM](https://tools.iamkesava.com/for/pmm/): Positioning, competitive analysis, and go-to-market tools.
+- [Ads](https://tools.iamkesava.com/for/ads/): Campaign tracking, copy testing, and creative utilities.
+- [PM](https://tools.iamkesava.com/for/pm/): Specs, competitive research, and stakeholder communication.
+- [SEO](https://tools.iamkesava.com/for/seo/): Meta tags, structured data, and content optimization.
+- [Everyone](https://tools.iamkesava.com/for/everyone/): PDF tools, file conversion, and everyday utilities.
+
+## Tools
+
+### Developers
+
+- [Find & Replace](https://tools.iamkesava.com/find-replace/): Search and replace text with regex support and case sensitivity toggle.
+- [Text Diff](https://tools.iamkesava.com/text-diff/): Compare two texts side-by-side or inline with line-by-line diff.
+- [Markdown Editor](https://tools.iamkesava.com/markdown-editor/): Write and preview Markdown with live rendering and export.
+- [Contrast Checker](https://tools.iamkesava.com/contrast/): Check WCAG contrast ratios for accessibility compliance.
+- [JSON Formatter](https://tools.iamkesava.com/json-formatter/): Format, beautify, minify, and validate JSON.
+- [Regex Tester](https://tools.iamkesava.com/regex-tester/): Test regex patterns with real-time match highlighting.
+- [Base64 Encode/Decode](https://tools.iamkesava.com/base64/): Encode and decode Base64 text and files.
+- [URL Encode/Decode](https://tools.iamkesava.com/url-encoder/): Encode and decode URLs, parse query parameters.
+- [Hash Generator](https://tools.iamkesava.com/hash-generator/): Generate MD5, SHA-1, SHA-256, SHA-512 hashes.
+- [JWT Decoder](https://tools.iamkesava.com/jwt-decoder/): Decode JSON Web Tokens with color-coded output.
+- [UUID / ULID Generator](https://tools.iamkesava.com/uuid-generator/): Generate UUID v4 and ULID identifiers in bulk.
+- [Timestamp Converter](https://tools.iamkesava.com/timestamp/): Convert between Unix timestamps and dates.
+- [Cron Builder](https://tools.iamkesava.com/cron-builder/): Build and validate cron expressions visually.
+- [Decision Flow](https://tools.iamkesava.com/flow/): Build a yes/no troubleshooting tree and share it as a link.
+
+### Designers
+
+- [Lorem Ipsum Generator](https://tools.iamkesava.com/lorem-ipsum/): Generate placeholder text by paragraphs, sentences, or words.
+- [Color Palette](https://tools.iamkesava.com/palette/): Generate harmonious color palettes with multiple harmony rules.
+- [Color Converter](https://tools.iamkesava.com/color-converter/): Convert between HEX, RGB, HSL, and other color formats.
+- [Contrast Checker](https://tools.iamkesava.com/contrast/): Check WCAG contrast ratios for accessibility compliance.
+- [Gradient Generator](https://tools.iamkesava.com/gradient/): Create CSS gradients with visual editor and code export.
+- [Box Shadow](https://tools.iamkesava.com/box-shadow/): Design CSS box shadows with visual controls.
+- [Border Radius](https://tools.iamkesava.com/border-radius/): Visualize and generate CSS border-radius values.
+- [Glassmorphism](https://tools.iamkesava.com/glassmorphism/): Generate glass and soft-UI effects with CSS output.
+- [Flexbox Playground](https://tools.iamkesava.com/flexbox/): Learn and experiment with CSS Flexbox interactively.
+- [CSS Grid](https://tools.iamkesava.com/grid/): Build CSS Grid layouts visually with template controls.
+- [OG Image Generator](https://tools.iamkesava.com/og-image/): Create Open Graph images for social sharing.
+- [Favicon Generator](https://tools.iamkesava.com/favicon/): Generate favicons from text, emoji, or images.
+- [Screenshot Beautifier](https://tools.iamkesava.com/screenshot-beautifier/): Add backgrounds, shadows, and frames to screenshots.
+- [Keyframe Animator](https://tools.iamkesava.com/keyframe-animator/): Build CSS @keyframes animations visually with timeline editor.
+- [Easing Editor](https://tools.iamkesava.com/easing-editor/): Design cubic-bezier, spring, and linear() easing curves.
+- [Scroll Animation](https://tools.iamkesava.com/scroll-animation/): Generate scroll-driven CSS animations with live preview.
+
+### Writers
+
+- [Case Converter](https://tools.iamkesava.com/case-converter/): Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.
+- [Character Counter](https://tools.iamkesava.com/character-counter/): Count characters, words, sentences, paragraphs, and estimate reading time.
+- [Text Cleaner](https://tools.iamkesava.com/text-cleaner/): Remove extra whitespace, line breaks, special characters, duplicate lines.
+- [Find & Replace](https://tools.iamkesava.com/find-replace/): Search and replace text with regex support and case sensitivity toggle.
+- [Word Frequency](https://tools.iamkesava.com/word-frequency/): Analyze word frequency with bar charts, filtering, and CSV export.
+- [Headline Analyzer](https://tools.iamkesava.com/headline-analyzer/): Score headlines for emotional value, power words, readability, and click potential.
+- [Markdown Editor](https://tools.iamkesava.com/markdown-editor/): Write and preview Markdown with live rendering and export.
+- [Readability Scorer](https://tools.iamkesava.com/readability-scorer/): Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.
+- [Content Brief Builder](https://tools.iamkesava.com/content-brief-builder/): Build structured content briefs for writers and SEO teams. Define keywords, audience, intent, and outline.
+
+### PMM
+
+- [Case Converter](https://tools.iamkesava.com/case-converter/): Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.
+- [Headline Analyzer](https://tools.iamkesava.com/headline-analyzer/): Score headlines for emotional value, power words, readability, and click potential.
+- [Readability Scorer](https://tools.iamkesava.com/readability-scorer/): Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.
+- [UTM Builder](https://tools.iamkesava.com/utm-builder/): Build campaign URLs with UTM parameters, presets, and bulk generation.
+- [Comparison Table Builder](https://tools.iamkesava.com/comparison-table/): Create feature comparison tables with export to HTML, PNG, and Markdown.
+- [Positioning Statement Builder](https://tools.iamkesava.com/positioning-builder/): Build positioning statements with guided frameworks from Dunford, Moore, and more.
+- [RICE Scoring Calculator](https://tools.iamkesava.com/rice-calculator/): Prioritize features with the RICE framework. Score initiatives by Reach, Impact, Confidence, and Effort.
+- [A/B Test Calculator](https://tools.iamkesava.com/ab-test-calculator/): Statistical significance calculator for A/B tests. Sample size planner and results analyzer.
+- [Release Notes Formatter](https://tools.iamkesava.com/release-notes-formatter/): Turn raw changelog bullets into polished, categorized release notes. Export as Markdown, HTML, or plain text.
+- [Feature-Benefit Mapper](https://tools.iamkesava.com/feature-benefit-mapper/): Map product features to customer benefits. Catch feature-speak before it reaches your landing page.
+- [Content Brief Builder](https://tools.iamkesava.com/content-brief-builder/): Build structured content briefs for writers and SEO teams. Define keywords, audience, intent, and outline.
+
+### Ads
+
+- [Case Converter](https://tools.iamkesava.com/case-converter/): Convert text between Title Case, camelCase, snake_case, kebab-case, PascalCase, and more.
+- [Character Counter](https://tools.iamkesava.com/character-counter/): Count characters, words, sentences, paragraphs, and estimate reading time.
+- [Headline Analyzer](https://tools.iamkesava.com/headline-analyzer/): Score headlines for emotional value, power words, readability, and click potential.
+- [Link-in-Bio Builder](https://tools.iamkesava.com/link-in-bio/): Create a link-in-bio page with custom links and themes.
+- [OG Image Generator](https://tools.iamkesava.com/og-image/): Create Open Graph images for social sharing.
+- [QR Code Generator](https://tools.iamkesava.com/qr-code/): Generate QR codes with custom colors and sizes.
+- [UTM Builder](https://tools.iamkesava.com/utm-builder/): Build campaign URLs with UTM parameters, presets, and bulk generation.
+
+### PM
+
+- [Text Diff](https://tools.iamkesava.com/text-diff/): Compare two texts side-by-side or inline with line-by-line diff.
+- [Markdown Editor](https://tools.iamkesava.com/markdown-editor/): Write and preview Markdown with live rendering and export.
+- [Screenshot Beautifier](https://tools.iamkesava.com/screenshot-beautifier/): Add backgrounds, shadows, and frames to screenshots.
+- [JSON Formatter](https://tools.iamkesava.com/json-formatter/): Format, beautify, minify, and validate JSON.
+- [Readability Scorer](https://tools.iamkesava.com/readability-scorer/): Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.
+- [Comparison Table Builder](https://tools.iamkesava.com/comparison-table/): Create feature comparison tables with export to HTML, PNG, and Markdown.
+- [Positioning Statement Builder](https://tools.iamkesava.com/positioning-builder/): Build positioning statements with guided frameworks from Dunford, Moore, and more.
+- [RICE Scoring Calculator](https://tools.iamkesava.com/rice-calculator/): Prioritize features with the RICE framework. Score initiatives by Reach, Impact, Confidence, and Effort.
+- [A/B Test Calculator](https://tools.iamkesava.com/ab-test-calculator/): Statistical significance calculator for A/B tests. Sample size planner and results analyzer.
+- [Release Notes Formatter](https://tools.iamkesava.com/release-notes-formatter/): Turn raw changelog bullets into polished, categorized release notes. Export as Markdown, HTML, or plain text.
+- [Feature-Benefit Mapper](https://tools.iamkesava.com/feature-benefit-mapper/): Map product features to customer benefits. Catch feature-speak before it reaches your landing page.
+
+### SEO
+
+- [Character Counter](https://tools.iamkesava.com/character-counter/): Count characters, words, sentences, paragraphs, and estimate reading time.
+- [Word Frequency](https://tools.iamkesava.com/word-frequency/): Analyze word frequency with bar charts, filtering, and CSV export.
+- [Headline Analyzer](https://tools.iamkesava.com/headline-analyzer/): Score headlines for emotional value, power words, readability, and click potential.
+- [Meta Tag Generator](https://tools.iamkesava.com/meta-tag-generator/): Generate meta titles, descriptions, OG tags, and Twitter cards with live SERP previews.
+- [Schema Generator](https://tools.iamkesava.com/schema-generator/): Build JSON-LD structured data for Articles, FAQs, Products, and more.
+- [SEO Content Analyzer](https://tools.iamkesava.com/seo-content-analyzer/): Analyze content for keyword density, heading structure, readability, and SEO score.
+- [AEO Readiness Scorer](https://tools.iamkesava.com/aeo-readiness-scorer/): Score any page on twelve structural signals AI search engines use to decide what to cite. Offline Python script.
+- [Passage Audit](https://tools.iamkesava.com/passage-audit/): Score every passage on your page for AI retrievability. Catches thin copy that disappears when an AI chunks the page.
+- [Readability Scorer](https://tools.iamkesava.com/readability-scorer/): Grade content with Flesch-Kincaid, Gunning Fog, SMOG, and more.
+- [UTM Builder](https://tools.iamkesava.com/utm-builder/): Build campaign URLs with UTM parameters, presets, and bulk generation.
+- [A/B Test Calculator](https://tools.iamkesava.com/ab-test-calculator/): Statistical significance calculator for A/B tests. Sample size planner and results analyzer.
+- [Content Brief Builder](https://tools.iamkesava.com/content-brief-builder/): Build structured content briefs for writers and SEO teams. Define keywords, audience, intent, and outline.
+
+### Everyone
+
+- [Character Counter](https://tools.iamkesava.com/character-counter/): Count characters, words, sentences, paragraphs, and estimate reading time.
+- [Text Cleaner](https://tools.iamkesava.com/text-cleaner/): Remove extra whitespace, line breaks, special characters, duplicate lines.
+- [Clipboard Manager](https://tools.iamkesava.com/clipboard-manager/): Save, search, and organize text clips in your browser.
+- [Invoice Generator](https://tools.iamkesava.com/invoice-generator/): Create professional invoices with PDF export and local storage.
+- [Link-in-Bio Builder](https://tools.iamkesava.com/link-in-bio/): Create a link-in-bio page with custom links and themes.
+- [QR Code Generator](https://tools.iamkesava.com/qr-code/): Generate QR codes with custom colors and sizes.
+- [Image Converter](https://tools.iamkesava.com/image-converter/): Convert images between formats in your browser.
+- [PDF Merge](https://tools.iamkesava.com/pdf-merge/): Combine multiple PDF files into one. Files never leave your browser.
+- [PDF Compress](https://tools.iamkesava.com/pdf-compress/): Reduce PDF file size without uploading. 100% client-side.
+- [PDF Split](https://tools.iamkesava.com/pdf-split/): Extract specific pages from a PDF. 100% client-side.
+- [Video Converter](https://tools.iamkesava.com/video-converter/): Convert videos between MP4 and WebM. 100% client-side, no uploads, no limits.
+- [Year Progress](https://tools.iamkesava.com/year-progress/): How far through the year are you, with opinions.
+- [Life in Numbers](https://tools.iamkesava.com/real-age/): Your age in units that actually mean something.
+- [Caffeine Clock](https://tools.iamkesava.com/caffeine/): When will your coffee actually wear off?
+- [Meeting Cost Meter](https://tools.iamkesava.com/meeting-cost/): The live cost of this meeting, in real time.
+- [How's Outside?](https://tools.iamkesava.com/outside/): Weather without the numbers. Warmer than yesterday? Good for what?
+- [Email Signature](https://tools.iamkesava.com/email-signature/): Generate a clean email signature and share it via link.
+- [Decision Flow](https://tools.iamkesava.com/flow/): Build a yes/no troubleshooting tree and share it as a link.
+
+## URL templates
+
+- Tool: `https://tools.iamkesava.com/<slug>/`
+- Collection: `https://tools.iamkesava.com/for/<slug>/`
+
+## License
+
+MIT. Cite freely with attribution to Kesava and a link to the canonical URL.
