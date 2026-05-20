@@ -397,6 +397,7 @@ export default function RiceCalculatorContent() {
       title="RICE Scoring Calculator"
       tagline="Prioritize features · sortable scorecard · CSV import/export · auto-save"
       accent={ACCENT_PM}
+      materialFab={{ label: "Export CSV", onClick: exportCsv }}
       actions={actions}
       controls={controls}
       info={info}

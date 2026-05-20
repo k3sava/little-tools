@@ -798,6 +798,7 @@ export default function MarkdownEditorContent() {
       title="Markdown Editor"
       tagline="Live preview · GFM · slash commands · drop images · export"
       accent="#6366f1"
+      materialFab={{ label: "Export .md", onClick: exportMd }}
       actions={actions}
       controls={controls}
     >

@@ -192,6 +192,7 @@ export default function PassageAuditContent() {
       title="Passage Audit"
       tagline="See which passages on your page disappear when AI chunks it."
       accent={ACCENT}
+      materialFab={{ label: "Export CSV", onClick: exportCsv }}
       actions={actions}
       controls={controls}
       controlsLabel="Insights"

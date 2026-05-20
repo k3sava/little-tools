@@ -580,6 +580,7 @@ export default function FaviconContent() {
       title="Favicon Generator"
       tagline="Every favicon size + .ico + manifest, generated locally."
       accent={ACCENT}
+      materialFab={{ label: "Download ZIP", onClick: downloadZip }}
       actions={actions}
       controls={controls}
       controlsLabel="Design"

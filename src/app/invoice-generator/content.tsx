@@ -617,6 +617,7 @@ export default function InvoiceGeneratorContent() {
       title="Invoice Generator"
       tagline="Invoice, quote, or credit note - export to PDF."
       accent={ACCENT}
+      materialFab={{ label: "Export PDF", onClick: handleExport }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

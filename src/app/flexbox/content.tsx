@@ -334,6 +334,7 @@ export default function FlexboxContent() {
       title="Flexbox"
       tagline="Live playground for direction, wrap, justify, align and per-item flex"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copy }}
       actions={
         <>
           <Segment

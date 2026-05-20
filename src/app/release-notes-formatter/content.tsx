@@ -387,6 +387,7 @@ export default function ReleaseNotesFormatterContent() {
       title="Release Notes Formatter"
       tagline="Auto-categorize · semver · MD / HTML / plain"
       accent={ACCENT_PM}
+      materialFab={{ label: "Copy", onClick: handleCopy }}
       actions={actions}
       controls={controls}
       info={info}

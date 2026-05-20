@@ -724,6 +724,7 @@ export default function SeoContentAnalyzerContent() {
       title="SEO Content Analyzer"
       tagline="Score · keyword density · heading outline · readability · recommendations"
       accent={ACCENT_SEO}
+      materialFab={{ label: "Copy Report", onClick: handleCopyReport }}
       actions={actions}
       controls={controls}
       info={info}

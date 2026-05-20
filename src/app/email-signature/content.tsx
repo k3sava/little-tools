@@ -190,6 +190,7 @@ export default function EmailSignatureContent() {
       title="Email Signature"
       tagline="Generate a clean signature. Share it via link."
       accent={ACCENT}
+      materialFab={{ label: "Copy HTML", onClick: copyHTML }}
       actions={
         <>
           <ToolActionButton onClick={copyURL} disabled={!hasContent}>

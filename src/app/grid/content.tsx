@@ -323,6 +323,7 @@ export default function GridContent() {
       title="CSS Grid"
       tagline="Visual track editor — drag to span, paint named areas, copy grid-template CSS"
       accent="#8b5cf6"
+      materialFab={{ label: "Copy CSS", onClick: copy }}
       actions={
         <>
           <Segment

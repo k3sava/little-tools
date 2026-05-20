@@ -299,6 +299,7 @@ export default function FeatureBenefitMapperContent() {
       title="Feature-Benefit Mapper"
       tagline="Feature → benefit → outcome · feature-speak detection · export MD/CSV"
       accent={ACCENT_PMM}
+      materialFab={{ label: "Copy Markdown", onClick: handleCopyMarkdown }}
       actions={actions}
       controls={controls}
       info={info}

@@ -503,6 +503,7 @@ export default function HeadlineAnalyzerContent() {
       title="Headline Analyzer"
       tagline="Score on emotion · power · length · readability · CTR"
       accent="#6366f1"
+      materialFab={{ label: "Copy Headline", onClick: () => copyHeadline(headline, "A") }}
       actions={actions}
       controls={controls}
     >

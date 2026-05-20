@@ -396,6 +396,7 @@ export default function VideoConverterContent() {
       title="Video Converter"
       tagline="Convert MP4 ↔ WebM in your browser - private, no upload."
       accent={ACCENT}
+      materialFab={{ label: "Download All", onClick: downloadAll }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

@@ -286,6 +286,7 @@ export default function FlowContent() {
       title="Decision Flow"
       tagline="Build a troubleshooting tree. Share it as a link."
       accent={ACCENT}
+      materialFab={{ label: "Copy Link", onClick: copyLink }}
       actions={
         <>
           <ToolActionButton onClick={() => switchMode(mode === "build" ? "preview" : "build")}>

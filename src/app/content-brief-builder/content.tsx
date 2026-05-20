@@ -390,6 +390,7 @@ export default function ContentBriefBuilderContent() {
       title="Content Brief Builder"
       tagline="Structured fields · outline · auto-save · export to Markdown"
       accent={ACCENT_SEO}
+      materialFab={{ label: "Copy Markdown", onClick: handleCopy }}
       actions={actions}
       controls={controls}
       info={info}

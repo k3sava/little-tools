@@ -406,6 +406,7 @@ export default function FindReplaceContent() {
       title="Find & Replace"
       tagline="Regex · whole word · multiline · presets · live preview"
       accent="#6366f1"
+      materialFab={{ label: "Copy Result", onClick: handleCopy }}
       actions={actions}
       controls={controls}
     >

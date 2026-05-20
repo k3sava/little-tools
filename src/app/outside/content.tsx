@@ -241,6 +241,7 @@ export default function OutsideContent() {
       title="How's Outside?"
       tagline="Weather, without the numbers."
       accent={ACCENT}
+      materialFab={{ label: "Refresh", onClick: loadWeather }}
       actions={
         data ? (
           <>

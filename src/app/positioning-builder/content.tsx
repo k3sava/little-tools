@@ -554,6 +554,7 @@ export default function PositioningBuilderContent() {
       title="Positioning Statement Builder"
       tagline="Moore · Dunford · Blank · Simple · live preview · compare"
       accent={ACCENT_PMM}
+      materialFab={{ label: "Copy", onClick: handleCopyPlain }}
       actions={actions}
       controls={controls}
       info={info}

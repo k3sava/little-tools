@@ -396,6 +396,7 @@ export default function FileConverterContent() {
       title="File Converter"
       tagline="Convert images between PNG, JPG, and WebP."
       accent={ACCENT}
+      materialFab={{ label: "Download All", onClick: downloadAll }}
       actions={actions}
       controls={controls}
       controlsLabel="Settings"

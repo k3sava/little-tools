@@ -540,6 +540,7 @@ export default function ComparisonTableContent() {
       title="Comparison Table Builder"
       tagline="Drag-to-reorder · color-coded cells · export HTML / MD / PNG"
       accent={ACCENT_PMM}
+      materialFab={{ label: "Copy Markdown", onClick: copyAsMarkdown }}
       actions={actions}
       controls={controls}
       info={info}

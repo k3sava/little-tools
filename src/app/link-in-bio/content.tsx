@@ -378,6 +378,7 @@ export default function LinkInBioContent() {
       title="Link-in-Bio Builder"
       tagline="Tiny Linktree-style page, exported as a single HTML file."
       accent={ACCENT}
+      materialFab={{ label: "Export HTML", onClick: exportHTML }}
       actions={actions}
       controls={controls}
       controlsLabel="Design"

@@ -548,6 +548,7 @@ export default function LoremIpsumContent() {
       title="Lorem Ipsum Generator"
       tagline="Placeholder text · 8 flavors · words, sentences, paragraphs"
       accent="#6366f1"
+      materialFab={{ label: "Copy Text", onClick: handleCopy }}
       actions={actions}
       controls={controls}
     >

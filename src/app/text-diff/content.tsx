@@ -609,6 +609,7 @@ export default function TextDiffContent() {
       title="Text Diff"
       tagline="LCS · word + char level · ignore whitespace/case/CRLF · patch export"
       accent="#10b981"
+      materialFab={{ label: "Copy Diff", onClick: handleCopy }}
       actions={actions}
       controls={controls}
     >
