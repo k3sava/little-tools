@@ -135,6 +135,187 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   DARK MODE — Phase 8
+   Auto: prefers-color-scheme: dark
+   Manual: html[data-dark] (set by ThemeSwitcher, persisted in kami.dark)
+   Per-theme overrides follow the base block for themes with hardcoded colours.
+   ══════════════════════════════════════════════════════════════════ */
+@media (prefers-color-scheme: dark) { :root { --kami-dark: 1; } }
+html[data-dark] { --kami-dark: 1; }
+
+/* Base dark tokens (default + brutalist + zen pick these up automatically) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kami-bg: #111111;
+    --kami-surface: rgba(28,28,30,0.85);
+    --kami-surface-solid: #1c1c1e;
+    --kami-border: rgba(60,60,67,0.29);
+    --kami-border-strong: #38383a;
+    --kami-text: #f5f5f7;
+    --kami-text-muted: #aeaeb2;
+    --kami-text-dim: #636366;
+    --kami-cta-bg: #f5f5f7;
+    --kami-cta-bg-hover: #e0e0e2;
+    --kami-cta-text: #111111;
+    --kami-cta2-bg: #1c1c1e;
+    --kami-cta2-bg-hover: #2c2c2e;
+    --kami-cta2-text: #aeaeb2;
+    --kami-cta2-border: #38383a;
+    --kami-input-bg: #1c1c1e;
+    --kami-input-border: 1px solid #38383a;
+    --kami-accent: #4db3ff;
+    --kami-card-shadow: 0 1px 2px rgba(0,0,0,0.4);
+    --kami-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.5);
+    --bg-warm: #111111;
+    --bg-white: #1c1c1e;
+    --text-primary: #f5f5f7;
+    --text-body: #aeaeb2;
+    --text-muted: #636366;
+    --border: #38383a;
+  }
+}
+/* Specificity (0,2,1) beats any html[data-theme="X"] rule at (0,1,1) */
+html[data-dark]:not([data-theme]),
+html[data-dark][data-theme] {
+  --kami-bg: #111111;
+  --kami-surface: rgba(28,28,30,0.85);
+  --kami-surface-solid: #1c1c1e;
+  --kami-border: rgba(60,60,67,0.29);
+  --kami-border-strong: #38383a;
+  --kami-text: #f5f5f7;
+  --kami-text-muted: #aeaeb2;
+  --kami-text-dim: #636366;
+  --kami-cta-bg: #f5f5f7;
+  --kami-cta-bg-hover: #e0e0e2;
+  --kami-cta-text: #111111;
+  --kami-cta2-bg: #1c1c1e;
+  --kami-cta2-bg-hover: #2c2c2e;
+  --kami-cta2-text: #aeaeb2;
+  --kami-cta2-border: #38383a;
+  --kami-input-bg: #1c1c1e;
+  --kami-input-border: 1px solid #38383a;
+  --kami-accent: #4db3ff;
+  --kami-card-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  --kami-card-shadow-hover: 0 8px 24px rgba(0,0,0,0.5);
+  --bg-warm: #111111;
+  --bg-white: #1c1c1e;
+  --text-primary: #f5f5f7;
+  --text-body: #aeaeb2;
+  --text-muted: #636366;
+  --border: #38383a;
+}
+
+/* Terminal is already true-black — no dark override needed */
+
+/* Editorial dark — warm dark paper */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="editorial"] {
+    --kami-bg: #1a1714;
+    --kami-surface: rgba(26,23,20,0.9);
+    --kami-surface-solid: #201d19;
+    --kami-border: rgba(60,52,40,0.4);
+    --kami-border-strong: #3a332a;
+    --kami-text: #e8dcc8;
+    --kami-text-muted: #9c8e76;
+    --kami-text-dim: #5c5448;
+    --kami-input-bg: #201d19;
+  }
+}
+html[data-dark][data-theme="editorial"] {
+  --kami-bg: #1a1714;
+  --kami-surface: rgba(26,23,20,0.9);
+  --kami-surface-solid: #201d19;
+  --kami-border: rgba(60,52,40,0.4);
+  --kami-border-strong: #3a332a;
+  --kami-text: #e8dcc8;
+  --kami-text-muted: #9c8e76;
+  --kami-text-dim: #5c5448;
+  --kami-input-bg: #201d19;
+}
+
+/* Glass dark — deep indigo frost */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="glass"] {
+    --kami-bg: #0d1117;
+    --kami-surface: rgba(22,26,35,0.75);
+    --kami-surface-solid: #161a23;
+    --kami-border: rgba(80,100,140,0.25);
+    --kami-border-strong: rgba(80,100,140,0.35);
+    --kami-text: #e6edf3;
+    --kami-text-muted: #8b949e;
+    --kami-text-dim: #484f58;
+    --kami-input-bg: rgba(22,26,35,0.7);
+  }
+}
+html[data-dark][data-theme="glass"] {
+  --kami-bg: #0d1117;
+  --kami-surface: rgba(22,26,35,0.75);
+  --kami-surface-solid: #161a23;
+  --kami-border: rgba(80,100,140,0.25);
+  --kami-border-strong: rgba(80,100,140,0.35);
+  --kami-text: #e6edf3;
+  --kami-text-muted: #8b949e;
+  --kami-text-dim: #484f58;
+  --kami-input-bg: rgba(22,26,35,0.7);
+}
+
+/* Material dark — MD3 dark scheme */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="material"] {
+    --kami-bg: #1c1b1f;
+    --kami-surface: rgba(32,31,36,0.9);
+    --kami-surface-solid: #201f24;
+    --kami-border: rgba(72,70,78,0.4);
+    --kami-border-strong: #48464e;
+    --kami-text: #e6e1e5;
+    --kami-text-muted: #cac4d0;
+    --kami-text-dim: #79747e;
+    --kami-input-bg: #201f24;
+    --kami-accent: #d0bcff;
+  }
+}
+html[data-dark][data-theme="material"] {
+  --kami-bg: #1c1b1f;
+  --kami-surface: rgba(32,31,36,0.9);
+  --kami-surface-solid: #201f24;
+  --kami-border: rgba(72,70,78,0.4);
+  --kami-border-strong: #48464e;
+  --kami-text: #e6e1e5;
+  --kami-text-muted: #cac4d0;
+  --kami-text-dim: #79747e;
+  --kami-input-bg: #201f24;
+  --kami-accent: #d0bcff;
+}
+
+/* Metro dark — flat dark with bold accent */
+@media (prefers-color-scheme: dark) {
+  html[data-theme="metro"] {
+    --kami-bg: #1a1a1a;
+    --kami-surface: rgba(26,26,26,0.95);
+    --kami-surface-solid: #202020;
+    --kami-border: rgba(60,60,60,0.5);
+    --kami-border-strong: #3c3c3c;
+    --kami-text: #f2f2f2;
+    --kami-text-muted: #a0a0a0;
+    --kami-text-dim: #606060;
+    --kami-input-bg: #202020;
+    --kami-accent: #0091ff;
+  }
+}
+html[data-dark][data-theme="metro"] {
+  --kami-bg: #1a1a1a;
+  --kami-surface: rgba(26,26,26,0.95);
+  --kami-surface-solid: #202020;
+  --kami-border: rgba(60,60,60,0.5);
+  --kami-border-strong: #3c3c3c;
+  --kami-text: #f2f2f2;
+  --kami-text-muted: #a0a0a0;
+  --kami-text-dim: #606060;
+  --kami-input-bg: #202020;
+  --kami-accent: #0091ff;
+}
+
 /* Help Center Article Prose */
 @layer components {
   .article-content h2 {
@@ -1072,6 +1253,20 @@ html[data-theme="zen"] .theme-switcher-option.active {
   width: 18px;
   text-align: center;
   line-height: 1;
+}
+
+.theme-switcher-divider {
+  height: 1px;
+  background: var(--kami-border, rgba(0,0,0,0.1));
+  margin: 4px 0;
+}
+
+.theme-dark-toggle {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.theme-dark-toggle.active {
+  opacity: 1;
 }
 
 /* ============================================================

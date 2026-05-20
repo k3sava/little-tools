@@ -62,6 +62,7 @@ function applyTheme(theme: ThemeId) {
 
 function InlineThemeSwitcher() {
   const [theme, setTheme] = useState<ThemeId>("brutalist");
+  const [dark, setDark] = useState(false);
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -85,6 +86,26 @@ function InlineThemeSwitcher() {
     writeCookie(id);
     setTheme(id);
     applyTheme(id);
+  }, []);
+
+  // Dark mode: restore from localStorage, respect prefers-color-scheme as default
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("kami.dark");
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const isDark = stored === "1" || (stored === null && prefersDark);
+      setDark(isDark);
+      document.documentElement.toggleAttribute("data-dark", isDark);
+    } catch { /* noop */ }
+  }, []);
+
+  const toggleDark = useCallback(() => {
+    setDark(v => {
+      const next = !v;
+      document.documentElement.toggleAttribute("data-dark", next);
+      try { localStorage.setItem("kami.dark", next ? "1" : "0"); } catch { /* noop */ }
+      return next;
+    });
   }, []);
 
   useEffect(() => {
@@ -153,6 +174,15 @@ function InlineThemeSwitcher() {
               <span>{t.label}</span>
             </button>
           ))}
+          <div className="theme-switcher-divider" />
+          <button
+            type="button"
+            className={`theme-switcher-option theme-dark-toggle${dark ? " active" : ""}`}
+            onClick={toggleDark}
+          >
+            <span className="theme-switcher-option-icon">{dark ? "◐" : "○"}</span>
+            <span>{dark ? "dark on" : "dark off"}</span>
+          </button>
         </div>
       )}
     </div>
