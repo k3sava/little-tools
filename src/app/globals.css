@@ -6236,6 +6236,25 @@ html[data-theme="metro"] .tool-shell-breadcrumb-sep {
    Glass hero · Material app bar · Metro pivot header
    ═══════════════════════════════════════════════════════════════════════════ */
 
+/* ── Winamp-skin: all three themed headers always in DOM; CSS shows one per theme ── */
+.hub-glass-hero    { display: none; }
+.hub-material-appbar { display: none; }
+.hub-metro-header  { display: none; }
+
+html[data-theme="glass"]    .tools-hub .hub-glass-hero    { display: block; }
+html[data-theme="material"] .tools-hub .hub-material-appbar { display: flex; }
+html[data-theme="metro"]    .tools-hub .hub-metro-header  { display: block; }
+
+/* Default heading: hidden when a themed header takes over */
+html[data-theme="glass"] .hub-default-heading,
+html[data-theme="material"] .hub-default-heading,
+html[data-theme="metro"] .hub-default-heading { display: none; }
+
+/* Default search wrap: glass/metro have search in their header; material hides only the search input */
+html[data-theme="glass"]    .hub-default-search-wrap,
+html[data-theme="metro"]    .hub-default-search-wrap { display: none; }
+html[data-theme="material"] .hub-default-search { display: none; }
+
 /* ── Glass: full-bleed gradient hero with centered frosted search ── */
 
 .hub-glass-hero {

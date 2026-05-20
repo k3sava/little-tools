@@ -27,7 +27,7 @@ function HubSearch({
 }: {
   value: string;
   onChange: (v: string) => void;
-  inputRef: React.Ref<HTMLInputElement>;
+  inputRef?: React.Ref<HTMLInputElement>;
   placeholder?: string;
 }) {
   return (
@@ -57,30 +57,22 @@ export function ToolsHubContent() {
   const [query, setQuery] = useState("");
   const [activeCollection, setActiveCollection] = useState<Collection | null>(null);
   const [recent, setRecent] = useState<string[]>([]);
-  const [currentTheme, setCurrentTheme] = useState<string>("default");
   const searchRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     setRecent(readRecent());
   }, []);
 
-  useEffect(() => {
-    function readTheme() {
-      return document.documentElement.getAttribute("data-theme") || "default";
-    }
-    setCurrentTheme(readTheme());
-    const obs = new MutationObserver(() => setCurrentTheme(readTheme()));
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-    return () => obs.disconnect();
-  }, []);
-
+  // Focus whichever search input is currently visible (varies by theme)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
       const inField = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA" || target?.isContentEditable;
       if (e.key === "/" && !inField) {
         e.preventDefault();
-        searchRef.current?.focus();
+        const visible = Array.from(document.querySelectorAll<HTMLInputElement>(".tools-hub-search-input"))
+          .find((el) => el.offsetParent !== null);
+        (visible ?? searchRef.current)?.focus();
       }
     }
     window.addEventListener("keydown", onKey);
@@ -103,12 +95,8 @@ export function ToolsHubContent() {
     return recent.map((h) => allTools.find((t) => t.href === h)).filter(Boolean).slice(0, 4) as typeof allTools;
   }, [recent, query, activeCollection]);
 
-  const isGlass    = currentTheme === "glass";
-  const isMaterial = currentTheme === "material";
-  const isMetro    = currentTheme === "metro";
-
   return (
-    <div className={`kami-scope min-h-screen tools-hub theme-${currentTheme} kami-text`}>
+    <div className="kami-scope min-h-screen tools-hub kami-text">
       <Breadcrumb
         items={[
           { label: "home", href: "https://apps.iamkesava.com" },
@@ -116,126 +104,116 @@ export function ToolsHubContent() {
         ]}
       />
 
-      {/* ── Glass: full-width frosted hero with centered search ── */}
-      {isGlass && (
-        <div className="hub-glass-hero">
-          <div className="hub-glass-hero-inner">
-            <p className="hub-glass-hero-eyebrow">little tools</p>
-            <h1 className="hub-glass-hero-title">{allTools.length} tools</h1>
-            <p className="hub-glass-hero-sub">Ad-free · Privacy-first · Runs locally</p>
-            <div className="hub-glass-hero-search">
-              <HubSearch value={query} onChange={setQuery} inputRef={searchRef} placeholder="Search 60 tools…" />
-            </div>
+      {/* ── Glass: full-width frosted hero — always in DOM, CSS shows for glass theme ── */}
+      <div className="hub-glass-hero">
+        <div className="hub-glass-hero-inner">
+          <p className="hub-glass-hero-eyebrow">little tools</p>
+          <h1 className="hub-glass-hero-title">{allTools.length} tools</h1>
+          <p className="hub-glass-hero-sub">Ad-free · Privacy-first · Runs locally</p>
+          <div className="hub-glass-hero-search">
+            <HubSearch value={query} onChange={setQuery} placeholder="Search 60 tools…" />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* ── Material: top-app-bar–style heading row ── */}
-      {isMaterial && (
-        <div className="hub-material-appbar">
-          <div className="hub-material-appbar-inner">
-            <div>
-              <p className="hub-material-appbar-label">little tools</p>
-              <h1 className="hub-material-appbar-title">{allTools.length} tools</h1>
-            </div>
-            <div className="hub-material-appbar-search">
-              <HubSearch value={query} onChange={setQuery} inputRef={searchRef} placeholder="Search…" />
-            </div>
+      {/* ── Material: top-app-bar — always in DOM, CSS shows for material theme ── */}
+      <div className="hub-material-appbar">
+        <div className="hub-material-appbar-inner">
+          <div>
+            <p className="hub-material-appbar-label">little tools</p>
+            <h1 className="hub-material-appbar-title">{allTools.length} tools</h1>
+          </div>
+          <div className="hub-material-appbar-search">
+            <HubSearch value={query} onChange={setQuery} placeholder="Search…" />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* ── Metro: Pivot tabs for collection navigation ── */}
-      {isMetro && (
-        <div className="hub-metro-header">
-          <div className="hub-metro-header-top">
-            <h1 className="hub-metro-title">tools</h1>
-            <div className="hub-metro-search">
-              <HubSearch value={query} onChange={setQuery} inputRef={searchRef} placeholder="Search…" />
-            </div>
+      {/* ── Metro: flat header + pivot tabs — always in DOM, CSS shows for metro theme ── */}
+      <div className="hub-metro-header">
+        <div className="hub-metro-header-top">
+          <h1 className="hub-metro-title">tools</h1>
+          <div className="hub-metro-search">
+            <HubSearch value={query} onChange={setQuery} placeholder="Search…" />
           </div>
-          <nav className="metro-pivot hub-metro-pivot" role="tablist" aria-label="Collections">
+        </div>
+        <nav className="metro-pivot hub-metro-pivot" role="tablist" aria-label="Collections">
+          <button
+            role="tab"
+            aria-selected={activeCollection === null}
+            className={`metro-pivot-item${activeCollection === null ? " is-active" : ""}`}
+            onClick={() => setActiveCollection(null)}
+          >
+            All ({allTools.length})
+          </button>
+          {collections.map((c) => (
             <button
+              key={c.id}
               role="tab"
-              aria-selected={activeCollection === null}
-              className={`metro-pivot-item${activeCollection === null ? " is-active" : ""}`}
-              onClick={() => setActiveCollection(null)}
+              aria-selected={activeCollection === c.id}
+              className={`metro-pivot-item${activeCollection === c.id ? " is-active" : ""}`}
+              onClick={() => setActiveCollection(activeCollection === c.id ? null : c.id)}
             >
-              All ({allTools.length})
+              {c.title}
             </button>
-            {collections.map((c) => (
-              <button
-                key={c.id}
-                role="tab"
-                aria-selected={activeCollection === c.id}
-                className={`metro-pivot-item${activeCollection === c.id ? " is-active" : ""}`}
-                onClick={() => setActiveCollection(activeCollection === c.id ? null : c.id)}
-              >
-                {c.title}
-              </button>
-            ))}
-          </nav>
-        </div>
-      )}
+          ))}
+        </nav>
+      </div>
 
       <main
         id="main"
         className="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-6 sm:px-6 sm:pt-8"
       >
-        {/* Default + non-glass heading block */}
-        {!isGlass && !isMaterial && !isMetro && (
-          <div className="mb-5 sm:mb-7">
-            <h1 className="text-2xl font-semibold leading-tight sm:text-3xl kami-text">
-              {allTools.length} little tools
-            </h1>
-            <p className="mt-1 text-sm sm:text-base kami-text-muted">
-              Ad-free, privacy-first browser utilities. Everything runs locally.
-            </p>
-          </div>
-        )}
+        {/* Default heading — CSS hides for glass/material/metro */}
+        <div className="hub-default-heading mb-5 sm:mb-7">
+          <h1 className="text-2xl font-semibold leading-tight sm:text-3xl kami-text">
+            {allTools.length} little tools
+          </h1>
+          <p className="mt-1 text-sm sm:text-base kami-text-muted">
+            Ad-free, privacy-first browser utilities. Everything runs locally.
+          </p>
+        </div>
 
-        {/* Search + chips — hidden for Glass (uses hero search) and Metro (uses pivot) */}
-        {!isGlass && !isMetro && (
-          <div className="tools-hub-search-wrap">
-            {!isMaterial && (
-              <HubSearch value={query} onChange={setQuery} inputRef={searchRef} />
-            )}
-
-            <div className="tools-hub-chips" role="tablist" aria-label="Tool collections">
-              <button
-                role="tab"
-                aria-selected={activeCollection === null}
-                onClick={() => setActiveCollection(null)}
-                data-active={activeCollection === null}
-                className="tools-hub-chip"
-              >
-                All <span className="tools-hub-chip-count">{allTools.length}</span>
-              </button>
-              {collections.map((c) => {
-                const count = getToolsByCollection(c.id).length;
-                const isActive = activeCollection === c.id;
-                return (
-                  <button
-                    key={c.id}
-                    role="tab"
-                    aria-selected={isActive}
-                    onClick={() => setActiveCollection(isActive ? null : c.id)}
-                    data-active={isActive}
-                    className="tools-hub-chip"
-                    style={
-                      isActive
-                        ? { background: c.accentHex, color: "#fff", borderColor: c.accentHex }
-                        : undefined
-                    }
-                  >
-                    <span aria-hidden="true" className="tools-hub-chip-dot" style={{ background: c.accentHex }} />
-                    {c.title} <span className="tools-hub-chip-count">{count}</span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Search + chips — CSS hides search for glass/metro/material; hides all for glass/metro */}
+        <div className="hub-default-search-wrap tools-hub-search-wrap">
+          <div className="hub-default-search">
+            <HubSearch value={query} onChange={setQuery} inputRef={searchRef} />
           </div>
-        )}
+
+          <div className="tools-hub-chips" role="tablist" aria-label="Tool collections">
+            <button
+              role="tab"
+              aria-selected={activeCollection === null}
+              onClick={() => setActiveCollection(null)}
+              data-active={activeCollection === null}
+              className="tools-hub-chip"
+            >
+              All <span className="tools-hub-chip-count">{allTools.length}</span>
+            </button>
+            {collections.map((c) => {
+              const count = getToolsByCollection(c.id).length;
+              const isActive = activeCollection === c.id;
+              return (
+                <button
+                  key={c.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActiveCollection(isActive ? null : c.id)}
+                  data-active={isActive}
+                  className="tools-hub-chip"
+                  style={
+                    isActive
+                      ? { background: c.accentHex, color: "#fff", borderColor: c.accentHex }
+                      : undefined
+                  }
+                >
+                  <span aria-hidden="true" className="tools-hub-chip-dot" style={{ background: c.accentHex }} />
+                  {c.title} <span className="tools-hub-chip-count">{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         {recentTools.length > 0 && (
           <section className="mb-6">
@@ -262,15 +240,7 @@ export function ToolsHubContent() {
         </div>
 
         {filtered.length === 0 ? (
-          <div
-            className="px-5 py-10 text-center text-sm"
-            style={{
-              background: "var(--kami-surface-solid)",
-              border: "1px dashed var(--kami-border-strong)",
-              borderRadius: "var(--kami-card-radius)",
-              color: "var(--kami-text-muted)",
-            }}
-          >
+          <div className="px-5 py-10 text-center text-sm kami-text-muted kami-surface kami-border-all" style={{ borderStyle: "dashed", borderRadius: "var(--kami-card-radius)" }}>
             No tools match &ldquo;{query}&rdquo;. Try a different word.
           </div>
         ) : (
