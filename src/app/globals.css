@@ -2272,6 +2272,19 @@ html[data-theme="terminal"] .kami-scope [class*="bg-gray-9"] {
   .tool-shell-body.has-controls {
     grid-template-columns: 1fr var(--tool-shell-panel-w);
   }
+  .tool-shell-body.has-controls.sidebar-collapsed {
+    grid-template-columns: 1fr;
+  }
+  .tool-shell-body.sidebar-collapsed .tool-shell-panel {
+    display: none;
+  }
+}
+/* Only visible at desktop — hidden on mobile where bottom sheet handles controls */
+.tool-sidebar-toggle-btn {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .tool-sidebar-toggle-btn { display: flex; }
 }
 
 .tool-shell-canvas {

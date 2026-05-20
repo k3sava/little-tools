@@ -314,10 +314,26 @@ export function ToolShell({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [splashOpen, setSplashOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<string>('default');
   const [metroPivot, setMetroPivot] = useState<MetroPivotId>('tool');
   const shortcutCtx = useContext(ShortcutContext);
   const shellRef = useRef<HTMLDivElement>(null);
+
+  // Restore sidebar collapsed state from localStorage
+  useEffect(() => {
+    try {
+      setSidebarCollapsed(localStorage.getItem('kami.sidebar') === 'collapsed');
+    } catch { /* noop */ }
+  }, []);
+
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed(v => {
+      const next = !v;
+      try { localStorage.setItem('kami.sidebar', next ? 'collapsed' : 'open'); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   // Track theme changes
   useEffect(() => {
@@ -436,6 +452,20 @@ export function ToolShell({
 
         <div className="tool-shell-actions">
           {actions}
+          {hasControls && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              className="tool-icon-btn tool-sidebar-toggle-btn"
+              aria-label={sidebarCollapsed ? "Show controls panel" : "Collapse controls panel"}
+              title={sidebarCollapsed ? "Show controls" : "Collapse controls"}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <path d={sidebarCollapsed ? "M15 3v18" : "M9 3v18"}/>
+              </svg>
+            </button>
+          )}
           <ToolShareButton />
           <button
             type="button"
@@ -491,7 +521,7 @@ export function ToolShell({
       </div>
 
       {/* ── Body ── */}
-      <div className={`tool-shell-body${hasControls ? " has-controls" : " no-controls"}`}>
+      <div className={`tool-shell-body${hasControls ? " has-controls" : " no-controls"}${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
         <main className="tool-shell-canvas">{children}</main>
 
         {hasControls && (
