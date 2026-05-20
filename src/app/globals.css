@@ -316,6 +316,26 @@ html[data-dark][data-theme="metro"] {
   --kami-accent: #0091ff;
 }
 
+/* Hub-page dark overrides — brutalist/editorial/zen body:not(:has(.kami-playground))
+   use hardcoded light hex values; override here at specificity (0,3,2) */
+html[data-dark][data-theme="brutalist"] body:not(:has(.kami-playground)),
+html[data-dark][data-theme="zen"] body:not(:has(.kami-playground)) {
+  background-color: var(--kami-bg);
+  color: var(--kami-text);
+}
+html[data-dark][data-theme="editorial"] body:not(:has(.kami-playground)) {
+  background-color: var(--kami-bg);
+  color: var(--kami-text);
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="brutalist"] body:not(:has(.kami-playground)),
+  html[data-theme="zen"] body:not(:has(.kami-playground)),
+  html[data-theme="editorial"] body:not(:has(.kami-playground)) {
+    background-color: var(--kami-bg);
+    color: var(--kami-text);
+  }
+}
+
 /* Help Center Article Prose */
 @layer components {
   .article-content h2 {
