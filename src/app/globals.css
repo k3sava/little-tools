@@ -3819,9 +3819,19 @@ html[data-theme="glass"] {
   background: linear-gradient(135deg, #c7e0fc 0%, #d8d4fc 28%, #e9d5fb 52%, #fbcfe8 74%, #bbf7d0 100%);
   background-attachment: fixed;
 }
+html[data-dark][data-theme="glass"] {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 28%, #1a1f2e 52%, #111827 74%, #0a1628 100%);
+  background-attachment: fixed;
+}
+@media (prefers-color-scheme: dark) {
+  html[data-theme="glass"] {
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 28%, #1a1f2e 52%, #111827 74%, #0a1628 100%);
+    background-attachment: fixed;
+  }
+}
 html[data-theme="glass"] body {
   background: transparent;
-  color: #1d1d1f;
+  color: var(--kami-text);
   font-family: var(--kami-font-body);
 }
 
@@ -4098,8 +4108,8 @@ html[data-theme="material"] {
 }
 
 html[data-theme="material"] body {
-  background-color: #fffbfe;
-  color: #1c1b1f;
+  background-color: var(--kami-bg);
+  color: var(--kami-text);
   font-family: var(--kami-font-body);
 }
 
@@ -4361,8 +4371,8 @@ html[data-theme="metro"] {
 
 /* Metro/Zune body — pure white like the Zune HD and Windows Phone 7/8 */
 html[data-theme="metro"] body {
-  background-color: #ffffff;
-  color: #000000;
+  background-color: var(--kami-bg);
+  color: var(--kami-text);
   font-family: var(--kami-font-body);
 }
 
