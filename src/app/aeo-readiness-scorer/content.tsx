@@ -82,6 +82,7 @@ export default function AeoReadinessScorerContent() {
       title="AEO Readiness Scorer"
       tagline="Score any page on the structural signals AI search uses."
       accent={ACCENT}
+      materialFab={{ label: "Download .py", onClick: () => { const a = document.createElement("a"); a.href = "/aeo-readiness-scorer.py"; a.download = "aeo-readiness-scorer.py"; a.click(); } }}
       actions={actions}
       controls={controls}
       controlsLabel="Insights"

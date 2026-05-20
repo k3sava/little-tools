@@ -147,6 +147,7 @@ export default function RealAgeContent() {
       title="Life in Numbers"
       tagline="Your age in units that actually mean something."
       accent="#f43f5e"
+      materialFab={{ label: "See Results", onClick: () => setMetroCPivot("output") }}
     >
       <div className="flex flex-col gap-4 max-w-2xl mx-auto w-full">
         <nav className="canvas-metro-pivot" role="tablist" aria-label="View">

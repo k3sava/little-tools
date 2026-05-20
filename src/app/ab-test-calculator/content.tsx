@@ -387,6 +387,7 @@ export default function ABTestCalculatorContent() {
       title="A/B Test Calculator"
       tagline="Significance · sample size · confidence interval · power"
       accent={ACCENT_PMM}
+      materialFab={{ label: "View Results", onClick: () => setMetroCPivot("output") }}
       actions={actions}
       controls={controls}
       info={info}

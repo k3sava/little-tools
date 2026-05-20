@@ -278,6 +278,7 @@ export default function CaffeineContent() {
       title="Caffeine Clock"
       tagline="When will your coffee actually wear off?"
       accent="#f59e0b"
+      materialFab={{ label: "Add Drink", onClick: addDrink }}
       controls={
         <>
           <ControlGroup label="Your drinks today">

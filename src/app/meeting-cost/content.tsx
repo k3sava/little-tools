@@ -162,6 +162,7 @@ export default function MeetingCostContent() {
       title="Meeting Cost Meter"
       tagline="The live cost of this meeting, in real time."
       accent="#ef4444"
+      materialFab={{ label: "Start Meeting", onClick: start }}
       actions={
         <>
           {!running ? (

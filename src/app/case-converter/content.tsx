@@ -386,6 +386,7 @@ export default function CaseConverterContent() {
       title="Case Converter"
       tagline="13 cases · click any card to copy · auto-detect input"
       accent="#6366f1"
+      materialFab={{ label: "Copy Title Case", onClick: () => handleCardCopy("title-ap", allConversions.find(c => c.value === "title-ap")?.result ?? "") }}
       actions={actions}
       controls={controls}
     >

@@ -191,6 +191,7 @@ export default function YearProgressContent() {
       tagline="How far through the year are you, with opinions."
       accent={ACCENT_YEAR}
       hideControls
+      materialFab={{ label: "Copy Progress", onClick: () => s && navigator.clipboard.writeText(`${(s.yearPct * 100).toFixed(1)}% of ${s.year} is done. ${s.daysLeft} days left.`) }}
     >
       {s && (
         <div className="glass-canvas-section">
